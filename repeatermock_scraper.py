@@ -759,6 +759,7 @@ def render_test_html(test: TestData) -> str:
        score displayed.
     """
     # Serialize test data as JSON for the JS to consume
+    # Includes concept + confidence (same as AI JSON) so the HTML and AI JSON stay in sync
     test_json = json.dumps({
         "test_id": test.test_id,
         "title": test.title,
@@ -783,6 +784,19 @@ def render_test_html(test: TestData) -> str:
                         "correct_option": q.correct_option,
                         "solution_html": q.solution_html,
                         "tags": q.tags,
+                        # Concept + confidence (computed by detect_concept — same as AI JSON)
+                        "concept": detect_concept(
+                            detect_subject(test.series_slug, test.title),
+                            q.tags,
+                            strip_html(q.langs.get("en", {}).get("value", "")),
+                            q.langs.get("en", {}).get("options", []),
+                        )[0],
+                        "confidence": detect_concept(
+                            detect_subject(test.series_slug, test.title),
+                            q.tags,
+                            strip_html(q.langs.get("en", {}).get("value", "")),
+                            q.langs.get("en", {}).get("options", []),
+                        )[1],
                     }
                     for q in s.questions
                 ],
@@ -928,7 +942,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica N
 .question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
 .q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
 .q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
-.q-marks{display:flex;gap:12px;font-size:12px;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
 .mark-pos{color:#10b981;font-weight:600;}
 .mark-neg{color:#ef4444;font-weight:600;}
 .q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
@@ -1120,9 +1142,18 @@ function renderQuestion() {{
     t.classList.toggle('active', i === currentSectionIdx);
   }});
   document.getElementById('currentSectionLabel').textContent = q.sectionName;
-  // Question header
+  // Question header — includes Q number, marks, concept, confidence, and question ID
   document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
-  document.getElementById('qMarks').innerHTML = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
   // Language tabs
   const langTabs = document.getElementById('qLangTabs');
   langTabs.innerHTML = '';
@@ -1329,10 +1360,17 @@ function renderAllQuestions() {{
     if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
     else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
     else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
     card.innerHTML = `
       <div class="result-header">
         <span class="result-q-num">Q${{i + 1}}</span>
         ${{statusBadge}}
+        <span class="result-concept">🎯 ${{concept}}</span>
+        <span class="result-confidence ${{confClass}}">conf: ${{confidence}}</span>
+        <span class="result-qid">ID: ${{q.qid}}</span>
       </div>
       <div class="result-text">${{langData.value || '(no text)'}}</div>
       <ul class="result-options">${{optionsHtml}}</ul>
@@ -2002,6 +2040,23 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
         await asyncio.gather(*worker_tasks)
 
         await browser.close()
+
+    # Generate combined question index (index.html + index.json)
+    # This shows all questions across all tests, with cross-test deduplication
+    print(f"\n=== Generating combined question index ===")
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["python3", os.path.join(os.path.dirname(__file__), "generate_index.py"),
+             "--output-dir", output_dir],
+            capture_output=True, text=True, timeout=120
+        )
+        if result.returncode == 0:
+            print(result.stdout[-500:])
+        else:
+            print(f"  ⚠️ Index generation failed: {result.stderr[:300]}")
+    except Exception as e:
+        print(f"  ⚠️ Index generation skipped: {e}")
 
     # Summary
     elapsed_min = (time.time() - start_time) / 60 if 'start_time' in dir() else 0
