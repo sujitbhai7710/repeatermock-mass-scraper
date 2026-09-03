@@ -620,8 +620,8 @@ class Worker:
             result = await self.eval_js(js, timeout=30)
             if not isinstance(result, dict):
                 if attempt < MAX_RETRIES - 1:
-                    await self.refresh_cookies(force=True)
-                    await asyncio.sleep(base_delay * (2 ** attempt) + random.uniform(0, 1))
+                    # Don't refresh cookies on JS eval failure — just wait and retry
+                    await asyncio.sleep(base_delay * (2 ** attempt) + random.uniform(1, 3))
                 continue
             
             status = result.get("status", 0)
@@ -636,11 +636,14 @@ class Worker:
                     continue
                 else:
                     # POST request or proxy also 429: exponential backoff
+                    # CRITICAL: Do NOT refresh cookies on 429 — refreshing itself makes
+                    # a page.goto request which triggers MORE 429s (cascade effect)
+                    # Only wait longer, don't refresh cookies
                     wait_sec = (retry_after and float(retry_after)) or (base_delay * (2 ** attempt))
-                    wait_sec += random.uniform(0, 1)
+                    wait_sec += random.uniform(1, 3)  # More jitter
                     print(f"  [worker {self.worker_id}] ⏳ 429, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
                     await asyncio.sleep(wait_sec)
-                    await self.refresh_cookies(force=True)
+                    # Do NOT refresh cookies here — only on 401
                     continue
             
             if status == 401:
@@ -660,10 +663,10 @@ class Worker:
                         use_proxy = True
                         print(f"  [worker {self.worker_id}] 🔄 network error, switching to proxy (attempt {attempt+1}/{MAX_RETRIES})")
                     else:
-                        wait_sec = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                        wait_sec = base_delay * (2 ** attempt) + random.uniform(1, 3)
                         print(f"  [worker {self.worker_id}] 🌐 network error, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
                         await asyncio.sleep(wait_sec)
-                    await self.refresh_cookies(force=True)
+                    # Do NOT refresh cookies on network error — only on 401
                 continue
             
             try:
@@ -681,6 +684,9 @@ class Worker:
         # 1. Start attempt
         status, data = await self.api_call("POST", f"/api/v1/attempts/{tid}/start", "{}")
         if status != 200 or not data:
+            if status == 402:
+                print(f"  [worker {self.worker_id}] 💰 PRO test (402), skipping: {tid}")
+                return None  # PRO test — no retry needed
             print(f"  [worker {self.worker_id}] start failed for {tid}: status={status}")
             return None
         # 2. Submit empty answers
@@ -2413,7 +2419,7 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                 finally:
                     queue.task_done()
                 # Small delay to avoid rate-limiting (with jitter)
-                await asyncio.sleep(1.0 + random.uniform(0, 0.5))  # 1-1.5s delay to reduce 429s
+                await asyncio.sleep(2.0 + random.uniform(0, 1.0))  # 2-3s delay to reduce 429s
             await w.close()
             print(f"  [worker {worker_id}] done (scraped {w.tests_done} tests)")
 
