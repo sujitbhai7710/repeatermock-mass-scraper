@@ -686,7 +686,7 @@ class Worker:
         if status != 200 or not data:
             if status == 402:
                 print(f"  [worker {self.worker_id}] 💰 PRO test (402), skipping: {tid}")
-                return None  # PRO test — no retry needed
+                return "PRO"  # Signal to scrape_test that this is a PRO test
             print(f"  [worker {self.worker_id}] start failed for {tid}: status={status}")
             return None
         # 2. Submit empty answers
@@ -2375,7 +2375,13 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                 try:
                     print(f"\n  [worker {worker_id}] [{completed + failed + 1}/{total}] {test_ref.title[:50]}... (id={test_ref.test_id})")
                     test_data = await w.scrape_test(test_ref)
-                    if test_data:
+                    if test_data == "PRO":
+                        # PRO test (402) — record in progress as "pro" (not "failed")
+                        await progress.mark_failed(test_ref.series_slug, test_ref.test_id, "PRO (402 Payment Required)")
+                        async with completion_lock:
+                            failed += 1
+                        print(f"  [worker {worker_id}] 💰 PRO test recorded: {test_ref.test_id}")
+                    elif test_data:
                         # Update title + series_name from scraped data
                         test_ref.title = test_data.title
                         # IMMEDIATE SAVE: write HTML + AI JSON + update progress
