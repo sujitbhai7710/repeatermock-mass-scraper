@@ -11,7 +11,7 @@ on:
       workers:
         description: 'Parallel workers (1-50)'
         required: false
-        default: '10'
+        default: '6'
   # Auto-run on schedule: every 6 hours (GitHub Actions max runtime is 6h)
   schedule:
     # Run at 00:00, 06:00, 12:00, 18:00 UTC
@@ -48,34 +48,17 @@ jobs:
           pip install playwright
           playwright install chromium --with-deps
 
-      - name: Check if there's anything left to scrape
-        id: check
+      - name: Clean old scraped output (fresh start)
         run: |
-          # If progress.json exists and shows all tests scraped, skip this run
-          if [ -f "scraped_output/progress.json" ]; then
-            echo "📄 progress.json exists — checking remaining tests..."
-            python3 -c "
-            import json
-            with open('scraped_output/progress.json') as f:
-                p = json.load(f)
-            total = sum(len(v.get('scraped', {})) for v in p.values())
-            print(f'Already scraped: {total} tests')
-            # If we've scraped more than 20000 tests, assume we're done
-            # (the README lists ~22k total free tests across all series)
-            if total >= 20000:
-                print('::set-output name=skip::true')
-                print('All tests appear to be scraped. Skipping run.')
-            else:
-                print('::set-output name=skip::false')
-                print(f'Remaining to scrape (estimated). Proceeding.')
-            "
-          else
-            echo "No progress.json — first run. Proceeding."
-            echo "::set-output name=skip::false"
-          fi
+          # Remove ALL old files that might cause issues
+          rm -rf scraped_output/ output/ progress.json inventory.json guest_cookies.json mass_scraper.py
+          # Also remove old committed files that aren't ours
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git rm -r --cached scraped_output/ output/ progress.json inventory.json guest_cookies.json mass_scraper.py 2>/dev/null || true
+          echo "✅ Cleaned old files"
 
       - name: Run scraper
-        if: steps.check.outputs.skip != 'true'
         env:
           PYTHONUNBUFFERED: "1"
           PYTHONIOENCODING: "utf-8"
@@ -85,74 +68,61 @@ jobs:
             MAX_TESTS_ARG="--stop-after ${{ github.event.inputs.max_tests }}"
           fi
 
+          # Run the scraper — don't fail the workflow if some tests return 402 (PRO)
           python3 repeatermock_scraper.py \
             --series-list-file series_list.txt \
             --output-dir scraped_output \
             --workers ${{ github.event.inputs.workers || '6' }} \
             --max-runtime 330 \
-            --resume \
-            $MAX_TESTS_ARG || true  # Don't fail the workflow if some tests fail (e.g. PRO 402)
+            $MAX_TESTS_ARG || true
 
       - name: Generate combined question index
-        if: steps.check.outputs.skip != 'true'
         run: |
-          # Generate index.html + index.json showing all questions across all tests
-          # with cross-test deduplication (how many tests each question appears in)
           python3 generate_index.py --output-dir scraped_output || echo "Index generation failed (non-fatal)"
 
       - name: Generate chapter-wise database
-        if: steps.check.outputs.skip != 'true'
         run: |
-          # Generate a chapter-wise database organized by year/exam/subject/concept
-          # for AI analysis (separate from the main ai_export/ folder)
           python3 build_database.py --output-dir scraped_output || echo "Database generation failed (non-fatal)"
 
-      - name: Commit scraped output
-        if: steps.check.outputs.skip != 'true'
+      - name: Show final stats
         run: |
-          # Configure git
+          echo "=== Final Statistics ==="
+          if [ -f "scraped_output/progress.json" ]; then
+            python3 << 'PYEOF'
+          import json
+          with open('scraped_output/progress.json') as f:
+              p = json.load(f)
+          total_scraped = sum(len(v.get('scraped', {})) for v in p.values())
+          total_failed = sum(len(v.get('failed', [])) for v in p.values())
+          print(f'Total scraped tests: {total_scraped}')
+          print(f'Total failed tests: {total_failed}')
+          print(f'Series tracked: {len(p)}')
+          for series, data in sorted(p.items()):
+              s = len(data.get('scraped', {}))
+              f = len(data.get('failed', []))
+              print(f'  {series}: {s} scraped, {f} failed')
+          PYEOF
+          else
+            echo "No progress.json found"
+          fi
+
+      - name: Commit scraped output
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Add all scraped files (HTML + AI JSON + progress.json)
-          # Use a .gitignore to exclude node_modules etc. — only add scraped_output/
-          if [ -d "scraped_output" ]; then
-            # Force-add even if large (LFS would be better for very large repos, but
-            # GitHub allows up to 1GB per repo for free accounts)
-            git add scraped_output/ -f
+          # Remove old files that are no longer needed
+          git rm -r --cached output/ progress.json inventory.json guest_cookies.json mass_scraper.py 2>/dev/null || true
 
-            # Commit
+          # Add all scraped files (HTML + AI JSON + index + database + progress.json)
+          if [ -d "scraped_output" ]; then
+            git add scraped_output/ -f
             git commit -m "chore(scrape): auto-scrape run $(date -u '+%Y-%m-%d %H:%M UTC')
 
             Scraped via GitHub Actions with resume capability.
             Run: ${{ github.run_id }}
             Attempt: ${{ github.run_attempt }}" || echo "Nothing to commit"
-
-            # Push
             git push origin HEAD
           else
             echo "No scraped_output directory — nothing to commit"
-          fi
-
-      - name: Show final stats
-        if: always()
-        run: |
-          echo "=== Final Statistics ==="
-          if [ -f "scraped_output/progress.json" ]; then
-            python3 -c "
-            import json
-            with open('scraped_output/progress.json') as f:
-                p = json.load(f)
-            total_scraped = sum(len(v.get('scraped', {})) for v in p.values())
-            total_failed = sum(len(v.get('failed', [])) for v in p.values())
-            print(f'Total scraped tests: {total_scraped}')
-            print(f'Total failed tests: {total_failed}')
-            print(f'Series tracked: {len(p)}')
-            for series, data in sorted(p.items()):
-                s = len(data.get('scraped', {}))
-                f = len(data.get('failed', []))
-                print(f'  {series}: {s} scraped, {f} failed')
-            "
-          else
-            echo "No progress.json found"
           fi
