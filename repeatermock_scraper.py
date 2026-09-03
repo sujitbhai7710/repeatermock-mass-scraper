@@ -83,9 +83,24 @@ WEB_BASE = "https://repeatermock.com"
 DEFAULT_OUTPUT_DIR = "/home/z/my-project/download/repeatermock_tests"
 PROGRESS_FILE = "progress.json"
 
-# Cloudflare Worker proxy — used when direct API calls get rate-limited (429)
-# The proxy routes requests through Cloudflare's edge network (different IP)
-PROXY_URL = "https://repeatermock-proxy.jumble-solver.workers.dev"
+# Cloudflare Worker proxies — 5 accounts for round-robin load balancing
+# When direct API gets 429, the scraper rotates through these proxies (different IPs)
+PROXY_URLS = [
+    "https://rm-proxy-58bd8ffa.jumble-solver.workers.dev",
+    "https://rm-proxy-4bf7119c.memonic.workers.dev",
+    "https://rm-proxy-774fa466.agarwalbhai716.workers.dev",
+    "https://rm-proxy-2a8a85bf.walletsx.workers.dev",
+    "https://rm-proxy-a0f7bd34.akagautam7.workers.dev",
+]
+# Track which proxy to use next (round-robin)
+_proxy_index = 0
+
+def _next_proxy():
+    """Get the next proxy URL (round-robin)."""
+    global _proxy_index
+    proxy = PROXY_URLS[_proxy_index % len(PROXY_URLS)]
+    _proxy_index += 1
+    return proxy
 
 # Cookie refresh interval (15 minutes)
 COOKIE_REFRESH_INTERVAL_SEC = 15 * 60
@@ -577,7 +592,7 @@ class Worker:
                 use_proxy = False
             
             if use_proxy:
-                url = f"{PROXY_URL}{path}" if path.startswith("/") else path
+                url = f"{_next_proxy()}{path}" if path.startswith("/") else path
                 credentials_mode = "omit"
             else:
                 url = f"{API_BASE}{path}" if path.startswith("/") else path
