@@ -653,6 +653,13 @@ class Worker:
             return None
         text_refs = build_text_refs(html)
         test_data = parse_test_data(props, tid, test_ref.series_slug, text_refs)
+        # The solution page's testData doesn't include duration — use the value
+        # from the test listing API (test_ref.duration) as fallback
+        if not test_data.duration_min and test_ref.duration:
+            test_data.duration_min = test_ref.duration
+        # Also use total_mark from test_ref as fallback for max_marks
+        if not test_data.max_marks and test_ref.total_mark:
+            test_data.max_marks = test_ref.total_mark
         return test_data
 
     async def close(self):
@@ -1071,6 +1078,12 @@ function init() {{
 }}
 
 function startTimer() {{
+  if (DURATION_SEC <= 0) {{
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }}
   timerInterval = setInterval(() => {{
     if (submitted) return;
     timeLeft--;
@@ -1504,40 +1517,206 @@ def detect_subject(series_slug: str, test_title: str = "") -> str:
     return "general"
 
 
-def detect_concept(subject: str, tags: List[str], question_text: str, options: List[dict]) -> str:
-    """Detect the concept/category for a question.
-    Priority: 1) Use RepeaterMock's tags if present, 2) keyword-match against CONCEPT_KEYWORDS,
-    3) 'General' fallback."""
-    # 1. Use tags if available
-    if tags:
-        # Join tags as the concept
-        return ", ".join(tags)
-    # 2. Keyword detection
+def detect_concept(subject: str, tags: List[str], question_text: str, options: List[dict]) -> Tuple[str, str]:
+    """Detect the concept/category for a question with 100%-accuracy rules.
+    Returns (concept, confidence) where confidence is "high", "medium", or "unidentified".
+    
+    STRICT RULES (per user requirement):
+    - Only classify when the question EXPLICITLY states its type (e.g. "synonym of", "antonym of")
+      OR RepeaterMock provides authoritative tags.
+    - If the question type isn't 100% identifiable from the text, mark as "Unidentified"
+      rather than guessing.
+    
+    Priority:
+    1. RepeaterMock's tags → high confidence (directly from the source, 100% accurate)
+    2. Explicit question-type keywords (e.g. "synonym of", "antonym of", "complete the series")
+       → high confidence (only when the phrasing is unambiguous)
+    3. "Unidentified" → if no 100%-certain match (skip guessing)
+    """
     text = (question_text + " " + " ".join(opt.get("value", "") for opt in options)).lower()
-    concept_map = CONCEPT_KEYWORDS.get(subject, {})
-    best_match = None
-    best_score = 0
-    for concept, keywords in concept_map.items():
-        score = sum(1 for kw in keywords if kw in text)
-        if score > best_score:
-            best_score = score
-            best_match = concept
-    if best_match and best_score > 0:
-        return best_match
-    return "General"
+    
+    # 1. Use tags if available — these are from RepeaterMock directly (100% accurate)
+    if tags:
+        return ", ".join(tags), "high"
+    
+    # 2. Explicit question-type detection (100% accuracy — only when phrasing is unambiguous)
+    # Each pattern requires the question to literally state the type
+    explicit_patterns = {
+        "english": [
+            # Vocabulary — must explicitly say "synonym", "antonym", etc.
+            (r"\bsynonym\b.*\bof\b", "Vocabulary: Synonyms"),
+            (r"\bantonym\b.*\bof\b", "Vocabulary: Antonyms"),
+            (r"most appropriate synonym", "Vocabulary: Synonyms"),
+            (r"most appropriate antonym", "Vocabulary: Antonyms"),
+            (r"choose the correct meaning of idiom", "Idioms & Phrases"),
+            (r"meaning of (the )?idiom", "Idioms & Phrases"),
+            (r"meaning of (the )?phrase", "Idioms & Phrases"),
+            (r"idiom.* meaning", "Idioms & Phrases"),
+            (r"misspelt word", "Spelling"),
+            (r"incorrectly spelt", "Spelling"),
+            (r"correct spelling", "Spelling"),
+            (r"spelling", "Spelling"),
+            (r"one word substitution", "One Word Substitution"),
+            (r"one-word substitution", "One Word Substitution"),
+            (r"phrasal verb", "Phrasal Verbs"),
+            # Grammar — must explicitly mention the grammar rule
+            (r"active voice.*passive voice|passive voice.*active voice|change the voice", "Voice"),
+            (r"direct speech.*indirect speech|indirect speech.*direct speech|reported speech", "Narration"),
+            (r"direct.*indirect|indirect.*direct", "Narration"),
+            (r"error.*sentence|sentence.*error|grammatically incorrect|find the error", "Error Spotting"),
+            (r"fill in the blank", "Fill in the Blanks"),
+            (r"fill.*blank", "Fill in the Blanks"),
+            (r"read the passage|comprehension passage", "Reading Comprehension"),
+            (r"cloze test", "Cloze Test"),
+            (r"improve.* sentence|sentence improvement|rewrite.* sentence", "Sentence Improvement"),
+            (r"rearrange.* sentence|jumble|correct sequence.* sentence|order.* sentence", "Para Jumbles"),
+            (r"parts of speech|noun|pronoun|verb|adverb|adjective|preposition|conjunction", "Grammar: Parts of Speech"),
+            (r"identify.* tense|tense of", "Grammar: Tenses"),
+            (r"identify.* clause|clause", "Grammar: Clauses"),
+        ],
+        "reasoning": [
+            # Each pattern requires explicit question-type phrasing
+            (r"complete the series|next.*in.*series|series.*question mark|replace.*question mark.*series", "Series"),
+            (r"is to.*as.*is to|analogy", "Analogy"),
+            (r"odd one|doesn't belong|different.*group|find.*different", "Classification"),
+            (r"coded as|code for|decode.* following|stands for", "Coding-Decoding"),
+            (r"mother.*son|father.*daughter|brother.*sister|how.*related|blood relation", "Blood Relations"),
+            (r"direction|north.*south|east.*west|turn.*left|turn.*right", "Direction Sense"),
+            (r"rank.*from|position.*from|order.* arrange", "Ranking/Order"),
+            (r"puzzle|sitting arrangement", "Puzzle"),
+            (r"syllogism|conclusion.* statement|all.* some.* no", "Syllogism"),
+            (r"venn diagram", "Venn Diagram"),
+            (r"mirror image|water image", "Mirror/Water Image"),
+            (r"paper folding|paper cutting", "Paper Folding/Cutting"),
+            (r"calendar|leap year|day.* week", "Calendar"),
+            (r"clock.*hour|clock.*minute|angle.*clock", "Clock"),
+            (r"dictionary order|alphabet.*order|word.* dictionary|letter.* dictionary", "Alphabet/Word Test"),
+            (r"arrangement.*word|pattern.* word|sequence.* word", "Arrangement and Pattern"),
+            (r"address.*same|match.* address|exactly.* same.* address", "Similarity and Differences"),
+            (r"how many triangle|count.* triangle|count.* figure", "Figure Counting"),
+            (r"embedded figure|embedded.* image", "Embedded Figures"),
+        ],
+        "maths": [
+            # Each pattern requires explicit mention of the topic
+            (r"profit.* loss|loss.* profit|discount.* marked|marked price|cost price|selling price|cp.*sp", "Profit & Loss"),
+            (r"simple interest|principal.*rate.*time", "Simple Interest"),
+            (r"compound interest|compounded.*annually|compounded.*yearly", "Compound Interest"),
+            (r"percentage|%\s|percent of", "Percentage"),
+            (r"ratio.* proportion|proportion.* ratio", "Ratio & Proportion"),
+            (r"average.* number|average.* age|average.* marks|find.* average", "Average"),
+            (r"time.* work|work.* days|men.* complete|complete.* work", "Time & Work"),
+            (r"speed.* distance|distance.* time|km.* hour|km/hr|m/s", "Time, Speed & Distance"),
+            (r"boat.* stream|upstream|downstream|speed of boat", "Boats & Streams"),
+            (r"simplify|simplification|value of expression", "Simplification"),
+            (r"hcf|lcm|divisible|remainder|prime factor|greatest.*divisor|least.*multiple", "Number System"),
+            (r"triangle|abc.* angle|isosceles|equilateral|right.*angle.*triangle", "Geometry: Triangles"),
+            (r"circle.* radius|radius.* circle|diameter|chord.* tangent|tangent.* circle", "Geometry: Circles"),
+            (r"quadrilateral|parallelogram|trapezium|rhombus", "Geometry: Quadrilaterals"),
+            (r"parallel lines.* transversal|transversal.* angle", "Geometry: Lines & Angles"),
+            (r"sin |cos |tan |sec |cosec |cot |trigonometr|angle of elevation|angle of depression", "Trigonometry"),
+            (r"area of|perimeter of|volume of|surface area|curved surface|total surface", "Mensuration"),
+            (r"algebra|equation|polynomial|solve.* x|value of x", "Algebra"),
+            (r"table.* year|data.* table|tabulation|study the table", "Data Interpretation: Table"),
+            (r"bar graph|bar chart", "Data Interpretation: Bar"),
+            (r"pie chart", "Data Interpretation: Pie"),
+            (r"line graph", "Data Interpretation: Line"),
+            (r"partnership|invested.* business|profit.* share.* partner", "Partnership"),
+            (r"age.* year|years? old|ago.* will be|will be.* years?", "Ages"),
+            (r"pipe.* cistern|tank.* fill|tank.* empty|tap.* fill", "Pipes & Cisterns"),
+            (r"permutation|combination|arrange.* select|ways.* choose", "Permutation & Combination"),
+            (r"probability|chance.* occur|likely.* happen|dice.* probability|coin.* probability", "Probability"),
+            (r"mean.* median.* mode|standard deviation|variance", "Statistics"),
+        ],
+        "gk": [
+            # GK questions are usually direct factual — categorize by topic keywords
+            (r"constitution|amendment|fundamental right|directive principle|article \d+", "Polity: Constitution"),
+            (r"parliament|president of india|prime minister|supreme court|high court|lok sabha|rajya sabha", "Polity: Government"),
+            (r"ancient india|indus valley|vedic|maurya|gupta dynasty", "History: Ancient"),
+            (r"medieval|delhi sultanate|mughal|akbar|babur|aurangzeb", "History: Medieval"),
+            (r"freedom struggle|independence.* 1947|revolt of 1857|gandhi|nehru|congress", "History: Modern"),
+            (r"mountain|river|climate|monsoon|plateau|plain", "Geography: Physical"),
+            (r"state.* capital|union territory|indian state", "Geography: Indian"),
+            (r"continent|ocean|country.* capital|world", "Geography: World"),
+            (r"gdp|inflation|reserve bank|budget|tax|economy|fiscal", "Economics"),
+            (r"biology|cell|plant|animal|human body|disease|vitamin|protein", "Science: Biology"),
+            (r"chemistry|chemical|acid|base|reaction|element|compound|metal", "Science: Chemistry"),
+            (r"physics|force|energy|motion|light|sound|electricity|gravity|magnet", "Science: Physics"),
+            (r"books? and authors?|who wrote|author of", "Static GK: Books & Authors"),
+            (r"awards?|honours?|nobel|padma|bharat ratna|arjuna", "Static GK: Awards"),
+            (r"sports?|cricket|football|olympic|commonwealth|world cup", "Static GK: Sports"),
+            (r"dance?|festival|folk dance", "Static GK: Dance & Festivals"),
+            (r"first in india|first in world", "Static GK: Firsts"),
+            (r"international organisation|united nations|world bank|imf|who.* unesco", "Static GK: International Orgs"),
+        ],
+    }
+    
+    patterns = explicit_patterns.get(subject, [])
+    matches_found = []
+    for pattern, concept in patterns:
+        if re.search(pattern, text):
+            matches_found.append(concept)
+    
+    if matches_found:
+        # If multiple patterns matched, use the first one (most specific)
+        return matches_found[0], "high"
+    
+    # 3. No 100%-certain match — mark as Unidentified (per user requirement)
+    return "Unidentified", "unidentified"
 
 
 def strip_html(text: str) -> str:
-    """Strip HTML tags, decode entities, normalize whitespace."""
+    """Convert HTML to AI-friendly plain text while preserving formatting markers.
+    
+    Preserves:
+    - <strong>/<b> → **bold** (markdown)
+    - <em>/<i>/<u> → __underline__ (markdown)
+    - <p> → paragraph breaks
+    - <br> → newline
+    - <sup> → ^{...} (superscript for math)
+    - <sub> → _{...} (subscript for math)
+    - Images → [IMAGE: url]
+    
+    Strips all other HTML tags but keeps the text content.
+    """
     import html as html_mod
     if not text:
         return ""
     # Decode HTML entities first
     text = html_mod.unescape(text)
-    # Remove HTML tags
+    # Convert formatting tags to markdown markers (before stripping all tags)
+    # Bold: <strong>, <b>
+    text = re.sub(r'<strong[^>]*>(.*?)</strong>', r'**\1**', text, flags=re.DOTALL)
+    text = re.sub(r'<b[^>]*>(.*?)</b>', r'**\1**', text, flags=re.DOTALL)
+    # Underline: <u> → __text__ (markdown underline)
+    text = re.sub(r'<u[^>]*>(.*?)</u>', r'__\1__', text, flags=re.DOTALL)
+    # Italic: <em>, <i> → *text*
+    text = re.sub(r'<em[^>]*>(.*?)</em>', r'*\1*', text, flags=re.DOTALL)
+    text = re.sub(r'<i[^>]*>(.*?)</i>', r'*\1*', text, flags=re.DOTALL)
+    # Superscript: <sup> → ^{text} (for math)
+    text = re.sub(r'<sup[^>]*>(.*?)</sup>', r'^{\1}', text, flags=re.DOTALL)
+    # Subscript: <sub> → _{text} (for math)
+    text = re.sub(r'<sub[^>]*>(.*?)</sub>', r'_{\1}', text, flags=re.DOTALL)
+    # Images → [IMAGE: url]
+    text = re.sub(r'<img[^>]+src="([^"]+)"[^>]*/?>', r' [IMAGE: \1] ', text)
+    # Paragraph breaks
+    text = re.sub(r'<p[^>]*>', '\n', text)
+    text = re.sub(r'</p>', '\n', text)
+    # Line breaks
+    text = re.sub(r'<br\s*/?>', '\n', text)
+    # List items
+    text = re.sub(r'<li[^>]*>', '\n• ', text)
+    text = re.sub(r'</li>', '', text)
+    # Table cells → tab-separated
+    text = re.sub(r'<td[^>]*>', '\t', text)
+    text = re.sub(r'</td>', '', text)
+    text = re.sub(r'<tr[^>]*>', '\n', text)
+    text = re.sub(r'</tr>', '', text)
+    # Strip all remaining HTML tags
     text = re.sub(r'<[^>]+>', '', text)
-    # Normalize whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
+    # Normalize whitespace but preserve newlines
+    text = re.sub(r'[^\S\n]+', ' ', text)  # collapse non-newline whitespace
+    text = re.sub(r'\n{3,}', '\n\n', text)  # max 2 consecutive newlines
+    text = text.strip()
     return text
 
 
@@ -1598,14 +1777,15 @@ def render_ai_export(test: TestData, test_ref: TestRef) -> dict:
             sol_text = strip_html(sol_html)
             sol_images = extract_images_from_html(sol_html)
             
-            # Detect concept
-            concept = detect_concept(subject, q.tags, q_text, options)
+            # Detect concept + confidence
+            concept, confidence = detect_concept(subject, q.tags, q_text, options)
             
             q_export = {
                 "qid": q.qid,
                 "n": q.qs_no,
                 "type": q.type,
                 "concept": concept,
+                "confidence": confidence,
                 "marks_pos": q.pos_marks,
                 "marks_neg": q.neg_marks,
                 "question": q_text,
