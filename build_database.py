@@ -88,12 +88,21 @@ def sanitize(s: str, max_len: int = 60) -> str:
 
 
 def build_database(output_dir: str, db_dir: str, years_filter: list = None):
-    """Scan all AI JSON exports and build a chapter-wise database."""
+    """Scan all AI JSON exports and build a chapter-wise database.
+    
+    Database filtering rules (per user requirement):
+    - Year filter: only 2021-2025 (not before 2021)
+    - Section filter: only specific sections per series (see SERIES_SECTION_FILTERS)
+    - Subject filter: all subjects
+    
+    NOTE: The ai_export/ and html_export/ folders contain ALL scraped tests (all years).
+    The database/ folder is a FILTERED COPY for AI analysis — only 2021-2025 + specific sections.
+    """
     ai_files = sorted(glob.glob(os.path.join(output_dir, "ai_export", "**", "*.json"), recursive=True))
     print(f"Found {len(ai_files)} AI JSON files to process")
     
     if years_filter is None:
-        years_filter = ["2025", "2024", "2023", "2022"]
+        years_filter = ["2025", "2024", "2023", "2022", "2021"]
     
     stats = {
         "total_questions": 0,
@@ -180,8 +189,8 @@ def main():
                         help="Directory containing ai_export/ subfolder with scraped JSON files")
     parser.add_argument("--db-dir", default=None,
                         help="Output database directory (default: <output-dir>/database)")
-    parser.add_argument("--years", nargs="*", default=["2025", "2024", "2023", "2022"],
-                        help="Years to include (default: 2025 2024 2023 2022)")
+    parser.add_argument("--years", nargs="*", default=["2025", "2024", "2023", "2022", "2021"],
+                        help="Years to include (default: 2025 2024 2023 2022 2021)")
     args = parser.parse_args()
     
     db_dir = args.db_dir or os.path.join(args.output_dir, "database")
