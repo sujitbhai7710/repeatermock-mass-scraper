@@ -111,7 +111,9 @@ def build_database(output_dir: str, db_dir: str, years_filter: list = None):
         "by_subject": defaultdict(int),
         "by_concept": defaultdict(int),
         "skipped_year": 0,
+        "duplicates_skipped": 0,
     }
+    seen_qids = set()  # Track question IDs to avoid duplicates
     
     for fpath in ai_files:
         try:
@@ -136,10 +138,21 @@ def build_database(output_dir: str, db_dir: str, years_filter: list = None):
         
         # Process each question
         for q in test.get("questions", []):
+            qid = q.get("qid", "")
+            
+            # DEDUPLICATE: Skip if this question ID was already added
+            # (same question appears in multiple test series — only keep first occurrence)
+            if qid and qid in seen_qids:
+                stats["duplicates_skipped"] += 1
+                continue
+            if qid:
+                seen_qids.add(qid)
+            
             stats["total_questions"] += 1
             concept = q.get("concept", "Unidentified")
             concept_clean = sanitize(concept, max_len=40) if concept else "Unidentified"
-            qid = q.get("qid", f"unknown_{stats['total_questions']}")
+            if not qid:
+                qid = f"unknown_{stats['total_questions']}"
             
             # Build path: db_dir/year/exam/subject/concept/qid.json
             dir_path = os.path.join(db_dir, year, exam, subject.capitalize(), concept_clean)
@@ -212,12 +225,51 @@ def main():
         "stats": {
             "total_questions": stats["total_questions"],
             "skipped_year": stats["skipped_year"],
+            "duplicates_skipped": stats["duplicates_skipped"],
             "by_year": dict(stats["by_year"]),
             "by_exam": dict(stats["by_exam"]),
             "by_subject": dict(stats["by_subject"]),
-            "by_concept": dict(sorted(stats["by_concept"].items(), key=lambda x: -x[1])[:30]),
+            "by_concept": dict(sorted(stats["by_concept"].items(), key=lambda x: -x[1])),
+            "by_year_exam": {},  # Will be filled below
+            "by_year_subject": {},  # Will be filled below
+            "by_exam_subject": {},  # Will be filled below
         },
     }
+    
+    # Build cross-dimensional stats (year×exam, year×subject, exam×subject)
+    by_year_exam = defaultdict(lambda: defaultdict(int))
+    by_year_subject = defaultdict(lambda: defaultdict(int))
+    by_exam_subject = defaultdict(lambda: defaultdict(int))
+    seen_qids_all = set()  # Track for cross-stats dedup
+    
+    # Re-scan to build cross stats (simpler than tracking during main loop)
+    all_ai_files = sorted(glob.glob(os.path.join(args.output_dir, "ai_export", "**", "*.json"), recursive=True))
+    for fpath in all_ai_files:
+        try:
+            with open(fpath) as f:
+                test = json.load(f)
+        except:
+            continue
+        title = test.get("title", "")
+        subject = test.get("subject", "general")
+        subsection = test.get("subsection", "")
+        year = detect_year(title) or detect_year_from_subsection(subsection)
+        exam = detect_exam(title)
+        if year not in args.years:
+            continue
+        for q in test.get("questions", []):
+            qid = q.get("qid", "")
+            if qid in seen_qids_all:
+                continue
+            seen_qids_all.add(qid)
+            by_year_exam[year][exam] += 1
+            by_year_subject[year][subject] += 1
+            by_exam_subject[exam][subject] += 1
+    
+    index_data["stats"]["by_year_exam"] = {y: dict(v) for y, v in by_year_exam.items()}
+    index_data["stats"]["by_year_subject"] = {y: dict(v) for y, v in by_year_subject.items()}
+    index_data["stats"]["by_exam_subject"] = {e: dict(v) for e, v in by_exam_subject.items()}
+    
     with open(index_path, "w") as f:
         json.dump(index_data, f, indent=2)
     
@@ -226,6 +278,7 @@ def main():
     print(f"DATABASE BUILD COMPLETE")
     print(f"{'='*60}")
     print(f"  Total questions:        {stats['total_questions']:,}")
+    print(f"  Duplicates skipped:    {stats['duplicates_skipped']:,}")
     print(f"  Skipped (wrong year):   {stats['skipped_year']:,}")
     print(f"\n  By Year:")
     for year in sorted(stats["by_year"].keys()):
