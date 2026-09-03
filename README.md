@@ -87,6 +87,8 @@ This repo includes a GitHub Action (`.github/workflows/scrape.yml`) that:
 ```
 output_dir/
 ├── progress.json                          ← resume state (auto-saved after every test)
+├── index.html                             ← combined question index (searchable, human-readable)
+├── index.json                             ← combined question index (AI-readable, with test counts)
 ├── html_export/                           ← interactive mock-test HTML files
 │   ├── english/
 │   │   └── ssc-english-previous-year-questions/
@@ -117,6 +119,51 @@ output_dir/
     └── gk/
         └── ...
 ```
+
+## Combined Question Index (index.html + index.json)
+
+After every scrape run, the script automatically generates a combined question index:
+
+- **`index.html`** — searchable HTML table of ALL questions across ALL scraped tests, with:
+  - Question ID, question text, concept, confidence, subject, correct answer
+  - **Test count** — how many tests each question appears in (highlights questions repeated across tests in red)
+  - Expandable "Show N tests" button to see which tests contain each question
+  - Search + filter by subject + sort by count/question/concept/ID
+- **`index.json`** — AI-readable JSON with the same data, structured as:
+  ```json
+  {
+    "stats": {
+      "total_ai_files": 5,
+      "total_question_instances": 135,
+      "total_unique_qids": 135,
+      "questions_in_multiple_tests": 0,
+      "cross_id_duplicate_groups": 0,
+      "subject_distribution": {"english": 35, "gk": 50, "maths": 25, "reasoning": 25},
+      "top_concepts": [["Error Spotting", 10], ["Grammar", 10], ...]
+    },
+    "questions": [
+      {
+        "qid": "6909eee5ad853d424078d2de",
+        "question": "Which is the 2nd last word...",
+        "concept": "Arrangement and Pattern",
+        "confidence": "high",
+        "correct": "3",
+        "subject": "reasoning",
+        "appears_in": [{"test_id": "...", "title": "...", "series_slug": "..."}],
+        "test_count": 1
+      }
+    ],
+    "most_repeated": [...],  // top 50 questions by test_count
+    "cross_id_duplicates": [...]  // questions with same text but different IDs
+  }
+  ```
+
+This lets you:
+- Find questions that appear across multiple tests (high-repeat questions for practice)
+- Deduplicate by question ID when building training datasets
+- See the full concept distribution across all scraped tests
+
+The GitHub Action auto-generates this index after every scrape run and commits it to the repo.
 
 ## AI-friendly JSON format
 
