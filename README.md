@@ -14,9 +14,10 @@ Scrapes **ALL free tests** from any RepeaterMock test series — gets every ques
 - **Resume capability**: saves progress to `progress.json` after every test. If you kill the terminal and restart, it picks up exactly where it left off — no duplicate scrapes.
 - **Nested folder structure**: `output_dir/{html_export,ai_export}/subject/series_slug/section_name/subsection_name/test.{html,json}` — organized by subject first, then series/section/subsection.
 - **Subject detection**: auto-detects English / Reasoning / Maths / GK / Science / Computer from series slug, sorts tests into subject folders.
-- **Concept categorization**: each question gets a `concept` field (e.g. "Profit & Loss", "Analogy", "Vocabulary", "Blood Relations") — uses RepeaterMock's tags first, falls back to keyword detection.
-- **AI-friendly JSON**: plain text (HTML stripped), short field names, omits empty fields, includes image URLs, includes solutions, minimal tokens for LLM consumption.
-- **Interactive mock-test HTML**: countdown timer, question palette, Save & Next / Mark for Review / Clear Response, Submit → answer reveal with correct options highlighted + solutions + score.
+- **100%-accuracy concept categorization**: each question gets a `concept` field with a `confidence` level (`high` / `unidentified`). Uses RepeaterMock's authoritative tags first, then strict explicit-pattern matching (e.g. "synonym of" → Vocabulary: Synonyms). If the question type isn't 100% identifiable, marks as `Unidentified` rather than guessing.
+- **Syllabus-backed pattern recognition**: fetched comprehensive SSC CGL syllabi for all 5 subjects (English, Reasoning, Maths, GK, Static GK) via Monid web search API. 86 topics cached in `syllabus_patterns.json`.
+- **AI-friendly JSON with formatting preservation**: plain text (HTML stripped) BUT preserves `**bold**`, `__underline__`, `*italic*`, `^{superscript}`, `_{subscript}`, `[IMAGE: url]` markers so AI models understand the formatting.
+- **Interactive mock-test HTML**: countdown timer (with "No Limit" fallback if duration unknown), question palette, Save & Next / Mark for Review / Clear Response, Submit → answer reveal with correct options highlighted + solutions + score.
 - **Stop after N**: `--stop-after 50` stops after 50 tests total.
 - **Max runtime**: `--max-runtime 340` stops gracefully after 340 minutes (for CI/GitHub Actions).
 - **$N reference resolution**: handles Next.js flight data `$N` references (both decimal AND hex IDs/lengths) — fixes the bug where ~26% of questions had "missing" solutions.
