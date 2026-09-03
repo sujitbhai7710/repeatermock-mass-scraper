@@ -1,0 +1,136 @@
+name: Scrape RepeaterMock Tests
+
+on:
+  # Manual trigger from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      max_tests:
+        description: 'Max tests to scrape per run (empty = unlimited, uses resume)'
+        required: false
+        default: ''
+      workers:
+        description: 'Parallel workers (1-50)'
+        required: false
+        default: '10'
+  # Auto-run on schedule: every 6 hours (GitHub Actions max runtime is 6h)
+  schedule:
+    # Run at 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: '0 0,6,12,18 * * *'
+
+# Cancel any in-progress run when a new one starts
+concurrency:
+  group: scrape-repeatermock
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350  # GitHub Actions hard limit is 360 min (6h); leave 10 min buffer
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Full history for commit
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install playwright
+          playwright install chromium --with-deps
+
+      - name: Check if there's anything left to scrape
+        id: check
+        run: |
+          # If progress.json exists and shows all tests scraped, skip this run
+          if [ -f "scraped_output/progress.json" ]; then
+            echo "📄 progress.json exists — checking remaining tests..."
+            python3 -c "
+            import json
+            with open('scraped_output/progress.json') as f:
+                p = json.load(f)
+            total = sum(len(v.get('scraped', {})) for v in p.values())
+            print(f'Already scraped: {total} tests')
+            # If we've scraped more than 20000 tests, assume we're done
+            # (the README lists ~22k total free tests across all series)
+            if total >= 20000:
+                print('::set-output name=skip::true')
+                print('All tests appear to be scraped. Skipping run.')
+            else:
+                print('::set-output name=skip::false')
+                print(f'Remaining to scrape (estimated). Proceeding.')
+            "
+          else
+            echo "No progress.json — first run. Proceeding."
+            echo "::set-output name=skip::false"
+          fi
+
+      - name: Run scraper
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          MAX_TESTS_ARG=""
+          if [ -n "${{ github.event.inputs.max_tests }}" ]; then
+            MAX_TESTS_ARG="--stop-after ${{ github.event.inputs.max_tests }}"
+          fi
+
+          python3 repeatermock_scraper.py \
+            --series-list-file series_list.txt \
+            --output-dir scraped_output \
+            --workers ${{ github.event.inputs.workers || '10' }} \
+            --max-runtime 340 \
+            --resume \
+            $MAX_TESTS_ARG
+
+      - name: Commit scraped output
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add all scraped files (HTML + AI JSON + progress.json)
+          # Use a .gitignore to exclude node_modules etc. — only add scraped_output/
+          if [ -d "scraped_output" ]; then
+            # Force-add even if large (LFS would be better for very large repos, but
+            # GitHub allows up to 1GB per repo for free accounts)
+            git add scraped_output/ -f
+
+            # Commit
+            git commit -m "chore(scrape): auto-scrape run $(date -u '+%Y-%m-%d %H:%M UTC')
+
+            Scraped via GitHub Actions with resume capability.
+            Run: ${{ github.run_id }}
+            Attempt: ${{ github.run_attempt }}" || echo "Nothing to commit"
+
+            # Push
+            git push origin HEAD
+          else
+            echo "No scraped_output directory — nothing to commit"
+          fi
+
+      - name: Show final stats
+        if: always()
+        run: |
+          echo "=== Final Statistics ==="
+          if [ -f "scraped_output/progress.json" ]; then
+            python3 -c "
+            import json
+            with open('scraped_output/progress.json') as f:
+                p = json.load(f)
+            total_scraped = sum(len(v.get('scraped', {})) for v in p.values())
+            total_failed = sum(len(v.get('failed', [])) for v in p.values())
+            print(f'Total scraped tests: {total_scraped}')
+            print(f'Total failed tests: {total_failed}')
+            print(f'Series tracked: {len(p)}')
+            for series, data in sorted(p.items()):
+                s = len(data.get('scraped', {}))
+                f = len(data.get('failed', []))
+                print(f'  {series}: {s} scraped, {f} failed')
+            "
+          else
+            echo "No progress.json found"
+          fi
