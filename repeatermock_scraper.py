@@ -83,6 +83,10 @@ WEB_BASE = "https://repeatermock.com"
 DEFAULT_OUTPUT_DIR = "/home/z/my-project/download/repeatermock_tests"
 PROGRESS_FILE = "progress.json"
 
+# Cloudflare Worker proxy — used when direct API calls get rate-limited (429)
+# The proxy routes requests through Cloudflare's edge network (different IP)
+PROXY_URL = "https://repeatermock-proxy.jumble-solver.workers.dev"
+
 # Cookie refresh interval (15 minutes)
 COOKIE_REFRESH_INTERVAL_SEC = 15 * 60
 
@@ -547,17 +551,28 @@ class Worker:
             return None
 
     async def api_call(self, method: str, path: str, body: str = "{}") -> Tuple[int, Optional[dict]]:
-        """Make an API call with robust rate-limit handling.
+        """Make an API call with Cloudflare proxy fallback.
         
-        On 429 (rate limited): waits with exponential backoff + jitter, then retries.
-        On 401 (cookie expired): refreshes cookies, then retries.
-        On network error (status 0): refreshes cookies, then retries.
-        
-        Returns (status, parsed_json). After max retries, returns (0, None)."""
+        Strategy:
+        1. Try direct API call first (fastest, uses browser cookies)
+        2. On 429: switch to Cloudflare Worker proxy (different IP, no rate limit)
+        3. If proxy also 429: exponential backoff + jitter
+        4. On 401: refresh cookies, retry
+        5. On network error: switch to proxy or backoff
+        """
         MAX_RETRIES = 5
-        base_delay = 2  # seconds — doubled each retry
+        base_delay = 2
+        use_proxy = False  # Start direct, switch to proxy on first 429
+        
         for attempt in range(MAX_RETRIES):
-            url = f"{API_BASE}{path}" if path.startswith("/") else path
+            # Build URL: direct or through Cloudflare Worker proxy
+            if use_proxy:
+                url = f"{PROXY_URL}{path}" if path.startswith("/") else path
+                credentials_mode = "omit"  # Proxy uses its own IP, no cookies needed
+            else:
+                url = f"{API_BASE}{path}" if path.startswith("/") else path
+                credentials_mode = "include"  # Direct uses browser cookies
+            
             has_body = method.upper() not in ("GET", "HEAD")
             body_js = json.dumps(body) if has_body else "undefined"
             js = f"""
@@ -565,12 +580,11 @@ class Worker:
               try {{
                 const r = await fetch({json.dumps(url)}, {{
                   method: {json.dumps(method)},
-                  credentials: 'include',
+                  credentials: {json.dumps(credentials_mode)},
                   headers: {{'Content-Type': 'application/json'}},
                   body: {body_js}
                 }});
                 const t = await r.text();
-                // Extract Retry-After header if present (for 429 handling)
                 const retryAfter = r.headers.get('retry-after') || r.headers.get('Retry-After') || '';
                 return {{status: r.status, body: t, retryAfter: retryAfter}};
               }} catch(e) {{
@@ -580,8 +594,9 @@ class Worker:
             """
             result = await self.eval_js(js, timeout=30)
             if not isinstance(result, dict):
-                # JS eval failed — refresh cookies and retry
                 if attempt < MAX_RETRIES - 1:
+                    if not use_proxy:
+                        use_proxy = True
                     await self.refresh_cookies(force=True)
                     await asyncio.sleep(base_delay * (2 ** attempt) + random.uniform(0, 1))
                 continue
@@ -591,46 +606,44 @@ class Worker:
             retry_after = result.get("retryAfter", "")
             
             if status == 429:
-                # Rate limited — respect Retry-After header if present, else exponential backoff
-                if retry_after:
-                    try:
-                        wait_sec = float(retry_after)
-                    except ValueError:
-                        wait_sec = base_delay * (2 ** attempt)
+                if not use_proxy:
+                    # First 429 — switch to proxy (different IP, bypasses rate limit)
+                    print(f"  [worker {self.worker_id}] 🔄 429 direct, switching to proxy (attempt {attempt+1}/{MAX_RETRIES})")
+                    use_proxy = True
+                    continue
                 else:
-                    wait_sec = base_delay * (2 ** attempt)
-                # Add jitter (0-1 sec) to avoid thundering herd
-                wait_sec += random.uniform(0, 1)
-                print(f"  [worker {self.worker_id}] ⏳ 429 rate limited, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
-                await asyncio.sleep(wait_sec)
-                # Also refresh cookies (rate limit might be tied to cookie freshness)
-                await self.refresh_cookies(force=True)
-                continue
+                    # Proxy also 429 — exponential backoff + jitter
+                    wait_sec = (retry_after and float(retry_after)) or (base_delay * (2 ** attempt))
+                    wait_sec += random.uniform(0, 1)
+                    print(f"  [worker {self.worker_id}] ⏳ 429 proxy too, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
+                    await asyncio.sleep(wait_sec)
+                    await self.refresh_cookies(force=True)
+                    continue
             
             if status == 401:
-                # Cookie expired — refresh and retry
-                print(f"  [worker {self.worker_id}] 🔑 401 cookie expired, refreshing (attempt {attempt+1}/{MAX_RETRIES})")
+                print(f"  [worker {self.worker_id}] 🔑 401, refreshing cookies (attempt {attempt+1}/{MAX_RETRIES})")
                 await self.refresh_cookies(force=True)
                 await asyncio.sleep(1 + random.uniform(0, 0.5))
                 continue
             
             if status == 0:
-                # Network error — refresh cookies and retry with backoff
                 if attempt < MAX_RETRIES - 1:
-                    wait_sec = base_delay * (2 ** attempt) + random.uniform(0, 1)
-                    print(f"  [worker {self.worker_id}] 🌐 network error, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
-                    await asyncio.sleep(wait_sec)
+                    if not use_proxy:
+                        use_proxy = True
+                        print(f"  [worker {self.worker_id}] 🔄 network error, switching to proxy (attempt {attempt+1}/{MAX_RETRIES})")
+                    else:
+                        wait_sec = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                        print(f"  [worker {self.worker_id}] 🌐 network error, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
+                        await asyncio.sleep(wait_sec)
                     await self.refresh_cookies(force=True)
                 continue
             
-            # Success (or non-retryable error) — return the result
             try:
                 parsed = json.loads(body_text)
                 return status, parsed
             except Exception:
                 return status, None
         
-        # All retries exhausted
         print(f"  [worker {self.worker_id}] ❌ API call failed after {MAX_RETRIES} retries: {method} {path[:60]}")
         return 0, None
 
