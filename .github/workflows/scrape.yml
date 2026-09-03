@@ -25,7 +25,7 @@ concurrency:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 350  # GitHub Actions hard limit is 360 min (6h); leave 10 min buffer
+    timeout-minutes: 335  # GitHub Actions hard limit is 360 min (6h); leave 25 min buffer for save+commit
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -80,8 +80,8 @@ jobs:
           python3 repeatermock_scraper.py \
             --series-list-file series_list.txt \
             --output-dir scraped_output \
-            --workers ${{ github.event.inputs.workers || '10' }} \
-            --max-runtime 340 \
+            --workers ${{ github.event.inputs.workers || '6' }} \
+            --max-runtime 330 \
             --resume \
             $MAX_TESTS_ARG
 
@@ -91,6 +91,13 @@ jobs:
           # Generate index.html + index.json showing all questions across all tests
           # with cross-test deduplication (how many tests each question appears in)
           python3 generate_index.py --output-dir scraped_output || echo "Index generation failed (non-fatal)"
+
+      - name: Generate chapter-wise database
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          # Generate a chapter-wise database organized by year/exam/subject/concept
+          # for AI analysis (separate from the main ai_export/ folder)
+          python3 build_database.py --output-dir scraped_output || echo "Database generation failed (non-fatal)"
 
       - name: Commit scraped output
         if: steps.check.outputs.skip != 'true'
