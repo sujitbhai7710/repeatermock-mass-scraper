@@ -68,6 +68,11 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
+# Force unbuffered output so logs appear LIVE in GitHub Actions (and terminal)
+# This ensures every print() is immediately flushed to stdout
+sys.stdout.reconfigure(line_buffering=True)
+sys.stderr.reconfigure(line_buffering=True)
+
 
 # =============================================================================
 # CONFIG
@@ -1968,10 +1973,10 @@ def strip_html(text: str) -> str:
     """Convert HTML to AI-friendly plain text while preserving formatting markers.
     
     Handles:
-    - Double-escaped HTML entities (e.g. &amp;deg; → &deg; → °)
-    - LaTeX math notation \(...\) → readable plain text (sec² α instead of \sec^2 \alpha)
-    - <strong>/<b> → **bold** (markdown)
-    - <em>/<i>/<u> → __underline__ (markdown)
+    - Double-escaped HTML entities (e.g. &amp;deg; -> &deg; -> degree symbol)
+    - LaTeX math notation backslash-paren...backslash-paren -> readable plain text (sec^2 alpha)
+    - <strong>/<b> -> **bold** (markdown)
+    - <em>/<i>/<u> -> __underline__ (markdown)
     - <sup> → ^{...} (superscript for math)
     - <sub> → _{...} (subscript for math)
     - Images → [IMAGE: url]
@@ -2371,10 +2376,40 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
             await w.close()
             print(f"  [worker {worker_id}] done (scraped {w.tests_done} tests)")
 
+        # Background progress reporter — prints a summary every 30 seconds
+        # so you can watch the scrape live in GitHub Actions logs
+        progress_stop = asyncio.Event()
+        async def progress_reporter():
+            while not progress_stop.is_set():
+                try:
+                    await asyncio.wait_for(progress_stop.wait(), timeout=30.0)
+                    break  # event was set, stop
+                except asyncio.TimeoutError:
+                    pass  # 30s elapsed, print progress
+                elapsed_min = (time.time() - start_time) / 60
+                done = completed + failed
+                remaining = total - done
+                rate = done / elapsed_min if elapsed_min > 0 else 0
+                eta_min = remaining / rate if rate > 0 else 0
+                stats = progress.stats()
+                print(f"\n📊 [{elapsed_min:.1f}min] Progress: {done}/{total} ({100*done/total:.1f}%) | "
+                      f"✅ {completed} scraped | ⚠️ {failed} failed | "
+                      f"📊 {stats['scraped']} total in progress.json | "
+                      f"ETA: {eta_min:.0f}min ({eta_min/60:.1f}h)", flush=True)
+        
+        reporter_task = asyncio.create_task(progress_reporter())
+
         # Spawn workers
         worker_tasks = [asyncio.create_task(worker_loop(i + 1)) for i in range(workers)]
         # Wait for all to finish
         await asyncio.gather(*worker_tasks)
+        
+        # Stop the progress reporter
+        progress_stop.set()
+        try:
+            await asyncio.wait_for(reporter_task, timeout=5.0)
+        except asyncio.TimeoutError:
+            reporter_task.cancel()
 
         # Phase 3: Retry failed tests (with fresh cookies)
         if retry_queue and not runtime_exceeded:
