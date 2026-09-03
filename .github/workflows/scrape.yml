@@ -85,6 +85,13 @@ jobs:
             --resume \
             $MAX_TESTS_ARG
 
+      - name: Generate combined question index
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          # Generate index.html + index.json showing all questions across all tests
+          # with cross-test deduplication (how many tests each question appears in)
+          python3 generate_index.py --output-dir scraped_output || echo "Index generation failed (non-fatal)"
+
       - name: Commit scraped output
         if: steps.check.outputs.skip != 'true'
         run: |
