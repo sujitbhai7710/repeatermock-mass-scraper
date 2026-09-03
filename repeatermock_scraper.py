@@ -1387,12 +1387,286 @@ def build_output_path(output_dir: str, test_ref: TestRef) -> str:
 
 
 # =============================================================================
+# SUBJECT DETECTION + AI-FRIENDLY EXPORT
+# =============================================================================
+# Detects the subject (English/Reasoning/Math/GK/Science/Computer) from the series slug,
+# then categorizes each question by concept using tags + keyword detection.
+# Exports a structured JSON file per test that AI models can parse with minimal tokens.
+
+SUBJECT_KEYWORDS = {
+    "english": ["english", "vocabulary", "grammar", "comprehension", "cloze", "spelling", "idiom", "synonym", "antonym"],
+    "reasoning": ["reasoning", "intelligence", "logical", "arrangement", "series", "analogy", "blood", "direction", "ranking", "coding", "puzzle", "syllogism", "venn"],
+    "maths": ["maths", "math", "quantitative", "aptitude", "geometry", "algebra", "trigonometry", "mensuration", "profit", "interest", "percentage", "ratio", "time", "speed", "data", "tabulation", "pie", "bar"],
+    "gk": ["gk", "general-knowledge", "general-awareness", "awareness", "constitution", "history", "geography", "polity", "economics", "science"],
+    "science": ["general-science", "physics", "chemistry", "biology"],
+    "computer": ["computer", "computer-awareness"],
+}
+
+# Concept keyword maps (used when tags are empty — fallback detection)
+CONCEPT_KEYWORDS = {
+    "english": {
+        "Vocabulary": ["synonym", "antonym", "meaning of", "opposite of", "same meaning", "opposite meaning", "spelling", "misspelt", "correct spelling"],
+        "Idioms & Phrases": ["idiom", "phrase", "hobson", "choose the correct meaning"],
+        "Grammar - Error Detection": ["error", "grammatically incorrect", "find the error"],
+        "Grammar - Fill in the Blanks": ["fill in the blank", "blank", "choose the correct option"],
+        "Reading Comprehension": ["read the passage", "comprehension", "passage"],
+        "Cloze Test": ["cloze", "fill in the blanks"],
+        "Sentence Improvement": ["improve", "improvement", "rewrite"],
+        "Active/Passive Voice": ["active voice", "passive voice", "change the voice"],
+        "Direct/Indirect Speech": ["direct", "indirect", "reported speech", "narration"],
+        "Para Jumbles": ["rearrange", "jumble", "order", "sequence"],
+    },
+    "reasoning": {
+        "Series": ["series", "complete the series", "replace the question mark", "next in"],
+        "Analogy": ["analogy", "is to", "as", "related"],
+        "Classification": ["odd one", "different", "doesn't belong", "classify"],
+        "Coding-Decoding": ["code", "decode", "coded as", "stands for"],
+        "Blood Relations": ["mother", "father", "son", "daughter", "brother", "sister", "uncle", "aunt", "cousin", "husband", "wife"],
+        "Direction Sense": ["direction", "north", "south", "east", "west", "left", "right", "turn"],
+        "Ranking/Order": ["rank", "position", "order", "from left", "from right", "arrange"],
+        "Puzzle": ["puzzle", "sitting arrangement", "floor", "linear"],
+        "Syllogism": ["syllogism", "conclusion", "statement", "all", "some", "no"],
+        "Venn Diagram": ["venn", "diagram", "how many"],
+        "Mirror/Water Image": ["mirror", "water image", "reflection"],
+        "Paper Folding/Cutting": ["fold", "cut", "paper"],
+        "Cube & Dice": ["cube", "dice"],
+        "Calendar": ["calendar", "day", "month", "year", "leap"],
+        "Clock": ["clock", "hour", "minute", "angle"],
+        "Alphabet/Word Test": ["alphabet", "word", "dictionary", "letter"],
+        "Arrangement and Pattern": ["arrangement", "pattern", "sequence"],
+        "Similarity and Differences": ["similarity", "difference", "similar", "different"],
+    },
+    "maths": {
+        "Number System": ["number", "divisible", "remainder", "hcf", "lcm", "prime", "factor"],
+        "Simplification": ["simplify", "simplification"],
+        "Percentage": ["percentage", "%", "percent"],
+        "Ratio & Proportion": ["ratio", "proportion"],
+        "Average": ["average", "mean"],
+        "Profit & Loss": ["profit", "loss", "discount", "marked price", "cp", "sp", "cost price", "selling price"],
+        "Simple Interest": ["simple interest", "si", "principal", "rate"],
+        "Compound Interest": ["compound interest", "ci", "compounded"],
+        "Time & Work": ["time and work", "work", "men", "days", "complete the work"],
+        "Time, Speed & Distance": ["speed", "distance", "time", "train", "km", "m/s"],
+        "Boats & Streams": ["boat", "stream", "upstream", "downstream", "current"],
+        "Mixture & Alligation": ["mixture", "alligation", "alloy", "mix"],
+        "Algebra": ["algebra", "equation", "x + y", "x^2", "polynomial"],
+        "Geometry - Triangles": ["triangle", "abc", "isosceles", "equilateral"],
+        "Geometry - Circles": ["circle", "radius", "diameter", "chord", "tangent"],
+        "Geometry - Quadrilaterals": ["quadrilateral", "square", "rectangle", "parallelogram", "trapezium"],
+        "Geometry - Lines & Angles": ["angle", "parallel lines", "transversal"],
+        "Coordinate Geometry": ["coordinate", "x-axis", "y-axis", "origin"],
+        "Trigonometry": ["trigonometry", "sin", "cos", "tan", "sec", "cosec", "cot", "theta", "angle of elevation"],
+        "Mensuration - 2D": ["area", "perimeter", "rectangle", "square", "triangle", "circle"],
+        "Mensuration - 3D": ["volume", "surface area", "cube", "cuboid", "cylinder", "cone", "sphere", "hemisphere"],
+        "Data Interpretation - Tables": ["table", "tabulation", "data"],
+        "Data Interpretation - Bar": ["bar graph", "bar chart"],
+        "Data Interpretation - Pie": ["pie chart", "pie"],
+        "Data Interpretation - Line": ["line graph", "line chart"],
+        "Statistics": ["mean", "median", "mode", "standard deviation", "variance"],
+        "Partnership": ["partner", "partnership", "investment", "profit share"],
+        "Ages": ["age", "years old", "ago", "hence"],
+        "Pipes & Cisterns": ["pipe", "cistern", "tank", "fill", "empty"],
+        "Permutation & Combination": ["permutation", "combination", "arrange", "select"],
+        "Probability": ["probability", "chance", "likely"],
+    },
+    "gk": {
+        "History - Ancient": ["ancient", "indus valley", "vedic", "maurya", "gupta"],
+        "History - Medieval": ["medieval", "delhi sultanate", "mughal"],
+        "History - Modern": ["modern history", "freedom struggle", "independence", "congress", "gandhi", "nehru"],
+        "Polity - Constitution": ["constitution", "amendment", "fundamental rights", "directive principles"],
+        "Polity - Government": ["parliament", "president", "prime minister", "supreme court", "high court"],
+        "Geography - Physical": ["physical geography", "mountain", "river", "climate", "monsoon"],
+        "Geography - Indian": ["india", "state", "capital", "union territory"],
+        "Geography - World": ["world", "continent", "country", "ocean"],
+        "Economics": ["economy", "economics", "gdp", "inflation", "reserve bank", "budget", "tax"],
+        "General Science - Biology": ["biology", "cell", "plant", "animal", "human body", "disease"],
+        "General Science - Chemistry": ["chemistry", "chemical", "acid", "base", "reaction", "element"],
+        "General Science - Physics": ["physics", "force", "energy", "motion", "light", "sound", "electricity"],
+        "Static GK": ["static", "books", "authors", "awards", "sports", "famous"],
+    },
+    "science": {
+        "Biology": ["biology", "cell", "plant", "animal", "human body"],
+        "Chemistry": ["chemistry", "chemical", "acid", "reaction", "element", "compound"],
+        "Physics": ["physics", "force", "energy", "motion", "light", "sound"],
+    },
+}
+
+
+def detect_subject(series_slug: str, test_title: str = "") -> str:
+    """Detect the subject from series slug + title. Returns one of:
+    english, reasoning, maths, gk, science, computer, or 'general'."""
+    text = (series_slug + " " + test_title).lower()
+    # Check in priority order (most specific first)
+    for subject, keywords in SUBJECT_KEYWORDS.items():
+        for kw in keywords:
+            if kw in text:
+                return subject
+    return "general"
+
+
+def detect_concept(subject: str, tags: List[str], question_text: str, options: List[dict]) -> str:
+    """Detect the concept/category for a question.
+    Priority: 1) Use RepeaterMock's tags if present, 2) keyword-match against CONCEPT_KEYWORDS,
+    3) 'General' fallback."""
+    # 1. Use tags if available
+    if tags:
+        # Join tags as the concept
+        return ", ".join(tags)
+    # 2. Keyword detection
+    text = (question_text + " " + " ".join(opt.get("value", "") for opt in options)).lower()
+    concept_map = CONCEPT_KEYWORDS.get(subject, {})
+    best_match = None
+    best_score = 0
+    for concept, keywords in concept_map.items():
+        score = sum(1 for kw in keywords if kw in text)
+        if score > best_score:
+            best_score = score
+            best_match = concept
+    if best_match and best_score > 0:
+        return best_match
+    return "General"
+
+
+def strip_html(text: str) -> str:
+    """Strip HTML tags, decode entities, normalize whitespace."""
+    import html as html_mod
+    if not text:
+        return ""
+    # Decode HTML entities first
+    text = html_mod.unescape(text)
+    # Remove HTML tags
+    text = re.sub(r'<[^>]+>', '', text)
+    # Normalize whitespace
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+
+def extract_images_from_html(html_text: str) -> List[dict]:
+    """Extract image URLs from HTML."""
+    if not html_text:
+        return []
+    imgs = []
+    for m in re.finditer(r'<img[^>]+src="([^"]+)"[^>]*/?>', html_text):
+        imgs.append({"url": m.group(1), "alt": ""})
+    return imgs
+
+
+def render_ai_export(test: TestData, test_ref: TestRef) -> dict:
+    """Render a TestData as an AI-friendly JSON structure.
+    Minimizes tokens by:
+    - Stripping HTML (plain text only)
+    - Using short field names
+    - Omitting empty fields
+    - Including concept categorization for fast filtering
+    """
+    subject = detect_subject(test_ref.series_slug, test.title)
+    
+    # Test-level metadata
+    export = {
+        "test_id": test.test_id,
+        "title": test.title,
+        "series_slug": test_ref.series_slug,
+        "series_name": test_ref.series_name,
+        "section": test_ref.section_name,
+        "subsection": test_ref.sub_section_name,
+        "subject": subject,
+        "duration_min": test.duration_min,
+        "max_marks": test.max_marks,
+        "question_count": sum(len(s.questions) for s in test.sections),
+        "languages": test.languages,
+        "scraped_at": datetime.now(timezone.utc).isoformat(),
+        "questions": [],
+    }
+    
+    # Per-question data
+    for section in test.sections:
+        for q in section.questions:
+            # Get English content (primary)
+            en = q.langs.get("en", {})
+            q_text_html = en.get("value", "")
+            q_text = strip_html(q_text_html)
+            options = en.get("options", [])
+            images = extract_images_from_html(q_text_html)
+            # Also check options for images
+            for opt in options:
+                opt_imgs = extract_images_from_html(opt.get("value", ""))
+                if opt_imgs:
+                    images.extend(opt_imgs)
+            
+            # Solution (English)
+            sol_html = q.solution_html.get("en", "")
+            sol_text = strip_html(sol_html)
+            sol_images = extract_images_from_html(sol_html)
+            
+            # Detect concept
+            concept = detect_concept(subject, q.tags, q_text, options)
+            
+            q_export = {
+                "qid": q.qid,
+                "n": q.qs_no,
+                "type": q.type,
+                "concept": concept,
+                "marks_pos": q.pos_marks,
+                "marks_neg": q.neg_marks,
+                "question": q_text,
+                "options": [
+                    {"label": opt.get("prompt", ""), "text": strip_html(opt.get("value", ""))}
+                    for opt in options
+                ],
+                "correct": q.correct_option,
+            }
+            # Only include solution if non-empty
+            if sol_text:
+                q_export["solution"] = sol_text
+            # Only include images if any
+            if images:
+                q_export["images"] = images
+            if sol_images:
+                q_export["solution_images"] = sol_images
+            # Include tags if any (raw from RepeaterMock)
+            if q.tags:
+                q_export["tags"] = q.tags
+            # Include other languages if available (compact)
+            other_langs = {l: strip_html(q.langs[l].get("value", "")) for l in ["hn"] if l in q.langs and q.langs[l].get("value")}
+            if other_langs.get("hn"):
+                q_export["hindi"] = other_langs["hn"]
+            
+            export["questions"].append(q_export)
+    
+    return export
+
+
+def build_ai_export_path(output_dir: str, test_ref: TestRef) -> str:
+    """Build the AI export path: output_dir/ai_export/subject/series/section/subsection/test.json"""
+    subject = detect_subject(test_ref.series_slug, test_ref.title)
+    base = os.path.join(output_dir, "ai_export", subject, sanitize_filename(test_ref.series_slug))
+    section_dir = os.path.join(base, sanitize_filename(test_ref.section_name))
+    sub_dir = os.path.join(section_dir, sanitize_filename(test_ref.sub_section_name))
+    os.makedirs(sub_dir, exist_ok=True)
+    safe_title = sanitize_filename(test_ref.title)
+    return os.path.join(sub_dir, f"{safe_title}_{test_ref.test_id}.json")
+
+
+def build_html_output_path(output_dir: str, test_ref: TestRef) -> str:
+    """Build the HTML output path: output_dir/html_export/subject/series/section/subsection/test.html"""
+    subject = detect_subject(test_ref.series_slug, test_ref.title)
+    base = os.path.join(output_dir, "html_export", subject, sanitize_filename(test_ref.series_slug))
+    section_dir = os.path.join(base, sanitize_filename(test_ref.section_name))
+    sub_dir = os.path.join(section_dir, sanitize_filename(test_ref.sub_section_name))
+    os.makedirs(sub_dir, exist_ok=True)
+    safe_title = sanitize_filename(test_ref.title)
+    return os.path.join(sub_dir, f"{safe_title}_{test_ref.test_id}.html")
+
+
+# =============================================================================
 # PARALLEL SCRAPER ORCHESTRATOR
 # =============================================================================
 
 async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: str,
-                       workers: int, stop_after: Optional[int], resume: bool):
-    """Main orchestrator: discover tests, spawn workers, scrape in parallel."""
+                       workers: int, stop_after: Optional[int], resume: bool,
+                       max_runtime_min: Optional[int] = None):
+    """Main orchestrator: discover tests, spawn workers, scrape in parallel.
+    If max_runtime_min is set, stops gracefully after that many minutes (for CI)."""
     from playwright.async_api import async_playwright
 
     os.makedirs(output_dir, exist_ok=True)
@@ -1483,11 +1757,23 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
         total = len(all_test_refs)
         completion_lock = asyncio.Lock()
 
+        # Track start time for max_runtime enforcement
+        start_time = time.time()
+        runtime_exceeded = False
+
         async def worker_loop(worker_id: int):
-            nonlocal completed, failed
+            nonlocal completed, failed, runtime_exceeded
             w = Worker(worker_id, browser, progress, output_dir)
             await w.start()
             while True:
+                # Check max runtime
+                if max_runtime_min is not None:
+                    elapsed_min = (time.time() - start_time) / 60
+                    if elapsed_min >= max_runtime_min:
+                        if not runtime_exceeded:
+                            print(f"\n  [worker {worker_id}] ⏰ max runtime {max_runtime_min}min reached, stopping gracefully...")
+                            runtime_exceeded = True
+                        break
                 try:
                     test_ref = queue.get_nowait()
                 except asyncio.QueueEmpty:
@@ -1496,18 +1782,23 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                     print(f"\n  [worker {worker_id}] [{completed + failed + 1}/{total}] {test_ref.title[:50]}... (id={test_ref.test_id})")
                     test_data = await w.scrape_test(test_ref)
                     if test_data:
-                        filepath = build_output_path(output_dir, test_ref)
                         # Update title + series_name from scraped data
                         test_ref.title = test_data.title
-                        filepath = build_output_path(output_dir, test_ref)
+                        # Write interactive HTML
+                        html_path = build_html_output_path(output_dir, test_ref)
                         html = render_test_html(test_data)
-                        with open(filepath, "w") as f:
+                        with open(html_path, "w") as f:
                             f.write(html)
-                        await progress.mark_scraped(test_ref.series_slug, test_ref.test_id, filepath)
+                        # Write AI-friendly JSON export
+                        ai_path = build_ai_export_path(output_dir, test_ref)
+                        ai_export = render_ai_export(test_data, test_ref)
+                        with open(ai_path, "w") as f:
+                            json.dump(ai_export, f, ensure_ascii=False, indent=2)
+                        await progress.mark_scraped(test_ref.series_slug, test_ref.test_id, html_path)
                         async with completion_lock:
                             completed += 1
                             w.tests_done += 1
-                        print(f"  [worker {worker_id}] ✅ saved: {filepath} ({len(html):,} bytes)")
+                        print(f"  [worker {worker_id}] ✅ saved HTML ({len(html):,}B) + AI JSON ({len(json.dumps(ai_export)):,}B): {test_ref.title[:50]}")
                     else:
                         await progress.mark_failed(test_ref.series_slug, test_ref.test_id, "scrape returned None")
                         async with completion_lock:
@@ -1533,13 +1824,19 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
         await browser.close()
 
     # Summary
+    elapsed_min = (time.time() - start_time) / 60 if 'start_time' in dir() else 0
     print(f"\n{'='*60}")
     print(f"✅ Done!")
-    print(f"   Scraped: {completed}")
-    print(f"   Failed: {failed}")
+    if runtime_exceeded:
+        print(f"   ⏰ Stopped due to max runtime ({max_runtime_min} min)")
+    print(f"   Scraped this run: {completed}")
+    print(f"   Failed this run: {failed}")
     print(f"   Output: {output_dir}")
     stats = progress.stats()
     print(f"   Total in progress.json: {stats['scraped']} scraped, {stats['failed']} failed")
+    if runtime_exceeded:
+        remaining = total - completed - failed
+        print(f"   Remaining to scrape: {remaining} (re-run with --resume to continue)")
     print(f"{'='*60}")
 
 
@@ -1549,7 +1846,7 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="RepeaterMock Mass Scraper v2 — parallel scraping with resume + interactive mock-test HTML.",
+        description="RepeaterMock Mass Scraper v2 — parallel scraping with resume + interactive mock-test HTML + AI-friendly JSON export.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -1557,29 +1854,43 @@ def main():
                         help="URL of a single test to scrape (can be repeated)")
     parser.add_argument("--series-url", action="append", default=[],
                         help="URL of a series to scrape (can be repeated)")
+    parser.add_argument("--series-list-file", default=None,
+                        help="Path to a file containing one series URL per line (for GitHub Actions)")
     parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR,
                         help=f"Output directory (default: {DEFAULT_OUTPUT_DIR})")
     parser.add_argument("--workers", type=int, default=10,
                         help="Number of parallel workers (default: 10, max: 50)")
     parser.add_argument("--stop-after", type=int, default=None,
                         help="Stop after N tests total (default: unlimited)")
+    parser.add_argument("--max-runtime", type=int, default=None,
+                        help="Max runtime in minutes (e.g. 350 for GitHub Actions 6h limit)")
     parser.add_argument("--resume", action="store_true",
                         help="Resume from previous run (skip already-scraped tests)")
     args = parser.parse_args()
 
-    if not args.test_url and not args.series_url:
-        parser.error("Provide at least one --test-url or --series-url")
+    # Load series URLs from file if specified
+    series_urls = list(args.series_url)
+    if args.series_list_file:
+        with open(args.series_list_file) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    series_urls.append(line)
+
+    if not args.test_url and not series_urls:
+        parser.error("Provide at least one --test-url, --series-url, or --series-list-file")
 
     # Clamp workers
     workers = max(1, min(args.workers, 50))
 
     asyncio.run(run_scraper(
         test_urls=args.test_url,
-        series_urls=args.series_url,
+        series_urls=series_urls,
         output_dir=args.output_dir,
         workers=workers,
         stop_after=args.stop_after,
         resume=args.resume,
+        max_runtime_min=args.max_runtime,
     ))
 
 
