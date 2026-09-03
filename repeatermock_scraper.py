@@ -59,6 +59,7 @@ import asyncio
 import html as html_mod
 import json
 import os
+import random
 import re
 import sys
 import time
@@ -541,11 +542,17 @@ class Worker:
             return None
 
     async def api_call(self, method: str, path: str, body: str = "{}") -> Tuple[int, Optional[dict]]:
-        """Make an API call. Returns (status, parsed_json). On 401 or network error,
-        refreshes cookies + retries."""
-        for attempt in range(3):
+        """Make an API call with robust rate-limit handling.
+        
+        On 429 (rate limited): waits with exponential backoff + jitter, then retries.
+        On 401 (cookie expired): refreshes cookies, then retries.
+        On network error (status 0): refreshes cookies, then retries.
+        
+        Returns (status, parsed_json). After max retries, returns (0, None)."""
+        MAX_RETRIES = 5
+        base_delay = 2  # seconds — doubled each retry
+        for attempt in range(MAX_RETRIES):
             url = f"{API_BASE}{path}" if path.startswith("/") else path
-            # For GET/HEAD requests, don't send a body (browsers reject it)
             has_body = method.upper() not in ("GET", "HEAD")
             body_js = json.dumps(body) if has_body else "undefined"
             js = f"""
@@ -558,32 +565,68 @@ class Worker:
                   body: {body_js}
                 }});
                 const t = await r.text();
-                return {{status: r.status, body: t}};
+                // Extract Retry-After header if present (for 429 handling)
+                const retryAfter = r.headers.get('retry-after') || r.headers.get('Retry-After') || '';
+                return {{status: r.status, body: t, retryAfter: retryAfter}};
               }} catch(e) {{
-                return {{status: 0, body: String(e).slice(0, 200)}};
+                return {{status: 0, body: String(e).slice(0, 200), retryAfter: ''}};
               }}
             }})()
             """
             result = await self.eval_js(js, timeout=30)
             if not isinstance(result, dict):
-                print(f"  [worker {self.worker_id}] API call returned non-dict: {result}, refreshing cookies...")
-                await self.refresh_cookies(force=True)
+                # JS eval failed — refresh cookies and retry
+                if attempt < MAX_RETRIES - 1:
+                    await self.refresh_cookies(force=True)
+                    await asyncio.sleep(base_delay * (2 ** attempt) + random.uniform(0, 1))
                 continue
+            
             status = result.get("status", 0)
             body_text = result.get("body", "")
+            retry_after = result.get("retryAfter", "")
+            
+            if status == 429:
+                # Rate limited — respect Retry-After header if present, else exponential backoff
+                if retry_after:
+                    try:
+                        wait_sec = float(retry_after)
+                    except ValueError:
+                        wait_sec = base_delay * (2 ** attempt)
+                else:
+                    wait_sec = base_delay * (2 ** attempt)
+                # Add jitter (0-1 sec) to avoid thundering herd
+                wait_sec += random.uniform(0, 1)
+                print(f"  [worker {self.worker_id}] ⏳ 429 rate limited, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
+                await asyncio.sleep(wait_sec)
+                # Also refresh cookies (rate limit might be tied to cookie freshness)
+                await self.refresh_cookies(force=True)
+                continue
+            
             if status == 401:
-                print(f"  [worker {self.worker_id}] got 401, refreshing cookies (attempt {attempt+1})...")
+                # Cookie expired — refresh and retry
+                print(f"  [worker {self.worker_id}] 🔑 401 cookie expired, refreshing (attempt {attempt+1}/{MAX_RETRIES})")
                 await self.refresh_cookies(force=True)
+                await asyncio.sleep(1 + random.uniform(0, 0.5))
                 continue
+            
             if status == 0:
-                print(f"  [worker {self.worker_id}] API call failed (status 0): {body_text[:100]}, refreshing (attempt {attempt+1})...")
-                await self.refresh_cookies(force=True)
+                # Network error — refresh cookies and retry with backoff
+                if attempt < MAX_RETRIES - 1:
+                    wait_sec = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                    print(f"  [worker {self.worker_id}] 🌐 network error, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
+                    await asyncio.sleep(wait_sec)
+                    await self.refresh_cookies(force=True)
                 continue
+            
+            # Success (or non-retryable error) — return the result
             try:
                 parsed = json.loads(body_text)
                 return status, parsed
             except Exception:
                 return status, None
+        
+        # All retries exhausted
+        print(f"  [worker {self.worker_id}] ❌ API call failed after {MAX_RETRIES} retries: {method} {path[:60]}")
         return 0, None
 
     async def scrape_test(self, test_ref: TestRef) -> Optional[TestData]:
@@ -2255,12 +2298,17 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
         start_time = time.time()
         runtime_exceeded = False
 
+        # Retry queue: tests that failed will be re-added to the main queue after all
+        # first-pass tests are done, so they get retried (with fresh cookies)
+        retry_queue: List[TestRef] = []
+        retry_lock = asyncio.Lock()
+
         async def worker_loop(worker_id: int):
             nonlocal completed, failed, runtime_exceeded
             w = Worker(worker_id, browser, progress, output_dir)
             await w.start()
             while True:
-                # Check max runtime
+                # Check max runtime (stop at 5h30m = 330 min for GitHub Actions safety)
                 if max_runtime_min is not None:
                     elapsed_min = (time.time() - start_time) / 60
                     if elapsed_min >= max_runtime_min:
@@ -2278,35 +2326,48 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                     if test_data:
                         # Update title + series_name from scraped data
                         test_ref.title = test_data.title
-                        # Write interactive HTML
+                        # IMMEDIATE SAVE: write HTML + AI JSON + update progress
+                        # This ensures no data is lost even if the process crashes
                         html_path = build_html_output_path(output_dir, test_ref)
                         html = render_test_html(test_data)
-                        with open(html_path, "w") as f:
+                        # Atomic write: write to temp file first, then rename
+                        tmp_html = html_path + ".tmp"
+                        with open(tmp_html, "w") as f:
                             f.write(html)
-                        # Write AI-friendly JSON export
+                        os.rename(tmp_html, html_path)
+                        # Write AI JSON (atomic)
                         ai_path = build_ai_export_path(output_dir, test_ref)
                         ai_export = render_ai_export(test_data, test_ref)
-                        with open(ai_path, "w") as f:
+                        tmp_ai = ai_path + ".tmp"
+                        with open(tmp_ai, "w") as f:
                             json.dump(ai_export, f, ensure_ascii=False, indent=2)
+                        os.rename(tmp_ai, ai_path)
+                        # Update progress.json immediately (so resume works if killed)
                         await progress.mark_scraped(test_ref.series_slug, test_ref.test_id, html_path)
                         async with completion_lock:
                             completed += 1
                             w.tests_done += 1
                         print(f"  [worker {worker_id}] ✅ saved HTML ({len(html):,}B) + AI JSON ({len(json.dumps(ai_export)):,}B): {test_ref.title[:50]}")
                     else:
-                        await progress.mark_failed(test_ref.series_slug, test_ref.test_id, "scrape returned None")
+                        # Test failed — add to retry queue for later retry
+                        async with retry_lock:
+                            retry_queue.append(test_ref)
+                        await progress.mark_failed(test_ref.series_slug, test_ref.test_id, "scrape returned None (will retry)")
                         async with completion_lock:
                             failed += 1
-                        print(f"  [worker {worker_id}] ❌ failed: {test_ref.test_id}")
+                        print(f"  [worker {worker_id}] ⚠️ failed (added to retry queue): {test_ref.test_id}")
                 except Exception as e:
+                    # Exception — add to retry queue for later retry
+                    async with retry_lock:
+                        retry_queue.append(test_ref)
                     await progress.mark_failed(test_ref.series_slug, test_ref.test_id, str(e))
                     async with completion_lock:
                         failed += 1
-                    print(f"  [worker {worker_id}] ❌ exception: {e}")
+                    print(f"  [worker {worker_id}] ⚠️ exception (added to retry queue): {e}")
                 finally:
                     queue.task_done()
-                # Small delay to avoid rate-limiting
-                await asyncio.sleep(0.5)
+                # Small delay to avoid rate-limiting (with jitter)
+                await asyncio.sleep(0.3 + random.uniform(0, 0.4))
             await w.close()
             print(f"  [worker {worker_id}] done (scraped {w.tests_done} tests)")
 
@@ -2314,6 +2375,86 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
         worker_tasks = [asyncio.create_task(worker_loop(i + 1)) for i in range(workers)]
         # Wait for all to finish
         await asyncio.gather(*worker_tasks)
+
+        # Phase 3: Retry failed tests (with fresh cookies)
+        if retry_queue and not runtime_exceeded:
+            print(f"\n=== Phase 3: Retrying {len(retry_queue)} failed tests ===")
+            # Re-add failed tests to the queue
+            retry_queue_unique = []
+            seen_retry_ids = set()
+            for tr in retry_queue:
+                if tr.test_id not in seen_retry_ids:
+                    retry_queue_unique.append(tr)
+                    seen_retry_ids.add(tr.test_id)
+            print(f"  Unique tests to retry: {len(retry_queue_unique)}")
+            # Create a new queue for retries
+            retry_q: asyncio.Queue = asyncio.Queue()
+            for tr in retry_queue_unique:
+                await retry_q.put(tr)
+            # Reset failed count (these will be re-attempted)
+            retry_failed = 0
+            retry_completed = 0
+            retry_completion_lock = asyncio.Lock()
+
+            async def retry_worker_loop(worker_id: int):
+                nonlocal retry_completed, retry_failed, runtime_exceeded
+                # Reuse the same worker ID for logging
+                w = Worker(worker_id, browser, progress, output_dir)
+                await w.start()
+                while True:
+                    if max_runtime_min is not None:
+                        elapsed_min = (time.time() - start_time) / 60
+                        if elapsed_min >= max_runtime_min:
+                            runtime_exceeded = True
+                            break
+                    try:
+                        test_ref = retry_q.get_nowait()
+                    except asyncio.QueueEmpty:
+                        break
+                    try:
+                        print(f"\n  [retry-{worker_id}] [{retry_completed + retry_failed + 1}/{len(retry_queue_unique)}] {test_ref.title[:50]}... (id={test_ref.test_id})")
+                        test_data = await w.scrape_test(test_ref)
+                        if test_data:
+                            test_ref.title = test_data.title
+                            html_path = build_html_output_path(output_dir, test_ref)
+                            html = render_test_html(test_data)
+                            tmp_html = html_path + ".tmp"
+                            with open(tmp_html, "w") as f:
+                                f.write(html)
+                            os.rename(tmp_html, html_path)
+                            ai_path = build_ai_export_path(output_dir, test_ref)
+                            ai_export = render_ai_export(test_data, test_ref)
+                            tmp_ai = ai_path + ".tmp"
+                            with open(tmp_ai, "w") as f:
+                                json.dump(ai_export, f, ensure_ascii=False, indent=2)
+                            os.rename(tmp_ai, ai_path)
+                            await progress.mark_scraped(test_ref.series_slug, test_ref.test_id, html_path)
+                            async with retry_completion_lock:
+                                retry_completed += 1
+                                w.tests_done += 1
+                            print(f"  [retry-{worker_id}] ✅ saved: {test_ref.title[:50]}")
+                        else:
+                            async with retry_completion_lock:
+                                retry_failed += 1
+                            await progress.mark_failed(test_ref.series_slug, test_ref.test_id, "retry failed")
+                            print(f"  [retry-{worker_id}] ❌ retry failed: {test_ref.test_id}")
+                    except Exception as e:
+                        async with retry_completion_lock:
+                            retry_failed += 1
+                        await progress.mark_failed(test_ref.series_slug, test_ref.test_id, f"retry exception: {e}")
+                        print(f"  [retry-{worker_id}] ❌ retry exception: {e}")
+                    finally:
+                        retry_q.task_done()
+                    await asyncio.sleep(0.5 + random.uniform(0, 0.5))
+                await w.close()
+
+            # Use fewer workers for retry (to avoid more rate limiting)
+            retry_workers_count = max(1, min(workers, 3))
+            retry_tasks = [asyncio.create_task(retry_worker_loop(i + 1)) for i in range(retry_workers_count)]
+            await asyncio.gather(*retry_tasks)
+            print(f"\n  Retry phase done: {retry_completed} recovered, {retry_failed} still failed")
+            completed += retry_completed
+            failed = failed - retry_completed + retry_failed  # adjust counts
 
         await browser.close()
 
@@ -2333,6 +2474,23 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
             print(f"  ⚠️ Index generation failed: {result.stderr[:300]}")
     except Exception as e:
         print(f"  ⚠️ Index generation skipped: {e}")
+
+    # Generate chapter-wise database (by year/exam/subject/concept)
+    # This is a separate copy organized for AI analysis
+    print(f"\n=== Generating chapter-wise database ===")
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["python3", os.path.join(os.path.dirname(__file__), "build_database.py"),
+             "--output-dir", output_dir],
+            capture_output=True, text=True, timeout=120
+        )
+        if result.returncode == 0:
+            print(result.stdout[-500:])
+        else:
+            print(f"  ⚠️ Database generation failed: {result.stderr[:300]}")
+    except Exception as e:
+        print(f"  ⚠️ Database generation skipped: {e}")
 
     # Summary
     elapsed_min = (time.time() - start_time) / 60 if 'start_time' in dir() else 0
