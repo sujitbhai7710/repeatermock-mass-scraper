@@ -1,10 +1,10 @@
-name: Scrape RepeaterMock (Matrix)
+name: Scrape RepeaterMock (Full Matrix)
 
 on:
   workflow_dispatch:
     inputs:
       max_tests_per_job:
-        description: 'Max tests per job (empty = unlimited)'
+        description: 'Max tests per job (empty = unlimited, scrapes ALL free tests)'
         required: false
         default: ''
   schedule:
@@ -14,22 +14,20 @@ permissions:
   contents: write
   actions: read
 
-# Don't cancel other matrix jobs when one fails
 concurrency:
-  group: scrape-matrix
+  group: scrape-full-matrix
   cancel-in-progress: false
 
 jobs:
-  # Matrix job — one per series/section group
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 335
     strategy:
       fail-fast: false
-      max-parallel: 15  # Run up to 15 jobs in parallel (each gets own IP)
+      max-parallel: 20  # Run up to 20 jobs in parallel (GitHub free tier limit)
       matrix:
         include:
-          # PYP series (2000+ free tests each — 1 job each, 4 workers)
+          # === SSC PYP Series (2000+ free tests each) ===
           - job_name: "Maths-PYP"
             series: "https://repeatermock.com/tb/test-series/ssc-maths-previous-year-questions"
             workers: "4"
@@ -42,25 +40,62 @@ jobs:
           - job_name: "GK-PYP"
             series: "https://repeatermock.com/tb/test-series/ssc-gk-previous-year-questions"
             workers: "4"
-          # Main series (1000+ free tests — 1 job each, 4 workers)
-          - job_name: "SSC-CGL"
+          # === SSC Main Series (2026) ===
+          - job_name: "SSC-CGL-2026"
             series: "https://repeatermock.com/tb/test-series/ssc-cgl"
             workers: "4"
-          - job_name: "SSC-CHSL"
+          - job_name: "SSC-CHSL-2026"
             series: "https://repeatermock.com/tb/test-series/ssc-chsl"
             workers: "4"
-          - job_name: "SSC-GD-Part1"
+          - job_name: "SSC-MTS-2026"
+            series: "https://repeatermock.com/tb/test-series/ssc-mts"
+            workers: "4"
+          - job_name: "SSC-GD-2026"
             series: "https://repeatermock.com/tb/test-series/ssc-gd-constable"
             workers: "4"
+          - job_name: "SSC-CPO-2026"
+            series: "https://repeatermock.com/tb/test-series/ssc-cpo"
+            workers: "4"
+          - job_name: "SSC-Steno-2026"
+            series: "https://repeatermock.com/tb/test-series/ssc-stenographer"
+            workers: "4"
+          - job_name: "SSC-SelPost-2026"
+            series: "https://repeatermock.com/tb/test-series/ssc-selection-post"
+            workers: "4"
+          # === SSC Previous Year Series (2025) ===
+          - job_name: "SSC-CHSL-2025"
+            series: "https://repeatermock.com/tb/test-series/ssc-chsl-previous"
+            workers: "4"
+          - job_name: "SSC-CPO-2025"
+            series: "https://repeatermock.com/tb/test-series/ssc-cpo-previous"
+            workers: "4"
+          - job_name: "SSC-MTS-2025"
+            series: "https://repeatermock.com/tb/test-series/ssc-mts-previous"
+            workers: "4"
+          # === RRB Series ===
           - job_name: "RRB-Group-D"
             series: "https://repeatermock.com/tb/test-series/rrb-group-d"
             workers: "4"
-          # Smaller series (grouped — 1 job, 4 workers)
-          - job_name: "Small-Series"
-            series: "https://repeatermock.com/tb/test-series/ssc-mts https://repeatermock.com/tb/test-series/ssc-cpo https://repeatermock.com/tb/test-series/ssc-selection-post https://repeatermock.com/tb/test-series/ssc-stenographer"
+          - job_name: "RRB-NTPC-UG"
+            series: "https://repeatermock.com/tb/test-series/rrb-ntpc-ug"
             workers: "4"
-          - job_name: "RRB-Small"
-            series: "https://repeatermock.com/tb/test-series/rrb-gk-previous-year-questions https://repeatermock.com/tb/test-series/rrb-general-science-previous-year-questions"
+          - job_name: "RRB-NTPC-Grad"
+            series: "https://repeatermock.com/tb/test-series/rrb-ntpc"
+            workers: "4"
+          - job_name: "RRB-ALP-2026"
+            series: "https://repeatermock.com/tb/test-series/rrb-alp"
+            workers: "4"
+          - job_name: "RRB-Tech-2026"
+            series: "https://repeatermock.com/tb/test-series/rrb-technician"
+            workers: "4"
+          - job_name: "RRB-Tech-Prev"
+            series: "https://repeatermock.com/tb/test-series/rrb-technician-previous"
+            workers: "4"
+          - job_name: "RRB-ALP-Prev"
+            series: "https://repeatermock.com/tb/test-series/rrb-alp-previous"
+            workers: "4"
+          - job_name: "RRB-Tech-Gr1"
+            series: "https://repeatermock.com/tb/test-series/rrb-technician-grade-1"
             workers: "4"
 
     name: ${{ matrix.job_name }}
@@ -93,11 +128,10 @@ jobs:
           JOB_DIR="scraped_output/${{ matrix.job_name }}"
 
           python3 repeatermock_scraper.py \
-            --series-url ${{ matrix.series }} \
+            --series-url "${{ matrix.series }}" \
             --output-dir "$JOB_DIR" \
             --workers ${{ matrix.workers }} \
             --max-runtime 320 \
-            --resume \
             $MAX_TESTS_ARG || true
 
       - name: Commit ${{ matrix.job_name }} results
@@ -107,13 +141,12 @@ jobs:
           JOB_DIR="scraped_output/${{ matrix.job_name }}"
           if [ -d "$JOB_DIR" ]; then
             git add "$JOB_DIR/" -f
-            git commit -m "chore(scrape): ${{ matrix.job_name }} run $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "Nothing to commit"
+            git commit -m "scrape: ${{ matrix.job_name }} $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "Nothing to commit"
             git pull --rebase origin main || true
             git push origin HEAD || echo "Push failed (will retry)"
-            # Retry push after brief wait
-            sleep 5
+            sleep 3
             git pull --rebase origin main || true
-            git push origin HEAD || echo "Push failed again"
+            git push origin HEAD || echo "Push failed"
           fi
 
   # Merge job — runs AFTER all scrape jobs complete
@@ -137,7 +170,23 @@ jobs:
 
       - name: Generate combined index + database
         run: |
-          # Generate index from all job outputs
+          # Merge all job directories into ai_export/ and html_export/ at top level
+          for dir in scraped_output/*/; do
+            job=$(basename "$dir")
+            if [ "$job" != "database" ] && [ "$job" != "html_export" ] && [ "$job" != "ai_export" ]; then
+              # Copy ai_export files
+              if [ -d "$dir/ai_export" ]; then
+                mkdir -p scraped_output/ai_export
+                cp -r "$dir/ai_export/"* scraped_output/ai_export/ 2>/dev/null || true
+              fi
+              # Copy html_export files
+              if [ -d "$dir/html_export" ]; then
+                mkdir -p scraped_output/html_export
+                cp -r "$dir/html_export/"* scraped_output/html_export/ 2>/dev/null || true
+              fi
+            fi
+          done
+          # Generate index from all ai_export files
           python3 generate_index.py --output-dir scraped_output || true
           # Generate chapter-wise database
           python3 build_database.py --output-dir scraped_output || true
@@ -147,6 +196,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add scraped_output/ -f
-          git commit -m "chore(merge): combined index + database $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "Nothing to commit"
+          git commit -m "merge: combined index + database $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "Nothing to commit"
           git pull --rebase origin main || true
           git push origin HEAD
