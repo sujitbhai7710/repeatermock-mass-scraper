@@ -1,0 +1,152 @@
+name: Scrape RepeaterMock (Matrix)
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_tests_per_job:
+        description: 'Max tests per job (empty = unlimited)'
+        required: false
+        default: ''
+  schedule:
+    - cron: '0 0,6,12,18 * * *'
+
+permissions:
+  contents: write
+  actions: read
+
+# Don't cancel other matrix jobs when one fails
+concurrency:
+  group: scrape-matrix
+  cancel-in-progress: false
+
+jobs:
+  # Matrix job — one per series/section group
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 335
+    strategy:
+      fail-fast: false
+      max-parallel: 15  # Run up to 15 jobs in parallel (each gets own IP)
+      matrix:
+        include:
+          # PYP series (2000+ free tests each — 1 job each, 4 workers)
+          - job_name: "Maths-PYP"
+            series: "https://repeatermock.com/tb/test-series/ssc-maths-previous-year-questions"
+            workers: "4"
+          - job_name: "Reasoning-PYP"
+            series: "https://repeatermock.com/tb/test-series/ssc-reasoning-previous-year-questions"
+            workers: "4"
+          - job_name: "English-PYP"
+            series: "https://repeatermock.com/tb/test-series/ssc-english-previous-year-questions"
+            workers: "4"
+          - job_name: "GK-PYP"
+            series: "https://repeatermock.com/tb/test-series/ssc-gk-previous-year-questions"
+            workers: "4"
+          # Main series (1000+ free tests — 1 job each, 4 workers)
+          - job_name: "SSC-CGL"
+            series: "https://repeatermock.com/tb/test-series/ssc-cgl"
+            workers: "4"
+          - job_name: "SSC-CHSL"
+            series: "https://repeatermock.com/tb/test-series/ssc-chsl"
+            workers: "4"
+          - job_name: "SSC-GD-Part1"
+            series: "https://repeatermock.com/tb/test-series/ssc-gd-constable"
+            workers: "4"
+          - job_name: "RRB-Group-D"
+            series: "https://repeatermock.com/tb/test-series/rrb-group-d"
+            workers: "4"
+          # Smaller series (grouped — 1 job, 4 workers)
+          - job_name: "Small-Series"
+            series: "https://repeatermock.com/tb/test-series/ssc-mts https://repeatermock.com/tb/test-series/ssc-cpo https://repeatermock.com/tb/test-series/ssc-selection-post https://repeatermock.com/tb/test-series/ssc-stenographer"
+            workers: "4"
+          - job_name: "RRB-Small"
+            series: "https://repeatermock.com/tb/test-series/rrb-gk-previous-year-questions https://repeatermock.com/tb/test-series/rrb-general-science-previous-year-questions"
+            workers: "4"
+
+    name: ${{ matrix.job_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: |
+          pip install playwright
+          playwright install chromium --with-deps
+
+      - name: Run scraper for ${{ matrix.job_name }}
+        env:
+          PYTHONUNBUFFERED: "1"
+          PYTHONIOENCODING: "utf-8"
+        run: |
+          MAX_TESTS_ARG=""
+          if [ -n "${{ github.event.inputs.max_tests_per_job }}" ]; then
+            MAX_TESTS_ARG="--stop-after ${{ github.event.inputs.max_tests_per_job }}"
+          fi
+
+          # Each job writes to its OWN directory — no overlap, no git race
+          JOB_DIR="scraped_output/${{ matrix.job_name }}"
+
+          python3 repeatermock_scraper.py \
+            --series-url ${{ matrix.series }} \
+            --output-dir "$JOB_DIR" \
+            --workers ${{ matrix.workers }} \
+            --max-runtime 320 \
+            --resume \
+            $MAX_TESTS_ARG || true
+
+      - name: Commit ${{ matrix.job_name }} results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          JOB_DIR="scraped_output/${{ matrix.job_name }}"
+          if [ -d "$JOB_DIR" ]; then
+            git add "$JOB_DIR/" -f
+            git commit -m "chore(scrape): ${{ matrix.job_name }} run $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "Nothing to commit"
+            git pull --rebase origin main || true
+            git push origin HEAD || echo "Push failed (will retry)"
+            # Retry push after brief wait
+            sleep 5
+            git pull --rebase origin main || true
+            git push origin HEAD || echo "Push failed again"
+          fi
+
+  # Merge job — runs AFTER all scrape jobs complete
+  merge:
+    needs: scrape
+    runs-on: ubuntu-latest
+    if: always()
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: pip install playwright
+
+      - name: Generate combined index + database
+        run: |
+          # Generate index from all job outputs
+          python3 generate_index.py --output-dir scraped_output || true
+          # Generate chapter-wise database
+          python3 build_database.py --output-dir scraped_output || true
+
+      - name: Commit merged results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scraped_output/ -f
+          git commit -m "chore(merge): combined index + database $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "Nothing to commit"
+          git pull --rebase origin main || true
+          git push origin HEAD
