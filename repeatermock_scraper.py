@@ -657,6 +657,13 @@ class Worker:
         # from the test listing API (test_ref.duration) as fallback
         if not test_data.duration_min and test_ref.duration:
             test_data.duration_min = test_ref.duration
+        # If still no duration, estimate from question count:
+        # ~36 seconds per question (25 Q = 15 min, 50 Q = 30 min, 100 Q = 60 min)
+        # This matches RepeaterMock's typical PYST timing for lighter use
+        if not test_data.duration_min:
+            total_q = sum(len(s.questions) for s in test_data.sections)
+            if total_q > 0:
+                test_data.duration_min = max(5, round(total_q * 0.6))  # 0.6 min per Q, min 5 min
         # Also use total_mark from test_ref as fallback for max_marks
         if not test_data.max_marks and test_ref.total_mark:
             test_data.max_marks = test_ref.total_mark
@@ -1555,6 +1562,210 @@ def detect_subject(series_slug: str, test_title: str = "") -> str:
     return "general"
 
 
+# Tag normalization map — converts RepeaterMock's verbose tag names to short labels
+# that the user wants (e.g. "Synonyms or Antonyms" → "Synonym" or "Antonym" based on question text)
+TAG_NORMALIZATION = {
+    # English tags
+    "synonyms or antonyms": None,  # needs further analysis (synonym vs antonym)
+    "spellings": "Spelling",
+    "spelling": "Spelling",
+    "phrase or idiom meaning": "Idioms",
+    "idioms and phrases": "Idioms",
+    "idioms": "Idioms",
+    "idiom": "Idioms",
+    "phrase replacement": "Sentence Improvement",
+    "phrase substitution": "Sentence Improvement",
+    "one word substitution": "OWS",
+    "one-word substitution": "OWS",
+    "one word substitute": "OWS",
+    "phrasal verbs": "Phrasal Verbs",
+    "fill in the blanks": "Fill in the Blanks",
+    "fill in the blank": "Fill in the Blanks",
+    "cloze test": "Cloze Test",
+    "error spotting": "Error Detection",
+    "error detection": "Error Detection",
+    "sentence improvement": "Sentence Improvement",
+    "sentence correction": "Sentence Improvement",
+    "active/passive voice": "Voice",
+    "voice": "Voice",
+    "direct/indirect speech": "Narration",
+    "narration": "Narration",
+    "direct/indirect": "Narration",
+    "reading comprehension": "Reading Comprehension",
+    "comprehension": "Reading Comprehension",
+    "para jumbles": "Para Jumbles",
+    "sentence rearrangement": "Para Jumbles",
+    "sentence ordering": "Para Jumbles",
+    "homophones": "Homophones",
+    "homonyms": "Homophones",
+    "parts of speech": "Grammar",
+    "vocabulary": None,  # too generic — needs further analysis
+    "grammar": "Grammar",
+    "verbal ability": None,  # too generic — needs further analysis
+    "sentence": None,  # too generic — needs further analysis
+    # Reasoning tags
+    "arrangement and pattern": "Arrangement and Pattern",
+    "series": "Series",
+    "analogy": "Analogy",
+    "classification": "Classification",
+    "coding decoding": "Coding-Decoding",
+    "coding-decoding": "Coding-Decoding",
+    "blood relations": "Blood Relations",
+    "direction sense": "Direction Sense",
+    "ranking": "Ranking/Order",
+    "order and ranking": "Ranking/Order",
+    "puzzle": "Puzzle",
+    "syllogism": "Syllogism",
+    "venn diagram": "Venn Diagram",
+    "mirror image": "Mirror/Water Image",
+    "water image": "Mirror/Water Image",
+    "paper folding and cutting": "Paper Folding/Cutting",
+    "calendar": "Calendar",
+    "clock": "Clock",
+    "alphabet or word test": "Alphabet/Word Test",
+    "alphabet test": "Alphabet/Word Test",
+    "word test": "Alphabet/Word Test",
+    "similarity and differences": "Similarity and Differences",
+    "figure counting": "Figure Counting",
+    "embedded figures": "Embedded Figures",
+    "missing number": "Series",
+    "non verbal reasoning": "Non Verbal Reasoning",
+    "logical puzzle": "Puzzle",
+    "quant based puzzle": "Puzzle",
+    "number based": "Number System",
+    "letter based": "Alphabet/Word Test",
+    "letter and number based": "Alphabet/Word Test",
+    "sequence": "Series",
+    "logical venn diagram": "Venn Diagram",
+    "counting figures": "Figure Counting",
+    "coding and decoding by letter shifting": "Coding-Decoding",
+    "general knowledge based": "General Knowledge",
+    # Maths tags
+    "profit and loss": "Profit & Loss",
+    "profit & loss": "Profit & Loss",
+    "simple interest": "Simple Interest",
+    "compound interest": "Compound Interest",
+    "interest": None,  # could be SI or CI — needs further analysis
+    "percentage": "Percentage",
+    "ratio and proportion": "Ratio & Proportion",
+    "ratio & proportion": "Ratio & Proportion",
+    "average": "Average",
+    "time and work": "Time & Work",
+    "time & work": "Time & Work",
+    "time speed distance": "Time, Speed & Distance",
+    "boats and streams": "Boats & Streams",
+    "simplification": "Simplification",
+    "number system": "Number System",
+    "geometry": "Geometry",
+    "trigonometry": "Trigonometry",
+    "mensuration": "Mensuration",
+    "algebra": "Algebra",
+    "tabulation": "Data Interpretation",
+    "data interpretation": "Data Interpretation",
+    "partnership": "Partnership",
+    "ages": "Ages",
+    "pipes and cisterns": "Pipes & Cisterns",
+    "permutation and combination": "Permutation & Combination",
+    "probability": "Probability",
+    "statistics": "Statistics",
+    # GK tags
+    "basics of constitution": "Polity",
+    "constitution": "Polity",
+    "central government": "Polity",
+    "national movement (1885 - 1919)": "History",
+    "national movement": "History",
+    "human body": "Biology",
+    "zoology": "Biology",
+    "botany": "Biology",
+    "geography": "Geography",
+    "history": "History",
+    "economics": "Economics",
+    "science": None,  # too generic
+    "chemistry": "Chemistry",
+    "physics": "Physics",
+    "biology": "Biology",
+}
+
+
+def _normalize_tags(tags: List[str], text: str) -> str:
+    """Normalize RepeaterMock tags to short, specific labels.
+    For generic tags like "Synonyms or Antonyms", further analyzes the question text
+    to determine the specific type (Synonym vs Antonym)."""
+    result = []
+    for tag in tags:
+        tag_lower = tag.lower().strip()
+        normalized = TAG_NORMALIZATION.get(tag_lower)
+        if normalized:
+            result.append(normalized)
+        elif normalized is None:
+            # Tag needs further analysis based on question text
+            if tag_lower in ("synonyms or antonyms", "synonym and antonym"):
+                if "antonym" in text or "opposite" in text:
+                    result.append("Antonym")
+                elif "synonym" in text or "same meaning" in text:
+                    result.append("Synonym")
+                else:
+                    result.append("Synonym/Antonym")
+            elif tag_lower == "vocabulary":
+                # Check for specific vocabulary subtypes
+                if "synonym" in text:
+                    result.append("Synonym")
+                elif "antonym" in text or "opposite" in text:
+                    result.append("Antonym")
+                elif "idiom" in text or "phrase" in text:
+                    result.append("Idioms")
+                elif "spelling" in text or "misspelt" in text:
+                    result.append("Spelling")
+                elif "one word" in text or "substitute" in text:
+                    result.append("OWS")
+                else:
+                    result.append("Vocabulary")
+            elif tag_lower in ("verbal ability", "sentence"):
+                # Check for specific grammar patterns
+                if "error" in text or "grammatically" in text:
+                    result.append("Error Detection")
+                elif "fill" in text or "____" in text or "blank" in text:
+                    result.append("Fill in the Blanks")
+                elif "improve" in text or "rewrite" in text:
+                    result.append("Sentence Improvement")
+                elif "rearrange" in text or "jumble" in text:
+                    result.append("Para Jumbles")
+                elif "voice" in text:
+                    result.append("Voice")
+                elif "narration" in text or "direct" in text or "indirect" in text:
+                    result.append("Narration")
+                else:
+                    result.append(tag)  # keep original if can't determine
+            elif tag_lower == "interest":
+                if "compound" in text:
+                    result.append("Compound Interest")
+                elif "simple" in text:
+                    result.append("Simple Interest")
+                else:
+                    result.append("Interest")
+            elif tag_lower == "science":
+                if "biology" in text or "cell" in text or "plant" in text or "animal" in text:
+                    result.append("Biology")
+                elif "chemistry" in text or "chemical" in text or "acid" in text:
+                    result.append("Chemistry")
+                elif "physics" in text or "force" in text or "energy" in text:
+                    result.append("Physics")
+                else:
+                    result.append("Science")
+            else:
+                # Unknown tag — keep original
+                result.append(tag)
+    
+    # Deduplicate while preserving order
+    seen = set()
+    deduped = []
+    for r in result:
+        if r not in seen:
+            seen.add(r)
+            deduped.append(r)
+    return ", ".join(deduped) if deduped else ", ".join(tags)
+
+
 def detect_concept(subject: str, tags: List[str], question_text: str, options: List[dict]) -> Tuple[str, str]:
     """Detect the concept/category for a question with 100%-accuracy rules.
     Returns (concept, confidence) where confidence is "high", "medium", or "unidentified".
@@ -1572,55 +1783,63 @@ def detect_concept(subject: str, tags: List[str], question_text: str, options: L
     3. "Unidentified" → if no 100%-certain match (skip guessing)
     """
     text = (question_text + " " + " ".join(opt.get("value", "") for opt in options)).lower()
+    # Strip markdown formatting markers (**bold**, __underline__, *italic*) so they
+    # don't interfere with pattern matching (e.g. "**misspelt **word" → "misspelt word")
+    text = re.sub(r'\*\*([^*]*)\*\*', r'\1', text)
+    text = re.sub(r'__([^_]*)__', r'\1', text)
+    text = re.sub(r'\*([^*]*)\*', r'\1', text)
+    text = re.sub(r'_{2,}', '____', text)  # normalize blanks to ____
     
-    # 1. Use tags if available — these are from RepeaterMock directly (100% accurate)
+    # 1. Use RepeaterMock tags if available — normalize them to short labels
+    # (RepeaterMock uses names like "Synonyms or Antonyms", "Spellings", "Phrase or Idiom Meaning"
+    #  but the user wants short specific labels like "Synonym", "Antonym", "Spelling", "Idioms", "OWS")
     if tags:
-        return ", ".join(tags), "high"
+        normalized = _normalize_tags(tags, text)
+        return normalized, "high"
     
     # 2. Explicit question-type detection (100% accuracy — only when phrasing is unambiguous)
     # Each pattern requires the question to literally state the type
+    # Labels are kept SHORT and SPECIFIC (e.g. "Synonym" not "Vocabulary: Synonyms")
+    # Patterns are ordered: most specific first (e.g. "Trigonometry" before "Simplification")
     explicit_patterns = {
         "english": [
             # Vocabulary — must explicitly say "synonym", "antonym", etc.
-            (r"\bsynonym\b.*\bof\b", "Vocabulary: Synonyms"),
-            (r"\bantonym\b.*\bof\b", "Vocabulary: Antonyms"),
-            (r"most appropriate synonym", "Vocabulary: Synonyms"),
-            (r"most appropriate antonym", "Vocabulary: Antonyms"),
-            (r"choose the correct meaning of idiom", "Idioms & Phrases"),
-            (r"meaning of (the )?idiom", "Idioms & Phrases"),
-            (r"meaning of (the )?phrase", "Idioms & Phrases"),
-            (r"idiom.* meaning", "Idioms & Phrases"),
-            (r"misspelt word", "Spelling"),
-            (r"incorrectly spelt", "Spelling"),
-            (r"correct spelling", "Spelling"),
-            (r"spelling", "Spelling"),
-            (r"one word substitution", "One Word Substitution"),
-            (r"one-word substitution", "One Word Substitution"),
+            (r"\bsynonym\b.*\bof\b", "Synonym"),
+            (r"\bantonym\b.*\bof\b", "Antonym"),
+            (r"most appropriate synonym", "Synonym"),
+            (r"most appropriate antonym", "Antonym"),
+            (r"choose the correct meaning of idiom", "Idioms"),
+            (r"meaning of (the )?idiom", "Idioms"),
+            (r"meaning of (the )?phrase", "Idioms"),
+            (r"idiom.* meaning", "Idioms"),
+            (r"misspelt\s*word|incorrectly spelt|correct spelling|spelling", "Spelling"),
+            (r"one word substitution|one-word substitution|one word substitute|one-word substitute", "OWS"),
             (r"phrasal verb", "Phrasal Verbs"),
             # Grammar — must explicitly mention the grammar rule
             (r"active voice.*passive voice|passive voice.*active voice|change the voice", "Voice"),
             (r"direct speech.*indirect speech|indirect speech.*direct speech|reported speech", "Narration"),
             (r"direct.*indirect|indirect.*direct", "Narration"),
-            (r"error.*sentence|sentence.*error|grammatically incorrect|find the error", "Error Spotting"),
-            (r"fill in the blank", "Fill in the Blanks"),
-            (r"fill.*blank", "Fill in the Blanks"),
+            (r"error.*sentence|sentence.*error|grammatically incorrect|find the error|identify.*error|error in", "Error Detection"),
+            (r"fill in the blank|fill.*blank", "Fill in the Blanks"),
+            (r"_{2,}|select the correct option.*_{2,}", "Fill in the Blanks"),
             (r"read the passage|comprehension passage", "Reading Comprehension"),
             (r"cloze test", "Cloze Test"),
             (r"improve.* sentence|sentence improvement|rewrite.* sentence", "Sentence Improvement"),
             (r"rearrange.* sentence|jumble|correct sequence.* sentence|order.* sentence", "Para Jumbles"),
-            (r"parts of speech|noun|pronoun|verb|adverb|adjective|preposition|conjunction", "Grammar: Parts of Speech"),
-            (r"identify.* tense|tense of", "Grammar: Tenses"),
-            (r"identify.* clause|clause", "Grammar: Clauses"),
+            (r"parts of speech|noun|pronoun|verb|adverb|adjective|preposition|conjunction", "Grammar"),
+            (r"identify.* tense|tense of", "Grammar"),
+            (r"identify.* clause|clause", "Grammar"),
         ],
         "reasoning": [
-            # Each pattern requires explicit question-type phrasing
             (r"complete the series|next.*in.*series|series.*question mark|replace.*question mark.*series", "Series"),
-            (r"is to.*as.*is to|analogy", "Analogy"),
-            (r"odd one|doesn't belong|different.*group|find.*different", "Classification"),
-            (r"coded as|code for|decode.* following|stands for", "Coding-Decoding"),
+            # Analogy — check BEFORE Direction Sense (since "same relationship" is analogy)
+            (r"same relationship|share.*same relationship|is related to|is to.*as.*is to|analogy", "Analogy"),
+            (r"odd one|doesn't belong|different.*group|find.*different|three are alike|alike in some manner", "Classification"),
+            (r"in a certain code|code language|coded as|code for|decode.* following|stands for|written as", "Coding-Decoding"),
             (r"mother.*son|father.*daughter|brother.*sister|how.*related|blood relation", "Blood Relations"),
             (r"direction|north.*south|east.*west|turn.*left|turn.*right", "Direction Sense"),
-            (r"rank.*from|position.*from|order.* arrange", "Ranking/Order"),
+            (r"rank.*from|position.*from|order.* arrange|arrange.*words.*logical|meaningful order", "Ranking/Order"),
+            (r"dice|three different positions.*dice", "Puzzle"),
             (r"puzzle|sitting arrangement", "Puzzle"),
             (r"syllogism|conclusion.* statement|all.* some.* no", "Syllogism"),
             (r"venn diagram", "Venn Diagram"),
@@ -1629,16 +1848,23 @@ def detect_concept(subject: str, tags: List[str], question_text: str, options: L
             (r"calendar|leap year|day.* week", "Calendar"),
             (r"clock.*hour|clock.*minute|angle.*clock", "Clock"),
             (r"dictionary order|alphabet.*order|word.* dictionary|letter.* dictionary", "Alphabet/Word Test"),
-            (r"arrangement.*word|pattern.* word|sequence.* word", "Arrangement and Pattern"),
+            (r"study.* pattern|arrangement.*word|pattern.* word|sequence.* word|given pattern", "Arrangement and Pattern"),
             (r"address.*same|match.* address|exactly.* same.* address", "Similarity and Differences"),
             (r"how many triangle|count.* triangle|count.* figure", "Figure Counting"),
             (r"embedded figure|embedded.* image", "Embedded Figures"),
         ],
         "maths": [
-            # Each pattern requires explicit mention of the topic
-            (r"profit.* loss|loss.* profit|discount.* marked|marked price|cost price|selling price|cp.*sp", "Profit & Loss"),
+            # Trigonometry MUST be checked BEFORE Simplification (since "Simplify sec²α" is trig)
+            (r"\\sec|\\sin|\\cos|\\tan|\\cosec|\\cot|\bsec\b.*\balpha\b|\bsin\b.*angle|\bcos\b.*angle|trigonometr|angle of elevation|angle of depression", "Trigonometry"),
+            # Data Interpretation (tables/graphs) — check BEFORE other patterns
+            (r"table shows|table.* year|data.* table|tabulation|study the table|bar graph|bar chart|pie chart|line graph", "Data Interpretation"),
+            # Time & Work — check BEFORE Percentage (since "25% more efficient" is about work)
+            (r"complete.*work|can complete|work.*days|men.*complete|more efficient|less efficient|efficiency", "Time & Work"),
+            # Compound Interest — check BEFORE Simple Interest (since "amounts to" implies CI)
+            (r"compound interest|compounded.*annually|compounded.*yearly|amounts to.*years?.*rate|sum.*amounts to", "Compound Interest"),
+            # Specific topics
+            (r"profit.* loss|loss.* profit|discount.* marked|marked price|cost price|selling price|cp.*sp|better offer", "Profit & Loss"),
             (r"simple interest|principal.*rate.*time", "Simple Interest"),
-            (r"compound interest|compounded.*annually|compounded.*yearly", "Compound Interest"),
             (r"percentage|%\s|percent of", "Percentage"),
             (r"ratio.* proportion|proportion.* ratio", "Ratio & Proportion"),
             (r"average.* number|average.* age|average.* marks|find.* average", "Average"),
@@ -1647,17 +1873,14 @@ def detect_concept(subject: str, tags: List[str], question_text: str, options: L
             (r"boat.* stream|upstream|downstream|speed of boat", "Boats & Streams"),
             (r"simplify|simplification|value of expression", "Simplification"),
             (r"hcf|lcm|divisible|remainder|prime factor|greatest.*divisor|least.*multiple", "Number System"),
-            (r"triangle|abc.* angle|isosceles|equilateral|right.*angle.*triangle", "Geometry: Triangles"),
-            (r"circle.* radius|radius.* circle|diameter|chord.* tangent|tangent.* circle", "Geometry: Circles"),
-            (r"quadrilateral|parallelogram|trapezium|rhombus", "Geometry: Quadrilaterals"),
-            (r"parallel lines.* transversal|transversal.* angle", "Geometry: Lines & Angles"),
-            (r"sin |cos |tan |sec |cosec |cot |trigonometr|angle of elevation|angle of depression", "Trigonometry"),
+            # Geometry — check for triangle/circle/quadrilateral keywords
+            (r"triangle|abc.* angle|isosceles|equilateral|right.*angle.*triangle|cyclic quadrilateral|Δ abc|δ abc|similar.*triangle", "Geometry"),
+            (r"circle.* radius|radius.* circle|diameter|chord.* tangent|tangent.* circle", "Geometry"),
+            (r"quadrilateral|parallelogram|trapezium|rhombus", "Geometry"),
+            (r"parallel lines.* transversal|transversal.* angle", "Geometry"),
             (r"area of|perimeter of|volume of|surface area|curved surface|total surface", "Mensuration"),
-            (r"algebra|equation|polynomial|solve.* x|value of x", "Algebra"),
-            (r"table.* year|data.* table|tabulation|study the table", "Data Interpretation: Table"),
-            (r"bar graph|bar chart", "Data Interpretation: Bar"),
-            (r"pie chart", "Data Interpretation: Pie"),
-            (r"line graph", "Data Interpretation: Line"),
+            # Algebra — check for variables (x, y) and equations
+            (r"\b[0-9]*x.*[0-9]*y\b|algebra|equation|polynomial|solve.* x|value of.*x|value of \(", "Algebra"),
             (r"partnership|invested.* business|profit.* share.* partner", "Partnership"),
             (r"age.* year|years? old|ago.* will be|will be.* years?", "Ages"),
             (r"pipe.* cistern|tank.* fill|tank.* empty|tap.* fill", "Pipes & Cisterns"),
@@ -1667,24 +1890,20 @@ def detect_concept(subject: str, tags: List[str], question_text: str, options: L
         ],
         "gk": [
             # GK questions are usually direct factual — categorize by topic keywords
-            (r"constitution|amendment|fundamental right|directive principle|article \d+", "Polity: Constitution"),
-            (r"parliament|president of india|prime minister|supreme court|high court|lok sabha|rajya sabha", "Polity: Government"),
-            (r"ancient india|indus valley|vedic|maurya|gupta dynasty", "History: Ancient"),
-            (r"medieval|delhi sultanate|mughal|akbar|babur|aurangzeb", "History: Medieval"),
-            (r"freedom struggle|independence.* 1947|revolt of 1857|gandhi|nehru|congress", "History: Modern"),
-            (r"mountain|river|climate|monsoon|plateau|plain", "Geography: Physical"),
-            (r"state.* capital|union territory|indian state", "Geography: Indian"),
-            (r"continent|ocean|country.* capital|world", "Geography: World"),
-            (r"gdp|inflation|reserve bank|budget|tax|economy|fiscal", "Economics"),
-            (r"biology|cell|plant|animal|human body|disease|vitamin|protein", "Science: Biology"),
-            (r"chemistry|chemical|acid|base|reaction|element|compound|metal", "Science: Chemistry"),
-            (r"physics|force|energy|motion|light|sound|electricity|gravity|magnet", "Science: Physics"),
-            (r"books? and authors?|who wrote|author of", "Static GK: Books & Authors"),
-            (r"awards?|honours?|nobel|padma|bharat ratna|arjuna", "Static GK: Awards"),
-            (r"sports?|cricket|football|olympic|commonwealth|world cup", "Static GK: Sports"),
-            (r"dance?|festival|folk dance", "Static GK: Dance & Festivals"),
-            (r"first in india|first in world", "Static GK: Firsts"),
-            (r"international organisation|united nations|world bank|imf|who.* unesco", "Static GK: International Orgs"),
+            (r"constitution|amendment|fundamental right|directive principle|article \d+|finance commission|writs?|supreme court|high court|lok sabha|rajya sabha|parliament|president of india|prime minister", "Polity"),
+            (r"ancient india|indus valley|vedic|maurya|gupta dynasty|medieval|delhi sultanate|mughal|akbar|babur|aurangzeb|freedom struggle|independence.* 1947|revolt of 1857|gandhi|nehru|congress|morley.*minto|reforms? \d{4}", "History"),
+            (r"mountain|river|climate|monsoon|plateau|plain|demographic transition|geography", "Geography"),
+            (r"state.* capital|union territory|indian state", "Geography"),
+            (r"continent|ocean|country.* capital|world", "Geography"),
+            (r"gdp|inflation|reserve bank|budget|tax|economy|fiscal|gresham.*law|economics?", "Economics"),
+            (r"biology|cell|plant|animal|human body|disease|vitamin|protein", "Biology"),
+            (r"chemistry|chemical|acid|base|reaction|element|compound|metal", "Chemistry"),
+            (r"physics|force|energy|motion|light|sound|electricity|gravity|magnet", "Physics"),
+            (r"books? and authors?|who wrote|author of", "Static GK"),
+            (r"awards?|honours?|nobel|padma|bharat ratna|arjuna", "Static GK"),
+            (r"sports?|cricket|football|olympic|commonwealth|world cup", "Static GK"),
+            (r"dance?|festival|folk dance", "Static GK"),
+            (r"first in india|first in world|international court of justice|international organisation|united nations|world bank|imf|who.* unesco", "Static GK"),
         ],
     }
     
@@ -1705,57 +1924,115 @@ def detect_concept(subject: str, tags: List[str], question_text: str, options: L
 def strip_html(text: str) -> str:
     """Convert HTML to AI-friendly plain text while preserving formatting markers.
     
-    Preserves:
+    Handles:
+    - Double-escaped HTML entities (e.g. &amp;deg; → &deg; → °)
+    - LaTeX math notation \(...\) → readable plain text (sec² α instead of \sec^2 \alpha)
     - <strong>/<b> → **bold** (markdown)
     - <em>/<i>/<u> → __underline__ (markdown)
-    - <p> → paragraph breaks
-    - <br> → newline
     - <sup> → ^{...} (superscript for math)
     - <sub> → _{...} (subscript for math)
     - Images → [IMAGE: url]
+    - HTML tables → tab-separated text
     
     Strips all other HTML tags but keeps the text content.
     """
     import html as html_mod
     if not text:
         return ""
-    # Decode HTML entities first
+    # Decode HTML entities TWICE (the data is often double-escaped:
+    # e.g. &amp;deg; → &deg; → °, &amp;nbsp; → &nbsp; → space)
     text = html_mod.unescape(text)
+    text = html_mod.unescape(text)
+    
+    # Convert LaTeX \(...\) math notation to readable plain text
+    # Common LaTeX commands → plain text equivalents
+    def latex_to_text(m):
+        latex = m.group(1)
+        # Remove \rm, \displaystyle etc.
+        latex = re.sub(r'\\rm\b', '', latex)
+        latex = re.sub(r'\\displaystyle\b', '', latex)
+        latex = re.sub(r'\\text\b', '', latex)
+        latex = re.sub(r'\\mathrm\b', '', latex)
+        # \frac{a}{b} → a/b
+        latex = re.sub(r'\\frac\{([^}]*)\}\{([^}]*)\}', r'(\1)/(\2)', latex)
+        # \left( → (, \right) → )
+        latex = latex.replace('\\left(', '(').replace('\\right)', ')')
+        latex = latex.replace('\\left[', '[').replace('\\right]', ']')
+        latex = latex.replace('\\left|', '|').replace('\\right|', '|')
+        # \sec → sec, \sin → sin, \cos → cos, \tan → tan, etc.
+        latex = re.sub(r'\\(sec|cosec|csc|sin|cos|tan|cot|log|ln|lim|sqrt|sum|prod|alpha|beta|gamma|theta|pi|infty|div|times|pm|mp|leq|geq|neq|approx|equiv|propto|angle|degree)\b', r'\1', latex)
+        # \alpha → alpha, \beta → beta, etc. (already handled above, but also standalone)
+        for greek in ['alpha','beta','gamma','delta','epsilon','theta','lambda','mu','pi','rho','sigma','phi','psi','omega']:
+            latex = re.sub(r'\\' + greek + r'\b', greek, latex)
+        # x^{2} → x² (convert simple superscripts to Unicode)
+        latex = re.sub(r'\^(\d)', lambda m: _superscript(m.group(1)), latex)
+        latex = re.sub(r'\^\{([^}]+)\}', lambda m: _superscript(m.group(1)), latex)
+        # _{2} → ₂ (subscripts)
+        latex = re.sub(r'_(\d)', lambda m: _subscript(m.group(1)), latex)
+        latex = re.sub(r'_\{([^}]+)\}', lambda m: _subscript(m.group(1)), latex)
+        # \, → space, \; → space, \! → '', \quad → space
+        latex = latex.replace('\\,', ' ').replace('\\;', ' ').replace('\\!', '').replace('\\quad', ' ')
+        latex = latex.replace('\\ ', ' ')
+        # \cdot → ·, \times → ×, \div → ÷, \pm → ±
+        latex = latex.replace('\\cdot', '·').replace('\\times', '×').replace('\\div', '÷').replace('\\pm', '±')
+        # Remove any remaining backslashes (e.g. leftover \alpha)
+        latex = re.sub(r'\\([a-zA-Z]+)', r'\1', latex)
+        # Remove \{ \} 
+        latex = latex.replace('\\{', '{').replace('\\}', '}')
+        return latex
+    
+    text = re.sub(r'\\\((.*?)\\\)', latex_to_text, text, flags=re.DOTALL)
+    text = re.sub(r'\\\[(.*?)\\\]', latex_to_text, text, flags=re.DOTALL)
+    
     # Convert formatting tags to markdown markers (before stripping all tags)
-    # Bold: <strong>, <b>
     text = re.sub(r'<strong[^>]*>(.*?)</strong>', r'**\1**', text, flags=re.DOTALL)
     text = re.sub(r'<b[^>]*>(.*?)</b>', r'**\1**', text, flags=re.DOTALL)
-    # Underline: <u> → __text__ (markdown underline)
     text = re.sub(r'<u[^>]*>(.*?)</u>', r'__\1__', text, flags=re.DOTALL)
-    # Italic: <em>, <i> → *text*
     text = re.sub(r'<em[^>]*>(.*?)</em>', r'*\1*', text, flags=re.DOTALL)
     text = re.sub(r'<i[^>]*>(.*?)</i>', r'*\1*', text, flags=re.DOTALL)
-    # Superscript: <sup> → ^{text} (for math)
-    text = re.sub(r'<sup[^>]*>(.*?)</sup>', r'^{\1}', text, flags=re.DOTALL)
-    # Subscript: <sub> → _{text} (for math)
-    text = re.sub(r'<sub[^>]*>(.*?)</sub>', r'_{\1}', text, flags=re.DOTALL)
-    # Images → [IMAGE: url]
+    text = re.sub(r'<sup[^>]*>(.*?)</sup>', lambda m: _superscript(m.group(1)), text, flags=re.DOTALL)
+    text = re.sub(r'<sub[^>]*>(.*?)</sub>', lambda m: _subscript(m.group(1)), text, flags=re.DOTALL)
+    
+    # Convert markdown-style ^{...} and _{...} to Unicode super/subscripts
+    # (these appear in the raw text as escaped notation like x^{3}, sin^{2})
+    # Only convert short numeric/letter sequences to avoid mangling other text
+    text = re.sub(r'\^\{([0-9]+)\}', lambda m: _superscript(m.group(1)), text)
+    text = re.sub(r'_\{([0-9]+)\}', lambda m: _subscript(m.group(1)), text)
+    # Also convert single-char ^2, ^3 etc.
+    text = re.sub(r'\^([0-9])(?![0-9])', lambda m: _superscript(m.group(1)), text)
+    
     text = re.sub(r'<img[^>]+src="([^"]+)"[^>]*/?>', r' [IMAGE: \1] ', text)
-    # Paragraph breaks
     text = re.sub(r'<p[^>]*>', '\n', text)
     text = re.sub(r'</p>', '\n', text)
-    # Line breaks
     text = re.sub(r'<br\s*/?>', '\n', text)
-    # List items
     text = re.sub(r'<li[^>]*>', '\n• ', text)
     text = re.sub(r'</li>', '', text)
-    # Table cells → tab-separated
     text = re.sub(r'<td[^>]*>', '\t', text)
     text = re.sub(r'</td>', '', text)
     text = re.sub(r'<tr[^>]*>', '\n', text)
     text = re.sub(r'</tr>', '', text)
+    text = re.sub(r'<th[^>]*>', '\t', text)
+    text = re.sub(r'</th>', '', text)
     # Strip all remaining HTML tags
     text = re.sub(r'<[^>]+>', '', text)
     # Normalize whitespace but preserve newlines
-    text = re.sub(r'[^\S\n]+', ' ', text)  # collapse non-newline whitespace
-    text = re.sub(r'\n{3,}', '\n\n', text)  # max 2 consecutive newlines
+    text = re.sub(r'[^\S\n]+', ' ', text)
+    text = re.sub(r'\n{3,}', '\n\n', text)
     text = text.strip()
     return text
+
+
+# Unicode superscript/subscript conversion tables (for math notation)
+_SUP_MAP = str.maketrans('0123456789+-=()n', '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿ')
+_SUB_MAP = str.maketrans('0123456789+-=()aeiourschklmnpstx', '₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎ₐₑᵢₒᵤᵣₛ꜀ₕₖₗₘₙₚₛₜₓ')
+
+def _superscript(s):
+    """Convert string to Unicode superscript where possible."""
+    return s.translate(_SUP_MAP)
+
+def _subscript(s):
+    """Convert string to Unicode subscript where possible."""
+    return s.translate(_SUB_MAP)
 
 
 def extract_images_from_html(html_text: str) -> List[dict]:
@@ -1844,10 +2121,9 @@ def render_ai_export(test: TestData, test_ref: TestRef) -> dict:
             # Include tags if any (raw from RepeaterMock)
             if q.tags:
                 q_export["tags"] = q.tags
-            # Include other languages if available (compact)
-            other_langs = {l: strip_html(q.langs[l].get("value", "")) for l in ["hn"] if l in q.langs and q.langs[l].get("value")}
-            if other_langs.get("hn"):
-                q_export["hindi"] = other_langs["hn"]
+            # NOTE: Hindi/other languages removed from AI JSON per user request.
+            # AI JSON now contains English-only content for minimal token usage.
+            # The interactive HTML still has all 24 languages via language tabs.
             
             export["questions"].append(q_export)
     
