@@ -1,6 +1,9 @@
 # RepeaterMock Mass Scraper v2
 
-Scrapes **ALL free tests** from any RepeaterMock test series — gets every question, correct answer, and full written solution — and renders each test as a **fully interactive mock-test HTML page** (countdown timer, question palette, Save & Next / Mark for Review / Clear Response, Submit → reveals all answers + solutions + score). Looks and works just like the real RepeaterMock website.
+Scrapes **ALL free tests** from any RepeaterMock test series — gets every question, correct answer, and full written solution — and renders each test as **two formats**:
+
+1. **Interactive mock-test HTML** (countdown timer, question palette, Save & Next / Mark for Review / Clear Response, Submit → reveals all answers + solutions + score). Looks and works just like the real RepeaterMock website.
+2. **AI-friendly JSON** — plain text only (HTML stripped), concept-categorized (e.g. "Profit & Loss", "Analogy", "Vocabulary"), short field names, minimal tokens. Organized by subject (english/reasoning/maths/gk).
 
 **No login required.** Free tests work as a guest (20 free attempts per test).
 
@@ -9,10 +12,15 @@ Scrapes **ALL free tests** from any RepeaterMock test series — gets every ques
 - **Parallel scraping**: configurable workers (default 10, up to 50). Each worker is an isolated browser context with its own cookie jar + Cloudflare clearance.
 - **Auto cookie refresh**: detects 401 responses AND network errors, automatically re-navigates to repeatermock.com to refresh Cloudflare clearance + cookies, then retries. Also refreshes proactively every 15 minutes.
 - **Resume capability**: saves progress to `progress.json` after every test. If you kill the terminal and restart, it picks up exactly where it left off — no duplicate scrapes.
-- **Nested folder structure**: `output_dir/series_slug/section_name/subsection_name/test_title.html` — organized exactly like the website's hierarchy.
+- **Nested folder structure**: `output_dir/{html_export,ai_export}/subject/series_slug/section_name/subsection_name/test.{html,json}` — organized by subject first, then series/section/subsection.
+- **Subject detection**: auto-detects English / Reasoning / Maths / GK / Science / Computer from series slug, sorts tests into subject folders.
+- **Concept categorization**: each question gets a `concept` field (e.g. "Profit & Loss", "Analogy", "Vocabulary", "Blood Relations") — uses RepeaterMock's tags first, falls back to keyword detection.
+- **AI-friendly JSON**: plain text (HTML stripped), short field names, omits empty fields, includes image URLs, includes solutions, minimal tokens for LLM consumption.
+- **Interactive mock-test HTML**: countdown timer, question palette, Save & Next / Mark for Review / Clear Response, Submit → answer reveal with correct options highlighted + solutions + score.
 - **Stop after N**: `--stop-after 50` stops after 50 tests total.
-- **Interactive mock-test UI**: each HTML file is a real interactive test — countdown timer (classic mode), question palette with color-coded statuses (Answered / Not Answered / Marked / Not Visited), Save & Next / Mark for Review & Next / Clear Response buttons, Submit Test → confirmation modal → answer reveal with correct options highlighted green + solution explanations + score.
+- **Max runtime**: `--max-runtime 340` stops gracefully after 340 minutes (for CI/GitHub Actions).
 - **$N reference resolution**: handles Next.js flight data `$N` references (both decimal AND hex IDs/lengths) — fixes the bug where ~26% of questions had "missing" solutions.
+- **GitHub Action included**: auto-runs every 6 hours, resumes from where it left off, commits results automatically.
 
 ## Quick start
 
@@ -40,58 +48,146 @@ python3 repeatermock_scraper.py \
   --series-url "https://repeatermock.com/tb/test-series/ssc-cgl" \
   --resume
 
+# Max runtime (for CI — stop after 340 min = 5h40m)
+python3 repeatermock_scraper.py \
+  --series-list-file series_list.txt \
+  --workers 10 --max-runtime 340 --resume
+
 # Custom output directory
 python3 repeatermock_scraper.py --series-url "..." --output-dir ./my-tests
 ```
 
+## GitHub Action (auto-scrape every 6 hours)
+
+This repo includes a GitHub Action (`.github/workflows/scrape.yml`) that:
+
+1. **Runs on schedule** every 6 hours (00:00, 06:00, 12:00, 18:00 UTC)
+2. **Can be triggered manually** from the Actions tab (with `max_tests` and `workers` inputs)
+3. **Auto-resumes** from where the last run left off (uses `--resume` flag)
+4. **Stops after 340 minutes** (5h40m — leaves 20 min buffer before GitHub's 6h hard limit)
+5. **Commits the scraped output** back to the repo automatically after each run
+6. **Skips if all tests are already scraped** (checks progress.json — if ≥20,000 tests scraped, assumes done)
+
+### To enable the GitHub Action:
+
+1. Fork or clone this repo to your GitHub account
+2. Go to **Settings → Actions → General** → allow GitHub Actions
+3. Go to **Actions tab** → "Scrape RepeaterMock Tests" workflow → "Enable"
+4. Either wait for the next scheduled run, or click "Run workflow" to trigger manually
+
+### To customize:
+
+- Edit `series_list.txt` to add/remove series URLs
+- Edit `.github/workflows/scrape.yml` to change the schedule, workers count, or max runtime
+- The workflow commits scraped files to `scraped_output/` in the repo
+
+## Output structure
+
+```
+output_dir/
+├── progress.json                          ← resume state (auto-saved after every test)
+├── html_export/                           ← interactive mock-test HTML files
+│   ├── english/
+│   │   └── ssc-english-previous-year-questions/
+│   │       └── SSC_GD_PYP/
+│   │           └── 2024/
+│   │               ├── PYST_1_..._6a1558a9ba3848bbf67fa98b.html
+│   │               └── ...
+│   ├── reasoning/
+│   │   └── ssc-reasoning-previous-year-questions/
+│   │       └── ...
+│   ├── maths/
+│   │   └── ssc-maths-previous-year-questions/
+│   │       └── ...
+│   └── gk/
+│       └── ssc-gk-previous-year-questions/
+│           └── ...
+└── ai_export/                             ← AI-friendly JSON files
+    ├── english/
+    │   └── ssc-english-previous-year-questions/
+    │       └── SSC_GD_PYP/
+    │           └── 2024/
+    │               ├── PYST_1_..._6a1558a9ba3848bbf67fa98b.json
+    │               └── ...
+    ├── reasoning/
+    │   └── ...
+    ├── maths/
+    │   └── ...
+    └── gk/
+        └── ...
+```
+
+## AI-friendly JSON format
+
+Each test is exported as a JSON file designed for LLM consumption:
+
+```json
+{
+  "test_id": "6a1558a9ba3848bbf67fa98b",
+  "title": "PYST 1: SSC CGL 2025 - English (Held On: 12 September 2025 Shift 1)",
+  "series_slug": "ssc-english-previous-year-questions",
+  "series_name": "SSC English PYP Mock Test Series (20k+ Questions)",
+  "section": "SSC GD PYST",
+  "subsection": "2024",
+  "subject": "english",
+  "duration_min": 60,
+  "max_marks": 100,
+  "question_count": 25,
+  "languages": ["English", "Hindi"],
+  "scraped_at": "2026-09-03T04:30:00+00:00",
+  "questions": [
+    {
+      "qid": "6669456f32f5b623818247fb",
+      "n": 1,
+      "type": "mcq",
+      "concept": "Error Spotting",
+      "marks_pos": 2.0,
+      "marks_neg": 0.25,
+      "question": "Find the part of the given sentence that has an error in it...",
+      "options": [
+        {"label": "1", "text": "renewable plants that are already contracted or under"},
+        {"label": "2", "text": "The most significant near - term impacts on"},
+        {"label": "3", "text": "No error"},
+        {"label": "4", "text": "construction may being felt through supply chains."}
+      ],
+      "correct": "4",
+      "solution": "The correct answer is Option 4) Key Points In the fourth part...",
+      "tags": ["Error Spotting"],
+      "hindi": "दी गई वाक्य के उस भाग को खोजें जिसमें त्रुटि है..."
+    }
+  ]
+}
+```
+
+### Why this format is AI-friendly
+
+- **Plain text only**: HTML tags stripped, entities decoded — no parsing overhead
+- **Short field names**: `n` (number), `qid` (question ID), `marks_pos`/`marks_neg` — saves tokens
+- **Concept field**: pre-categorized so the LLM can filter/group without re-analyzing
+- **Subject field**: top-level subject classification (english/reasoning/maths/gk)
+- **Omits empty fields**: no solution? no `solution` key. No images? no `images` key.
+- **Image URLs preserved**: `images: [{"url": "https://cdn.repeatermock.com/tb/..."}]` — LLM can fetch if needed
+- **Hindi translation included** (when available) as `hindi` field
+- **Tags from RepeaterMock preserved** in `tags` array (raw categorization)
+
+### Concept detection
+
+The script uses two strategies to categorize each question:
+
+1. **RepeaterMock tags** (primary): if the question has tags like `["Vocabulary"]` or `["Profit and Loss"]`, use them directly as the concept.
+2. **Keyword detection** (fallback): if no tags, scan the question text + options for subject-specific keywords:
+   - **English**: Vocabulary, Idioms & Phrases, Grammar - Error Detection, Grammar - Fill in the Blanks, Reading Comprehension, Cloze Test, Sentence Improvement, Active/Passive Voice, Direct/Indirect Speech, Para Jumbles
+   - **Reasoning**: Series, Analogy, Classification, Coding-Decoding, Blood Relations, Direction Sense, Ranking/Order, Puzzle, Syllogism, Venn Diagram, Mirror/Water Image, Cube & Dice, Calendar, Clock, Alphabet/Word Test, Arrangement and Pattern, Similarity and Differences
+   - **Maths**: Number System, Simplification, Percentage, Ratio & Proportion, Average, Profit & Loss, Simple Interest, Compound Interest, Time & Work, Time-Speed-Distance, Boats & Streams, Mixture & Alligation, Algebra, Geometry (Triangles/Circles/Quadrilaterals/Lines & Angles), Coordinate Geometry, Trigonometry, Mensuration (2D/3D), Data Interpretation (Tables/Bar/Pie/Line), Statistics, Partnership, Ages, Pipes & Cisterns, Permutation & Combination, Probability
+   - **GK**: History (Ancient/Medieval/Modern), Polity (Constitution/Government), Geography (Physical/Indian/World), Economics, General Science (Biology/Chemistry/Physics), Static GK
+
 ## How it works
-
-### Architecture
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│ Main orchestrator (asyncio)                                  │
-│                                                               │
-│  1. Discover all tests across all requested series           │
-│     (uses 1 discovery worker to walk the API)                │
-│                                                               │
-│  2. Filter out already-scraped tests (progress.json)         │
-│                                                               │
-│  3. Spawn N workers (browser contexts) in parallel           │
-│     ┌─────────┐ ┌─────────┐ ┌─────────┐                     │
-│     │Worker 1 │ │Worker 2 │ │Worker 3 │  ... up to 50       │
-│     │         │ │         │ │         │                     │
-│     │context  │ │context  │ │context  │                     │
-│     │+ init   │ │+ init   │ │+ init   │                     │
-│     │script   │ │script   │ │script   │                     │
-│     │+ cookies│ │+ cookies│ │+ cookies│                     │
-│     └────┬────┘ └────┬────┘ └────┬────┘                     │
-│          │           │           │                            │
-│          └───────────┴───────────┴── pull from shared queue   │
-│                                                               │
-│  4. Each worker:                                              │
-│     a. grab test from queue                                   │
-│     b. POST /start  (refresh cookies on 401)                  │
-│     c. POST /submit (refresh cookies on 401)                  │
-│     d. GET /solution page → fetch HTML                        │
-│     e. parse flight data, resolve $N refs                     │
-│     f. render interactive HTML                                │
-│     g. save to nested folder, mark done in progress.json      │
-│     h. repeat                                                 │
-│                                                               │
-│  5. Save progress.json after every test (atomic write)        │
-└──────────────────────────────────────────────────────────────┘
-```
 
 ### The $N reference bug fix (why Q1, Q6 had no solutions)
 
 RepeaterMock's solution page is a Next.js app. The page's HTML contains **flight data** — a sequence of `self.__next_f.push([1, "<json>"])` calls that encode the React tree as JSON.
 
-The flight data has a peculiar structure:
-- `testData` — all questions + 4 options each + 24-language text
-- `answersData` — correct option + written solution per question
-
-**Some solutions are stored as references**, not inline text:
+Some solutions are stored as **references**, not inline text:
 ```json
 "sol": { "en": { "value": "$32" } }
 ```
@@ -151,7 +247,7 @@ My `INIT_SCRIPT` (injected via Playwright's `add_init_script()` BEFORE any page 
      - testData   (questions + options in 24 languages)
      - answersData (correctOption + sol per question)
 
-4. Parse flight data, resolve $N references, render interactive HTML
+4. Parse flight data, resolve $N references, render HTML + AI JSON
 ```
 
 ### Per series (discovery)
@@ -190,61 +286,41 @@ Progress is saved to `progress.json` in the output directory after **every** tes
 
 On startup, the script loads this file and skips any test ID that's already in `scraped`. Use `--resume` to explicitly continue a previous run (though it also auto-skips without the flag, for safety).
 
-## Nested folder structure
-
-Tests are saved in a folder hierarchy that mirrors the website:
+## CLI reference
 
 ```
-output_dir/
-  ssc-cgl/                              ← series slug
-    Previous_Year_Paper_Tier_I_/       ← section name
-      2025/                             ← subsection name
-        SSC_CGL_2025_Shift_1_...html    ← test file
-        SSC_CGL_2025_Shift_2_...html
-      2024/
-        SSC_CGL_2024_Shift_1_...html
-    All_SSC_Exams_Basic_PYQs_Practice/
-      General_Intelligence_and_Reasoning/
-        Alphabet_or_Word_Test_...html
-  ssc-reasoning-previous-year-questions/
-    ...
+python3 repeatermock_scraper.py [options]
+
+Required (at least one):
+  --test-url <url>           URL of a single test (can be repeated)
+  --series-url <url>         URL of a series (can be repeated)
+  --series-list-file <path>  File with one series URL per line (for GitHub Actions)
+
+Optional:
+  --output-dir <path>   Output directory (default: /home/z/my-project/download/repeatermock_tests)
+  --workers <n>         Parallel workers (default: 10, max: 50)
+  --stop-after <n>      Stop after N tests total (default: unlimited)
+  --max-runtime <min>   Max runtime in minutes (e.g. 340 for GitHub Actions 6h limit)
+  --resume              Resume from previous run (skip already-scraped tests)
 ```
 
-## Interactive mock-test HTML features
+## Files
 
-Each test HTML file is a fully interactive single-page app:
-
-### Test mode (before submit)
-- **Header**: RepeaterMock brand + test title + live countdown timer (turns yellow at 5 min, red+pulsing at 1 min) + Submit Test button
-- **Meta bar**: series, question count, duration, max marks, marking scheme, test ID
-- **Section tabs**: switch between sections (e.g. "Test", "Quantitative Aptitude")
-- **Question card**: question number, marks (+2/-0.5), question text (HTML with images), 4 options (click to select — highlighted blue), language tabs (English/Hindi/Telugu/Marathi/Bengali/Gujarati/Kannada/Tamil/Odia)
-- **Action buttons**: Save & Next → (saves answer + goes to next), Mark for Review & Next (marks + goes to next), Clear Response (deselects)
-- **Navigation**: Previous / Next buttons + keyboard shortcuts (arrow keys, j/k, 1-4/a-d for options)
-- **Question palette** (right sidebar): grid of question numbers, color-coded:
-  - 🟢 Green = Answered
-  - 🔴 Red = Not Answered (visited but skipped)
-  - 🟣 Purple = Marked for Review
-  - 🟣 Purple + green dot = Marked & Answered
-  - ⬜ Gray = Not Visited
-  - 🔵 Blue outline = Current question
-- **Live stats**: Answered / Not Answered / Marked / Not Visited counts
-- **Submit modal**: "Are you sure?" with summary (answered / not answered / not visited / total)
-
-### Review mode (after submit)
-- **Score card**: your score / max marks, correct/wrong/skipped counts, accuracy %
-- **All questions** rendered with:
-  - Correct option highlighted green with ✓
-  - Your selected option (if wrong) highlighted red with ✗
-  - If skipped: gray badge
-  - Full written solution in a yellow box
-- Buttons: View All Questions & Solutions, Print
-
-### Timer behavior
-- Counts down from the test's duration
-- At 5 minutes remaining: turns yellow
-- At 1 minute remaining: turns red + pulses
-- At 0: auto-submits
+```
+repeatermock_scraper.py    # The scraper script (self-contained, only needs playwright)
+README.md                  # This file
+series_list.txt            # List of series URLs to scrape (used by GitHub Action)
+samples/
+  ├── ai_export/
+  │   ├── sample_english_test.json     ← AI-friendly JSON (English subject)
+  │   ├── sample_reasoning_test.json   ← AI-friendly JSON (Reasoning subject)
+  │   ├── sample_maths_test.json       ← AI-friendly JSON (Maths subject)
+  │   └── sample_gk_test.json          ← AI-friendly JSON (GK subject)
+  ├── sample_ssc_english_test.html      ← Interactive mock-test HTML
+  ├── sample_ssc_mts_english_test.html
+  └── sample_ssc_reasoning_test.html
+.github/workflows/scrape.yml  ← GitHub Action (auto-scrape every 6h with resume)
+```
 
 ## Free test series (no login required)
 
@@ -261,7 +337,7 @@ Each test HTML file is a fully interactive single-page app:
 | SSC GD Constable 2026 | https://repeatermock.com/tb/test-series/ssc-gd-constable | ~10 |
 | SSC Selection Post | https://repeatermock.com/tb/test-series/ssc-selection-post | ~5 |
 | SSC Stenographer | https://repeatermock.com/tb/test-series/ssc-stenographer | ~5 |
-| SSC Maths PYP (20k+) | https://repeatermock.com/tb/test-series/ssc-maths-previous-year-questions | ~2155 |
+| SSC Maths PYP (20k+) | https://repeatermock.com/tb/test-series/ssc-maths-previous-year-questions | ~2144 |
 | SSC Reasoning PYP (20k+) | https://repeatermock.com/tb/test-series/ssc-reasoning-previous-year-questions | ~2100 |
 | SSC English PYP (20k+) | https://repeatermock.com/tb/test-series/ssc-english-previous-year-questions | ~1967 |
 | SSC GK PYP (20k+) | https://repeatermock.com/tb/test-series/ssc-gk-previous-year-questions | ~2163 |
@@ -279,64 +355,29 @@ Each test HTML file is a fully interactive single-page app:
 |--------|-----|
 | SBI PO | https://repeatermock.com/gd/test-series/sbi-po |
 
-**Note**: The "Free tests" column is approximate — the script auto-discovers and scrapes all `isFree=true` tests in each series. PRO (paid) tests return `402 Payment Required` and are skipped.
-
-## CLI reference
-
-```
-python3 repeatermock_scraper.py [options]
-
-Required (at least one):
-  --test-url <url>      URL of a single test (can be repeated)
-  --series-url <url>    URL of a series (can be repeated)
-
-Optional:
-  --output-dir <path>   Output directory (default: /home/z/my-project/download/repeatermock_tests)
-  --workers <n>         Parallel workers (default: 10, max: 50)
-  --stop-after <n>      Stop after N tests total (default: unlimited)
-  --resume              Resume from previous run (skip already-scraped tests)
-```
-
-## Output files
-
-```
-output_dir/
-├── progress.json                    ← resume state (auto-saved after every test)
-├── ssc-cgl/                         ← series slug
-│   ├── Previous_Year_Paper_Tier_I_/ ← section name
-│   │   ├── 2025/                    ← subsection name
-│   │   │   ├── SSC_CGL_2025_..._6a2bef33be1bd560ab3a0e66.html
-│   │   │   └── ...
-│   │   └── 2024/
-│   │       └── ...
-│   └── All_SSC_Exams_Basic_PYQs_Practice/
-│       └── General_Intelligence_and_Reasoning/
-│           ├── Alphabet_or_Word_Test_...html
-│           └── ...
-└── ssc-reasoning-previous-year-questions/
-    └── ...
-```
-
 ## Notes
 
-- **Free tests only**: the script filters to `isFree=true`. PRO tests return `402 Payment Required` and are skipped. To scrape PRO tests, you'd need to add a paid account's cookies via `context.add_cookies()`.
+- **Free tests only**: the script filters to `isFree=true`. PRO tests return `402 Payment Required` and are skipped.
+- **Two output formats**: every test produces BOTH an interactive HTML file (for humans) and an AI-friendly JSON file (for LLMs).
+- **Subject-based organization**: tests are sorted into `english/`, `reasoning/`, `maths/`, `gk/`, `science/`, `computer/` folders automatically.
 - **Anti-devtools bypass**: uses Playwright's `add_init_script()` to inject a defensive init script before any page JS runs.
 - **$N reference resolution**: the `build_text_refs()` function parses the entire Next.js flight data and resolves all `$N` references (where N can be decimal OR hex) by finding the corresponding `T<len>,<text>` text nodes (where `<len>` can also be decimal OR hex).
-- **24 languages**: each question has 24 language fields. The HTML shows tabs for the 10 most common; others are loaded but hidden.
-- **Images**: hosted at `https://cdn.repeatermock.com/tb/{hash}.png` — kept as direct links in the HTML.
-- **Rate limiting**: 0.5-second delay between tests per worker to avoid rate-limiting.
-- **Atomic progress saves**: `progress.json` is written to a temp file first, then atomically renamed — so a crash mid-write never corrupts the file.
+- **24 languages**: each question has 24 language fields. The HTML shows tabs for the 10 most common; the AI JSON includes English + Hindi.
+- **Atomic progress saves**: `progress.json` is written to a temp file first, then atomically renamed.
+- **GitHub Action**: auto-runs every 6 hours, resumes from where it left off, commits results to the repo.
 
 ## Troubleshooting
 
-**"Page self-destructs to about:blank"**: The init script didn't apply. Make sure you're using `context.add_init_script(INIT_SCRIPT)` BEFORE the first `page.goto()`. The script does this in `Worker.start()`.
+**"Page self-destructs to about:blank"**: The init script didn't apply. Make sure you're using `context.add_init_script(INIT_SCRIPT)` BEFORE the first `page.goto()`.
 
-**"API call failed (status 0)"**: The browser is on `about:blank` (no origin) OR the Cloudflare clearance expired. The script auto-refreshes cookies and retries 3 times. If it still fails, the worker will skip that test and mark it as failed in progress.json.
+**"API call failed (status 0)"**: The browser is on `about:blank` (no origin) OR the Cloudflare clearance expired. The script auto-refreshes cookies and retries 3 times.
 
-**"402 Payment Required" on /start**: The test is PRO (paid). Either use a free test, or modify the script to use a paid account's cookies (set via `context.add_cookies()` in `Worker.start()`).
+**"402 Payment Required" on /start**: The test is PRO (paid). Use a free test, or add paid cookies via `context.add_cookies()`.
 
-**"0 questions parsed"**: The flight data parsing failed. Check that the HTML contains `testData` and `answersData`. If only `testData` is present (no `answersData`), the test wasn't submitted before fetching the solution page — make sure `api_start_attempt()` + `api_submit_attempt()` run first.
+**"0 questions parsed"**: The flight data parsing failed. Check that the HTML contains `testData` and `answersData`.
 
-**Solutions show as `$32` or `$3e` in the HTML**: The text refs didn't resolve. Check that `build_text_refs()` is finding the `T<len>,<text>` patterns. The regex `([0-9a-f]+):T([0-9a-f]+),` should match both decimal and hex IDs/lengths.
+**Solutions show as `$32` or `$3e`**: The text refs didn't resolve. Check that `build_text_refs()` is finding the `T<len>,<text>` patterns. The regex `([0-9a-f]+):T([0-9a-f]+),` matches both decimal and hex.
 
-**Resume not working**: Make sure the output directory is the same as the previous run. The script reads `progress.json` from `<output-dir>/progress.json`.
+**GitHub Action not running**: Check that the repo has Actions enabled (Settings → Actions → General). The workflow uses `GITHUB_TOKEN` (auto-provided, no secret needed).
+
+**GitHub Action commits failing**: The workflow uses `git push origin HEAD`. Make sure the repo allows pushes from github-actions[bot]. The default `GITHUB_TOKEN` has this permission — check Settings → Actions → General → Workflow permissions → "Read and write permissions".
