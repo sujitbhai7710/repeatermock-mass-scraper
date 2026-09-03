@@ -60,13 +60,46 @@ def save_progress(p):
     PROGRESS_FILE.write_text(json.dumps(p, indent=2, ensure_ascii=False))
 
 # ─── RSC payload extraction ──────────────────────────────────────────
-def extract_flight_payload(html):
+def extract_flight_payload(html, unescape_json=True):
+    """Extract RSC flight payload from HTML."""
     payload = ""
     for m in re.finditer(r'self\.__next_f\.push\(\[1,"((?:[^"\\]|\\.)*)"\]\)', html):
         chunk = m.group(1)
         chunk = chunk.replace('\\n','\n').replace('\\r','\r').replace('\\"','"').replace('\\\\','\\')
+        chunk = re.sub(r'\\u([0-9a-fA-F]{4})', lambda m: chr(int(m.group(1), 16)), chunk)
         payload += chunk
     return payload
+
+def extract_json_object_safe(payload, key):
+    """Extract JSON object by key — fixes \\n issues for JSON parsing."""
+    search = f'"{key}":{{'
+    idx = payload.find(search)
+    if idx < 0: return None
+    start = payload.find('{', idx + len(key) + 2)
+    # Brace matching
+    depth = 0; in_str = False; esc = False
+    for j in range(start, min(start + 500000, len(payload))):
+        c = payload[j]
+        if esc: esc = False; continue
+        if c == '\\': esc = True; continue
+        if c == '"': in_str = not in_str; continue
+        if in_str: continue
+        if c == '{': depth += 1
+        elif c == '}':
+            depth -= 1
+            if depth == 0:
+                raw = payload[start:j+1]
+                # Fix: replace literal newlines in string values with \\n
+                # (JSON doesn't allow literal newlines inside strings)
+                fixed = raw.replace('\n', '\\n').replace('\r', '\\r')
+                try:
+                    return json.loads(fixed)
+                except json.JSONDecodeError:
+                    try:
+                        return json.loads(raw)
+                    except:
+                        return None
+    return None
 
 def thorough_unescape(text):
     if not text: return ""
@@ -93,8 +126,15 @@ def extract_json_object(payload, key):
         elif c == '}':
             depth -= 1
             if depth == 0:
-                try: return json.loads(payload[start:j+1])
-                except: return None
+                try:
+                    return json.loads(payload[start:j+1])
+                except json.JSONDecodeError:
+                    # Fix common escape issues: \\n → \n, \\' → '
+                    fixed = payload[start:j+1].replace('\\\\n', '\\n').replace("\\\\'", "\\'").replace('\\\\\\\\', '\\\\')
+                    try:
+                        return json.loads(fixed)
+                    except:
+                        return None
     return None
 
 def parse_questions(payload):
@@ -302,8 +342,8 @@ async def scrape_test(context, test, series, cookie_str, sem):
 
         for attempt in range(MAX_RETRIES):
             try:
-                # 1. Questions
-                resp = await context.request.get(f"{base_url}/attempt", headers={"Accept": "text/html", "Cookie": cookie_str})
+                # 1. Questions — let Playwright handle cookies automatically
+                resp = await context.request.get(f"{base_url}/attempt", headers={"Accept": "text/html"})
                 html = await resp.text()
                 if resp.status != 200 or len(html) < 5000:
                     raise Exception(f"/attempt HTTP {resp.status}")
@@ -315,30 +355,30 @@ async def scrape_test(context, test, series, cookie_str, sem):
                 # 2. Start + submit
                 api_prefix = "/api/v2" if platform == "gd" else "/api/v1"
                 resp = await context.request.post(f"{API_BASE}{api_prefix}/attempts/{test_id}/start",
-                    headers={"Accept":"application/json","Content-Type":"application/json","Cookie":cookie_str}, data="{}")
+                    headers={"Accept":"application/json","Content-Type":"application/json"}, data="{}")
                 if resp.status == 429:
                     raise Exception("rate_limited")
                 if resp.status != 200:
                     raise Exception(f"/start HTTP {resp.status}")
 
                 resp = await context.request.post(f"{API_BASE}{api_prefix}/attempts/{test_id}/submit",
-                    headers={"Accept":"application/json","Content-Type":"application/json","Cookie":cookie_str},
+                    headers={"Accept":"application/json","Content-Type":"application/json"},
                     data=json.dumps({"answers":[],"timeTaken":1,"language":"en","interface":"classic"}))
                 if resp.status == 429:
                     raise Exception("rate_limited")
                 await asyncio.sleep(1)
 
                 # 3. Solution
-                resp = await context.request.get(f"{base_url}/solution", headers={"Accept":"text/html","Cookie":cookie_str})
+                resp = await context.request.get(f"{base_url}/solution", headers={"Accept":"text/html"})
                 sol_html = await resp.text()
                 sol_payload = extract_flight_payload(sol_html)
-                answers = extract_json_object(sol_payload, "answersData")
+                answers = extract_json_object_safe(sol_payload, "answersData")
                 ref_table = build_rsc_ref_table(sol_payload)
 
                 # 4. Analysis
-                resp = await context.request.get(f"{base_url}/analysis", headers={"Accept":"text/html","Cookie":cookie_str})
+                resp = await context.request.get(f"{base_url}/analysis", headers={"Accept":"text/html"})
                 ana_payload = extract_flight_payload(await resp.text())
-                analysis = extract_json_object(ana_payload, "analysisData")
+                analysis = extract_json_object_safe(ana_payload, "analysisData")
 
                 # 5. Generate HTML
                 html_content = generate_html(questions, answers, analysis, ref_table, title)
@@ -371,8 +411,8 @@ async def main():
     args = parser.parse_args()
 
     progress = load_progress()
-    scraped_set = set(progress["scraped"])
-    failed_set = set(progress["failed"])
+    scraped_set = set(progress.get("scraped", progress.get("scraped_test_ids", [])))
+    failed_set = set(progress.get("failed", progress.get("failed_test_ids", [])))
 
     print(f"\n{'='*60}")
     print(f"RepeaterMock Mass Scraper — Guest Mode (No Login)")
