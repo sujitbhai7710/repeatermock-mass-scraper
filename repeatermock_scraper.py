@@ -551,27 +551,37 @@ class Worker:
             return None
 
     async def api_call(self, method: str, path: str, body: str = "{}") -> Tuple[int, Optional[dict]]:
-        """Make an API call with Cloudflare proxy fallback.
+        """Make an API call with smart rate-limit handling.
+        
+        CRITICAL: POST /start and POST /submit MUST use direct calls with cookies.
+        The proxy can't forward browser cookies, so attempts created via proxy
+        can't be submitted (returns 404). Therefore:
+        - POST requests: ALWAYS direct with cookies, on 429 use exponential backoff
+        - GET requests (discovery): can use proxy on 429 (no cookies needed)
         
         Strategy:
-        1. Try direct API call first (fastest, uses browser cookies)
-        2. On 429: switch to Cloudflare Worker proxy (different IP, no rate limit)
+        1. For POST: direct with cookies, on 429 exponential backoff (never proxy)
+        2. For GET: direct first, on 429 switch to proxy (different IP)
         3. If proxy also 429: exponential backoff + jitter
         4. On 401: refresh cookies, retry
-        5. On network error: switch to proxy or backoff
         """
         MAX_RETRIES = 5
         base_delay = 2
-        use_proxy = False  # Start direct, switch to proxy on first 429
+        is_post = method.upper() == "POST"
+        use_proxy = False
         
         for attempt in range(MAX_RETRIES):
-            # Build URL: direct or through Cloudflare Worker proxy
+            # POST requests must ALWAYS use direct (cookies required for attempt tracking)
+            # GET requests can use proxy on 429 (no cookies needed for discovery)
+            if is_post:
+                use_proxy = False
+            
             if use_proxy:
                 url = f"{PROXY_URL}{path}" if path.startswith("/") else path
-                credentials_mode = "omit"  # Proxy uses its own IP, no cookies needed
+                credentials_mode = "omit"
             else:
                 url = f"{API_BASE}{path}" if path.startswith("/") else path
-                credentials_mode = "include"  # Direct uses browser cookies
+                credentials_mode = "include"
             
             has_body = method.upper() not in ("GET", "HEAD")
             body_js = json.dumps(body) if has_body else "undefined"
@@ -595,8 +605,6 @@ class Worker:
             result = await self.eval_js(js, timeout=30)
             if not isinstance(result, dict):
                 if attempt < MAX_RETRIES - 1:
-                    if not use_proxy:
-                        use_proxy = True
                     await self.refresh_cookies(force=True)
                     await asyncio.sleep(base_delay * (2 ** attempt) + random.uniform(0, 1))
                 continue
@@ -606,16 +614,16 @@ class Worker:
             retry_after = result.get("retryAfter", "")
             
             if status == 429:
-                if not use_proxy:
-                    # First 429 — switch to proxy (different IP, bypasses rate limit)
+                if not use_proxy and not is_post:
+                    # GET request: switch to proxy (different IP)
                     print(f"  [worker {self.worker_id}] 🔄 429 direct, switching to proxy (attempt {attempt+1}/{MAX_RETRIES})")
                     use_proxy = True
                     continue
                 else:
-                    # Proxy also 429 — exponential backoff + jitter
+                    # POST request or proxy also 429: exponential backoff
                     wait_sec = (retry_after and float(retry_after)) or (base_delay * (2 ** attempt))
                     wait_sec += random.uniform(0, 1)
-                    print(f"  [worker {self.worker_id}] ⏳ 429 proxy too, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
+                    print(f"  [worker {self.worker_id}] ⏳ 429, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
                     await asyncio.sleep(wait_sec)
                     await self.refresh_cookies(force=True)
                     continue
@@ -626,9 +634,14 @@ class Worker:
                 await asyncio.sleep(1 + random.uniform(0, 0.5))
                 continue
             
+            if status == 404:
+                # 404 on submit means attempt wasn't created properly (proxy issue)
+                # Don't retry — just return the 404 so scrape_test can handle it
+                return status, None
+            
             if status == 0:
                 if attempt < MAX_RETRIES - 1:
-                    if not use_proxy:
+                    if not use_proxy and not is_post:
                         use_proxy = True
                         print(f"  [worker {self.worker_id}] 🔄 network error, switching to proxy (attempt {attempt+1}/{MAX_RETRIES})")
                     else:
@@ -2385,7 +2398,7 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                 finally:
                     queue.task_done()
                 # Small delay to avoid rate-limiting (with jitter)
-                await asyncio.sleep(0.3 + random.uniform(0, 0.4))
+                await asyncio.sleep(1.0 + random.uniform(0, 0.5))  # 1-1.5s delay to reduce 429s
             await w.close()
             print(f"  [worker {worker_id}] done (scraped {w.tests_done} tests)")
 
