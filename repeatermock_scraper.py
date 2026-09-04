@@ -459,7 +459,34 @@ class ProgressTracker:
             try:
                 with open(self.progress_path) as f:
                     self.data = json.load(f)
-                print(f"  [progress] loaded {sum(len(v.get('scraped', [])) for v in self.data.values())} scraped tests from {self.progress_path}")
+                # MIGRATION: convert old 'failed' list format to new dict format (Bug #2 fix)
+                migrated = 0
+                migrated_unique = 0
+                for series_slug, sdata in self.data.items():
+                    if not isinstance(sdata, dict):
+                        continue
+                    failed_field = sdata.get("failed")
+                    if isinstance(failed_field, list):
+                        # Old format — convert to dict, dedup by test_id
+                        new_failed = {}
+                        for entry in failed_field:
+                            if isinstance(entry, dict):
+                                tid = entry.get("test_id", "")
+                                if tid and tid not in new_failed:
+                                    new_failed[tid] = {
+                                        "reason": entry.get("reason", "unknown"),
+                                        "attempts": 1,
+                                        "last_reason": entry.get("reason", "unknown"),
+                                        "last_attempt": sdata.get("last_updated", ""),
+                                    }
+                                    migrated_unique += 1
+                                migrated += 1
+                        sdata["failed"] = new_failed
+                if migrated > 0:
+                    print(f"  [progress] migrated {migrated} duplicate failed entries → {migrated_unique} unique (dict format)")
+                total_scraped = sum(len(v.get("scraped", {})) for v in self.data.values())
+                total_failed = sum(len(v.get("failed", {})) for v in self.data.values())
+                print(f"  [progress] loaded {total_scraped} scraped + {total_failed} failed tests from {self.progress_path}")
             except Exception as e:
                 print(f"  [progress] WARNING: couldn't load {self.progress_path}: {e}")
                 self.data = {}
@@ -469,8 +496,15 @@ class ProgressTracker:
         return test_id in series_data.get("scraped", {})
 
     def is_failed(self, series_slug: str, test_id: str) -> bool:
+        """Check if test is in failed dict (any number of attempts)."""
         series_data = self.data.get(series_slug, {})
-        return any(t.get("test_id") == test_id for t in series_data.get("failed", []))
+        return test_id in series_data.get("failed", {})
+
+    def get_failure_attempts(self, series_slug: str, test_id: str) -> int:
+        """Get number of times this test has failed (for max-attempts logic)."""
+        series_data = self.data.get(series_slug, {})
+        entry = series_data.get("failed", {}).get(test_id, {})
+        return entry.get("attempts", 1) if isinstance(entry, dict) else 1
 
     def is_pro(self, series_slug: str, test_id: str) -> bool:
         """Check if test was previously marked as PRO (402). Used to skip on resume."""
@@ -480,24 +514,46 @@ class ProgressTracker:
     async def mark_scraped(self, series_slug: str, test_id: str, filepath: str):
         async with self._lock:
             if series_slug not in self.data:
-                self.data[series_slug] = {"scraped": {}, "failed": [], "pro": {}}
+                self.data[series_slug] = {"scraped": {}, "failed": {}, "pro": {}}
             self.data[series_slug].setdefault("scraped", {})[test_id] = {
                 "filepath": filepath,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
-            # Remove from failed if it was there
-            self.data[series_slug]["failed"] = [
-                t for t in self.data[series_slug].get("failed", [])
-                if t.get("test_id") != test_id
-            ]
+            # Remove from failed if it was there (now succeeded)
+            self.data[series_slug].setdefault("failed", {}).pop(test_id, None)
             self.data[series_slug]["last_updated"] = datetime.now(timezone.utc).isoformat()
             self._save()
 
     async def mark_failed(self, series_slug: str, test_id: str, reason: str):
+        """Record a failure. Uses dict (not list) to dedup by test_id.
+        Increments 'attempts' counter so we can skip after N retries (Bug #3 fix)."""
         async with self._lock:
             if series_slug not in self.data:
-                self.data[series_slug] = {"scraped": {}, "failed": [], "pro": {}}
-            self.data[series_slug].setdefault("failed", []).append({"test_id": test_id, "reason": reason})
+                self.data[series_slug] = {"scraped": {}, "failed": {}, "pro": {}}
+            failed_dict = self.data[series_slug].setdefault("failed", {})
+            if test_id in failed_dict:
+                # Already exists — just increment attempts + update last reason/time
+                entry = failed_dict[test_id]
+                if isinstance(entry, dict):
+                    entry["attempts"] = entry.get("attempts", 1) + 1
+                    entry["last_reason"] = reason
+                    entry["last_attempt"] = datetime.now(timezone.utc).isoformat()
+                else:
+                    # Old format (list) — migrate to dict
+                    failed_dict[test_id] = {
+                        "reason": reason,
+                        "attempts": 1,
+                        "last_reason": reason,
+                        "last_attempt": datetime.now(timezone.utc).isoformat(),
+                    }
+            else:
+                # New entry
+                failed_dict[test_id] = {
+                    "reason": reason,
+                    "attempts": 1,
+                    "last_reason": reason,
+                    "last_attempt": datetime.now(timezone.utc).isoformat(),
+                }
             self.data[series_slug]["last_updated"] = datetime.now(timezone.utc).isoformat()
             self._save()
 
@@ -507,16 +563,13 @@ class ProgressTracker:
         They are ALSO saved in PRO_TESTS.json (pretty format)."""
         async with self._lock:
             if series_slug not in self.data:
-                self.data[series_slug] = {"scraped": {}, "failed": [], "pro": {}}
+                self.data[series_slug] = {"scraped": {}, "failed": {}, "pro": {}}
             self.data[series_slug].setdefault("pro", {})[test_id] = {
                 "title": title,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
             # Remove from failed if it was there (it shouldn't be — PRO is its own category)
-            self.data[series_slug]["failed"] = [
-                t for t in self.data[series_slug].get("failed", [])
-                if t.get("test_id") != test_id
-            ]
+            self.data[series_slug].setdefault("failed", {}).pop(test_id, None)
             self.data[series_slug]["last_updated"] = datetime.now(timezone.utc).isoformat()
             self._save()
 
@@ -531,7 +584,7 @@ class ProgressTracker:
 
     def stats(self) -> Dict[str, int]:
         total_scraped = sum(len(v.get("scraped", {})) for v in self.data.values())
-        total_failed = sum(len(v.get("failed", [])) for v in self.data.values())
+        total_failed = sum(len(v.get("failed", {})) if isinstance(v.get("failed"), dict) else len(v.get("failed", [])) for v in self.data.values())
         total_pro = sum(len(v.get("pro", {})) for v in self.data.values())
         return {"scraped": total_scraped, "failed": total_failed, "pro": total_pro}
 
@@ -804,7 +857,11 @@ class Worker:
         return 0, None
 
     async def scrape_test(self, test_ref: TestRef) -> Optional[TestData]:
-        """Scrape a single test: start, submit, fetch solution page, parse."""
+        """Scrape a single test: start, submit, fetch solution page, parse.
+
+        Handles large solution pages (up to 20 MB) via chunked extraction.
+        Retries solution fetch up to 3 times if flight data missing (Bug #4 fix).
+        """
         tid = test_ref.test_id
         # 1. Start attempt
         status, data = await self.api_call("POST", f"/api/v1/attempts/{tid}/start", "{}")
@@ -822,49 +879,62 @@ class Worker:
         if status != 200:
             print(f"  [worker {self.worker_id}] submit failed for {tid}: status={status}")
             return None
-        # 3. Fetch solution page HTML
+        # 3. Fetch solution page HTML (with retry on missing testData — Bug #4 fix)
         solution_url = f"{WEB_BASE}/tb/test-series/{test_ref.series_slug}/test/{tid}/solution"
-        try:
-            await self.page.goto(solution_url, wait_until="domcontentloaded", timeout=60000)
+        html = None
+        for fetch_attempt in range(3):  # Try up to 3 times
             try:
-                await self.page.wait_for_load_state("networkidle", timeout=20000)
-            except Exception:
-                pass
-            await self.page.wait_for_timeout(6000)
-        except Exception as e:
-            print(f"  [worker {self.worker_id}] nav to solution failed: {e}")
-            return None
-        if "about:blank" in self.page.url:
-            print(f"  [worker {self.worker_id}] solution page self-destructed, skipping")
-            return None
-        # 4. Fetch the HTML via in-page fetch (gets post-JS version with flight data)
-        js_fetch = """
-        (function(){
-          return fetch(window.location.href, {credentials: 'include'})
-            .then(r => r.text())
-            .then(t => { window.__HTML__ = t; return {stored: true, len: t.length, hasTestData: t.indexOf('testData') >= 0, hasAnswersData: t.indexOf('answersData') >= 0}; })
-            .catch(e => ({stored: false, err: String(e).slice(0, 200)}));
-        })()
-        """
-        result = await self.eval_js(js_fetch, timeout=60)
-        if not isinstance(result, dict) or not result.get("stored"):
-            print(f"  [worker {self.worker_id}] failed to fetch solution HTML: {result}")
-            return None
-        # 5. Extract HTML in chunks
-        chunks = []
-        chunk_size = 100000
-        for i in range(50):
-            start = i * chunk_size
-            js_chunk = f"(function(){{var h = window.__HTML__ || ''; if ({start} >= h.length) return null; return h.slice({start}, {start + chunk_size});}})()"
-            chunk = await self.eval_js(js_chunk, timeout=30)
-            if chunk is None:
-                break
-            chunks.append(chunk)
-            if len(chunk) < chunk_size:
-                break
-        html = "".join(chunks)
+                await self.page.goto(solution_url, wait_until="domcontentloaded", timeout=60000)
+                try:
+                    await self.page.wait_for_load_state("networkidle", timeout=20000)
+                except Exception:
+                    pass
+                # Initial wait for Next.js hydration (longer on each retry)
+                await self.page.wait_for_timeout(6000 + fetch_attempt * 5000)  # 6s, 11s, 16s
+            except Exception as e:
+                print(f"  [worker {self.worker_id}] nav to solution failed (attempt {fetch_attempt+1}/3): {e}")
+                if fetch_attempt == 2:
+                    return None
+                continue
+            if "about:blank" in self.page.url:
+                print(f"  [worker {self.worker_id}] solution page self-destructed, skipping")
+                return None
+            # 4. Fetch the HTML via in-page fetch (gets post-JS version with flight data)
+            js_fetch = """
+            (function(){
+              return fetch(window.location.href, {credentials: 'include'})
+                .then(r => r.text())
+                .then(t => { window.__HTML__ = t; return {stored: true, len: t.length, hasTestData: t.indexOf('testData') >= 0, hasAnswersData: t.indexOf('answersData') >= 0}; })
+                .catch(e => ({stored: false, err: String(e).slice(0, 200)}));
+            })()
+            """
+            result = await self.eval_js(js_fetch, timeout=60)
+            if not isinstance(result, dict) or not result.get("stored"):
+                print(f"  [worker {self.worker_id}] failed to fetch solution HTML (attempt {fetch_attempt+1}/3): {result}")
+                continue
+            # 5. Extract HTML in chunks (Bug #1 fix: increased cap from 5 MB to 20 MB)
+            # Playwright's page.evaluate() has ~1 MB serialization limit per call.
+            # Using 500 KB chunks × 40 chunks = 20 MB max (was 100 KB × 50 = 5 MB)
+            chunks = []
+            chunk_size = 500000  # 500 KB per chunk (was 100 KB)
+            for i in range(40):  # max 40 chunks = 20 MB (was 50 chunks = 5 MB)
+                start = i * chunk_size
+                js_chunk = f"(function(){{var h = window.__HTML__ || ''; if ({start} >= h.length) return null; return h.slice({start}, {start + chunk_size});}})()"
+                chunk = await self.eval_js(js_chunk, timeout=30)
+                if chunk is None:
+                    break
+                chunks.append(chunk)
+                if len(chunk) < chunk_size:
+                    break
+            html = "".join(chunks)
+            if html and "testData" in html and "answersData" in html:
+                break  # Success — have full flight data
+            print(f"  [worker {self.worker_id}] HTML missing testData/answersData (attempt {fetch_attempt+1}/3, len={len(html)}, max=20MB)")
+            if fetch_attempt < 2:
+                print(f"  [worker {self.worker_id}]   → retrying with longer wait...")
+                continue
         if not html or "testData" not in html or "answersData" not in html:
-            print(f"  [worker {self.worker_id}] HTML missing testData/answersData (len={len(html)})")
+            print(f"  [worker {self.worker_id}] HTML missing testData/answersData after 3 attempts (final len={len(html) if html else 0})")
             return None
         # 6. Parse flight data
         props = find_props_in_flight(html)
@@ -2439,19 +2509,47 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
         await discovery_worker.close()
 
         # Filter out already-scraped tests (if resume=True)
+        MAX_FAILURE_ATTEMPTS = 5  # Bug #3 fix: don't retry tests that failed 5+ times
         if resume:
             before = len(all_test_refs)
-            all_test_refs = [tr for tr in all_test_refs if not progress.is_scraped(tr.series_slug, tr.test_id)]
-            print(f"\n  Resume: filtered out {before - len(all_test_refs)} already-scraped tests, {len(all_test_refs)} remaining")
+            kept = []
+            skipped_done = 0
+            skipped_max_fail = 0
+            for tr in all_test_refs:
+                if progress.is_scraped(tr.series_slug, tr.test_id):
+                    skipped_done += 1
+                    continue
+                if progress.is_pro(tr.series_slug, tr.test_id):
+                    skipped_done += 1
+                    continue
+                # Skip tests that have already failed 5+ times (Bug #3 fix)
+                attempts = progress.get_failure_attempts(tr.series_slug, tr.test_id)
+                if attempts >= MAX_FAILURE_ATTEMPTS:
+                    skipped_max_fail += 1
+                    continue
+                kept.append(tr)
+            all_test_refs = kept
+            print(f"\n  Resume: {before} tests → {len(all_test_refs)} to retry")
+            print(f"    Skipped: {skipped_done} already done (scraped/PRO), {skipped_max_fail} max-attempts-exceeded (>= {MAX_FAILURE_ATTEMPTS} failures)")
         else:
-            # Even without --resume, skip already-scraped + already-known-PRO (safety)
+            # Even without --resume, skip already-scraped + PRO + max-attempt-failures
             before = len(all_test_refs)
-            all_test_refs = [tr for tr in all_test_refs
-                             if not progress.is_scraped(tr.series_slug, tr.test_id)
-                             and not progress.is_pro(tr.series_slug, tr.test_id)]
+            kept = []
+            skipped_done = 0
+            skipped_max_fail = 0
+            for tr in all_test_refs:
+                if progress.is_scraped(tr.series_slug, tr.test_id) or progress.is_pro(tr.series_slug, tr.test_id):
+                    skipped_done += 1
+                    continue
+                attempts = progress.get_failure_attempts(tr.series_slug, tr.test_id)
+                if attempts >= MAX_FAILURE_ATTEMPTS:
+                    skipped_max_fail += 1
+                    continue
+                kept.append(tr)
+            all_test_refs = kept
             skipped = before - len(all_test_refs)
             if skipped > 0:
-                print(f"\n  Skipping {skipped} already-processed tests (scraped or known PRO)")
+                print(f"\n  Skipping {skipped} already-processed tests ({skipped_done} done + {skipped_max_fail} max-attempts-exceeded)")
 
         # Apply stop_after limit
         if stop_after is not None and stop_after > 0:
