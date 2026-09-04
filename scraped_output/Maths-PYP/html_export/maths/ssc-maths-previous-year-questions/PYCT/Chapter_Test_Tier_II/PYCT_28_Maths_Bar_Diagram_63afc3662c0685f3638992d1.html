@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 28: Maths (Bar Diagram)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 28: Maths (Bar Diagram)</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-maths-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">10 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">30.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+3.0 / -1.0</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63afc3662c0685f3638992d1</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63afc3662c0685f3638992d1", "title": "PYCT 28: Maths (Bar Diagram)", "series_slug": "ssc-maths-previous-year-questions", "duration_min": 10, "max_marks": 30.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "6329b604972c5fb08aaf42e7", "section_name": "Test", "q_count": 10, "max_marks": 30.0, "questions": [{"qid": "6040a0365480f607b33efe80", "qs_no": 1, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Study the given chart carefully and answer the question accordingly.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/08dfa27643b7a9c850179bd66de4f5aa41a8e93b7992b8778c687b64f66be2c6.png\" style=\"width: 467px; height: 281px;\" /></p>\n\n<p>In which of the following years was the percentage increase in production from the previous year, the maximum among the given years?</p>\n", "options": [{"prompt": "1", "value": "2014"}, {"prompt": "2", "value": "2016"}, {"prompt": "3", "value": "2012"}, {"prompt": "4", "value": "2011"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p><span style=\"color: rgb(37, 37, 37);  \">दिए गए आलेख&nbsp;का ध्यानपूर्वक अध्ययन कीजिए&nbsp;और तदनुसार प्रश्न का उत्तर दीजिए।</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/06dbc13ca158a50fc54a760b963673e29b03ce849f21dc4b81d4366296f75b88.png\" style=\"width: 474px; height: 270px;\" /></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">निम्नलिखित में से किस वर्ष में पिछले वर्ष से उत्पादन में प्रतिशत वृद्धि&nbsp;दिए गए वर्षों में अधिकतम हुई?</span></p>\n", "options": [{"prompt": "1", "value": "2014"}, {"prompt": "2", "value": "2016"}, {"prompt": "3", "value": "2012"}, {"prompt": "4", "value": "2011"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>दिलेला आलेख काळजीपूर्वक अभ्यासा आणि त्यानुसार प्रश्नांची उत्तरे द्या.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/08dfa27643b7a9c850179bd66de4f5aa41a8e93b7992b8778c687b64f66be2c6.png\" style=\"width: 467px; height: 281px;\" /></p>\n\n<p>दिलेल्या वर्षांपैकी कोणत्या वर्षात मागील वर्षाच्या उत्पादनात वाढीची टक्केवारी सर्वाधिक होती?</p>\n", "options": [{"prompt": "1", "value": "2014"}, {"prompt": "2", "value": "2016"}, {"prompt": "3", "value": "2012"}, {"prompt": "4", "value": "2011"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>প্রদত্ত চার্টটি যত্নসহকারে অধ্যয়ন করুন এবং প্রশ্নের উত্তর দিন।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/08dfa27643b7a9c850179bd66de4f5aa41a8e93b7992b8778c687b64f66be2c6.png\" style=\"width: 467px; height: 281px;\" /></p>\n\n<p>নিম্নলিখিত কোন বছরে পূর্ববর্তী বছরের তুলনায় উৎপাদনে শতকরা বৃদ্ধি সর্বাধিক ছিল?</p>\n", "options": [{"prompt": "1", "value": "2014"}, {"prompt": "2", "value": "2016"}, {"prompt": "3", "value": "2012"}, {"prompt": "4", "value": "2011"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>આપેલ ચાર્ટનો કાળજીપૂર્વક અભ્યાસ કરો અને તે મુજબ પ્રશ્નનો જવાબ આપો.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/08dfa27643b7a9c850179bd66de4f5aa41a8e93b7992b8778c687b64f66be2c6.png\" style=\"width: 467px; height: 281px;\" /></p>\n\n<p>નીચેનામાંથી કયા વર્ષમાં પહેલા વર્ષ કરતાં ઉત્પાદનમાં ટકાવારી વધારો મહત્તમ હતો?</p>\n", "options": [{"prompt": "1", "value": "2014"}, {"prompt": "2", "value": "2016"}, {"prompt": "3", "value": "2012"}, {"prompt": "4", "value": "2011"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>கொடுக்கப்பட்ட விளக்கப்படத்தை கவனமாகப் படித்து அதற்கேற்ப கேள்விக்கு பதிலளிக்கவும். </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/08dfa27643b7a9c850179bd66de4f5aa41a8e93b7992b8778c687b64f66be2c6.png\" style=\"width: 467px; height: 281px;\" /></p><p> பின்வரும் எந்த ஆண்டுகளில் முந்தைய ஆண்டை விட உற்பத்தியில் சதவீதம் அதிகரித்தது, கொடுக்கப்பட்ட ஆண்டுகளில் அதிகபட்சம்?</p>", "options": [{"prompt": "1", "value": "2014"}, {"prompt": "2", "value": "2016"}, {"prompt": "3", "value": "2012"}, {"prompt": "4", "value": "2011"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><strong>Concept used :</strong></p>\n\n<p>Percentage increment = (Final value - initial value)/(Initial value)&nbsp;&times;&nbsp;100&nbsp;</p>\n\n<p><strong>Calculations :</strong></p>\n\n<p>Production increment in&nbsp;2011 = (800 - 500)/(500)&nbsp;&times;&nbsp;100 = 60%</p>\n\n<p>Production increment in 2012&nbsp;= (1200 - 800)/(800)&nbsp;&times; 100 = 50%</p>\n\n<p>Production increment in 2014 = (1300 - 900)/900)&nbsp;&times; 100 = 44.44%&nbsp;</p>\n\n<p>Production increment in 2016 = (1500 - 1000)/(1000)&nbsp;&times; 100 = 50%&nbsp;</p>\n\n<p><strong>&there4; Option 4 is the correct answer.</strong></p>\n", "hn": "\n<p><span style=\"font-weight: 700;\">प्रयुक्त&nbsp;</span><span style=\"font-weight: 700;\">संकल्पना</span><span style=\"font-weight: 700;\">&nbsp;:</span></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">प्रतिशत वृद्धि</span> = (<span style=\"color: rgb(37, 37, 37);  \">अंतिम मान - प्रारंभिक मान)/(प्रारंभिक मान)</span>&nbsp;&times;&nbsp;100&nbsp;</p>\n\n<p><span style=\"color: rgb(37, 37, 37); font-weight: 700;\">गणना&nbsp;</span><strong>:</strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">2011 में उत्पाद", "te": "", "mr": "<p><strong>वापरलेली संकल्पना:</strong></p>\n\n<p>टक्केवारी वाढ = (अंतिम मूल्य - प्रारंभिक मूल्य)/(प्रारंभिक मूल्य) <span style=\"color: rgb(33, 37, 41);\">× </span> 100</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>2011 मधील उत्पादन वाढ = (800 - 500)/(500) <span style=\"color: rgb(33, 37, 41);\">×</span> 100 = 60%</p>\n\n<p>2012 मधील उत्पादन वाढ = (1200 - 800)/(800) <span style=\"color: rgb(33, 37, 41);\">×</span> 100 = 50%</p>\n\n<p>2014 मधील उत्पादन वाढ = (1300 - 900)/900) <span style=\"color: rgb(33, 37, 41);\">×</span> 100 = 44.44%</p>\n\n<p>2016 मधील उत्पादन वाढ = (1500 - 1000)/(1000) <span style=\"color: rgb(33, 37, 41);\">×</span> 100 = 50%</p>\n\n<p><strong>∴ पर्याय 4 हे योग्य उत्तर आहे.</strong></p>\n", "bn": "<p><strong>ব্যবহৃত ধারণা :</strong></p>\n\n<p>শতকরা বৃদ্ধি = (শেষ মান - প্রাথমিক মান)/(প্রাথমিক মান) <span style=\"color: rgb(33, 37, 41);\">× </span>100</p>\n\n<p><strong>গণনা :</strong></p>\n\n<p>2011 সালে উৎপাদন বৃদ্ধি = (800 - 500)/(500) <span style=\"color: rgb(33, 37, 41);\">× </span>100 = 60%</p>\n\n<p>2012 সালে উৎপাদন বৃদ্ধি = (1200 - 800)/(800) <span style=\"color: rgb(33, 37, 41);\">× </span>100 = 50%</p>\n\n<p>2014 সালে উৎপাদন বৃদ্ধি = (1300 - 900)/900) <span style=\"color: rgb(33, 37, 41);\">× </span>100 = 44.44%</p>\n\n<p>2016 সালে উৎপাদন বৃদ্ধি = (1500 - 1000)/(1000) <span style=\"color: rgb(33, 37, 41);\">× </span>100 = 50%</p>\n\n<p><strong>∴ বিকল্প 4 সঠিক উত্তর।</strong></p>\n", "ml": "", "gu": "<p><strong>વાપરેલ ખ્યાલ :</strong></p>\n\n<p>ટકાવારી વધારો = (અંતિમ કિંમત - પ્રારંભિક કિંમત) / (પ્રારંભિક કિંમત) x 100</p>\n\n<p><strong>ગણતરીઓ :</strong></p>\n\n<p>2011 માં ઉત્પાદન વધારો = (800 - 500) / (500) x 100 = 60%</p>\n\n<p>2012 માં ઉત્પાદન વધારો = (1200 - 800) / (800) x 100 = 50%</p>\n\n<p>2014 માં ઉત્પાદન વધારો = (1300 - 900) / (900) x 100 = 44.44%</p>\n\n<p>2016 માં ઉત્પાદન વધારો = (1500 - 1000) / (1000) x 100 = 50%</p>\n\n<p><strong>∴ વિકલ્પ 4 સાચો જવાબ છે.</strong></p>\n", "kn": "", "ta": "<p><strong>பயன்படுத்தப்பட்ட கருத்து:</strong></p><p> சதவீத அதிகரிப்பு = (இறுதி மதிப்பு - ஆரம்ப மதிப்பு)/(ஆரம்ப மதிப்பு) x 100</p><p> <strong>கணக்கீடுகள்:</strong></p><p> 2011 இல் உற்பத்தி அதிகரிப்பு = (800 - 500)/(500) x 100 = 60%</p><p> 2012 இல் உற்பத்தி அதிகரிப்பு = (1200 - 800)/(800) x 100 = 50%</p><p> 2014 இல் உற்பத்தி அதிகரிப்பு = (1300 - 900)/900) x 100 = 44.44%</p><p> 2016 இல் உற்பத்தி அதிகரிப்பு = (1500 - 1000)/(1000) x 100 = 50%</p><p> <strong>∴ விருப்பம் 4 சரியான பதில்.</strong></p>", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Percentage", "confidence": "high"}, {"qid": "6034c0e1fb1dc297e1ea6db6", "qs_no": 2, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>The bar graph shows the number of cars sold by a distributor in each month from January to June.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c85e60777a3c6573a58ab89f1fd181268be6f86e51fb575e21b952e743eab671.png\" style=\"width: 364px; height: 258px;\" /></p>\n\n<p>How many more cars did he sell in the second quarter as compared to the first?</p>\n", "options": [{"prompt": "1", "value": "20"}, {"prompt": "2", "value": "25"}, {"prompt": "3", "value": "10"}, {"prompt": "4", "value": "30"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>स्तंभ आलेख जनवरी से जून तक प्रत्येक महीने में एक वितरक द्वारा बेची गई कारों की संख्या को दर्शाता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/feff397209a8f44f055e3548f5b375b68d8488a016de9c6c4a3a28e4c7292729.png\" style=\"width: 370px; height: 263px;\" /></p>\n\n<p>पहली की तुलना में उसने दूसरी तिमाही में कितनी अधिक कारें बेचीं?</p>\n", "options": [{"prompt": "1", "value": "20"}, {"prompt": "2", "value": "25"}, {"prompt": "3", "value": "10"}, {"prompt": "4", "value": "30"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><strong>Calculation:</strong></p>\n\n<p>Cars sold in first quarter = 100 + 85 + 60 = 245</p>\n\n<p>Cars sold in second quarter = 95 + 110 + 70 = 275</p>\n\n<p>Increased sale = 275 - 245 = 30</p>\n\n<p><strong>&there4; He sell 30 more cars in the second quarter as compared to the first quarter.</strong></p>\n", "hn": "<p><strong>गणना:</strong></p>\n\n<p>पहली तिमाही में बिकने वाली कारें = 100 + 85 + 60 = 245</p>\n\n<p>दूसरी तिमाही में बिकने वाली कारें = 95 + 110 + 70 = 275</p>\n\n<p>बिक्री में हुई वृद्धि = 275 - 245 = 30</p>\n\n<p><strong>&there4; वह पहली तिमाही की तुलना में दूसरी तिमाही में 30 अधिक&nbsp;कारों की बिक्री करता है।</strong></p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Data Interpretation", "confidence": "high"}, {"qid": "601d59b3c22ea1de3a8e67e0", "qs_no": 3, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>The following bar graph shows the number of deaths from road accidents occurred during the rainy season in the year 1992. Study the graph carefully and answer the question</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/991195b2b6f7a8c946b6bd41ea8365cbc6bffabe514e950534f118fe95b09769.png\" style=\"width: 400px; height: 258px;\" /></p>\n\n<p>Between which two consecutive weeks was the fall in the number of deaths the greatest?</p>\n", "options": [{"prompt": "1", "value": "7 July to 14 July"}, {"prompt": "2", "value": "21 July to 28 July"}, {"prompt": "3", "value": "30 June to 7 July"}, {"prompt": "4", "value": "28 July to 4 August"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्न दंड आरेख वर्ष 1992 में वर्षाकाल में वर्षा के दौरान हुई सड़क दुर्घटनाओं से होने वाली मृत्यु की संख्या को दर्शाता है। आरेख का ध्यानपूर्वक अध्ययन कीजिए और प्रश्नों के उत्तर दीजिए।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6062d78aa10ac3855c1310fee499f334dbc26e76b7222e72b1d798a39be381f1.png\" style=\"width: 400px; height: 243px;\" /></p>\n\n<p>किन क्रमागत दो हफ्तों के बीच मृत्यु की संख्या में गिरावट सबसे अधिक थी?</p>\n", "options": [{"prompt": "1", "value": "7 जुलाई से 14 जुलाई"}, {"prompt": "2", "value": "21 जुलाई से 28 जुलाई"}, {"prompt": "3", "value": "30 जून से 7 जुलाई"}, {"prompt": "4", "value": "28 जुलाई से 4 अगस्त"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வரும் பட்டை வரைபடம் 1992 ஆம் ஆண்டு மழைக்காலத்தில் நிகழ்ந்த சாலை விபத்துகளால் இறந்தவர்களின் எண்ணிக்கையைக் காட்டுகிறது. வரைபடத்தை கவனமாகப் படித்து கேள்விக்கு பதிலளிக்கவும்</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/991195b2b6f7a8c946b6bd41ea8365cbc6bffabe514e950534f118fe95b09769.png\" style=\"width: 400px; height: 258px;\" /></p>\n\n<p>எந்த இரண்டு வாரங்களுக்கு இடையில் இறப்பு எண்ணிக்கையில் மிக அதிகமான வீழ்ச்சி ஏற்பட்டது?</p>\n", "options": [{"prompt": "1", "value": "ஜூலை 7 முதல் ஜூலை 14 வரை"}, {"prompt": "2", "value": "ஜூலை 21 முதல் ஜூலை 28 வரை"}, {"prompt": "3", "value": "ஜூன் 30 முதல் ஜூலை 7 வரை"}, {"prompt": "4", "value": "ஜூலை 28 முதல் ஆகஸ்ட் 4 வரை"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p><strong>Calculations :</strong></p>\n\n<p>Fall in number of deaths for different years&nbsp;</p>\n\n<p>For 7 July to 14 July = 180 - 145 = 35&nbsp;</p>\n\n<p>For 28 July to 4 August = 160 - 150 = 10&nbsp;</p>\n\n<p>We can conclude the greatest fall in deaths is from 7 July to 14 July&nbsp;</p>\n\n<p><strong>&there4; The correct answer will be option 1.</strong></p>\n", "hn": "<p><strong>गणना:</strong></p>\n\n<p>विभिन्न वर्षों में मृत्यु की संख्या में गिरावट</p>\n\n<p>7 जुलाई से 14 जुलाई के लिए = 180 - 145 = 35&nbsp;</p>\n\n<p>28 जुलाई से 4 अगस्त के लिए&nbsp;= 160 - 150 = 10&nbsp;</p>\n\n<p>हम निष्कर्ष निकाल सकते हैं कि मृत्यु में सबसे बड़ी गिरावट 7 जुलाई से 14 जुलाई तक हुई है।</p>\n\n<p><strong>&there4; सही उत्तर विकल्प 1 होगा।</strong></p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "<p><strong>கணக்கீடுகள்:</strong></p>\n\n<p>வெவ்வேறு ஆண்டுகளில் இறப்பு எண்ணிக்கை வீழ்ச்சி</p>\n\n<p>ஜூலை 7 முதல் 14 ஜூலை வரை = 180 - 145 = 35</p>\n\n<p>ஜூலை 28 முதல் ஆகஸ்ட் 4 வரை = 160 - 150 = 10</p>\n\n<p>ஜூலை 7 முதல் ஜூலை 14 வரையிலான இறப்புகளில் மிகப்பெரிய வீழ்ச்சியை நாம் முடிவு செய்யலாம்</p>\n\n<p><strong>∴ சரியான பதில் விருப்பம் 1 ஆக இருக்கும்.</strong></p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Data Interpretation", "confidence": "high"}, {"qid": "601a9509d28abfa7fea0f040", "qs_no": 4, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>The bar graph given below shows the data of the production of paper (in lakh tonnes) by three different companies P, Q and R over the years.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d1c35dc497f47ddc4aca64e4641c631284b13467da9179760ae09ec12ecd608.png\" style=\"width: 428px; height: 272px;\" /></p>\n\n<p>What is the percentage increase in the productivity company Q from 2010 to 2013 ?</p>\n", "options": [{"prompt": "1", "value": "60%"}, {"prompt": "2", "value": "40%"}, {"prompt": "3", "value": "55%"}, {"prompt": "4", "value": "50%"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>नीचे दिया गया दंड आलेख&nbsp;तीन अलग-अलग कंपनियों P, Q और R द्वारा पिछले कुछ वर्षों में कागज&nbsp;के उत्पादन&nbsp;(लाख टन में) के आंकड़ों को दर्शाता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/855845a9f2d91fa41f60744a126a7a2a800a454a4722f65239364bed023b9b2c.png\" style=\"width: 429px; height: 270px;\" /></p>\n\n<p>2010 से 2013 तक&nbsp;कंपनी Q की उत्पादकता में प्रतिशत वृद्धि क्या है?</p>\n", "options": [{"prompt": "1", "value": "60&amp;nbsp;प्रतिशत"}, {"prompt": "2", "value": "40&amp;nbsp;प्रतिशत"}, {"prompt": "3", "value": "55&amp;nbsp;प्रतिशत"}, {"prompt": "4", "value": "50&amp;nbsp;प्रतिशत"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>The productivity of company Q in 2010 is 30 lakh tones</p>\n\n<p>The productivity of company Q in 2013 is 45 lakh tones</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>Percentage</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Percentage increase =&nbsp;<span class=\"math-tex\">\\(\\frac{{45 - 30}}{{30}} \\times 100\\)</span></p>\n\n<p>Percentage increase =&nbsp;<span class=\"math-tex\">\\(\\frac{{15}}{{30}} \\times 100\\)</span></p>\n\n<p>&there4; 100/2 = 50%</p>\n", "hn": "<p><strong>दिया गया है:</strong></p>\n\n<p>2010 में कंपनी Q की उत्पादकता 30 लाख टन है</p>\n\n<p>2013 में&nbsp;कंपनी Q की उत्पादकता 45 लाख टन है</p>\n\n<p><strong>उपयोग किया गया कांसेप्ट:</strong></p>\n\n<p>प्रतिशतता</p>\n\n<p><strong>गणना​:</strong></p>\n\n<p>प्रतिशत वृद्धि =&nbsp;<span class=\"math-tex\">\\(\\frac{{45 - 30}}{{30}} \\times 100\\)</span></p>\n\n<p>प्रतिशत वृद्धि =&nbsp;<span class=\"math-tex\">\\(\\frac{{15}}{{30}} \\times 100\\)</span></p>\n\n<p>&there4; 100/2 = 50&nbsp;प्रतिशत</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Data Interpretation", "confidence": "high"}, {"qid": "6040a0f568363eaa9bbc5054", "qs_no": 5, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Study the given chart and answer the question.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4148dc6027caf974972683194a33e4e84bdcdc71aae19abc3600bf6b5f4c0d80.png\" style=\"width: 457px; height: 274px;\" /></p>\n\n<p>In which of the given years is the percentage increase in the number of hotels in comparison to the previous year, is the maximum?</p>\n", "options": [{"prompt": "1", "value": "2004"}, {"prompt": "2", "value": "2003"}, {"prompt": "3", "value": "2001"}, {"prompt": "4", "value": "2002"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए आलेख&nbsp;का अध्ययन कीजिए और प्रश्न का उत्तर दीजिए।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fd0d203e4869a3ad98592da8e5c9ea3b4da41c5a7fc26f9e547b083f73227b2e.png\" style=\"width: 455px; height: 262px;\" /></p>\n\n<p>पिछले वर्ष की तुलना में होटलों की संख्या में प्रतिशत वृद्धि दिए गए&nbsp;वर्षों में से किस वर्ष में&nbsp;अधिकतम हुई है?</p>\n", "options": [{"prompt": "1", "value": "2004"}, {"prompt": "2", "value": "2003"}, {"prompt": "3", "value": "2001"}, {"prompt": "4", "value": "2002"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>கொடுக்கப்பட்ட விளக்கப்படத்தைப் படித்து கேள்விக்கு பதிலளிக்கவும். </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4148dc6027caf974972683194a33e4e84bdcdc71aae19abc3600bf6b5f4c0d80.png\" style=\"width: 457px; height: 274px;\" /></p><p> முந்தைய ஆண்டுடன் ஒப்பிடுகையில், கொடுக்கப்பட்ட எந்த ஆண்டுகளில் ஹோட்டல்களின் எண்ணிக்கையில் சதவீதம் அதிகரிப்பு, அதிகபட்சம்?</p>", "options": [{"prompt": "1", "value": "2004"}, {"prompt": "2", "value": "2003"}, {"prompt": "3", "value": "2001"}, {"prompt": "4", "value": "2002"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><span style=\"font-weight: 700;\">Concept used :</span></p>\n\n<p>Percentage increment = (Final value - initial value)/(Initial value)&nbsp;&times;&nbsp;100&nbsp;</p>\n<strong>Calculation :</strong>\n\n<p>For year 2001 = (440 - 410)/(410)&nbsp;&times; 100 = 7.31%</p>\n\n<p>For year 2002 = (570 - 440)/(440) &times; 100 = 29.54%</p>\n\n<p>For year 2003 = (710 - 570)/570)&nbsp;&times; 100 = 24.56%</p>\n\n<p>For year 2004 = (0/710)&nbsp;&times; 100 = 0%</p>\n\n<p><strong>&there4; The correct answer will be option 4.</strong></p>\n", "hn": "<p><strong>प्रयुक्त&nbsp;संकल्पना&nbsp;:</strong></p>\n\n<p>प्रतिशत वृद्धि&nbsp;= (अंतिम मान - प्रारंभिक मान)/(प्रारंभिक मान)&nbsp;&times;&nbsp;100</p>\n<strong>गणना&nbsp;:</strong>\n\n<p>वर्ष 2001 के लिए = (440 - 410)/(410)&nbsp;&times; 100 = 7.31%</p>\n\n<p>वर्ष 2002&nbsp;के लिए&nbsp;= (570 - 440)/(440) &times; 100 = 29.54%</p>\n\n<p>वर्ष 2003&nbsp;के लिए&nbsp;= (710 - 570)/570)&nbsp;&times; 100 = 24.56%</p>\n\n<p>वर्ष 2004&nbsp;के लिए&nbsp;= (0/710)&nbsp;&times; 100 = 0%</p>\n\n<p><strong>&there4; सही उत्तर विकल्प 4 होगा।</strong></p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "<p><span style=\"font-weight: 700;\">பயன்படுத்தப்பட்ட கருத்து:</span></p><p> சதவீத அதிகரிப்பு = (இறுதி மதிப்பு - ஆரம்ப மதிப்பு)/(ஆரம்ப மதிப்பு) x 100</p> <strong>கணக்கீடு :</strong><p> ஆண்டு 2001 = (440 - 410)/(410) x 100 = 7.31%</p><p> ஆண்டு 2002 = (570 - 440)/(440) x 100 = 29.54%</p><p> ஆண்டு 2003 = (710 - 570)/570) x 100 = 24.56%</p><p> ஆண்டு 2004 = (0/710) x 100 = 0%</p><p> <strong>∴ சரியான பதில் விருப்பம் 4 ஆக இருக்கும்.</strong></p>", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Percentage", "confidence": "high"}, {"qid": "600e60f5ad509ddd62388c98", "qs_no": 6, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>The given bar chart shows the number of students in a class who have secured marks in three ranges: &gt;= 75%, 60% - 74% and &lt; 60%.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/11b2a7094c8705badc4290f5af3ff8a30bdeca0f1c7b8b2190f86abc8c4f60e6.png\" style=\"width: 400px; height: 281px;\" /></p>\n\n<p>What is the total strength of the class?</p>\n", "options": [{"prompt": "1", "value": "110"}, {"prompt": "2", "value": "120"}, {"prompt": "3", "value": "140"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p><span style=\"color: rgb(37, 37, 37);\">दिया गया दंड आलेख एक कक्षा में उन छात्रों की संख्या को दर्शाता है जिन्होंने तीन श्रेणियों में अंक प्राप्त किए हैं</span>: &gt; = 75%, 60% - 74% और &lt;60%</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/11b2a7094c8705badc4290f5af3ff8a30bdeca0f1c7b8b2190f86abc8c4f60e6.png\" style=\"width: 400px; height: 281px;\" /></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">कक्षा में छात्रों की कुल संख्या क्या है?</span></p>\n", "options": [{"prompt": "1", "value": "110"}, {"prompt": "2", "value": "120"}, {"prompt": "3", "value": "140"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>கொடுக்கப்பட்ட பட்டை விளக்கப்படம் மூன்று வரம்புகளில் மதிப்பெண்களைப் பெற்ற வகுப்பில் உள்ள மாணவமாணவிகளின் எண்ணிக்கையைக் காட்டுகிறது: >= 75%, 60% - 74% மற்றும் < 60%.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/11b2a7094c8705badc4290f5af3ff8a30bdeca0f1c7b8b2190f86abc8c4f60e6.png\" style=\"width: 400px; height: 281px;\" /></p>\n\n<p>வகுப்பின் மொத்த எண்ணிக்கை என்ன?</p>\n", "options": [{"prompt": "1", "value": "110"}, {"prompt": "2", "value": "120"}, {"prompt": "3", "value": "140"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p><strong>Given</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>TOTAL</strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>BOYS</strong></p>\n\t\t\t</td>\n\t\t\t<", "hn": "\n<p><strong>दिया गया है</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>कुल</strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>लड़के</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>12</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>45</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>8</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>65</strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>लडकियाँ</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>7</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>53</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>5</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>65</strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p><strong>गणना</strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);\">कक्षा में छात्रों की कुल संख्या</span> = 65 + 65 = 130</p>\n\n3b:T638,\n<p><strong>கொடுக்கப்பட்டது</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<t", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "\n<p><strong>கொடுக்கப்பட்டது</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>மொத்தம்</strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><b>மாணவர்கள் </b></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\"><strong>1", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Data Interpretation", "confidence": "high"}, {"qid": "6007c69bfc44b7e846c55cf3", "qs_no": 7, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>The given graph represents the production and sales of a certain crop in quintals by the farmers F1, F2, F3 and F4.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/89261b9bbaf722b4a056276633988258f29d469bfef55868ccebb3c5b0be0a45.png\" /></p>\n\n<p>What is the average of a crop in quintals, sold by all farmers?</p>\n", "options": [{"prompt": "1", "value": "490"}, {"prompt": "2", "value": "470"}, {"prompt": "3", "value": "530"}, {"prompt": "4", "value": "510"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गया ग्राफ F1, F2, F3 और F4&nbsp;किसानों&nbsp;द्वारा क्विंटल&nbsp;में एक निश्चित फसल के उत्पादन और बिक्री का प्रतिनिधित्व करता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/e0b389c07454ad4919301f9eaaf68d5ecb865eb18f87461e758d6b0e1232a671.png\" /></p>\n\n<p>सभी किसानों<font style=\"vertical-align: inherit;\">&nbsp;द्वारा बेची गई</font>&nbsp;फसल<font style=\"vertical-align: inherit;\">&nbsp;का औसत&nbsp;</font>क्विंटल&nbsp;में<font style=\"vertical-align: inherit;\">&nbsp;क्या हैं<font style=\"vertical-align: inherit;\">?</font></font></p>\n", "options": [{"prompt": "1", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;490&amp;nbsp;&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "2", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;470&amp;nbsp;&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "3", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;530&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "4", "value": "510"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>ఇచ్చిన గ్రాఫ్ F1, F2, F3 మరియు F4 రైతుల ద్వారా క్వింటాళ్లలో నిర్దిష్ట పంట ఉత్పత్తి మరియు విక్రయాలను సూచిస్తుంది.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/89261b9bbaf722b4a056276633988258f29d469bfef55868ccebb3c5b0be0a45.png\" /></p>\n\n<p>రైతులందరూ విక్రయించే పంట సగటు క్వింటాళ్లు ఎంత?</p>\n", "options": [{"prompt": "1", "value": "490"}, {"prompt": "2", "value": "470"}, {"prompt": "3", "value": "530"}, {"prompt": "4", "value": "510"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>दिलेला आलेख F1, F2, F3 आणि F4 शेतकर्‍यांचे क्विंटलमध्ये विशिष्ट पिकाचे उत्पादन आणि विक्री दर्शवतो.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/89261b9bbaf722b4a056276633988258f29d469bfef55868ccebb3c5b0be0a45.png\" style=\"\" />सर्व शेतकऱ्यांनी विकलेल्या पिकाची <span style=\"\">क्विंटल मध्ये </span>सरासरी किती  आहे?</p>\n", "options": [{"prompt": "1", "value": "490"}, {"prompt": "2", "value": "470"}, {"prompt": "3", "value": "530"}, {"prompt": "4", "value": "510"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>প্রদত্ত লেখচিত্রটি কৃষকদের F1, F2, F3 এবং F4 দ্বারা কুইন্টালে একটি নির্দিষ্ট ফসলের উৎপাদন এবং বিক্রয় প্রতিনিধিত্ব করে।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/e0b389c07454ad4919301f9eaaf68d5ecb865eb18f87461e758d6b0e1232a671.png\" /></p>\n\n<p>কুইন্টালে সমস্ত কৃষকদের বিক্রি করা ফসলের গড় কত?</p>\n", "options": [{"prompt": "1", "value": "490"}, {"prompt": "2", "value": "470"}, {"prompt": "3", "value": "530"}, {"prompt": "4", "value": "510"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p style=\"\">கொடுக்கப்பட்ட வரைபடம், F1, F2, F3 மற்றும் F4 விவசாயிகளால் குவிண்டால்களில் ஒரு குறிப்பிட்ட பயிர் உற்பத்தி மற்றும் விற்பனையைக் குறிக்கிறது. </p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/89261b9bbaf722b4a056276633988258f29d469bfef55868ccebb3c5b0be0a45.png\" style=\"\" /></p>\n\n<p style=\"\">அனைத்து விவசாயிகளும் விற்கும் பயிரின் சராசரி குவிண்டால் எவ்வளவு?</p>\n", "options": [{"prompt": "1", "value": "<span style=\"\">490</span>"}, {"prompt": "2", "value": "<span style=\"\">470</span>"}, {"prompt": "3", "value": "<span style=\"\">530</span>"}, {"prompt": "4", "value": "<span style=\"\">510</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p><span style=\"font-weight: 700;\">Given:</span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: rgb(255, 255, 255);\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p>&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F1</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F2</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F3</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F4</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">Production</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>520</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>660</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>550</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>720</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">Sale</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>410</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>500</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>430</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>620</p>\n\n\t\t\t<div>&nbsp;</div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p><span style=\"font-weight: 700;\">Concept used:</span></p>\n\n<p>Average of a crop in quintals = sum of all sold crop/number of farmer</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Sum of all farmer sold of a crop in quintals = F1 + F2 + F3 + F4</p>\n\n<p>&rArr; 410 + 500 + 430 + 620</p>\n\n<p>&rArr; 1960 quintals</p>\n\n<p>Average of a crop in quintals, sold by all farmers&nbsp;</p>\n\n<p>&rArr; 1960/4</p>\n\n<p>&rArr; 490 quintals</p>\n\n<p><strong>&there4; The average of a crop in quintals, sold by all farmers is 490.</strong></p>", "hn": "\n<p><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया गया है:</font></font></span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: rgb(255, 255, 255);\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p>&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">F1</font></font></span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">F2</font></font></span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">F3</font></font></span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">F4</font></font></span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">उत्पादन</font></font></span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">520&nbsp;</font></font></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">660</font></font></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">550</font></font></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">720</font></font></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">बिक्री</font></font></span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">410</font></font></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">500</font></font></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">430</font></font></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">620</font></font></p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">प्रयुक्त अवधारणा:</font></font></span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">एक फसल का औसत </font></font>क्विंटल में&nbsp;<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">= सभी बेची गई फसल&nbsp;का योग/किसान की संख्या</font></font></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></strong></p>\n\n<p>सभी किसानों<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;द्वारा बेची गई</font></font>&nbsp;फसल<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> का योग&nbsp;</font></font>क्विंटल&nbsp;में<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;=&nbsp;</font></font>F1 + F2 + F3 + F4</p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; 410 + 500 + 430 + 620</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; 1960 क्विंटल</font></font></p>\n\n<p>सभी किसानों<font style=\"vertical-align: inherit;\">&nbsp;द्वारा बेची गई</font>&nbsp;फसल<font style=\"vertical-align: inherit;\">&nbsp;का औसत&nbsp;</font>क्विंटल&nbsp;में<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; 1960/4</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; 490 क्विंटल</font></font></p>\n\n<p><strong><span style=\"font-weight: 700;\">&there4;&nbsp;</span>सभी किसानों<font style=\"vertical-align: inherit;\">&nbsp;द्वारा बेची गई</font>&nbsp;फसल<font style=\"vertical-align: inherit;\">&nbsp;का औसत&nbsp;</font>क्विंटल&nbsp;में 490&nbsp;हैं।</strong>&nbsp;</p>\n\n35:T8c7,\n<p><span style=\"font-weight: 700;\">ఇచ్చినవి:</span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: rgb(255, 255, 255);\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F1</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F2</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span s", "te": "\n<p><span style=\"font-weight: 700;\">ఇచ్చినవి:</span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: rgb(255, 255, 255);\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F1</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F2</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F3</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F4</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">ఉత్పత్తి</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>520</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>660</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>550</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>720</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">అమ్మకం</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>410</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>500</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>430</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>620</p>\n\n\t\t\t<div> </div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p><span style=\"font-weight: 700;\">ఉపయోగించిన కాన్సెప్ట్:</span></p>\n\n<p>క్వింటాళ్లలో పంట సగటు = విక్రయించిన మొత్తం పంట/రైతు సంఖ్య</p>\n\n<p><strong>లెక్కింపు:</strong></p>\n\n<p>క్వింటాళ్లలో విక్రయించిన మొత్తం రైతుల మొత్తం = F1 + F2 + F3 + F4</p>\n\n<p>⇒ 410 + 500 + 430 + 620</p>\n\n<p>⇒ 1960 క్వింటాళ్లు</p>\n\n<p>రైతులందరూ విక్రయించే సగటు క్వింటాళ్లలో పంట</p>\n\n<p>⇒ 1960/4</p>\n\n<p>⇒ 490 క్వింటాళ్లు</p>\n\n<p><strong>∴ రైతులందరూ విక్రయించిన క్వింటాళ్లలో సగటు పంట 490.</strong></p>\n\n36:Ta18,\n<p><strong>दिलेल्याप्रमाणे:</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F1</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F2</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F3</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 8", "mr": "\n<p><strong>दिलेल्याप्रमाणे:</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F1</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F2</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F3</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F4</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><strong><span style=\"\">उत्पादन</span></strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>520</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>660</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>550</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>720</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">विक्री </span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>410</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>500</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>430</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>620</p>\n\n\t\t\t<div> </div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p style=\"\"><strong>वापरलेली संकल्पना:</strong></p>\n\n<p>क्विंटलमध्ये पिकाची सरासरी = सर्व विकलेल्या पिकांची बेरीज/शेतकऱ्यांची संख्या</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>सर्व शेतकर्‍यांनी क्विंटलमध्ये विकलेल्‍या पिकाची बेरीज <span style=\"\"> = F1 + F2 + F3 + F4</span></p>\n\n<p style=\"\">⇒ 410 + 500 + 430 + 620</p>\n\n<p style=\"\">⇒ 1960 <span style=\"\">क्विंटल</span></p>\n\n<p style=\"\"> <span style=\"\">सर्व शेतकऱ्यांनी विकलेल्या पिकाची </span>क्विंटलमध्ये सरासरी,</p>\n\n<p style=\"\">⇒ 1960/4</p>\n\n<p style=\"\">⇒ 490 <span style=\"\"> </span><span style=\"\">क्विंटल</span></p>\n\n<p style=\"\"><strong><span style=\"font-weight: 700; \">∴ </span>सर्व शेतकऱ्यांनी विकलेल्या पिकाची <span style=\"\">क्विंटलमध्ये</span> सरासरी 490 आहे.</strong></p>\n\n37:T8b3,\n<p><span style=\"font-weight: 700;\">প্রদত্ত:</span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: rgb(255, 255, 255);\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F1</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F2</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F3</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span st", "bn": "\n<p><span style=\"font-weight: 700;\">প্রদত্ত:</span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: rgb(255, 255, 255);\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F1</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F2</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F3</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F4</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">উৎপাদন</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>520</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>660</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>550</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>720</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">বিক্রয়</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>410</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>500</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>430</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>620</p>\n\n\t\t\t<div> </div>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p><span style=\"font-weight: 700;\">অনুসৃত ধারণা:</span></p>\n\n<p>কুইন্টালে একটি ফসলের গড় = সমস্ত বিক্রি হওয়া ফসলের যোগফল/কৃষকের সংখ্যা</p>\n\n<p><strong>গণনা:</strong></p>\n\n<p>কুইন্টালে সমস্ত কৃষকের বিক্রি করা ফসলের যোগফল = F1 + F2 + F3 + F4</p>\n\n<p>⇒ 410 + 500 + 430 + 620</p>\n\n<p>⇒ 1960 কুইন্টাল</p>\n\n<p>সমস্ত কৃষকের বিক্রি করা ফসলের গড় কুইন্টাল</p>\n\n<p>⇒ 1960/4</p>\n\n<p>⇒ 490 কুইন্টাল</p>\n\n<p><strong>∴ কুইন্টালে সমস্ত কৃষকদের বিক্রি করা ফসলের গড় 490</strong></p>\n\n38:T9d6,\n<p style=\"\"><span style=\"font-weight: 700;\">கொடுக்கப்பட்டவை:</span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F1</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F2</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"f", "ml": "", "gu": "", "kn": "", "ta": "\n<p style=\"\"><span style=\"font-weight: 700;\">கொடுக்கப்பட்டவை:</span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p> </p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F1</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F2</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F3</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p><span style=\"font-weight: 700;\">F4</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700; text-align: center;\">உற்பத்தி</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>520</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>660</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>550</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>720</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p><span style=\"font-weight: 700; text-align: center;\">விற்பனை</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>410</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>500</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>430</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 88px;\">\n\t\t\t<p>620</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p style=\"\"><span style=\"font-weight: 700;\">பயன்படுத்தப்பட்ட கோட்பாடு:</span></p>\n\n<p style=\"\">பயிரின் சராசரி குவிண்டால் = விற்கப்பட்ட பயிர்களின் தொகை/விவசாயிகளின் எண்ணிக்கை</p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p>ஒரு பயிரின் விற்ற அனைத்து விவசாயிகளின் தொகை குவிண்டால்களில் = F1 + F2 + F3 + F4</p>\n\n<p>⇒ 410 + 500 + 430 + 620</p>\n\n<p>⇒ 1960 குவிண்டால்</p>\n\n<p>பயிரின் சராசரி குவிண்டால்களில், அனைத்து விவசாயிகளாலும் விற்கப்படுகிறது</p>\n\n<p>⇒ 1960/4</p>\n\n<p>⇒ 490 குவிண்டால்</p>\n\n<p><strong>∴ அனைத்து விவசாயிகளாலும் விற்கப்படும் குவிண்டால் பயிரின் சராசரி 490.</strong></p>\n\n39:T960,\n<p><strong>Given</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:104px;\">\n\t\t\t<p align=\"center\">&nbsp;</p>\n\t\t\t</td", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6001887be1c86f52dfaf20a9", "qs_no": 8, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>The given graph shows the biscuit exports of India over a period of five years. Study the graph and answer the question that follows.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/272a64fc13bb12c41fb332aa98926afa1946e6e3e08cd33bd6056f9710688f82.png\" style=\"width: 450px; height: 291px;\" /></p>\n\n<p>In which year, the percentage increase in exports was maximum from its preceding year:</p>\n", "options": [{"prompt": "1", "value": "2007"}, {"prompt": "2", "value": "2006"}, {"prompt": "3", "value": "2009"}, {"prompt": "4", "value": "2008"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए ग्राफ में भारत के पांच वर्ष की अवधि के बिस्किट निर्यात को दिखाया गया है। ग्राफ का अध्ययन कीजिये&nbsp;और उस प्रश्न का उत्तर दीजिये&nbsp;जो अनुसरण करता है।</p>\n\n<p><span style=\"display: none;\">&nbsp;</span>&nbsp;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/272a64fc13bb12c41fb332aa98926afa1946e6e3e08cd33bd6056f9710688f82.png\" style=\"width: 450px; height: 291px;\" /></p>\n\n<p>किस वर्ष में निर्यात में प्रतिशत वृद्धि पूर्व वर्ष से अधिकतम थी?</p>\n", "options": [{"prompt": "1", "value": "2007"}, {"prompt": "2", "value": "2006"}, {"prompt": "3", "value": "2009"}, {"prompt": "4", "value": "2008"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>दिलेला आलेख पाच वर्षांच्या कालावधीत भारतातील बिस्किट निर्यात दर्शवितो. आलेखाचा अभ्यास करा आणि पुढील प्रश्नाचे उत्तर द्या.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/272a64fc13bb12c41fb332aa98926afa1946e6e3e08cd33bd6056f9710688f82.png\" style=\"width: 450px; height: 291px;\" /></p>\n\n<p>कोणत्या वर्षी, निर्यातीतील टक्केवारी वाढ त्याच्या मागील वर्षाच्या तुलनेत सर्वाधिक होती?</p>\n", "options": [{"prompt": "1", "value": "2007"}, {"prompt": "2", "value": "2006"}, {"prompt": "3", "value": "2009"}, {"prompt": "4", "value": "2008"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p><strong>Given: </strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><strong>Year</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><strong>Quantity</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><strong>Value</strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2005</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">100</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">150</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:20px;\">\n\t\t\t<p align=\"center\">2006</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:20px;\">\n\t\t\t<p align=\"center\">75</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:20px;\">\n\t\t\t<p align=\"center\">150</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2007</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">150</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">330</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2008</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">160</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">400</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2009</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">200</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">500</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p>&nbsp;</p>\n\n<p><strong>Calculation: </strong></p>\n\n<p>Decrease in exports in 2006 = 100 &ndash; 75 = 25</p>\n\n<p>&rArr; Percentage decrease = 25/100 &times; 100 = 25 %</p>\n\n<p>Increase in exports in 2007 = 150 &ndash; 75 = 75</p>\n\n<p>&rArr;&nbsp;Percentage increase = 75/75 &times; 100 = 100 %</p>\n\n<p>Increase in exports in 2008 = 160 &ndash; 150 = 10</p>\n\n<p>&rArr;&nbsp;Percentage increase = 10/150 &times; 100 = 6.66 %</p>\n\n<p>Increase in exports in 2009 = 200 &ndash; 160 = 40</p>\n\n<p>&rArr;&nbsp;Percentage increase = 40/160 &times; 100 = 25 %</p>\n\n<p><strong>&there4;</strong><strong> Percentage increase was maximum in year 2007.</strong></p>", "hn": "\n<p><strong>दिया गया है: </strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><b>वर्ष&nbsp;</b></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><strong><span style=\"color:  (37, 37, 37); \">राशि</span></strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><strong><span style=\"color:  (37, 37, 37);  \">मूल्य</span></strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2005</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">100</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">150</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:20px;\">\n\t\t\t<p align=\"center\">2006</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:20px;\">\n\t\t\t<p align=\"center\">75</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:20px;\">\n\t\t\t<p align=\"center\">150</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2007</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">150</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">330</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2008</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">160</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">400</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2009</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">200</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">500</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p>&nbsp;</p>\n\n<p><strong><span style=\"color:  (37, 37, 37);  \">गणना</span>: </strong></p>\n\n<p><span style=\"color:  (37, 37, 37);  \">2006 में निर्यात में कमी</span> = 100 &ndash; 75 = 25</p>\n\n<p>&rArr; <span style=\"color:  (37, 37, 37);  \">प्रतिशत कमी</span> = 25/100 &times; 100 = 25 %</p>\n\n<p>2007 में निर्यात में वृद्धि = 150 &ndash; 75 = 75</p>\n\n<p>&rArr;&nbsp;<span style=\"color:  (37, 37, 37);  \">प्रतिशत वृद्धि</span> = 75/75 &times; 100 = 100 %</p>\n\n<p>2008 में निर्यात में वृद्धि = 160 &ndash; 150 = 10</p>\n\n<p>&rArr;&nbsp;<span style=\"color:  (37, 37, 37);  \">प्रतिशत वृद्धि</span> = 10/150 &times; 100 = 6.66 %</p>\n\n<p>2009 में निर्यात में वृद्धि= 200 &ndash; 160 = 40</p>\n\n<p>&rArr;&nbsp;<span style=\"color:  (37, 37, 37);  \">प्रतिशत वृद्धि</span> = 40/160 &times; 100 = 25 %</p>\n\n<p><strong>&there4; <span style=\"color:  (37, 37, 37);  \">वर्ष 2007 में प्रतिशत वृद्धि अधिकतम थी।</span></strong></p>\n\n32:Ta7d,\n<p><strong>दिलेले आहे: </strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><strong>वर्ष</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><strong>प्रमाण</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<", "te": "", "mr": "\n<p><strong>दिलेले आहे: </strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><strong>वर्ष</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><strong>प्रमाण</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\"><strong>मूल्य</strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2005</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">100</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">150</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:20px;\">\n\t\t\t<p align=\"center\">2006</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:20px;\">\n\t\t\t<p align=\"center\">75</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:20px;\">\n\t\t\t<p align=\"center\">150</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2007</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">150</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">330</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2008</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">160</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">400</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">2009</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">200</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:51px;height:19px;\">\n\t\t\t<p align=\"center\">500</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p> </p>\n\n<p><strong>गणना: </strong></p>\n\n<p>2006 मध्ये निर्यातीत घट = 100 – 75 = 25</p>\n\n<p>⇒ टक्केवारी घट = 25/100 × 100 = 25 %</p>\n\n<p>2007 <span style=\"\">मध्ये निर्यातीत वाढ </span>= 150 – 75 = 75</p>\n\n<p>⇒ टक्केवारी वाढ = 75/75 × 100 = 100 %</p>\n\n<p>2008 <span style=\"\">मध्ये निर्यातीत वाढ </span>= 160 – 150 = 10</p>\n\n<p>⇒ टक्केवारी वाढ = 10/150 × 100 = 6.66 %</p>\n\n<p>2009 मध्ये निर्यातीत वाढ = 200 – 160 = 40</p>\n\n<p>⇒ टक्केवारी वाढ = 40/160 × 100 = 25 %</p>\n\n<p><strong>∴ वर्ष 2007 मध्ये टक्केवारीत सर्वाधिक वाढ झाली.</strong></p>\n\n33:Tadd,\n<p><span style=\"font-weight: 700;\">Given:</span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: rgb(255, 255, 255);\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 82px;\">\n\t\t\t<p>&nbsp;</p>\n\t\t\t&", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Percentage", "confidence": "high"}, {"qid": "600187d078ef629ac91a9ca8", "qs_no": 9, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>The given bar-graph represents the number of teachers in different weight groups. Study the graph and answer the question that follows.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/d4adba72d95979dbb982440170351961e57bbdfdda6e30aefc249817e49ad8fc.png\" style=\"width: 372px; height: 278px;\" /></p>\n\n<p>In which of the following weight groups is the number of teachers the maximum?</p>\n", "options": [{"prompt": "1", "value": "45 - 50"}, {"prompt": "2", "value": "60 - 65"}, {"prompt": "3", "value": "65 - 70"}, {"prompt": "4", "value": "40 - 45"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिया गया बार-ग्राफ विभिन्न वजन के समूहों में शिक्षकों की संख्या का निरूपण करता है। ग्राफ का अध्ययन कीजिये और प्रश्नो&nbsp;का उत्तर दीजिये।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/d4adba72d95979dbb982440170351961e57bbdfdda6e30aefc249817e49ad8fc.png\" style=\"width: 372px; height: 278px;\" /></p>\n\n<p>निम्नलिखित में से किस वजन के समूह में शिक्षकों की संख्या अधिकतम है?</p>\n", "options": [{"prompt": "1", "value": "45 - 50"}, {"prompt": "2", "value": "60 - 65"}, {"prompt": "3", "value": "65 - 70"}, {"prompt": "4", "value": "40 - 45"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>Numbers of teachers in the age group of 40 - 45&nbsp;= 3</p>\n\n<p>Numbers of teachers in the age group of 45 - 50 = 5</p>\n\n<p>Numbers of teachers in the age group of 50 - 55&nbsp;= 4</p>\n\n<p>Numbers of teachers in the age group of 55 - 60&nbsp;= 7</p>\n\n<p>Numbers of teachers in the age group of 60&nbsp;- 65&nbsp;= 9</p>\n\n<p>Numbers of teachers in the age group of 65 - 70 = 5</p>\n\n<p>Numbers of teachers in the age group of 70&nbsp;- 75&nbsp;= 6</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>We clearly see that,&nbsp;</p>\n\n<p>Numbers of teachers in the age group of 60 - 65 = 9</p>\n\n<p>Which is maximum teachers in this group.</p>\n\n<p><strong>&there4; The numbers of teachers in the age group of 60 -65&nbsp;is 9 which is maximum.</strong></p>\n", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p>40 - 45&nbsp;<span style=\"color: rgb(37, 37, 37);  \">आयु वर्ग में शिक्षकों की संख्या&nbsp;</span>= 3</p>\n\n<p>45 - 50 <span style=\"color: rgb(37, 37, 37);  \">आयु वर्ग में शिक्षकों की संख्या&nbsp;</span>= 5</p>\n\n<p>50 - 55&nbsp;<span style=\"color: rgb(37, 37, 37);  \">आयु वर्ग में शिक्षकों की संख्या&nbsp;</span>= 4</p>\n\n<p>55 - 60&nbsp;<span style=\"color: rgb(37, 37, 37);  \">आयु वर्ग में शिक्षकों की संख्या&nbsp;</span>= 7</p>\n\n<p>60&nbsp;- 65&nbsp;<span style=\"color: rgb(37, 37, 37);  \">आयु वर्ग में शिक्षकों की संख्या&nbsp;</span>= 9</p>\n\n<p>65", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "5ff5650a46296637a3551c7a", "qs_no": 10, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>The given data shows the number of mobiles (in thousands) manufactured by companies C - 1, C - 2 C - 3 and C - 4 in 2017, 2018 and 2019.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1038c5813be6f39e77ff924bb49ae95792e24c7450a5f47652bd5dee80699b3b.png\" style=\"width: 335px; height: 249px;\" /></p>\n\n<p>Which company witnessed the highest increase in manufacturing from 2017 to 2018?</p>\n", "options": [{"prompt": "1", "value": "C - 4"}, {"prompt": "2", "value": "C - 2"}, {"prompt": "3", "value": "C - 1"}, {"prompt": "4", "value": "C - 3"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए डेटा में कंपनियों&nbsp;सी - 1, सी - 2, सी - 3 और सी - 4&nbsp;द्वारा&nbsp;2017, 2018 और 2019 में निर्मित मोबाइलों&nbsp;(हजार&nbsp;में) की संख्या को दिखाया गया है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1038c5813be6f39e77ff924bb49ae95792e24c7450a5f47652bd5dee80699b3b.png\" style=\"width: 335px; height: 249px;\" /></p>\n\n<p>2017 से 2018 तक <span style=\"color: rgb(37, 37, 37); \">उत्पादकता</span>&nbsp;में सबसे अधिक वृद्धि किस कंपनी की देखी गई?</p>\n", "options": [{"prompt": "1", "value": "सी - 4"}, {"prompt": "2", "value": "सी - 2"}, {"prompt": "3", "value": "सी - 1"}, {"prompt": "4", "value": "सी - 3"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>கொடுக்கப்பட்ட தரவு, 2017, 2018 மற்றும் 2019 ஆம் ஆண்டுகளில் C - 1, C - 2 C - 3 மற்றும் C - 4 ஆகிய நிறுவனங்களால் தயாரிக்கப்பட்ட கைப்பேசிகளின் (ஆயிரங்களில்) எண்ணிக்கையைக் காட்டுகிறது.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1038c5813be6f39e77ff924bb49ae95792e24c7450a5f47652bd5dee80699b3b.png\" style=\"width: 335px; height: 249px;\" /></p>\n\n<p>2017 ஆம் ஆண்டு முதல் 2018 ஆம் ஆண்டு வரை எந்த நிறுவனம் உற்பத்தியில் அதிக வளர்ச்சியைக் கண்டது?</p>\n", "options": [{"prompt": "1", "value": "<span style=\"color: rgb(33, 37, 41);\">C - 4</span>"}, {"prompt": "2", "value": "<span style=\"color: rgb(33, 37, 41);\">C - 2</span>"}, {"prompt": "3", "value": "<span style=\"color: rgb(33, 37, 41);\">C - 1</span>"}, {"prompt": "4", "value": "<span style=\"color: rgb(33, 37, 41);\">C - 3</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><strong>Calculation:</strong></p>\n\n<p>Increase in numbers of manufactured mobiles for Company C1 from 2017 to 2018 = 65000 - 59000 = 6000</p>\n\n<p>Increase in numbers of&nbsp;manufactured mobiles for Company C2&nbsp;from 2017 to 2018 = 67000 - 62000 = 5000</p>\n\n<p>Increase in numbers of&nbsp;manufactured mobiles for Company C3&nbsp;from 2017 to 2018 = 71000 - 68000 = 3000</p>\n\n<p>Increase in numbers of&nbsp;manufactured mobiles for Company C4&nbsp;from 2017 to 2018 = 62000 - 59000 = 3000</p>\n\n<p><strong>&there4; The highest increase in manufacturing from 2017 to 2018 is in company C1 which is 6000 mobiles.</strong></p>\n", "hn": "<p><strong>गणना:</strong></p>\n\n<p>2017 से 2018 के लिए कंपनी सी1 में&nbsp;निर्मित मोबाइलों की संख्या में वृद्धि = 65000 - 59000 = 6000</p>\n\n<p>2017 से 2018 तक कंपनी सी2 में निर्मित मोबाइलों की संख्या में वृद्धि = 67000 - 62000 = 5000</p>\n\n<p>2017 से 2018 के लिए कंपनी सी3 में निर्मित मोबाइलों की संख्या में वृद्धि = 71000 - 68000 = 3000</p>\n\n<p>2017 से 2018 के लिए कंपनी सी4 में निर्मित मोबाइलों की संख्या में वृद्धि = 62000 - 59000 = 3000</p>\n\n<p><strong><span style=\"font-weight: 700;\">&there4;</span> 2017 से 2018 तक <span style=\"color: rgb(37, 37, 37);\">उत्पादकता</span> में सबसे अधिक वृद्धि कंपनी सी1 में है जो 6000 मोबाइल है।</strong></p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "\n<p><strong>கணக்கீடு:</strong></p>\n\n<p>2017 ஆம் ஆண்டு முதல் 2018 ஆம் ஆண்டு வரை C1 நிறுவனத்திற்காக தயாரிக்கப்பட்ட கைப்பேசிகளின்  எண்ணிக்கையில் அதிகரிப்பு = 65000 - 59000 = 6000</p>\n\n<p>2017 <span style=\"color: rgb(33, 37, 41);\">ஆம் ஆண்டு </span>முதல் 2018 <span style=\"color: rgb(33, 37, 41);\">ஆம் ஆண்டு </span>வரை C2 நிறுவனத்திற்காக தயாரிக்கப்பட்ட <span style=\"color: rgb(33, 37, 41);\">கைப்பேசிகளின்  </span>எண்ணிக்கையில் அதிகரிப்பு = 67000 - 62000 = 5000</p>\n\n<p>2017 <span style=\"color: rgb(33, 37, 41);\">ஆம் ஆண்டு </span>முதல் 2018 <span style=\"color: rgb(33, 37, 41);\">ஆம் ஆண்டு </span>வரை C3 நிறுவனத்திற்காக தயாரிக்கப்பட்ட <span style=\"color: rgb(33, 37, 41);\">கைப்பேசிகளின்  </span>எண்ணிக்கையில் அதிகரிப்பு = 71000 - 68000 = 3000</p>\n\n<p>2017 <span style=\"color: rgb(33, 37, 41);\">ஆம் ஆண்டு </span>முதல் 2018 <span style=\"color: rgb(33, 37, 41);\">ஆம் ஆண்டு </span>வரை C4 நிறுவனத்திற்காக தயாரிக்கப்பட்ட <span style=\"color: rgb(33, 37, 41);\">கைப்பேசிகளின்  </span>எண்ணிக்கையில் அதிகரிப்பு = 62000 - 59000 = 3000</p>\n\n<p><strong>∴ 2017 <span style=\"color: rgb(33, 37, 41);\">ஆம் ஆண்டு </span>முதல் 2018 </strong><span style=\"color: rgb(33, 37, 41);\"><strong>ஆம் ஆண்டு</strong> </span><strong>வரை உற்பத்தியில் அதிகபட்ச அதிகரிப்பு கண்ட நிறுவனம்  C1 மற்றும் 6000 கைபேசிகள் ஆகும்.</strong></p>\n\n2f:T829,\n<p><strong>दिया गया है:</strong></p>\n\n<p>40 - 45&nbsp;<span style=\"color: rgb(37, 37, 37);  \">आयु वर्ग में शिक्षकों की संख्या&nbsp;</span>= 3</p>\n\n<p>45 - 50 <span style=\"color: rgb(37, 37, 37);  \">आयु वर्ग में शिक्षकों की संख्या&nbsp;</span>= 5</p>\n\n<p>50 - 55&nbsp;<span style=\"color: rgb(37, 37, 37);  \">आयु वर्ग में शिक्षकों की संख्या&nbsp;</span>= 4</p>\n\n<p>55 - 60&nbsp;<span style=\"color: rgb(37, 37, 37);  \">आयु वर्ग में शिक्षकों की संख्या&nbsp;</span>= 7</p>\n\n<p>60&nbsp;- 65&nbsp;<span style=\"color: rgb(37, 37, 37);  \">आयु वर्ग में शिक्षकों की संख्या&nbsp;</span>= 9</p>\n\n<p>65 - 70 <span style=\"color: rgb(37, 37, 37);  \">आ", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 10 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>

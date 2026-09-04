@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 6: Maths (Average - II)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 6: Maths (Average - II)</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-maths-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">10 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">30.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+3.0 / -1.0</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63afc357cb51b19d78a197d5</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63afc357cb51b19d78a197d5", "title": "PYCT 6: Maths (Average - II)", "series_slug": "ssc-maths-previous-year-questions", "duration_min": 10, "max_marks": 30.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "6329b604972c5fb08aaf42e7", "section_name": "Test", "q_count": 10, "max_marks": 30.0, "questions": [{"qid": "5fcf2db9d29cb96776bb28da", "qs_no": 1, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The average temperature on Friday, Saturday and Sunday was 26∘&nbsp;and on Saturday, Sunday and Monday it was 24∘. If on Monday it was exactly 25∘. Then what was the temperature on Friday?", "options": [{"prompt": "1", "value": "33&lt;sup&gt;∘&amp;nbsp;&lt;/sup&gt;"}, {"prompt": "2", "value": "32&lt;sup&gt;∘&amp;nbsp;&lt;/sup&gt;"}, {"prompt": "3", "value": "30&lt;sup&gt;∘&amp;nbsp;&lt;/sup&gt;"}, {"prompt": "4", "value": "31&lt;sup&gt;∘&amp;nbsp;&lt;/sup&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "\n<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">शुक्रवार, शनिवार और रविवार को औसत तापमान 26</font></font><sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">∘</font></font></sup>&nbsp;था<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;और शनिवार, रविवार और सोमवार को यह 24</font></font><sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">∘</font></font></sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> </font></font>था<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">। यदि&nbsp;</font><font style=\"vertical-align: inherit;\">सोमवार को&nbsp; यह ठीक 25</font></font><sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">∘</font></font></sup>&nbsp;था<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">। तब</font><font style=\"vertical-align: inherit;\">&nbsp;शुक्रवार को तापमान कितना था?</font></font>\n2f:T441,<p><strong>Given:</strong></p>\n\n<p>Seven persons have 20, 30, 40, 50, 60, 70 and 80 chocolates with them.</p>\n\n<p><strong>Formula used:</strong></p>\n\n&l", "options": [{"prompt": "1", "value": "33&lt;sup&gt;∘&amp;nbsp;&lt;/sup&gt;"}, {"prompt": "2", "value": "32&lt;sup&gt;∘&amp;nbsp;&lt;/sup&gt;"}, {"prompt": "3", "value": "30&lt;sup&gt;∘&amp;nbsp;&lt;/sup&gt;"}, {"prompt": "4", "value": "31&lt;sup&gt;∘&amp;nbsp;&lt;/sup&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>Average temperature on Friday, Saturday and Sunday = 26<sup>&deg;</sup></p>\n\n<p>Average temperature on Saturday, Sunday and Monday = 24<sup>&deg;&nbsp;</sup></p>\n\n<p>Temperature on Monday = 25<sup>&deg;&nbsp;</sup></p>\n\n<p><strong>Formula Used:</strong></p>\n\n<p><span class=\"math-tex\">\\(Average = \\;\\frac{{Sum\\;of\\;values}}{{Number\\;of\\;values}}\\)</span></p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Sum of temperatures on Friday, Saturday and Sunday = 3&nbsp;&times;&nbsp;26<sup>&deg;&nbsp;</sup></p>\n\n<p>&rArr;&nbsp;Sum of temperatures on Friday, Saturday and Sunday = 78<sup>&deg;&nbsp;</sup></p>\n\n<p>Sum of&nbsp;temperatures on Saturday, Sunday and Monday = 3&nbsp;&times; 24<sup>&deg;&nbsp;</sup></p>\n\n<p>&rArr;&nbsp;Sum of&nbsp;temperatures on Saturday, Sunday and Monday = 72<sup>&deg;&nbsp;</sup></p>\n\n<p>Temperature on Friday =&nbsp;Sum of temperatures on Friday, Saturday and Sunday + Temperature on Monday - Sum of&nbsp;temperatures on Saturday, Sunday and Monday</p>\n\n<p>&rArr; Temperature on Friday = 78<sup>&deg;</sup>&nbsp;+ 25<sup>&deg;</sup>&nbsp;&ndash;&nbsp;72<sup>&deg;</sup></p>\n\n<p>&rArr;&nbsp;103<sup>&deg;</sup>&nbsp;&ndash;&nbsp;72<sup>&deg;</sup></p>\n\n<p>&rArr; 31<sup>&deg;</sup></p>\n\n<p><strong>&there4; Temperature on Friday is 31<sup>&deg;</sup></strong></p>", "hn": "\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया गया है:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\">शुक्रवार, शनिवार और रविवार को औसत तापमान&nbsp;= 26</font><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\"><font style=\"vertical-align: inherit;\">∘</font></span>&nbsp;<font style=\"vertical-align: inherit;\">&nbsp;</font></p>\n\n<p><font style=\"vertical-align: inherit;\">शनिवार, रविवार और सोमवार </font>को औसत तापमान<font style=\"vertical-align: inherit;\"> = 24</font><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\"><font style=\"vertical-align: inherit;\">∘</font></span><font style=\"vertical-align: inherit;\">&nbsp;</font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">सोमवार को&nbsp;</font></font>तापमान<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;= 25</font></font><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\"><font style=\"vertical-align: inherit;\">∘</font></span>&nbsp;</p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">प्रयुक्त सूत्र:</font></font></strong></p>\n\n<p><span class=\"math-tex\">\\(Average = \\;\\frac{{Sum\\;of\\;values}}{{Number\\;of\\;values}}\\)</span></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">शुक्रवार, शनिवार और रविवार को तापमान का योग = 3 &times; 26</font></font><sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&deg;&nbsp;</font></font></sup></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; शुक्रवार, शनिवार और रविवार&nbsp;</font></font>को तापमान का योग<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> = 78</font><sup><font style=\"vertical-align: inherit;\">&deg;&nbsp;</font></sup></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">शनिवार, रविवार और सोमवार को तापमान का योग = 3 &times; 24</font></font><sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&deg;&nbsp;</font></font></sup></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; शनिवार, रविवार और सोमवार को तापमान का योग = 72</font></font><sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&deg;&nbsp;</font></font></sup></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">शुक्रवार को तापमान = शुक्रवार, शनिवार और रविवार को तापमान का योग + सोमवार को तापमान - शनिवार, रविवार और सोमवार को तापमान का योग&nbsp; &nbsp;</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; शुक्रवार को तापमान </font></font>= 78<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">&deg;</span>&nbsp;+ 25<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">&deg;</span>&nbsp;&ndash;&nbsp;72<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">&deg;</span></p>\n\n<p>&rArr;&nbsp;103<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">&deg;</span>&nbsp;&ndash;&nbsp;72<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">&deg;</span></p>\n\n<p>&rArr; 31<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">&deg;</span></p>\n\n<p><span style=\"font-weight: 700;\">&there4;</span><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> शुक्रवार को तापमान 31</font></font><sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&deg;&nbsp;</font></font></sup></strong><span style=\"font-weight: 700;\">है।</span></p>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 6: Maths (Average - II)\",\"sections\":[{\"_id\":\"6329b604972c5fb08aaf42e7\",\"qCount\":10,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":1,\"posMarks\":3,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isPartialMarking\":false,\"_id\":\"5fcf2db9d29cb96776bb28da\",\"en\":{\"value\":\"The average temperature on Friday, Saturday and Sunday was 26∘&nbsp;and on Saturday, Sunday and Monday it was 24∘. If on Monday it was exactly 25∘. Then what was the temperature on Friday?\",\"options\":[{\"prompt\":\"1\",\"value\":\"33<sup>∘&nbsp;</sup>\"},{\"prompt\":\"2\",\"value\":\"32<sup>∘&nbsp;</sup>\"},{\"prompt\":\"3\",\"value\":\"30<sup>∘&nbsp;</sup>\"},{\"prompt\":\"4\",\"", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "5fccab5fb977b99533ccf704", "qs_no": 2, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "A player has a certain average for 15 innings. In the 16<sup>th</sup> inning, he scores 120, thereby his average increased by 6 runs. What is the new average?", "options": [{"prompt": "1", "value": "8"}, {"prompt": "2", "value": "30"}, {"prompt": "3", "value": "20"}, {"prompt": "4", "value": "24"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">एक खिलाड़ी का 15 पारियों का एक निश्चित aऔसत है। </font><font style=\"vertical-align: inherit;\">16</font></font><sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">वें</font></font></sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;पारी में खिलाड़ी ने 120 रन बनाए, जिससे उसका औसत 6 रन बढ़ गया। </font><font style=\"vertical-align: inherit;\">नया औसत ज्ञात कीजिये?</font></font>", "options": [{"prompt": "1", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;8&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "2", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;30&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "3", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;20&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "4", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;24&lt;/font&gt;&lt;/font&gt;"}], "range": {"start": "", "end": ""}}, "mr": {"value": "एका खेळाडूने सरासरी 15 डावांची नोंद केली आहे. या खेळाडूने 16 व्या डावात 120 धावा केल्या आणि त्याने त्याच्या सरासरीने 6 धावांनी वाढ केली. नवीन सरासरी शोधा?", "options": [{"prompt": "1", "value": "8"}, {"prompt": "2", "value": "30"}, {"prompt": "3", "value": "20"}, {"prompt": "4", "value": "24"}], "range": {"start": "", "end": ""}}, "bn": {"value": "একজন খেলোয়াড়ের 15 ইনিংসের একটি নির্দিষ্ট গড় রয়েছে। 16 তম ইনিংসে তিনি 120 রান করেছিলেন, যার ফলে তার গড় 6 রান বেড়েছে। নতুন গড় কত?", "options": [{"prompt": "1", "value": "8"}, {"prompt": "2", "value": "30"}, {"prompt": "3", "value": "20"}, {"prompt": "4", "value": "24"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>The score in the 16<sup>th</sup> innings is 120</p>\n\n<p>The increase in average is 6</p>\n\n<p><strong>Formula Used:</strong></p>\n\n<p>Total score = Average &times; No. of Innings</p>\n\n<p><strong>Calculations:</strong></p>\n\n<p>Let the initial average be &lsquo;k&rsquo;</p>\n\n<p>&rArr; New average = k + 6</p>\n\n<p>&rArr; Total Score after 15 innings = 15k</p>\n\n<p>&rArr; Total Score after 16 innings = 16(k + 6) = 16k + 96</p>\n\n<p>&rArr; 15k + 120 = 16k + 96</p>\n\n<p>&rArr;k&nbsp;= 24</p>\n\n<p>&rArr; k + 6 = 24 + 6 = 30</p>\n\n<p>&there4; New Average = k + 6 = 30</p>\n", "hn": "\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया हुआ:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">16</font></font><sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">वीं</font></font></sup><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> पारी </font><font style=\"vertical-align: inherit;\">में स्कोर </font><font style=\"vertical-align: inherit;\">120 है।&nbsp;</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">औसत में वृद्धि 6 है।&nbsp;</font></font></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">प्रयुक्त सूत्र:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">कुल स्कोर = औसत &times; पारियों&nbsp;की संख्या</font></font></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">प्रारंभिक औसत&nbsp;&#39;k&#39; है।&nbsp;</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; नया औसत = k + 6</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; 15 पारियों के बाद कुल स्कोर = 15k</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; 16 पारियों के बाद कुल स्कोर = 16 (k + 6) = 16k + 96</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; 15k + 120 = 16k + 96</font></font></p>\n\n<p>&rArr;k = 24</p>\n\n<p>&rArr; k + 6 = 24 + 6 = 30</p>\n\n<p>&there4;<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> नया औसत = k + 6 = 30</font></font></p>\n\n46:T78f,\n<p><strong>Given:</strong></p>\n\n<p>Average temperature on Friday, Saturday and Sunday = 26<sup>&deg;</sup></p>\n\n<p>Average temperature on Saturday, Sunday and Monday = 24<sup>&deg;&nbsp;</sup></p>\n\n<p&g", "te": "", "mr": "<p><strong>दिलेः</strong></p>\n\n<p>16 <sup>व्या</sup> डावातील धावसंख्या 120 आहे</p>\n\n<p>सरासरी वाढ 6 आहे</p>\n\n<p><strong>वापरलेला फॉर्म्युला:</strong></p>\n\n<p>एकूण धावसंख्या = सरासरी  डावांची  संख्या</p>\n\n<p><span style=\"font-weight: 700;\"><span id=\"docs-internal-guid-8b5766fe-7fff-f95c-3988-f9a1d518cbf8\"><span style=\"background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">आकडेमोड </span></span></span><strong>:</strong></p>\n\n<p>प्रारंभिक सरासरी 'k ' असे मानू</p>\n\n<p>नवीन सरासरी = k + 6</p>\n\n<p> 15 डावांनंतर एकूण धावसंख्या = 15 k</p>\n\n<p>16 डावांनंतर एकूण धावसंख्या = 16(k + 6) = 16k + 96</p>\n\n<p>⇒ 15k + 120 = 16k + 96</p>\n\n<p>⇒ k + 6 = 30</p>\n\n<p>∴ नवीन सरासरी = k + 6 = 30</p>\n", "bn": "<p><strong>প্রদত্ত:</strong></p>\n\n<p>16 তম ইনিংসে রান 120</p>\n\n<p>গড় বেড়েছে 6</p>\n\n<p><strong>অনুসৃত সূত্র:</strong></p>\n\n<p>মোট রান = গড় × ইনিংসের সংখ্যা</p>\n\n<p><strong>গণনা:</strong></p>\n\n<p>ধরি, প্রাথমিক গড় ‘k’</p>\n\n<p>⇒ নতুন গড় = k + 6</p>\n\n<p>⇒ 15 ইনিংসের পরে মোট রান = 15k</p>\n\n<p>⇒ 16 ইনিংসের পরে মোট রান = 16 (k + 6) = 16k + 96</p>\n\n<p>⇒ 15k + 120 = 16k + 96</p>\n\n<p>⇒ k + 6 = 30</p>\n\n<p>∴ নতুন গড় = k + 6 = 30</p>\n", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "5fcc98a056fea9f27d0766fc", "qs_no": 3, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "In a company with 600 employees, the average age of the male employees is 42 years and that of the female employees is 41 years. If the average age of all the employees in the company is 41 years 9 months, then the number of female employees is:", "options": [{"prompt": "1", "value": "150"}, {"prompt": "2", "value": "450"}, {"prompt": "3", "value": "350"}, {"prompt": "4", "value": "250"}], "range": {"start": "", "end": ""}}, "hn": {"value": "600 कर्मचारियों वाली एक कंपनी में पुरुष कर्मचारियों की औसत आयु 42 वर्ष है और महिला कर्मचारियों की औसत आयु 41 वर्ष है। यदि कंपनी के सभी कर्मचारियों की औसत आयु 41 वर्ष 9 महीने है, तो महिला कर्मचारियों की संख्या है:", "options": [{"prompt": "1", "value": "150"}, {"prompt": "2", "value": "450"}, {"prompt": "3", "value": "350"}, {"prompt": "4", "value": "250"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p><strong>Solution:</strong></p>\n\n<p><strong>Given data:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>\n\n<p>No. of employees in company = 600</p>\n\n<p>The average age of the male employees = 42 years</p>\n\n<p>The average age of the female employees = 41 years</p>\n\n<p>The average age of all the employees in the company = 41 years 9 months</p>\n\n<p>&rArr; (41 + 9/12) years</p>\n\n<p>&rArr; 167/4 years</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>Average = (Sum of all cases)/(Number of cases)</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Let no. of male employees be x.</p>\n\n<p>&rArr; No. of female employees = 600 &ndash; x.</p>\n\n<p>Sum of ages of all male employees = x &times; 42</p>\n\n<p>&rArr; 42x years&nbsp; &nbsp; &nbsp; ----(1)</p>\n\n<p>Sum of ages of all male employees = (600 &ndash; x) &times; 41</p>\n\n<p>&rArr; (24600 &ndash; 41x) years&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----(2)</p>\n\n<p>Sum of ages of all employees = 42x + 24600 &ndash; 41x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----(Adding equation 1&nbsp;and 2)</p>\n\n<p>&rArr; (x + 24600) years&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----(3)</p>\n\n<p>Sum of ages of all employees = 600 &times; 167/4</p>\n\n<p>&rArr; 25050 years&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----(4)</p>\n\n<p>Equating equations 3 and 4</p>\n\n<p>&rArr; x + 24600 = 25050</p>\n\n<p>&rArr; x = 450</p>\n\n<p>&rArr; No. of male employees = 450</p>\n\n<p>&rArr; No. of female employees = 600 &ndash; 450</p>\n\n<p>&rArr; 150</p>\n\n<p><strong>&there4;</strong><strong> The number of female employees in the company is 150.</strong></p>\n\n<p>&nbsp;</p>\n\n<p><strong>Alternate method:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/e54c8c6a47e1cb7d25f43874e6b9af3f711ee6754a5b3d9b56dab9cf7e15703d.png\" style=\"height: 213px; width: 300px;\" /></p>\n\n<p>No. of male employees: No. of female employees = 3 : 1</p>\n\n<p>&rArr; No. of male employees = 3x</p>\n\n<p>&rArr; No. of female employees = x</p>\n\n<p>&rArr; Total no. of employees = 4x</p>\n\n<p>&rArr; 4x = 600&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ----(given data)</p>\n\n<p>&rArr; x = 600/4</p>\n\n<p>&rArr; x = 150</p>\n\n<p>&rArr; No. of female employees = x = 150</p>\n\n<p>&nbsp;</p>\n\n<p><strong>&there4; The number of female employees in company is 150.</strong></p>", "hn": "\n<p><strong>हल:</strong></p>\n\n<p><strong>दिए गए आंकड़े:</strong></p>\n\n<p>कंपनी में कर्मचारियों की संख्या = 600</p>\n\n<p>पुरुष कर्मचारियों की औसत आयु = 42 वर्ष</p>\n\n<p>महिला कर्मचारियों की औसत आयु = 41 वर्ष</p>\n\n<p>कंपनी में सभी कर्मचारियों की औसत आयु = 41 वर्ष 9 महीने</p>\n\n<p>&rArr; (41&nbsp;+ 9/12) वर्ष</p>\n\n<p>&rArr; 167/4 वर्ष</p>\n\n<p><strong>प्रयुक्त अवधारणा:</strong></p>\n\n<p>औसत = (सभी मामलों का योग)/(मामलों की संख्या)</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>माना पुरुष कर्मचारियों की संख्या x&nbsp;है।</p>\n\n<p>&rArr; महिला कर्मचारियों की संख्या = 600 - x</p>\n\n<p>सभी पुरुष कर्मचारियों की आयु का योग = x &times; 42</p>\n\n<p>&rArr; 42x वर्ष&nbsp; &nbsp; &nbsp; ---- (1)</p>\n\n<p>सभी पुरुष कर्मचारियों की आयु का योग = (600&nbsp;- x) &times; 41</p>\n\n<p>&rArr; (24600&nbsp;- 41x) वर्ष&nbsp; &nbsp; &nbsp; ---- (2)</p>\n\n<p>सभी कर्मचारियो", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Average", "confidence": "high"}, {"qid": "5fca415677637ff388024e22", "qs_no": 4, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The average of five positive numbers is 56. If the first number is three-fourth of the sum of the last four numbers, then the average of the last four numbers is:", "options": [{"prompt": "1", "value": "50"}, {"prompt": "2", "value": "35"}, {"prompt": "3", "value": "30"}, {"prompt": "4", "value": "40"}], "range": {"start": "", "end": ""}}, "hn": {"value": "पाँच धनात्मक संख्याओं का औसत 56 है। यदि पहली संख्या अंतिम चार संख्याओं के योग की तीन-चौथाई है, तो अंतिम चार संख्याओं का औसत है:", "options": [{"prompt": "1", "value": "50"}, {"prompt": "2", "value": "35"}, {"prompt": "3", "value": "30"}, {"prompt": "4", "value": "40"}], "range": {"start": "", "end": ""}}, "mr": {"value": "पाच धनात्मक संख्यांची सरासरी 56 आहे. जर पहिली संख्या शेवटच्या चार संख्यांच्या बेरीजच्या चतुर्थांश असेल तर शेवटच्या चार संख्यांची सरासरी किती असेल ?", "options": [{"prompt": "1", "value": "50"}, {"prompt": "2", "value": "35"}, {"prompt": "3", "value": "30"}, {"prompt": "4", "value": "40"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Total sum of 5 numbers = 56 × 5 = 280.</p>\n<p>Ratio of First Number : Sum of last 4 numbers = 3 : 4.</p>\n<p>Total parts = 3 + 4 = 7 parts → 280.</p>\n<p>1 part = 280 ÷ 7 = 40.</p>\n<p>Sum of last 4 numbers = 4 parts = 4 × 40 = 160.</p>\n<p>Average of last 4 numbers = 160 ÷ 4 = 40.</p>\n<p><strong>∴ The correct answer is 40.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Average of 5 numbers = 56</p>\n<p>First number = 3/4 × (Sum of last 4 numbers)</p>\n<p><strong>Formula Used:</strong></p>\n<p>Sum of observations = Average × Number of observations</p>\n<p>Average = Sum of observations ÷ Number of observations</p>\n<img src=\"https://cdn.repeatermock.com/tb/6a89de6c3070bcc8dc83ef6cac301d327418cc60478020b0cb829cc71dca301e.png\" style=\"max-width: 450px;\" />\n<p><strong>Calculations:</strong></p>\n<p>⇒ Total sum of 5 numbers = 56 × 5 = 280</p>\n<p>⇒ Let the sum of the last four numbers be S.</p>\n<p>⇒ First number = 3/4 × S = 3S/4</p>\n<p>⇒ Sum of all 5 numbers = First number + Sum of last 4 numbers</p>\n<p>⇒ 280 = 3S/4 + S</p>\n<p>⇒ 280 = (3S + 4S) ÷ 4</p>\n<p>⇒ 280 = 7S/4</p>\n<p>⇒ S = (280 × 4) ÷ 7</p>\n<p>⇒ S = 40 × 4 = 160</p>\n<p>⇒ Average of last 4 numbers = S ÷ 4</p>\n<p>⇒ Average of last 4 numbers = 160 ÷ 4 = 40</p>\n<p><strong>∴ The correct answer is 40.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Basic Average Formula</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">The average of n numbers is calculated as Sum of all numbers ÷ n. To find the sum, use Average × n.</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Weighted Average</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">When two groups with averages x<sub>1</sub> and x<sub>2</sub> and sizes n<sub>1</sub> and n<sub>2</sub> are combined, the new average is (n<sub>1</sub>x<sub>1</sub> + n<sub>2</sub>x<sub>2</sub>) ÷ (n<sub>1</sub> + n<sub>2</sub>).</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Average of Consecutive Numbers</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">For any arithmetic progression, the average is exactly the middle term or (First term + Last term) ÷ 2.</p", "hn": "<p><strong>दिया गया है:</strong></p>\n\n<p>5 संख्याओं का औसत 56 है<span style=\"color: rgb(37, 37, 37);\">।</span></p>\n\n<p><span style=\"color: rgb(37, 37, 37);\">पहली संख्या अन्य&nbsp;चार संख्याओं के योग की&nbsp;तीन-चौथाई है</span></p>\n\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n\n<p>औसत = तत्वों का योग/<span style=\"color: rgb(37, 37, 37);  \">तत्वों की कुल संख्या</span></p>\n\n<p><strong>गणना:</strong></p>\n\n<p>मान लीजिए अंतिम चार संख्याओं का योग&nbsp;4x है</p>\n\n<p>&rArr; पहली संख्या = 3x</p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">सभी तत्वों का योग</span> = 4x + 3x = 56 &times; 5</p>\n\n<p>&rArr; 7x = 280</p>\n\n<p>&rArr; x = 40</p>\n\n<p>&there4; <span style=\"color: rgb(37, 37, 37);  \">शेष चार संख्याओं का औसत</span> = 4x/4 = x = 40</p>\n42:T582,<p><strong>दिलेः</strong></p>\n\n<p>5 संख्या सरासरी 56 आहे</p>\n\n<p>इतर चारच्या बेरीजपैकी प्रथम क्रमांक 3/4 <sup>व्या</sup> आहे</p>\n\n<p><span style=\"font-weight: 700;\"><span id=\"docs-internal-guid-d00c4122-7fff-8803-01d7-568c173e3863\"><span style=\"background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white", "te": "", "mr": "<p><strong>दिलेः</strong></p>\n\n<p>5 संख्या सरासरी 56 आहे</p>\n\n<p>इतर चारच्या बेरीजपैकी प्रथम क्रमांक 3/4 <sup>व्या</sup> आहे</p>\n\n<p><span style=\"font-weight: 700;\"><span id=\"docs-internal-guid-d00c4122-7fff-8803-01d7-568c173e3863\"><span style=\"background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">सुत्र </span></span></span></p>\n\n<p>सरासरी = घटकांची बेरीज / घटकांची एकूण संख्या</p>\n\n<p><span style=\"font-weight: 700;\"><span id=\"docs-internal-guid-8b5766fe-7fff-f95c-3988-f9a1d518cbf8\"><span", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Average", "confidence": "high"}, {"qid": "5fc72f80db128fa617276b3e", "qs_no": 5, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The average of 50 number is 36. If two numbers, namely 63 and 65 are discarded, the average of the remaining numbers is (Correct to two decimal places)", "options": [{"prompt": "1", "value": "34.83"}, {"prompt": "2", "value": "32.50"}, {"prompt": "3", "value": "33.75"}, {"prompt": "4", "value": "36.50"}], "range": {"start": "", "end": ""}}, "hn": {"value": "50 संख्याओं का औसत 36 है। यदि दो संख्याओं, अर्थात् 63 और 65 को हटा दिया जाए, तो शेष संख्याओं का औसत है दशमलव के दो स्थानों तक)", "options": [{"prompt": "1", "value": "34.83"}, {"prompt": "2", "value": "32.50"}, {"prompt": "3", "value": "33.75"}, {"prompt": "4", "value": "36.50"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>Average of 50 number is 36.</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>Average = Sum of values/number of values</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Average of 50 number = 36</p>\n\n<p>Sum of 50 number = 36&nbsp;&times; 50 = 1800</p>\n\n<p>Two number 63, and 65 discarded</p>\n\n<p>Sum of left 48 numbers = 1800 - 63 - 65 = 1672</p>\n\n<p>Average of Left 48 numbers</p>\n\n<p>&rArr; 1672/48</p>\n\n<p>&rArr; 34.83</p>\n\n<p><strong>&there4; The average of remaining numbers is 34.83.</strong></p>\n", "hn": "<p><strong>दिया है</strong><strong>:</strong></p>\n\n<p>Average of 50 number is 36.</p>\n\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n\n<p>औसत = मानों का योग/मानों की संख्या</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>50 संख्याओं का औसत = 36</p>\n\n<p>50 संख्याओं का योग = 36&nbsp;&times; 50 = 1800</p>\n\n<p>63 और 65 को हटा दिया गया</p>\n\n<p>बची हुई 48 संख्याओं का औसत = 1800 - 63 - 65 = 1672</p>\n\n<p>बची हुई 48 संख्याओं का औसत</p>\n\n<p>&rArr; 1672/48</p>\n\n<p>&rArr; 34.83</p>\n\n<p><strong>&there4; शेष संख्याओं का औसत 34.83 है।</strong></p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Average", "confidence": "high"}, {"qid": "5fc641a26a7714674eca4e26", "qs_no": 6, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The average of three numbers a, b and c is 12 more than c. The average of a and b is 48. If d is 10 less than c, then the average of c and d is:", "options": [{"prompt": "1", "value": "38"}, {"prompt": "2", "value": "36"}, {"prompt": "3", "value": "35"}, {"prompt": "4", "value": "25"}], "range": {"start": "", "end": ""}}, "hn": {"value": "तीन संख्याओं a, b और c का औसत, c से 12 अधिक है। a और b का औसत 48 है। यदि d, c से 10 कम है, तो c और d का औसत है:", "options": [{"prompt": "1", "value": "38"}, {"prompt": "2", "value": "36"}, {"prompt": "3", "value": "35"}, {"prompt": "4", "value": "25"}], "range": {"start": "", "end": ""}}, "mr": {"value": "A, B आणि C तीन क्रमांकाची सरासरी C पेक्षा 12 अधिक आहे. A आणि b ची सरासरी 48 आहे. जर d पेक्षा c 10 कमी असेल तर c आणि d ची सरासरी किती असेलः", "options": [{"prompt": "1", "value": "38"}, {"prompt": "2", "value": "36"}, {"prompt": "3", "value": "35"}, {"prompt": "4", "value": "25"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>Average of a and b = 48 → Sum (a + b) = 96.</p>\n<p>Average of a, b, c = c + 12 → (96 + c) ÷ 3 = c + 12.</p>\n<p>96 + c = 3c + 36 ⇒ 2c = 60 ⇒ c = 30.</p>\n<p>Given d = c − 10 ⇒ d = 30 − 10 = 20.</p>\n<p>Average of c and d = (30 + 20) ÷ 2 = 25.</p>\n<p><strong>∴ The correct answer is 25.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Average of a, b, c = c + 12</p>\n<p>Average of a, b = 48</p>\n<p>d = c − 10</p>\n<p><strong>Formula Used:</strong></p>\n<p>Average = (Sum of values) ÷ (Number of values)</p>\n<img src=\"https://cdn.repeatermock.com/tb/09f1dd589437f48f4cbda7ea151c416ab9fd605959430b2e47f87e2684f2778e.png\" style=\"max-width: 450px;\" />\n<p><strong>Calculations:</strong></p>\n<p>⇒ (a + b) ÷ 2 = 48</p>\n<p>⇒ a + b = 48 × 2 = 96</p>\n<p>⇒ (a + b + c) ÷ 3 = c + 12</p>\n<p>⇒ 96 + c = 3(c + 12)</p>\n<p>⇒ 96 + c = 3c + 36</p>\n<p>⇒ 3c − c = 96 − 36</p>\n<p>⇒ 2c = 60 ⇒ c = 30</p>\n<p>⇒ d = c − 10 = 30 − 10 = 20</p>\n<p>⇒ Average (c, d) = (30 + 20) ÷ 2</p>\n<p>⇒ Average = 50 ÷ 2 = 25</p>\n<p><strong>∴ The correct answer is 25.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Arithmetic Average Properties</p>\n<p style='margin:0 0 8px 0;color:#444444;'>If every number in a set is increased or decreased by a constant k, the average also increases or decreases by k.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Weighted Average Formula</p>\n<p style='margin:0 0 8px 0;color:#444444;'>When two groups with averages A<sub>1</sub> and A<sub>2</sub> and sizes n<sub>1</sub> and n<sub>2</sub> are combined, the new average is (n<sub>1</sub>A<sub>1</sub> + n<sub>2</sub>A<sub>2</sub>) ÷ (n<sub>1</sub> + n<sub>2</sub>).</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Average of Consecutive Numbers</p>\n<p style='margin:0 0 8px 0;color:#444444;'>For a series in Arithmetic Progression (AP), the average is simply (First term + Last term) ÷ 2.</p", "hn": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>a और b का औसत = 48 → योग (a + b) = 96.</p>\n<p>a, b, c का औसत = c + 12 → (96 + c) ÷ 3 = c + 12.</p>\n<p>96 + c = 3c + 36 ⇒ 2c = 60 ⇒ c = 30.</p>\n<p>दिया गया है, d = c − 10 ⇒ d = 30 − 10 = 20.</p>\n<p>c और d का औसत = (30 + 20) ÷ 2 = 25.</p>\n<p><strong>∴ सही उत्तर 25 है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>दिया गया है:</strong></p>\n<p>a, b, c का औसत = c + 12</p>\n<p>a, b का औसत = 48</p>\n<p>d = c − 10</p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p>औसत = (मानों का योग) ÷ (मानों की संख्या)</p>\n<img src=\"https://cdn.repeatermock.com/tb/09f1dd589437f48f4cbda7ea151c416ab9fd605959430b2e47f87e2684f2778e.png\" style=\"max-width: 450px;\" />\n<p><strong>गणनाएँ:</strong></p>\n<p>⇒ (a + b) ÷ 2 = 48</p>\n<p>⇒ a + b = 48 × 2 = 96</p>\n<p>⇒ (a + b + c) ÷ 3 = c + 12</p>\n<p>⇒ 96 + c = 3(c + 12)</p>\n<p>⇒ 96 + c = 3c + 36</p>\n<p>⇒ 3c − c = 96 − 36</p>\n<p>⇒ 2c = 60 ⇒ c = 30</p>\n<p>⇒ d = c − 10 = 30 − 10 = 20</p>\n<p>⇒ औसत (c, d) = (30 + 20) ÷ 2</p>\n<p>⇒ औसत = 50 ÷ 2 = 25</p>\n<p><strong>∴ सही उत्तर 25 है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>अंकगणितीय औसत के गुणधर्म</p>\n<p style='margin:0 0 8px 0;color:#444444;'>यदि किसी समुच्चय की प्रत्येक संख्या में एक अचर k की वृद्धि या कमी की जाती है, तो औसत में भी k की वृद्धि या कमी होती है।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>भारित औसत सूत्र</p>\n<p style='margin:0 0 8px 0;color:#444444;'>जब औसत A<sub>1</sub> और A<sub>2</sub> तथा आकार n<sub>1</sub> और n<sub>2</sub> वाले दो समूहों को मिलाया जाता है, तो नया औसत (n<sub>1</sub>A<sub>1</sub> + n<sub>2</sub>A<sub>2</sub>) ÷ (n<sub>1</sub> + n<sub>2</sub>) होता है।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>क्रमागत संख्याओं का औसत</p>\n<p style='margin:0 0 8px 0;color:#444444;'>समान्तर श्रेणी (AP) में एक श्रृंखला के लिए, औसत केवल (प्रथम पद + अंतिम पद) ÷ 2 होता है।</p>\n40:Tcb0,\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Total sum of 5 numbers = 56 × 5 = 280.</p>\n<p>Ratio of First Number : Sum of last 4 numbers = 3 : 4.</p>\n<p>Total parts = 3 + 4 = 7 parts → 280.</p>\n<p>1 part = 280 ÷ 7 = 40.</p>\n<p>Sum of last 4 numbers = 4 parts = 4 × 40 = 160.</p>\n<p>Average of last 4 numbers = 160 ÷ 4 = 40.</p>\n<p><strong>∴ The correct answer is 40.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26p", "te": "", "mr": "<p><strong>दिलेः</strong></p>\n\n<p>A, B आणि C तीन क्रमांकाची सरासरी =12</p>\n\n<p>A आणि b ची सरासरी  = 48 </p>\n\n<p>d = c - 10</p>\n\n<p><strong>सुत्र :</strong></p>\n\n<p><span style=\"color: rgb(0, 0, 0);\">एकूण संख्यांची सरासरी = सरासरींची बेरीज / एकूण संख्या</span></p>\n\n<p><strong>आकडेमोड</strong><strong>:</strong></p>\n\n<p>A आणि b ची सरासरी= (a + b) / 2</p>\n\n<p>⇒ (a + b)/2 = 48</p>\n\n<p>⇒ a + b = 96      ----(i)</p>\n\n<p>a, b आणि c या तीन संख्येची सरासरी = (a + b + c)/3 </p>\n\n<p>⇒ (a + b + c)/3 = 12 + c</p>\n\n<p>⇒ a + b + c = 36 + 3c</p>\n\n<p>⇒ a + b = 36 + 2c</p>\n\n<p>(I) वापरणे,</p>\n\n<p>⇒ 96 = 36 + 2c</p>\n\n<p>⇒ 2c = 60</p>\n\n<p>⇒ c = 30</p>\n\n<p>मग,</p>\n\n<p>⇒ d = 30 – 10</p>\n\n<p>⇒ d = 20</p>\n\n<p>c  आणि d ची सरासरी = (c+ d) / 2</p>\n\n<p>⇒ (30 + 20)/2</p>\n\n<p>⇒ 50/2</p>\n\n<p>⇒ 25</p>\n\n<p><span style=\"font-weight: 700;\">∴ </span><strong> c आणि d ची सरासरी 25 आहे</strong></p>\n", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Average", "confidence": "high"}, {"qid": "5fb7fb7af373467eed8982a1", "qs_no": 7, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The sum of 17 consecutive numbers is 289. The sum of another 10 consecutive numbers, whose first term is 5 more than the average of the first set of consecutive numbers, is:", "options": [{"prompt": "1", "value": "300"}, {"prompt": "2", "value": "265"}, {"prompt": "3", "value": "285"}, {"prompt": "4", "value": "315"}], "range": {"start": "", "end": ""}}, "hn": {"value": "17 क्रमागत संख्याओं का योग 289 है। अन्य 10 क्रमागत संख्याओं का योग क्या है, जिनका पहला पद, क्रमागत संख्याओं के पहले समूह के औसत से 5 अधिक है?", "options": [{"prompt": "1", "value": "300"}, {"prompt": "2", "value": "265"}, {"prompt": "3", "value": "285"}, {"prompt": "4", "value": "315"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>Sum of 17 consecutive numbers = 289</p>\n\n<p>First term of another 10 consecutive numbers is 5 more than the average of 17 consecutive numbers</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>Average = Sum of all observations/Total number of observations</p>\n\n<p>Sum of A.P. = n/2&nbsp;&times; (a&nbsp;+ l)</p>\n\n<p>Where A.P. is arithmetic progression, a is first term and l is last term</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Average of 17 consecutive numbers = Sum of all numbers/Total numbers</p>\n\n<p>&rArr;&nbsp;Average of 17 consecutive numbers = 289/17</p>\n\n<p>&rArr; Average of 17 consecutive numbers = 17</p>\n\n<p>First term (a) of another 10 consecutive numbers = 17 + 5 = 22</p>\n\n<p>The numbers are 22, 23, 24, 25, 26, 27, 28, 29, 30, 31</p>\n\n<p>Last term (l) of 10 consecutive numbers = 31</p>\n\n<p>As consecutive numbers are always in A.P.</p>\n\n<p>Sum of 10 numbers =&nbsp;n/2&nbsp;&times; (a&nbsp;+ l)</p>\n\n<p>&rArr;&nbsp;Sum of 10 numbers = 10/2&nbsp;&times; (22 + 31)</p>\n\n<p>&rArr;&nbsp;Sum of 10 numbers = 5&nbsp;&times; 53</p>\n\n<p><strong>&there4;&nbsp;Sum of 10 consecutive numbers is 265</strong></p>", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p>17 क्रमागत&nbsp;संख्याओं का योग = 289</p>\n\n<p>अन्य 10 क्रमागत संख्याओं का योग क्या है, जिनका पहला पद, क्रमागत संख्याओं के पहले समूह के औसत से 5 अधिक है</p>\n\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n\n<p>औसत = सभी प्रेक्षणों का योग/प्रेक्षणों&nbsp;की कुल संख्या</p>\n\n<p><span style=\"\">समांतर श्रेढ़ी&nbsp;</span>का योग = n/2&nbsp;&times; (a&nbsp;+ l)</p>\n\n<p>जहाँ A.P. समांतर श्रेढ़ी है, a पहला पद है और l अंतिम पद है</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>17 क्रमागत&nbsp;संख्याओं का औसत = सभी संख्याओं का योग/कुल संख्याएं&nbsp;</p>\n\n<p>&rArr; 17 क्रमागत&nbsp;संख्याओं का औसत&nbsp;= 289/17</p>\n\n<p>&rArr; 17 क्रमागत&nbsp;संख्याओं का औसत&nbsp;= 17</p>\n\n<p>अन्य 10 क्रमागत संख्याओं का पहला पद (a) = 17 + 5 = 22</p>\n\n<p>संख्याएं हैं: 22, 23, 24, 25, 26, 27, 28, 29, 30, 31</p>\n\n<p>10 क्रमागत संख्याओं का अंतिम&nbsp;पद (l) = 31</p>\n\n<p>चूंकि क्रमागत संख्याएं हमेशा <span style=\"\">समांतर श्रेढ़ी&nbsp;</span>में होती हैं</p>\n\n<p>10 संख्याओं का योग = n/2&nbsp;&times; (a&nbsp;+ l)</p>\n\n<p>&rArr; 10 संख्याओं का योग = 10/2&nbsp;&times; (22 + 31)</p>\n\n<p>&rArr; 10 संख्याओं का योग = 5 &times; 53</p>\n\n<p>&there4; <strong>10 क्रमागत संख्याओं का योग 265 है</strong></p>\n\n3e:Tbe0,\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>Average of a and b = 48 → Sum (a + b) = 96.</p>\n<p>Average of a, b, c = c + 12 → (96 + c) ÷ 3 = c + 12.</p>\n<p>96 + c = 3c + 36 ⇒ 2c = 60 ⇒ c = 30.</p>\n<p>Given d = c − 10 ⇒ d = 30 − 10 = 20.</p>\n<p>Average of c and d = (30 + 20) ÷ 2 = 25.</p>\n<p><strong>∴ The correct answer is 25.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u>", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Average", "confidence": "high"}, {"qid": "5fb4fbcb8c35237cb7294742", "qs_no": 8, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The average of 35 consecutive natural numbers is N. Dropping the first 10 numbers and including the next 10 numbers, the average is changed to M. If the value of M<sup>2</sup>&nbsp;- N<sup>2</sup>&nbsp;= 600, then the average of 3M and 5N is:", "options": [{"prompt": "1", "value": "90"}, {"prompt": "2", "value": "115"}, {"prompt": "3", "value": "100"}, {"prompt": "4", "value": "120"}], "range": {"start": "", "end": ""}}, "hn": {"value": "35 क्रमानुगत प्राकृतिक संख्याओं का औसत N है। पहले 10 संख्याओं को छोड़ने और अगली 10 संख्याओं को लेने पर, औसत M में बदल जाता है। यदि M<sup>2</sup>&nbsp;- N<sup>2</sup>&nbsp;का मान = 600, तो 3M और 5N का औसत है:", "options": [{"prompt": "1", "value": "90"}, {"prompt": "2", "value": "115"}, {"prompt": "3", "value": "100"}, {"prompt": "4", "value": "120"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>Average of 35 consecutive natural numbers = N</p>\n\n<p>Dropping the first and including the next 10 numbers, the average is changed = M</p>\n\n<p>M<sup>2</sup>&nbsp;- N<sup>2</sup>&nbsp;= 600</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Average = Sum of all observations/total number of all observations</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Average of 35 consecutive natural numbers = N</p>\n\n<p>On dropping 10 consecutive and replacing with next 10 consecutive number, each number will increase by 10 (For example if the numbers are 1, 2, 3,.........., 10 then it will be replaced by 11, 12, 13,..........,20)</p>\n\n<p>Dropping the firs", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);\">35 क्रमानुगत प्राकृतिक संख्याओं का औसत</span> = N</p>\n\n<p><span style=\"color: rgb(37, 37, 37);\">पहले 10 संख्याओं को छोड़ने और अगली 10 संख्याओं को लेने पर औसत बदल जाता है</span> = M</p>\n\n<p>M<sup>2</sup>&nbsp;- N<sup>2</sup>&nbsp;= 600</p>\n\n<p><strong>गणना:</strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">औसत = सभी अवलोकनों का&nbsp;योग / सभी अवलोकनों की कुल संख्या</span></p>\n\n<p><strong>गणना:</strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);\">35 क्रमानुगत प्राकृतिक संख्याओं का औसत</span> = N</p>\n\n<p>लगातार 10&nbsp;को छोड़ने और अगले 10&nbsp;क्रमागत संख्याओं से प्रतिस्थापित करने पर, प्रत्येक संख्या में 10&nbsp;की वृद्धि होगी (उदाहरण के लिए यदि संख्याएँ 1, 2, 3,........,10&nbsp;हैं तो इसे 11, 12, 13,........., 20 प्रतिस्थापित किया जाएगा)</p>\n\n<p><span style=\"color: rgb(37, 37, 37);\">पहले 10 संख्याओं को छोड़ने और अगली 10 संख्याओं को लेने पर औसत बन जाता है</span> = N + 10</p>\n\n<p>M = N + 10</p>\n\n<p>अब</p>\n\n<p>M<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>&nbsp;- N<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>&nbsp;= 600</p>\n\n<p>&rArr; (N +&nbsp;10)<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span>&nbsp;- N<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span>&nbsp;= 600</p>\n\n<p>&rArr; (N + 10 +&nbsp;N) (N + 10 - N) = 600</p>\n\n<p>&rArr; (2N + 10)&nbsp;&times; 10 = 600</p>\n\n<p>&rArr; 2N = 50&nbsp;</p>\n\n<p>&rArr; N = 25</p>\n\n<p>M = 25 + 10</p>\n\n<p>&rArr; M = 35</p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">3M और 5N का योग</span> = 3&nbsp;&times; 35 + 5&nbsp;&times; 25 = 105 + 125 = 230</p>\n\n<p>&there4; <span style=\"color: rgb(37, 37, 37);  \">3M और 5N का औसत</span> = 230/2 = 115</p>\n\n3c:T5ea,\n<p><strong>Given:</strong></p>\n\n<p>Sum of 17 consecutive numbers = 289</p>\n\n<p>First term of another 10 consecutive numbers is 5 more than the average of 17 consecutive numbers</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>Average = Sum of all observations/Total number of observations</p>\n\n<p>Sum of A.P. = n/2&nbsp;&times; (a&nbsp;+ l)</p>\n\n<p>Where A.P. is arithmetic progression, a is first term and l is last term</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Average of 17 consecutive numbers = Sum of all numbers/Total numbers</p>\n\n<p>&rArr;&nbsp;Average of 17 consec", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Average", "confidence": "high"}, {"qid": "5fa0f5636452a939fa3438cb", "qs_no": 9, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "In class IX, the average of marks in science for six students was 48. After result declared, it was found in case of one student, the marks 45 were misread as 54. The correct average is :", "options": [{"prompt": "1", "value": "46.40"}, {"prompt": "2", "value": "46.50"}, {"prompt": "3", "value": "76.50"}, {"prompt": "4", "value": "64.39"}], "range": {"start": "", "end": ""}}, "hn": {"value": "कक्षा IX में, छ: छात्रों का विज्ञान में अंकों का औसत 48 था। परिणाम घोषित होने के बाद, एक छात्र की स्थिति में यह पाया गया की अंक&nbsp;45 के स्थान पर&nbsp;54 पढ़ा गया था। सही औसत है:", "options": [{"prompt": "1", "value": "46.40"}, {"prompt": "2", "value": "46.50"}, {"prompt": "3", "value": "76.50"}, {"prompt": "4", "value": "64.39"}], "range": {"start": "", "end": ""}}, "te": {"value": "IXవ తరగతిలో, ఆరుగురు విద్యార్థులకు విజ్ఞాన శాస్త్రంలో మార్కుల సగటు 48. ఫలితాలు ప్రకటించిన తర్వాత, ఒక విద్యార్థి విషయంలో ఇది కనుగొనబడింది, 45 మార్కులు 54గా తప్పుగా చదవబడ్డాయి. సరైన సగటు:", "options": [{"prompt": "1", "value": "46.40"}, {"prompt": "2", "value": "46.50"}, {"prompt": "3", "value": "76.50"}, {"prompt": "4", "value": "64.39"}], "range": {"start": "", "end": ""}}, "mr": {"value": "इयत्ता IX मध्ये, सहा विद्यार्थ्यांच्या विज्ञान विषयातील गुणांची सरासरी 48 होती. निकाल जाहीर झाल्यानंतर, एका विद्यार्थ्याच्या बाबतीत असे आढळून आले की, 45 गुण 54 असे चुकीचे वाचले गेले. तर योग्य सरासरी किती आहे?", "options": [{"prompt": "1", "value": "46.40"}, {"prompt": "2", "value": "46.50"}, {"prompt": "3", "value": "76.50"}, {"prompt": "4", "value": "64.39"}], "range": {"start": "", "end": ""}}, "bn": {"value": "নবম শ্রেণিতে, ছয়জন শিক্ষার্থীর জন্য বিজ্ঞানে নম্বরের ছিল গড় 48, ফলাফল ঘোষণার পর, একজন শিক্ষার্থীর ক্ষেত্রে দেখা গেছে, 45 নম্বর ভুল করে 54 পড়া হয়েছে। সঠিক গড় কত?", "options": [{"prompt": "1", "value": "46.40"}, {"prompt": "2", "value": "46.50"}, {"prompt": "3", "value": "76.50"}, {"prompt": "4", "value": "64.39"}], "range": {"start": "", "end": ""}}, "gu": {"value": "ધોરણ IXમાં, છ વિદ્યાર્થીઓ માટે વિજ્ઞાનમાં ગુણની સરેરાશ 48 હતી. પરિણામ જાહેર થયા પછી, એક વિદ્યાર્થીના કેસમાં, 45 ગુણ 54 તરીકે ખોટું વાંચવામાં આવ્યું હતું. તો સાચી સરેરાશ શોધો.", "options": [{"prompt": "1", "value": "46.40"}, {"prompt": "2", "value": "46.50"}, {"prompt": "3", "value": "76.50"}, {"prompt": "4", "value": "64.39"}], "range": {"start": "", "end": ""}}, "kn": {"value": "IX ನೇ ತರಗತಿಯಲ್ಲಿ, ಆರು ವಿದ್ಯಾರ್ಥಿಗಳ ವಿಜ್ಞಾನದಲ್ಲಿ ಸರಾಸರಿ ಅಂಕಗಳು 48 ಆಗಿತ್ತು. ಫಲಿತಾಂಶ ಪ್ರಕಟವಾದ ನಂತರ ವಿದ್ಯಾರ್ಥಿಯ ವಿಷಯದಲ್ಲಿ 45ರ ಬದಲು 54 ಎಂದು ಓದಿರುವುದು ಕಂಡುಬಂದಿದೆ. ಸರಿಯಾದ ಸರಾಸರಿಯನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ?", "options": [{"prompt": "1", "value": "46.40"}, {"prompt": "2", "value": "46.50"}, {"prompt": "3", "value": "76.50"}, {"prompt": "4", "value": "64.39"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ஒன்பதாம் வகுப்பில், ஆறு மாணவர்களுக்கான அறிவியலில் சராசரி மதிப்பெண்கள் 48 ஆக இருந்தது. முடிவு அறிவிக்கப்பட்ட பிறகு, ஒரு மாணவரின் விஷயத்தில் அது கண்டறியப்பட்டது, 45 மதிப்பெண்கள் 54 என்று தவறாகப் படிக்கப்பட்டது. சரியான சராசரி என்ன?", "options": [{"prompt": "1", "value": "<span style=\"color: rgb(33, 37, 41);\">46.40</span>"}, {"prompt": "2", "value": "<span style=\"color: rgb(33, 37, 41);\">46.50</span>"}, {"prompt": "3", "value": "<span style=\"color: rgb(33, 37, 41);\">76.50</span>"}, {"prompt": "4", "value": "<span style=\"color: rgb(33, 37, 41);\">64.39</span>"}], "range": {"start": "", "end": ""}}, "pa": {"value": "ਜਮਾਤ IX ਵਿੱਚ, ਛੇ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਵਿਗਿਆਨ ਵਿੱਚ ਅੰਕਾਂ ਦੀ ਔਸਤ 48 ਸੀ। ਨਤੀਜਾ ਘੋਸ਼ਿਤ ਹੋਣ ਤੋਂ ਬਾਅਦ, ਇੱਕ ਵਿਦਿਆਰਥੀ ਦੇ ਮਾਮਲੇ ਵਿੱਚ, 45 ਅੰਕ ਗਲਤੀ ਨਾਲ 54 ਪੜ੍ਹ ਲਿਆ ਗਿਆ ਸੀ। ਸਹੀ ਔਸਤ ਪਤਾ ਕਰੋ।", "options": [{"prompt": "1", "value": "46.40"}, {"prompt": "2", "value": "46.50"}, {"prompt": "3", "value": "76.50"}, {"prompt": "4", "value": "64.39"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>Average marks of six students are 48. The mark 45 is misread as 54.</p>\n\n<p><strong>Concept Used:</strong></p>\n\n<p>Average = (Sum of all entry)/(Number of total entry)</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Average marks of six students are 48</p>\n\n<p>Total marks of six students = 48 &times; 6</p>\n\n<p>&rArr; 288</p>\n\n<p>The mark 45 is misread as 54</p>\n\n<p>Sum of numbers of five students is (288 &ndash; 54) = 234</p>\n\n<p>Actual sum of marks of six students = (234 + 45)</p>\n\n&l", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p>छ: छात्रों के अंक का&nbsp;औसत&nbsp;48 है। अंक 45 के स्थान पर&nbsp;54 पढ़ा गया है।&nbsp;&nbsp;</p>\n\n<p><strong>प्रयुक्त सिद्धांत:</strong></p>\n\n<p>औसत&nbsp;= (सभी प्रविष्टि का योग)/(कुल&nbsp;प्रविष्टि का संख्या)</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>छ: छात्र के अंक का औसत&nbsp;48 है&nbsp;</p>\n\n<p>छ: छात्रों का कुल अंक = 48 &times; 6</p>\n\n<p>&rArr; 288</p>\n\n<p>45 के स्थान पर&nbsp;54 पढ़ा गया है&nbsp;</p>\n\n<p>पांच छात्रों के संख्याओं का योग&nbsp;(288 &ndash; 54) = 234</p>\n\n<p>छ: छात्रों के अंकों का वास्तविक योग&nbsp;= (234 + 45)</p>\n\n<p>&rArr; 279</p>\n\n<p>सही&nbsp;औसत = (279/6) &nbsp;&nbsp;</p>\n\n<p>&rArr; 46.5</p>\n\n<p><strong>&there4;</strong><strong>&nbsp;सही औसत&nbsp;46.5 है&nbsp;</strong></p>\n\n<p><strong><u><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /><u style=\"font-size: 21px;\">Shortcut Trick</u></span></u></strong></p>\n\n<p>गलत गणना की गई संख्या = (54 &ndash; 45) = 9</p>\n\n<p>औसत में गलती से&nbsp;9/6 की वृद्धि हुई&nbsp; = 1.5</p>\n\n<p>सही औसत = (48 &ndash; 1.5)</p>\n\n<p>&rArr; 46.5</p>\n\n<p><span style=\"font-weight: 700;\">&there4;</span><span style=\"font-weight: 700;\">&nbsp;सही औसत&nbsp;46.5 है&nbsp;</span></p>\n\n33:T7e1,<p><b>ఇచ్చిన దత్తాంశం:</b></p>\n\n<p>ఆరుగురు విద్యార్థుల సగటు మార్కులు 48. మార్కు 45ని 54 అని తప్పుగా చదవడం జరిగింది.</p>\n\n<p><b>ఉపయోగించిన కాన్సెప్ట్:</b></p>\n\n<p>సగటు = (మొత్తం పరిశీలనల మొత్తం)/(మొత్తం నమోదు సంఖ్య)</p>\n\n<p><strong>సాధన:</strong></p>\n\n<p>ఆరుగురు విద్యార్థుల సగటు మార్కులు 48</p>\n\n<p>ఆరుగురు విద్యార్థుల మొత్తం మార్కులు = 48 x 6</p>\n\n<p>⇒ 288</p>\n\n<p>మార్కులు 45ని 54గా తప్పుగా చదవడం జరిగింది</p>\n\n<p>ఐదుగురు విద్యార్థుల సంఖ్యల మొత్తం (288 - 54) = 234</p>\n\n<p>ఆరుగురు విద్యార్థుల అసలు మార్కుల మొత్తం = (234 + 45)</p>\n\n<p>⇒ 279</p>\n\n<", "te": "<p><b>ఇచ్చిన దత్తాంశం:</b></p>\n\n<p>ఆరుగురు విద్యార్థుల సగటు మార్కులు 48. మార్కు 45ని 54 అని తప్పుగా చదవడం జరిగింది.</p>\n\n<p><b>ఉపయోగించిన కాన్సెప్ట్:</b></p>\n\n<p>సగటు = (మొత్తం పరిశీలనల మొత్తం)/(మొత్తం నమోదు సంఖ్య)</p>\n\n<p><strong>సాధన:</strong></p>\n\n<p>ఆరుగురు విద్యార్థుల సగటు మార్కులు 48</p>\n\n<p>ఆరుగురు విద్యార్థుల మొత్తం మార్కులు = 48 x 6</p>\n\n<p>⇒ 288</p>\n\n<p>మార్కులు 45ని 54గా తప్పుగా చదవడం జరిగింది</p>\n\n<p>ఐదుగురు విద్యార్థుల సంఖ్యల మొత్తం (288 - 54) = 234</p>\n\n<p>ఆరుగురు విద్యార్థుల అసలు మార్కుల మొత్తం = (234 + 45)</p>\n\n<p>⇒ 279</p>\n\n<p>సరైన సగటు = (279/6)</p>\n\n<p>⇒ 46.5</p>\n\n<p><strong>∴</strong> <strong>సరైన సగటు 46.5</strong></p>\n\n<p><strong><u><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px;\">సత్వరమార్గ ట్రిక్</u></span></u></strong></p>\n\n<p>తప్పుగా ఎక్కువ సంఖ్యను లెక్కించారు = (54 - 45) = 9</p>\n\n<p>పొరపాటున సగటు 9/6 = 1.5 పెరిగింది</p>\n\n<p>సరైన సగటు = (48 - 1.5)</p>\n\n<p>⇒ 46.5</p>\n\n<p><span style=\"font-weight: 700;\">∴</span> <span style=\"font-weight: 700;\">సరైన సగటు 46.5</span></p>\n34:T9ca,\n<p><strong>दिलेले आहे:</strong></p>\n\n<p>सहा विद्यार्थ्यांचे सरासरी गुण 48 आहेत. <span style=\"color: rgb(33, 37, 41);\">45</span> गुण हे <span style=\"color: rgb(33, 37, 41);\">54</span> असे चुकीचे वाचले जातात.</p>\n\n<p><strong>वापरलेली संकल्पना:</strong></p>\n\n<p>सरासरी = (सर्व नोंदींची बेरीज)/(एकूण नोंदींची संख्या)</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>सहा विद्यार्थ्यांचे सरासरी गुण 48 आहेत</p>\n\n<p>सहा विद्यार्थ्यांचे एकूण गुण = <span style=\"color: rgb(33, 37, 41);\">48 × 6</span></p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒ 288</span></p>\n\n<p>गुण 45 हे 54 असे चुकीचे वाचले गेले </p>\n\n<p>पाच विद्यार्थ्यांच्या संख्येची बेरीज (288 - 54) = 234 आहे</p>\n\n<p>सहा विद्यार्थ्यांच्या गुणांची वास्तविक बेरीज = <span style=\"color: rgb(33, 37, 41);\">(234 + 45)</span></p>\n", "mr": "\n<p><strong>दिलेले आहे:</strong></p>\n\n<p>सहा विद्यार्थ्यांचे सरासरी गुण 48 आहेत. <span style=\"color: rgb(33, 37, 41);\">45</span> गुण हे <span style=\"color: rgb(33, 37, 41);\">54</span> असे चुकीचे वाचले जातात.</p>\n\n<p><strong>वापरलेली संकल्पना:</strong></p>\n\n<p>सरासरी = (सर्व नोंदींची बेरीज)/(एकूण नोंदींची संख्या)</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>सहा विद्यार्थ्यांचे सरासरी गुण 48 आहेत</p>\n\n<p>सहा विद्यार्थ्यांचे एकूण गुण = <span style=\"color: rgb(33, 37, 41);\">48 × 6</span></p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒ 288</span></p>\n\n<p>गुण 45 हे 54 असे चुकीचे वाचले गेले </p>\n\n<p>पाच विद्यार्थ्यांच्या संख्येची बेरीज (288 - 54) = 234 आहे</p>\n\n<p>सहा विद्यार्थ्यांच्या गुणांची वास्तविक बेरीज = <span style=\"color: rgb(33, 37, 41);\">(234 + 45)</span></p>\n\n<p>⇒ <span style=\"color: rgb(33, 37, 41);\">279</span></p>\n\n<p>योग्य सरासरी = <span style=\"color: rgb(33, 37, 41);\">(279/6)</span></p>\n\n<p>⇒ <span style=\"color: rgb(33, 37, 41);\">46.5</span></p>\n\n<p><strong>∴</strong> <strong>योग्य सरासरी 46.5 आहे</strong></p>\n\n<p><strong><u><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px;\">Shortcut Trick</u></span></u></strong></p>\n\n<p>चुकीच्या पद्धतीने जास्त मोजली गेलेली <span style=\"color: rgb(33, 37, 41);\">संख्या </span>= (54 - 45) = 9</p>\n\n<p>चुकून सरासरी वाढते 9/6 = 1.5 </p>\n\n<p>योग्य सरासरी = (48 - 1.5)</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒ 46.5</span></p>\n\n<p><span style=\"font-weight: 700;\">∴</span> <span style=\"font-weight: 700;\">योग्य सरासरी 46.5 आहे</span></p>\n\n35:T803,\n<p><strong>প্রদত্ত:</strong></p>\n\n<p>ছয়জন শিক্ষার্থীর গড় নম্বর 48, 45 নম্বরটি 54 হিসাবে ভুল পড়া হয়।</p>\n\n<p><strong>অনুসৃত</strong><strong> ধারণা:</strong></p>\n\n<p>গড় = (সমস্ত পদের যোগফল)/(মোট <span style=\"color: rgb(33, 37, 41);\">পদের</span> সংখ্যা)</p>\n\n<p><strong>গণনা:</strong></p>\n\n<p>ছয়জন শিক্ষার্থীর গড় নম্বর 48</p>\n\n<p>ছয়জন ছাত্রের মোট নম্বর = 48 x 6</p>\n\n<p>⇒ 288</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">45 নম্বরটি 54 হিসাবে ভুল পড়া হয়।</span></p>\n\n<p>পাঁচজন <span style=\"color: rgb(33, 37, 41);\">শিক্ষার্থীর</span> <span style=\"color: rgb(33, 37, 41);\">নম্বরের</span> যোগফল হল (288 - 54) = 234</p>\n\n<p>ছয়জন <span style=\"color: rgb(33, 37, 41);\">শিক্ষার্থীর</span> নম্বরের প্রকৃত যোগফল = (234 + 45)</p>\n\n<p>⇒ 279</p>\n\n<p>", "bn": "\n<p><strong>প্রদত্ত:</strong></p>\n\n<p>ছয়জন শিক্ষার্থীর গড় নম্বর 48, 45 নম্বরটি 54 হিসাবে ভুল পড়া হয়।</p>\n\n<p><strong>অনুসৃত</strong><strong> ধারণা:</strong></p>\n\n<p>গড় = (সমস্ত পদের যোগফল)/(মোট <span style=\"color: rgb(33, 37, 41);\">পদের</span> সংখ্যা)</p>\n\n<p><strong>গণনা:</strong></p>\n\n<p>ছয়জন শিক্ষার্থীর গড় নম্বর 48</p>\n\n<p>ছয়জন ছাত্রের মোট নম্বর = 48 x 6</p>\n\n<p>⇒ 288</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">45 নম্বরটি 54 হিসাবে ভুল পড়া হয়।</span></p>\n\n<p>পাঁচজন <span style=\"color: rgb(33, 37, 41);\">শিক্ষার্থীর</span> <span style=\"color: rgb(33, 37, 41);\">নম্বরের</span> যোগফল হল (288 - 54) = 234</p>\n\n<p>ছয়জন <span style=\"color: rgb(33, 37, 41);\">শিক্ষার্থীর</span> নম্বরের প্রকৃত যোগফল = (234 + 45)</p>\n\n<p>⇒ 279</p>\n\n<p>সঠিক গড় = (279/6)</p>\n\n<p>⇒ 46.5</p>\n\n<", "ml": "", "gu": "<p><strong>આપેલ:</strong></p>\n\n<p>છ વિદ્યાર્થીઓના સરેરાશ ગુણ 48 છે. 45 ગુણ 54 તરીકે ખોટી રીતે વાંચવામાં આવે છે.</p>\n\n<p><strong>સિદ્ધાંત:</strong></p>\n\n<p>સરેરાશ = (બધા અવલોકનોનો સરવાળો)/(કુલ અવલોકનોની સંખ્યા)</p>\n\n<p><strong>ગણતરી:</strong></p>\n\n<p>છ વિદ્યાર્થીઓના સરેરાશ ગુણ 48 છે</p>\n\n<p>છ વિદ્યાર્થીઓના કુલ ગુણ = 48 <span style=\"color: rgb(33, 37, 41);\">×</span> 6</p>\n\n<p>⇒ 288</p>\n\n<p>ગુણ 45 ને 54 તરીકે ખોટી રીતે વાંચવામાં આવે છે.</p>\n\n<p>પાંચ વિદ્યાર્થીઓની સંખ્યાનો સરવાળો (288 - 54) = 234 છે.</p>\n\n<p>છ વિદ્યાર્થીઓના ગુણનો વાસ્તવિક સરવાળો = (234 + 45)</p>\n\n<p>⇒ 279</p>\n\n<p>સાચી સરેરાશ = (279/6)</p>\n\n<p>⇒ 46.5</p>\n\n<p><strong>∴</strong> <strong>આમ,</strong> <strong>સાચી સરેરાશ 46.5 છે</strong></p>\n\n<p><strong><u><span style=\"display: fl", "kn": "\n<p><strong>ನೀಡಲಾಗಿದೆ:</strong></p>\n\n<p>ಆರು ವಿದ್ಯಾರ್ಥಿಗಳ ಸರಾಸರಿ ಅಂಕಗಳು 48. ಅಂಕ 45 ಅನ್ನು 54 ಎಂದು ತಪ್ಪಾಗಿ ಓದಲಾಗಿದೆ.</p>\n\n<p><strong>ಬಳಸಿದ ಪರಿಕಲ್ಪನೆ:</strong></p>\n\n<p>ಸರಾಸರಿ = (ಎಲ್ಲಾ ನಮೂದುಗಳ ಮೊತ್ತ)/(ಒಟ್ಟು <span style=\"\">ನಮೂದುಗಳ</span> ಸಂಖ್ಯೆ)</p>\n\n<p><strong>ಲೆಕ್ಕಾಚಾರ:</strong></p>\n\n<p>ಆರು ವಿದ್ಯಾರ್ಥಿಗಳ ಸರಾಸರಿ ಅಂಕಗಳು 48</p>\n\n<p>ಆರು ವಿದ್ಯಾರ್ಥಿಗಳ ಒಟ್ಟು ಅಂಕಗಳು = 48 x 6</p>\n\n<p>⇒ 288</p>\n\n<p>ಅಂಕ 45 ಅನ್ನು 54 ಎಂದು ತಪ್ಪಾಗಿ ಓದಲಾಗಿದೆ</p>\n\n<p>ಐದು ವಿದ್ಯಾರ್ಥಿಗಳ ಸಂಖ್ಯೆಗಳ ಮೊತ್ತ (288 - 54) = 234</p>\n\n<p>ಆರು ವಿದ್ಯಾರ್ಥಿಗಳ ಅಂಕಗಳ ನಿಜವಾದ ಮೊತ್ತ = (234 + 45)</p>\n\n<p>⇒ 279</p>\n\n<p>ಸರಿಯಾದ ಸರಾಸರಿ = (279/6)</p>\n\n<p>⇒ 46.5</p>\n\n<p><strong>∴</strong> <strong>ಸರಿಯಾದ ಸರಾಸರಿ 46.5 ಆಗಿದೆ</strong></p>\n\n<p><strong><u><span style=\"display: flex;gap: 6px;align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://c", "ta": "<p><strong>கொடுக்கப்பட்டது</strong>:</p>\n\n<p>ஆறு மாணவர்களின் சராசரி மதிப்பெண்கள் 48. மதிப்பெண் 45 என்பது 54 என்று தவறாகப் படிக்கப்படுகிறது.</p>\n\n<p><strong>பயன்படுத்தப்படும் கருத்து:</strong></p>\n\n<p>சராசரி = (அனைத்து உள்ளீடுகளின் கூட்டுத்தொகை)/(மொத்த நுழைவு எண்ணிக்கை)</p>\n\n<p><strong>கணக்கீடு</strong>:</p>\n\n<p>ஆறு மாணவர்களின் சராசரி மதிப்பெண்கள் 48</p>\n\n<p>ஆறு மாணவர்களின் மொத்த மதிப்பெண்கள் = 48 × 6</p>\n\n<p>⇒ 288</p>\n\n<p>மதிப்பெண் 45 என்பது 54 என்று தவறாகப் படிக்கப்படுகிறது</p>\n\n<p>ஐந்து மாணவர்களின் எண்ணிக்கையின் கூட்டுத்தொகை (288 – 54) = 234</p>\n\n<p>ஆறு மாணவர்களின் உண்மையான மதிப்பெண்கள் = (234 + 45)</p>\n\n<p>⇒ 279</p>\n\n<p>சரியான சராசரி = (279/6)</p>\n\n<p>⇒ 46.5</p>\n\n<p><strong>∴ சரியான சராசரி 46.5.</strong><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Shortcut Trick</u></span></strong></span> தவறாக எண்ணப்பட்ட அதிக எண்ணிக்கை = (54 – 45) = 9</p>\n\n<p>தவறுதலாக சராசரி 9/6 = 1.5 அதிகரித்தது</p>\n\n<p>சரியான சராசரி = (48 – 1.5)</p>\n\n<p>⇒ 46.5</p>\n\n<p><strong>∴ சரியான சராசரி 46.5</strong></p>\n39:T756,<p><strong>ਦਿੱਤਾ ਗਿਆ ਹੈ:</strong></p>\n\n<p>ਛੇ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਔਸਤ ਅੰਕ 48 ਹਨ। ਅੰਕ 45 ਗਲਤੀ ਨਾਲ 54 ਪੜ੍ਹ ਲਿਆ ਗਿਆ ਸੀ।</p>\n\n<p><strong>ਵਰਤਿਆ ਗਿਆ ਸੰਕਲਪ:</strong></p>\n\n<p>ਔਸਤ = (ਸਾਰੀਆਂ ਸੰਖਿਆਵਾਂ ਦਾ ਜੋੜ)/(ਕੁੱਲ <span style=\"color: rgb(33, 37, 41);\">ਸੰਖਿਆਵਾਂ</span> ਦੀ ਗਿਣਤੀ)</p>\n\n<p><strong>ਗਣਨਾ:</strong></p>\n\n<p>ਛੇ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਔਸਤ ਅੰਕ 48 ਹਨ</p>\n\n<p>ਛੇ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਕੁੱਲ ਅੰਕ = 48 x 6</p>\n\n<p>⇒ 288</p>\n\n<p>ਅੰਕ 45 ਗਲਤੀ ਨਾਲ 54 ਪੜ੍ਹੇ ਗਏ</p>\n\n<p>ਪੰਜ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਅੰਕਾਂ ਦਾ ਜੋੜ ਹੈ (288 - 54) = 234</p>\n\n<p>ਛੇ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਅੰਕਾਂ ਦਾ ਅਸਲ ਜੋੜ = (234 + 45)</p>\n\n<p>⇒ 279</p>\n\n<p>ਸਹੀ ਔਸਤ = (279/6)</p>\n\n<p>⇒ 46.5</p>\n\n<p><strong>∴</strong><strong> ਸਹੀ ਔਸਤ 46.5 ਹੈ।</strong></p>\n\n<p><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" style=\"color: rgb(33, 37, 41); font-weight: 700; text-decoration-line: underline;\" width=", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p><strong>ਦਿੱਤਾ ਗਿਆ ਹੈ:</strong></p>\n\n<p>ਛੇ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਔਸਤ ਅੰਕ 48 ਹਨ। ਅੰਕ 45 ਗਲਤੀ ਨਾਲ 54 ਪੜ੍ਹ ਲਿਆ ਗਿਆ ਸੀ।</p>\n\n<p><strong>ਵਰਤਿਆ ਗਿਆ ਸੰਕਲਪ:</strong></p>\n\n<p>ਔਸਤ = (ਸਾਰੀਆਂ ਸੰਖਿਆਵਾਂ ਦਾ ਜੋੜ)/(ਕੁੱਲ <span style=\"color: rgb(33, 37, 41);\">ਸੰਖਿਆਵਾਂ</span> ਦੀ ਗਿਣਤੀ)</p>\n\n<p><strong>ਗਣਨਾ:</strong></p>\n\n<p>ਛੇ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਔਸਤ ਅੰਕ 48 ਹਨ</p>\n\n<p>ਛੇ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਕੁੱਲ ਅੰਕ = 48 x 6</p>\n\n<p>⇒ 288</p>\n\n<p>ਅੰਕ 45 ਗਲਤੀ ਨਾਲ 54 ਪੜ੍ਹੇ ਗਏ</p>\n\n<p>ਪੰਜ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਅੰਕਾਂ ਦਾ ਜੋੜ ਹੈ (288 - 54) = 234</p>\n\n<p>ਛੇ ਵਿਦਿਆਰਥੀਆਂ ਦੇ ਅੰਕਾਂ ਦਾ ਅਸਲ ਜੋੜ = (234 + 45)</p>\n\n<p>⇒ 279</p>\n\n<p>ਸਹੀ ਔਸਤ = (279/6)</p>\n\n<p>⇒ 46.5</p>\n\n<p><strong>∴</strong><strong> ਸਹੀ ਔਸਤ 46.5 ਹੈ।</strong></p>\n\n<p><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Average", "confidence": "high"}, {"qid": "5f9ab482238301fc2ad7e4ed", "qs_no": 10, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "Seven persons have 20, 30, 40, 50, 60, 70 and 80 chocolates with them. If each of them is given 5 chocolates additionally, what will be the average number of chocolates with them?", "options": [{"prompt": "1", "value": "50"}, {"prompt": "2", "value": "55"}, {"prompt": "3", "value": "45"}, {"prompt": "4", "value": "60"}], "range": {"start": "", "end": ""}}, "hn": {"value": "सात व्यक्तियों के पास 20, 30, 40, 50, 60, 70 और 80 चॉकलेट हैं। यदि उनमें से प्रत्येक को अतिरिक्त रूप से 5 चॉकलेट दी जाती हैं, तो उनके पास चॉकलेट की औसत संख्या क्या होगी?", "options": [{"prompt": "1", "value": "50"}, {"prompt": "2", "value": "55"}, {"prompt": "3", "value": "45"}, {"prompt": "4", "value": "60"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>Seven persons have 20, 30, 40, 50, 60, 70 and 80 chocolates with them.</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>Average&nbsp;=&nbsp;(Sum of all the observations)/(Total number of observations)</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>If any certain number&nbsp;is added to each ob", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);\">सात व्यक्तियों के पास 20, 30, 40, 50, 60, 70 और 80 चॉकलेट हैं।</span></p>\n\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n\n<p>औसत =&nbsp;(<span style=\"color: rgb(37, 37, 37);  \">सभी अवलोकनों का योग</span>)/(<span style=\"color: rgb(37, 37, 37);  \">अवलोकनों&nbsp;की कुल संख्या</span>)</p>\n\n<p><strong>प्रयुक्त अवधारणा:</strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">यदि प्रत्येक अवलोकन में कोई निश्चित संख्या जोड़ी जाती है, तो उस संख्या से टिप्पणियों का औसत बढ़ जाता है।</span></p>\n\n<p><strong>गणना:</strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">प्रारंभिक औसत</span> =&nbsp;(<span style=\"color: rgb(37, 37, 37);\">सभी अवलोकनों का योग</span>)/(<span style=\"color: rgb(37, 37, 37);\">अवलोकनों&nbsp;की कुल संख्या</span>)</p>\n\n<p>&rArr; (20 + 30 + 40 + 50 + 60 + 70 + 80)/7</p>\n\n<p>&rArr; 50</p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">प्रत्येक अवलोकन में &#39;5&#39; जोड़ने पर,</span></p>\n\n<p>नया औसत = (50 + 5)</p>\n\n<p>&rArr; 55</p>\n\n<p><strong>&there4; <span style=\"color: rgb(37, 37, 37);  \">प्रत्येक व्यक्ति के पास चॉकलेट की नई औसत संख्या &#39;55&#39; है।</span></strong></p>\n\n31:T704,\n<p><strong>Given:</strong></p>\n\n<p>Average marks of six students are 48. The mark 45 is misread as 54.</p>\n\n<p><strong>Concept Used:</strong></p>\n\n<p>Average = (Sum of all entry)/(Number of total entry)</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Average marks of six students are 48</p>\n\n<p>Total marks of six students = 48 &times; 6</p>\n\n<p>&rArr; 288</p>\n\n<p>The mark 45 is misread as 54</p>\n\n<p>Sum of numbers of five students is (288 &ndash; 54) ", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Average", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 10 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>

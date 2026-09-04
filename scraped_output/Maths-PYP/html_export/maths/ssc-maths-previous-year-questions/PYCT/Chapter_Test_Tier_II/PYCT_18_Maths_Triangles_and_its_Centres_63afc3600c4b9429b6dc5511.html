@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 18: Maths (Triangles and its Centres)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 18: Maths (Triangles and its Centres)</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-maths-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">10 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">30.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+3.0 / -1.0</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63afc3600c4b9429b6dc5511</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63afc3600c4b9429b6dc5511", "title": "PYCT 18: Maths (Triangles and its Centres)", "series_slug": "ssc-maths-previous-year-questions", "duration_min": 10, "max_marks": 30.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "6329b604972c5fb08aaf42e7", "section_name": "Test", "q_count": 10, "max_marks": 30.0, "questions": [{"qid": "5c29edaffdb8bb0d53c96ad5", "qs_no": 1, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "In a triangle PQR, &ang;PQR = 90&deg;, PQ = 10 cm and PR = 26 cm, then what is the value (in cm) of inradius of incircle?", "options": [{"prompt": "1", "value": "9"}, {"prompt": "2", "value": "4"}, {"prompt": "3", "value": "8"}, {"prompt": "4", "value": "6"}], "range": {"start": "", "end": ""}}, "hn": {"value": "त्रिभुज PQR में, &ang;PQR = 90&deg;, PQ = 10 सेमी और PR = 26 सेमी है, तो अंतःवृत्त की अंतःत्रिज्या का मान (सेमी में) क्या है?&nbsp;", "options": [{"prompt": "1", "value": "9"}, {"prompt": "2", "value": "4"}, {"prompt": "3", "value": "8"}, {"prompt": "4", "value": "6"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>Triangle PQR is a right-angled triangle at Q (∠Q = 90°).</p>\n<p>Given PQ = 10 cm and PR = 26 cm (Hypotenuse).</p>\n<p>Using Pythagorean triplet (5, 12, 13) × 2 → (10, 24, 26). Thus, QR = 24 cm.</p>\n<p>Inradius (r) of a right triangle = (Base + Perpendicular − Hypotenuse) ÷ 2</p>\n<p>r = (10 + 24 − 26) ÷ 2 = 8 ÷ 2 = 4 cm.</p>\n<p><strong>∴ The correct answer is 4 cm.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Perpendicular (PQ) = 10 cm</p>\n<p>Hypotenuse (PR) = 26 cm</p>\n<p><strong>Formula Used:</strong></p>\n<p>Third side (QR) = √(PR<sup>2</sup> − PQ<sup>2</sup>)</p>\n<p>Inradius (r) = Area ÷ Semi-perimeter (s)</p>\n<img src=\"https://cdn.repeatermock.com/tb/d1b0ad269f497d6eb1447fe598456f8e5b678355b5eb419239d1d16d71085e07.png\" style=\"max-width: 450px;\" />\n<p><strong>Calculations:</strong></p>\n<p>⇒ QR = √(26<sup>2</sup> − 10<sup>2</sup>)</p>\n<p>⇒ QR = √(676 − 100) = √576 = 24 cm</p>\n<p>⇒ Area of ΔPQR = 1/2 × Base × Height</p>\n<p>⇒ Area = 0.5 × 24 × 10 = 120 cm<sup>2</sup></p>\n<p>⇒ Semi-perimeter (s) = (10 + 24 + 26) ÷ 2 = 60 ÷ 2 = 30 cm</p>\n<p>⇒ Inradius (r) = Area ÷ s = 120 ÷ 30</p>\n<p>⇒ r = 4 cm</p>\n<p><strong>∴ The correct answer is 4 cm.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Circumradius of Right Triangle</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The circumradius (R) of a right-angled triangle is equal to half of its hypotenuse: R = Hypotenuse ÷ 2.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>General Inradius Formula</p>\n<p style='margin:0 0 8px 0;color:#444444;'>For any triangle, the inradius r is given by Area (A) ÷ Semi-perimeter (s), where s = (a + b + c) ÷ 2.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Pythagorean Triplets</p>\n<p style='margin:0 0 8px 0;color:#444444;'>Common triplets like (3, 4, 5), (5, 12, 13), (8, 15, 17), and (7, 24, 25) help in solving right triangle problems faster.</p", "hn": "<p>त्रिभुज PQR में, माना O त्रिभुज PQR के अंतःवृत्त का केंद्र है और माना अंतःवृत त्रिभुज की भुजाएँ PQ, QR, PR क्रमशः A, B, C बिन्दुओं पर मिलती हैं।</p>\n\n<p>&there4; OA = OB = OC = r (वृत्त की त्रिज्या)</p>\n\n<p>पाईथागोरस प्रमेय द्वारा,</p>\n\n<p>&rArr; PR<sup>2</sup> = PQ<sup>2</sup> + QR<sup>2</sup></p>\n\n<p>&rArr; QR<sup>2</sup> = 26<sup>2</sup>&nbsp;&ndash; 10<sup>2 </sup></p>\n\n<p>&rArr; QR<sup>2</sup> = 576</p>\n\n<p>&rArr; QR = 24 सेमी</p>\n\n<p><span style=\"\">अंतःवृत्त&nbsp;</span>की त्रिज्या = (24 + 10 - 26)/2 = 8/2</p>\n\n<p>&rArr; 4 सेमी</p>\n&there4; अंतःवृत्त की त्रिज्या = 4 सेमी", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles, Congruence and Similarity"], "concept": "Triangles, Congruence and Similarity", "confidence": "high"}, {"qid": "5e0f50be5880f40d0245bfe8", "qs_no": 2, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "In &Delta;ABC, &ang;A = 58&deg;. If I is the in-centre of the triangle, then the measure of &ang;BIC is∶", "options": [{"prompt": "1", "value": "119&amp;deg;"}, {"prompt": "2", "value": "112&amp;deg;"}, {"prompt": "3", "value": "109&amp;deg;"}, {"prompt": "4", "value": "123&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "ΔABC में, ∠A = 58° है। यदि I त्रिभुज का अंतःकेंद्र है, तो ∠BIC का माप क्या है?", "options": [{"prompt": "1", "value": "119&deg;"}, {"prompt": "2", "value": "112&deg;"}, {"prompt": "3", "value": "109&deg;"}, {"prompt": "4", "value": "123&deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>Angle at the in-centre (I) is always given by: ∠BIC = 90° + (∠A ÷ 2)</p>\n<p>Given ∠A = 58°</p>\n<p>⇒ ∠BIC = 90° + (58° ÷ 2)</p>\n<p>⇒ ∠BIC = 90° + 29° = 119°</p>\n<p><strong>∴ The correct answer is 119°.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>In ΔABC, ∠A = 58°</p>\n<p>I is the in-centre of the triangle.</p>\n<p><strong>Formula Used:</strong></p>\n<p>In any triangle, the angle formed by the internal bisectors of two angles at the in-centre is 90° plus half of the third angle: ∠BIC = 90° + ∠A/2</p>\n\n<img src=\"https://cdn.repeatermock.com/tb/c9aaebb4e97215e46780e759746f46905f2dd324530271d46c8d22361a6233c1.png\" style=\"max-width: 450px;\" />\n\n<p><strong>Calculations:</strong></p>\n<p>⇒ ∠A = 58°</p>\n<p>⇒ ∠BIC = 90° + (∠A ÷ 2)</p>\n<p>⇒ ∠BIC = 90° + (58° ÷ 2)</p>\n<p>⇒ ∠BIC = 90° + 29°</p>\n<p>⇒ ∠BIC = 119°</p>\n<p><strong>∴ The correct answer is 119°.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>In-centre Properties</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The in-centre is the intersection of the internal angle bisectors. The radius of the in-circle (r) = Area ÷ semi-perimeter (s).</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Circumcentre Angle</p>\n<p style='margin:0 0 8px 0;color:#444444;'>If O is the circumcentre of ΔABC, then the angle ∠BOC = 2 × ∠A.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Orthocentre Angle</p>\n<p style='margin:0 0 8px 0;color:#444444;'>If H is the orthocentre of ΔABC, then the angle ∠BHC = 180° − ∠A.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Ex-centre Angle</p>\n<p style='margin:0 0 8px 0;color:#444444;'>If I<sub>e</sub> is the ex-centre opposite to vertex A, then the angle ∠BI<sub>e</sub>C = 90° − (∠A ÷ 2).</p", "hn": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>अंतःकेंद्र (I) पर बनने वाला कोण हमेशा इस प्रकार दिया जाता है: ∠BIC = 90° + (∠A ÷ 2)</p>\n<p>दिया गया है ∠A = 58°</p>\n<p>⇒ ∠BIC = 90° + (58° ÷ 2)</p>\n<p>⇒ ∠BIC = 90° + 29° = 119°</p>\n<p><strong>∴ सही उत्तर 119° है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>दिया गया है:</strong></p>\n<p>ΔABC में, ∠A = 58°</p>\n<p>I त्रिभुज का अंतःकेंद्र है।</p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p>किसी भी त्रिभुज में, अंतःकेंद्र पर दो कोणों के आंतरिक समद्विभाजकों द्वारा निर्मित कोण 90° और तीसरे कोण के आधे का योग होता है: ∠BIC = 90° + ∠A/2</p>\n\n<img src=\"https://cdn.repeatermock.com/tb/c9aaebb4e97215e46780e759746f46905f2dd324530271d46c8d22361a6233c1.png\" style=\"max-width: 450px;\" />\n\n<p><strong>गणना:</strong></p>\n<p>⇒ ∠A = 58°</p>\n<p>⇒ ∠BIC = 90° + (∠A ÷ 2)</p>\n<p>⇒ ∠BIC = 90° + (58° ÷ 2)</p>\n<p>⇒ ∠BIC = 90° + 29°</p>\n<p>⇒ ∠BIC = 119°</p>\n<p><strong>∴ सही उत्तर 119° है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>अंतःकेंद्र के गुणधर्म</p>\n<p style='margin:0 0 8px 0;color:#444444;'>अंतःकेंद्र, आंतरिक कोण समद्विभाजकों का प्रतिच्छेदन बिंदु होता है। अंतःवृत्त की त्रिज्या (r) = क्षेत्रफल ÷ अर्ध-परिमाप (s) होता है।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>परिकेंद्र कोण</p>\n<p style='margin:0 0 8px 0;color:#444444;'>यदि O, ΔABC का परिकेंद्र है, तो कोण ∠BOC = 2 × ∠A होता है।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>लंबकेंद्र कोण</p>\n<p style='margin:0 0 8px 0;color:#444444;'>यदि H, ΔABC का लंबकेंद्र है, तो कोण ∠BHC = 180° − ∠A होता है।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>बाह्यकेंद्र कोण</p>\n<p style='margin:0 0 8px 0;color:#444444;'>यदि I<sub>e</sub> शीर्ष A के विपरीत बाह्यकेंद्र है, तो कोण ∠BI<sub>e</sub>C = 90° − (∠A ÷ 2) होता है।</p>\n34:T1172,\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n\n<p>Tangents from an external point are equal: DR = DS = 6&nbsp;cm.</p>\n\n<p>AS = AD &minus; DS = 24 &minus; 6 = 18&nbsp;cm, and AP = AS = 18&nbsp;cm.</p>\n\n<p>PB = AB &minus; AP = 27 &minus; 18 = 9&nbsp;cm.</p>\n\n<p>Since angle B = 90<sup>0</sup>, the radius r&nbsp;of the inscribed circle is equal to PB = 9&nbsp;cm.</p>\n\n<p>Circumference = 2 &times; &pi; &times; r = 2 &times; &pi; &times; 9 = 18&pi;.</p>\n\n<p><strong&g", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles, Congruence and Similarity"], "concept": "Triangles, Congruence and Similarity", "confidence": "high"}, {"qid": "5e32ea6ef60d5d1abdbb1dde", "qs_no": 3, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "S is the incentre of &Delta;PQR. If &ang;PSR = 125&deg;, then the measure of &ang;PQR is:", "options": [{"prompt": "1", "value": "75&amp;deg;"}, {"prompt": "2", "value": "55&amp;deg;"}, {"prompt": "3", "value": "80&amp;deg;"}, {"prompt": "4", "value": "70&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "S ΔPQR का अंतःकेंद्र  है। यदि ∠PSR = 125°, तो ∠PQR का माप क्या है?", "options": [{"prompt": "1", "value": "75&deg;"}, {"prompt": "2", "value": "55&deg;"}, {"prompt": "3", "value": "80&deg;"}, {"prompt": "4", "value": "70&deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>In any triangle, the angle at the incentre is 90° + half of the vertical angle.</p>\n<p>∠PSR = 90° + (∠PQR / 2)</p>\n<p>125° = 90° + (∠PQR / 2)</p>\n<p>35° = ∠PQR / 2 ⇒ ∠PQR = 35° × 2 = 70°.</p>\n<p><strong>∴ The correct answer is 70°.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>S is the incentre of ΔPQR and ∠PSR = 125°.</p>\n<p><strong>Formula Used:</strong></p>\n<p>The angle subtended by a side at the incentre S is given by 90° + (opposite vertex angle / 2).</p>\n<img src=\"https://cdn.repeatermock.com/tb/971eca7b8a3180065461a40a06c8c2125ac6fbc79255e5ce488057cec226e90c.png\" style=\"max-width: 450px;\" />\n<p><strong>Calculations:</strong></p>\n<p>⇒ ∠PSR = 90° + (∠PQR / 2)</p>\n<p>⇒ 125° = 90° + (∠PQR / 2)</p>\n<p>⇒ ∠PQR / 2 = 125° − 90°</p>\n<p>⇒ ∠PQR / 2 = 35°</p>\n<p>⇒ ∠PQR = 35° × 2</p>\n<p>⇒ ∠PQR = 70°</p>\n<p><strong>∴ The correct answer is 70°.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Excentre Angle Property</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The angle formed at the excentre (E) opposite to vertex Q is ∠PER = 90° − (∠Q / 2).</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Circumcentre Angle Property</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The angle subtended by side PR at the circumcentre O is exactly twice the angle at vertex Q: ∠POR = 2 × ∠PQR.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Inradius Formula</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The radius of the incircle (r) is given by r = Area of triangle (Δ) ÷ Semi-perimeter (s).</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Incentre Definition</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The incentre is the point where the three internal angle bisectors of a triangle intersect and it is equidistant from all sides.</p", "hn": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>किसी भी त्रिभुज में, अंतःकेंद्र पर बनने वाला कोण = 90° + शीर्ष कोण का आधा होता है।</p>\n<p>∠PSR = 90° + (∠PQR / 2)</p>\n<p>125° = 90° + (∠PQR / 2)</p>\n<p>35° = ∠PQR / 2 ⇒ ∠PQR = 35° × 2 = 70°.</p>\n<p><strong>∴ सही उत्तर 70° है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>दिया गया है:</strong></p>\n<p>S, ΔPQR का अंतःकेंद्र है और ∠PSR = 125° है।</p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p>अंतःकेंद्र S पर एक भुजा द्वारा अंतरित कोण 90° + (विपरीत शीर्ष कोण / 2) द्वारा दिया जाता है।</p>\n<img src=\"https://cdn.repeatermock.com/tb/971eca7b8a3180065461a40a06c8c2125ac6fbc79255e5ce488057cec226e90c.png\" style=\"max-width: 450px;\" />\n<p><strong>गणना:</strong></p>\n<p>⇒ ∠PSR = 90° + (∠PQR / 2)</p>\n<p>⇒ 125° = 90° + (∠PQR / 2)</p>\n<p>⇒ ∠PQR / 2 = 125° − 90°</p>\n<p>⇒ ∠PQR / 2 = 35°</p>\n<p>⇒ ∠PQR = 35° × 2</p>\n<p>⇒ ∠PQR = 70°</p>\n<p><strong>∴ सही उत्तर 70° है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>बाह्यकेंद्र कोण गुणधर्म</p>\n<p style='margin:0 0 8px 0;color:#444444;'>शीर्ष Q के विपरीत बाह्यकेंद्र (E) पर बनने वाला कोण ∠PER = 90° − (∠Q / 2) होता है।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>परिकेंद्र कोण गुणधर्म</p>\n<p style='margin:0 0 8px 0;color:#444444;'>भुजा PR द्वारा परिकेंद्र O पर अंतरित कोण, शीर्ष Q पर बनने वाले कोण का ठीक दोगुना होता है: ∠POR = 2 × ∠PQR.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>अंतःत्रिज्या सूत्र</p>\n<p style='margin:0 0 8px 0;color:#444444;'>अंतःवृत्त की त्रिज्या (r) = त्रिभुज का क्षेत्रफल (Δ) ÷ अर्ध-परमाप (s) द्वारा दी जाती है।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>अंतःकेंद्र की परिभाषा</p>\n<p style='margin:0 0 8px 0;color:#444444;'>अंतःकेंद्र वह बिंदु होता है जहाँ त्रिभुज के तीनों आंतरिक कोण समद्विभाजक प्रतिच्छेद करते हैं और यह सभी भुजाओं से समान दूरी पर होता है।</p>\n3a:Tc37,\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>In any triangle, the angle formed by the orthocentre at the base side is supplementary to the opposite vertex angle.</p>\n<p>Property: ∠BOC + ∠BAC = 180°</p>\n<p>Given: ∠BOC = 100°</p>\n<p>⇒ ∠BAC = 180° − 100° = 80°</p>\n<p><strong>∴ The correct answer is 80°.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Triangle ΔABC with orthocentre O.</p>\n<p>Angle ∠BOC = 100°.</p>\n<p><strong>Formula:</st", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles, Congruence and Similarity"], "concept": "Triangles, Congruence and Similarity", "confidence": "high"}, {"qid": "5c2344e1d071745073bd3186", "qs_no": 4, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>In &Delta;XYZ, G is the centroid. If XY = 11 cm, YZ = 14 cm and XZ = 7 cm, then what is the value (in cm) of GM?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/9241eefd455150d6518676da02e184aa3ed436f156aedd821acc202fe8349f53.png\" style=\"width: 201px; height: 188px;\" /></p>\n", "options": [{"prompt": "1", "value": "6"}, {"prompt": "2", "value": "4"}, {"prompt": "3", "value": "2"}, {"prompt": "4", "value": "3"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>&Delta;XYZ में, G केंद्रक है। यदि XY = 11 सेमी, YZ = 14 सेमी और XZ = 7 सेमी है, तो GM का मान (सेमी में) क्या है?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/9241eefd455150d6518676da02e184aa3ed436f156aedd821acc202fe8349f53.png\" style=\"width: 201px; height: 188px;\" /></p>\n", "options": [{"prompt": "1", "value": "6"}, {"prompt": "2", "value": "4"}, {"prompt": "3", "value": "2"}, {"prompt": "4", "value": "3"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>In a triangle, the length of median XM = 1/2 √(2(XY<sup>2</sup> + XZ<sup>2</sup>) − YZ<sup>2</sup>).</p>\n<p>Given XY = 11, XZ = 7, YZ = 14.</p>\n<p>XM = 1/2 √(2(11<sup>2</sup> + 7<sup>2</sup>) − 14<sup>2</sup>) = 1/2 √(2(121 + 49) − 196) = 1/2 √(340 − 196).</p>\n<p>XM = 1/2 √144 = (1/2) × 12 = 6 cm.</p>\n<p>Centroid G divides median XM in ratio XG : GM = 2 : 1, so GM = (1/3) × XM.</p>\n<p>GM = (1/3) × 6 = 2 cm.</p>\n<p><strong>∴ The correct answer is 2 cm.</strong></p>\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p>Given: Triangle XYZ with sides XY = 11 cm, YZ = 14 cm, and XZ = 7 cm. G is the centroid and XM is the median to side YZ.</p>\n<p>Formula Used: Apollonius Theorem ⇒ 2(XM<sup>2</sup> + YM<sup>2</sup>) = XY<sup>2</sup> + XZ<sup>2</sup>, where M is the midpoint of YZ.</p>\n<img src=\"https://cdn.repeatermock.com/tb/fc9bbce40b2d51512ac375baa81fee175c68cdfa2887f9588423c1603e9b7336.png\" style=\"max-width: 450px;\" />\n<p>⇒ M is the midpoint of YZ, so YM = YZ ÷ 2 = 14 ÷ 2 = 7 cm.</p>\n<p>⇒ By Apollonius Theorem: 2(XM<sup>2</sup> + 7<sup>2</sup>) = 11<sup>2</sup> + 7<sup>2</sup></p>\n<p>⇒ 2(XM<sup>2</sup> + 49) = 121 + 49</p>\n<p>⇒ 2(XM<sup>2</sup> + 49) = 170</p>\n<p>⇒ XM<sup>2</sup> + 49 = 85</p>\n<p>⇒ XM<sup>2</sup> = 85 − 49 = 36</p>\n<p>⇒ XM = √36 = 6 cm</p>\n<p>⇒ Centroid G divides median XM such that XG : GM = 2 : 1</p>\n<p>⇒ GM = 1/(2 + 1) × XM = 1/3 × 6 = 2 cm</p>\n<p><strong>∴ The correct answer is 2 cm.</strong></p>\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Centroid Property</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The centroid of a triangle is the intersection point of its three medians and divides each median in the ratio 2 : 1 from the vertex.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Apollonius Theorem</p>\n<p style='margin:0 0 8px 0;color:#444444;'>For any triangle with sides a, b, c and median m<sub>a</sub> to side a: b<sup>2</sup> + c<sup>2</sup> = 2(m<sub>a</sub><sup>2</sup> + (a/2)<sup>2</sup>).</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Median Area Property</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The three medians divide the triangle into six smaller triangles of equal area.</p", "hn": "<p>माध्यिका XM के साथ एक &Delta;XYZ में,</p>\n\n<p>(XY)<sup>2</sup> + (XZ)<sup>2</sup> = 2(YM<sup>2</sup> + XM<sup>2</sup>)</p>\n\n<p>दिए गए मानों के रखे पर,</p>\n\n<p>&rArr; 11<sup>2</sup> + 7<sup>2</sup> = 2(7<sup>2</sup> + XM<sup>2</sup>)</p>\n\n<p>&rArr; 121 + 49 = 98 + 2(XM<sup>2</sup>)</p>\n\n<p>&rArr; 2(XM)<sup>2</sup> = 72</p>\n\n<p>&rArr; XM = 6 सेमी</p>\n\n<p>हम जानते हैं कि केंद्रक 2 ∶ 1 के अनुपात में माध्यिका को विभाजित करता है</p>\n\n<p>&there4; GM = 1/3 &times; 6 = 2 सेमी</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles, Congruence and Similarity"], "concept": "Triangles, Congruence and Similarity", "confidence": "high"}, {"qid": "5e32d487f60d5d5996174d91", "qs_no": 5, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The sides of a triangle are 12 cm, 35 cm and 37 cm. What is the circumradius of the triangle?", "options": [{"prompt": "1", "value": "19 cm"}, {"prompt": "2", "value": "17.5 cm"}, {"prompt": "3", "value": "17 cm"}, {"prompt": "4", "value": "18.5 cm"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक त्रिभुज की भुजाएँ 12 सेंटीमीटर, 35 सेंटीमीटर और 37 सेंटीमीटर हैं। परिवृत्त की त्रिज्या क्या है?", "options": [{"prompt": "1", "value": "19 सेंटीमीटर"}, {"prompt": "2", "value": "17.5 सेंटीमीटर"}, {"prompt": "3", "value": "17 सेंटीमीटर"}, {"prompt": "4", "value": "18.5 सेंटीमीटर"}], "range": {"start": "", "end": ""}}, "te": {"value": "ఒక త్రిభుజం యొక్క భుజాలు 12 సెం.మీ, 35 సెం.మీ మరియు 37 సెం.మీ. అయితే ఆ త్రిభుజం యొక్క పరివృత్త వ్యాసార్థం ఎంత?", "options": [{"prompt": "1", "value": "19 సెం.మీ"}, {"prompt": "2", "value": "17.5 సెం.మీ"}, {"prompt": "3", "value": "17 సెం.మీ"}, {"prompt": "4", "value": "18.5 సెం.మీ"}], "range": {"start": "", "end": ""}}, "mr": {"value": "एका त्रिकोणाच्या बाजू 12 सेमी, 35 सेमी आणि 37 सेमी आहेत. तर त्रिकोणाची परित्रिज्या (circumradius) किती आहे?", "options": [{"prompt": "1", "value": "19 सेमी"}, {"prompt": "2", "value": "17.5 सेमी"}, {"prompt": "3", "value": "17 सेमी"}, {"prompt": "4", "value": "18.5 सेमी"}], "range": {"start": "", "end": ""}}, "bn": {"value": "একটি ত্রিভুজের বাহুগুলি 12 সেমি, 35 সেমি এবং 37 সেমি। ত্রিভুজটির পরিব্যাসার্ধ কত?", "options": [{"prompt": "1", "value": "19 সেমি"}, {"prompt": "2", "value": "17.5 সেমি"}, {"prompt": "3", "value": "17 সেমি"}, {"prompt": "4", "value": "18.5 সেমি"}], "range": {"start": "", "end": ""}}, "gu": {"value": "એક ત્રિકોણની બાજુઓ 12 સેમી, 35 સેમી અને 37 સેમી છે. ત્રિકોણની પરિ ત્રિજ્યા કેટલી છે?", "options": [{"prompt": "1", "value": "19 સેમી"}, {"prompt": "2", "value": "17.5 સેમી"}, {"prompt": "3", "value": "17 સેમી"}, {"prompt": "4", "value": "18.5 સેમી"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ಒಂದು ತ್ರಿಭುಜದ ಬದಿಗಳು 12 ಸೆಂ.ಮೀ, 35 ಸೆಂ.ಮೀ ಮತ್ತು 37 ಸೆಂ.ಮೀ ಆಗಿವೆ. ತ್ರಿಭುಜದ ಪರಿವೃತ್ತದ ತ್ರಿಜ್ಯ ಎಷ್ಟು?", "options": [{"prompt": "1", "value": "19 ಸೆಂ.ಮೀ"}, {"prompt": "2", "value": "17.5 ಸೆಂ.ಮೀ"}, {"prompt": "3", "value": "17 ಸೆಂ.ಮೀ"}, {"prompt": "4", "value": "18.5 ಸೆಂ.ಮೀ"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ஒரு முக்கோணத்தின் பக்கங்கள் 12 செ.மீ, 35 செ.மீ மற்றும் 37 செ.மீ. முக்கோணத்தின் சுற்றுவட்ட ஆரம் என்ன?", "options": [{"prompt": "1", "value": "19 செ.மீ"}, {"prompt": "2", "value": "17.5 செ.மீ"}, {"prompt": "3", "value": "17 செ.மீ"}, {"prompt": "4", "value": "18.5 செ.மீ"}], "range": {"start": "", "end": ""}}, "or": {"value": "ଏକ ତ୍ରିଭୁଜର ବାହୁଗୁଡ଼ିକ 12 ସେମି, 35 ସେମି ଏବଂ 37 ସେମି ଅଟେ | ତ୍ରିଭୁଜର ପରିବୃତ୍ତର ବ୍ୟାସାର୍ଦ୍ଧ କେତେ?", "options": [{"prompt": "1", "value": "19 ସେମି"}, {"prompt": "2", "value": "17.5 ସେମି"}, {"prompt": "3", "value": "17 ସେମି"}, {"prompt": "4", "value": "18.5 ସେମି"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>Identify the sides: 12, 35, 37. These form a Pythagorean triplet since 12<sup>2</sup> + 35<sup>2</sup> = 144 + 1225 = 1369 = 37<sup>2</sup>.</p>\n<p>For any right-angled triangle, the circumradius (R) is equal to half of the hypotenuse.</p>\n<p>The longest side is the hypotenuse = 37 cm.</p>\n<p>R = 37 ÷ 2 = 18.5 cm.</p>\n<p><strong>∴ The correct answer is 18.5 cm.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Sides of the triangle: a = 12 cm, b = 35 cm, c = 37 cm.</p>\n<p><strong>Formula Used:</strong></p>\n<p>In a right-angled triangle, Circumradius (R) = Hypotenuse ÷ 2</p>\n<img src=\"https://cdn.repeatermock.com/tb/35c5c8265c7ea6832981483497751b59a81d86d6cbdfe2557241efda0880653c.png\" style=\"max-width: 450px;\" />\n<p><strong>Calculations:</strong></p>\n<p>⇒ First, verify if the triangle is right-angled using Pythagoras theorem.</p>\n<p>⇒ a<sup>2</sup> + b<sup>2</sup> = 12<sup>2</sup> + 35<sup>2</sup></p>\n<p>⇒ a<sup>2</sup> + b<sup>2</sup> = 144 + 1225 = 1369</p>\n<p>⇒ c<sup>2</sup> = 37<sup>2</sup> = 1369</p>\n<p>⇒ Since a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup>, the triangle is a right-angled triangle where the longest side (37 cm) is the hypotenuse.</p>\n<p>⇒ Circumradius (R) = Hypotenuse ÷ 2</p>\n<p>⇒ R = 37 ÷ 2</p>\n<p>⇒ R = 18.5 cm</p>\n<p><strong>∴ The correct answer is 18.5 cm.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Inradius of a Right-Angled Triangle</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The inradius (r) of a right-angled triangle can be calculated as r = (Perpendicular + Base − Hypotenuse) ÷ 2.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Circumcenter Location</p>\n<p style='margin:0 0 8px 0;color:#444444;'>In a right-angled triangle, the circumcenter always lies at the midpoint of the hypotenuse and is equidistant from all three vertices.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>General Circumradius Formula</p>\n<p style='margin:0 0 8px 0;color:#444444;'>For any triangle with sides a, b, c and area A, the circumradius R = (a × b × c) ÷ (4 × A).</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Pythagorean Triplets</p>\n<p style='margin:0 0 8px 0;color:#444444;'>Common triplets include (3, 4, 5), (5, 12, 13), (7, 24, 25), (8, 15, 17), (9, 40, 41), and (12, 35, 37).</p", "hn": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>भुजाओं की पहचान करें: 12, 35, 37। ये एक पाइथागोरियन त्रिक (Pythagorean triplet) बनाते हैं क्योंकि 12<sup>2</sup> + 35<sup>2</sup> = 144 + 1225 = 1369 = 37<sup>2</sup> है।</p>\n<p>किसी भी समकोण त्रिभुज के लिए, परित्रिज्या (R) कर्ण की आधी होती है।</p>\n<p>सबसे लंबी भुजा कर्ण = 37 सेमी है।</p>\n<p>R = 37 ÷ 2 = 18.5 सेमी।</p>\n<p><strong>∴ सही उत्तर 18.5 सेमी है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>दिया गया है:</strong></p>\n<p>त्रिभुज की भुजाएँ: a = 12 सेमी, b = 35 सेमी, c = 37 सेमी।</p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p>एक समकोण त्रिभुज में, परित्रिज्या (R) = कर्ण ÷ 2</p>\n<img src=\"https://cdn.repeatermock.com/tb/35c5c8265c7ea6832981483497751b59a81d", "te": "<p>మనకు తెలిసినదేంటంటే</p>\n\n<p><strong>వివరణాత్మక పరిష్కారం:</strong></p>\n\n<p>(కర్ణం)<sup>2</sup> = (భూమి)<sup>2</sup> + (ఎత్తు)<sup>2</sup></p>\n\n<p>37<sup>2</sup> = 12<sup>2</sup> + 35<sup>2</sup></p>\n\n<p>⇒ 1369 = 144 + 1225</p>\n\n<p>⇒ 1369 = 1369</p>\n\n<p>లంబకోణ త్రిభుజ వైశాల్యం = (1/2) x 35 x 12 = 210</p>\n\n<p>∴ పరివృత్త వ్యాసార్థం = abc/(4 x త్రిభుజ వైశాల్యం) = (37 x 35 x 12)/(4 x 210) = 18.5</p>\n\n<p><strong>చిన్న ఉపాయం:</strong></p>\n\n<p>ఇప్పుడు మనం త్రిభుజం లంబకోణ త్రిభుజం అని చెప్పవచ్చు.</p>\nపరివృత్త వ్యాసార్థం = కర్ణం/2 = 37/2 = 18.5 సెం.మీ", "mr": "<p>आपल्याला माहीत आहे की</p>\n\n<p><strong>तपशीलवार उपाय:</strong></p>\n\n<p>(कर्ण)<sup>2</sup> = (पाया)<sup>2</sup> + (लंब)<sup>2</sup></p>\n\n<p>37<sup>2</sup> = 12<sup>2</sup> + 35<sup>2</sup></p>\n\n<p>⇒ 1369 = 144 + 1225</p>\n\n<p>⇒ 1369 = 1369</p>\n\n<p> काटकोन त्रिकोणाचे क्षेत्रफळ = (1/2) x 35 x 12 = 210</p>\n\n<p>∴ परित्रिज्येची त्रिज्या = abc/(4 x त्रिकोणाचे क्षेत्रफळ) = (37 x 35 x 12)/(4 x 210) = 18.5</p>\n\n<p><strong>लघु मार्ग:</strong></p>\n\n<p>आता आपण म्हणू शकतो की त्रिकोण काटकोन त्रिकोण आहे.</p>\nपरित्रिज्येची त्रिज्या = कर्ण/2 = 37/2 = 18.5 सेमी", "bn": "<p>আমরা জানি</p>\n\n<p><strong>বিস্তারিত সমাধান:</strong></p>\n\n<p>(অতিভুজ)<sup>2</sup> = (ভূমি)<sup>2</sup> + (লম্ব)<sup>2</sup></p>\n\n<p>37<sup>2</sup> = 12<sup>2</sup> + 35<sup>2</sup></p>\n\n<p>⇒ 1369 = 144 + 1225</p>\n\n<p>⇒ 1369 = 1369</p>\n\n<p>সমকোণী ত্রিভুজের ক্ষেত্রফল = <span style=\"color: rgb(33, 37, 41);\">(1/2) × 35 × 12 = 210</span></p>\n\n<p>∴ পরিবৃত্তের ব্যাসার্ধ = abc/(4 <span style=\"color: rgb(33, 37, 41);\">×</span> ত্রিভুজের ক্ষেত্রফল) = (37 <span style=\"color: rgb(33, 37, 41);\">×</span> 35 <span style=\"color: rgb(33, 37, 41);\">×</span> 12)/(4 <span style=\"color: rgb(33, 37, 41);\">× </span>210) = 18.5</p>\n\n<p><strong>সংক্ষিপ্ত কৌশল:</strong></p>\n\n<p>এখন আমরা বলতে পারি ত্রিভুজটি একটি সমকোণী ত্রিভুজ।</p>\nপরিবৃত্তের ব্যাসার্ধ = অতিভুজ/2 = 37/2 = 18.5 সেমি", "ml": "", "gu": "<p>જેમ આપણે જાણીએ છીએ</p>\n\n<p><strong>વિગતવાર ઉકેલ:</strong></p>\n\n<p>(કર્ણ)<sup>2</sup> = (આધાર)<sup>2</sup> + (લંબ)<sup>2</sup></p>\n\n<p>37<sup>2</sup> = 12<sup>2</sup> + 35<sup>2</sup></p>\n\n<p>⇒ 1369 = 144 + 1225</p>\n\n<p>⇒ 1369 = 1369</p>\n\n<p>કાટકોણ ત્રિકોણનું ક્ષેત્રફળ = (1/2) x 35 x 12 = 210</p>\n\n<p>∴ પરિ વર્તુળની ત્રિજ્યા = abc/(4 x ત્રિકોણનું ક્ષેત્રફળ) = (37 x 35 x 12)/(4 x 210) = 18.5</p>\n\n<p><strong>ટૂંકી રીત:</strong></p>\n\n<p>હવે આપણે કહી શકીએ કે ત્રિકોણ કાટકોણ ત્રિકોણ છે.</p>\nપરિવર્તુળની ત્રિજ્યા = કર્ણ/2 = 37/2 = 18.5 સેમી", "kn": "<p>ನಮಗೆ ತಿಳಿದಿರುವಂತೆ</p>\n\n<p><strong>ವಿವರವಾದ ಪರಿಹಾರ:</strong></p>\n\n<p>(ಕರ್ಣ)<sup>2</sup> = (ತಳ)<sup>2</sup> + (ಲಂಬ)<sup>2</sup></p>\n\n<p>37<sup>2</sup> = 12<sup>2</sup> + 35<sup>2</sup></p>\n\n<p>⇒ 1369 = 144 + 1225</p>\n\n<p>⇒ 1369 = 1369</p>\n\n<p>ಲಂಬಕೋನ ತ್ರಿಭುಜದ ವಿಸ್ತೀರ್ಣ = (1/2) x 35 x 12 = 210</p>\n\n<p>∴ ಪರಿವೃತ್ತದ ತ್ರಿಜ್ಯ = abc/(4 x ತ್ರಿಭುಜದ ವಿಸ್ತೀರ್ಣ) = (37 x 35 x 12)/(4 x 210) = 18.5</p>\n\n<p><strong>ಸಣ್ಣ ಟ್ರಿಕ್:</strong></p>\n\n<p>ಈಗ ನಾವು ತ್ರಿಭುಜವು ಲಂಬಕೋನ ತ್ರಿಭುಜ ಎಂದು ಹೇಳಬಹುದು.</p>\nಪರಿವೃತ್ತದ ತ್ರಿಜ್ಯ = ಕರ್ಣ/2 = 37/2 = 18.5 ಸೆಂ.ಮೀ", "ta": "<p>நாம் அறிந்தபடி</p>\n\n<p><strong>விரிவான தீர்வு:</strong></p>\n\n<p>(கர்ணம்)<sup>2</sup> = (அடிப்பக்கம்)<sup>2</sup> + (செங்குத்துப்பக்கம்)<sup>2</sup></p>\n\n<p>37<sup>2</sup> = 12<sup>2</sup> + 35<sup>2</sup></p>\n\n<p>⇒ 1369 = 144 + 1225</p>\n\n<p>⇒ 1369 = 1369</p>\n\n<p>செங்கோண முக்கோணத்தின் பரப்பளவு = (1/2) x 35 x 12 = 210</p>\n\n<p>∴ சுற்றுவட்ட ஆரம் = abc/(4 x முக்கோணத்தின் பரப்பளவு) = (37 x 35 x 12)/(4 x 210) = 18.5</p>\n\n<p><strong>குறுகிய வழி:</strong></p>\n\n<p>இப்போது நாம் முக்கோணம் ஒரு செங்கோண முக்கோணம் என்று சொல்லலாம்.</p>\nசுற்றுவட்ட ஆரம் = கர்ணம்/2 = 37/2 = 18.5 செ.மீ", "or": "<p>ଆମେ ଜାଣୁ ଯେ</p>\n\n<p><strong>ବିସ୍ତୃତ ସମାଧାନ:</strong></p>\n\n<p>(କର୍ଣ୍ଣ)<sup>2</sup> = (ଭିତ୍ତି)<sup>2</sup> + (ଲମ୍ବ)<sup>2</sup></p>\n\n<p>37<sup>2</sup> = 12<sup>2</sup> + 35<sup>2</sup></p>\n\n<p>⇒ 1369 = 144 + 1225</p>\n\n<p>⇒ 1369 = 1369</p>\n\n<p>ସମକୋଣୀ ତ୍ରିଭୁଜର କ୍ଷେତ୍ରଫଳ = (1/2) x 35 x 12 = 210</p>\n\n<p>∴ ପରିବୃତ୍ତର ବ୍ୟାସାର୍ଦ୍ଧ = abc/(4 x ତ୍ରିଭୁଜର କ୍ଷେତ୍ରଫଳ) = (37 x 35 x 12)/(4 x 210) = 18.5</p>\n\n<p><strong>ସଂକ୍ଷିପ୍ତ ଉପାୟ:</strong></p>\n\n<p>ଏବେ ଆମେ କହିପାରିବା ଯେ ତ୍ରିଭୁଜଟି ଏକ ସମକୋଣୀ ତ୍ରିଭୁଜ ଅଟେ |</p>\nପରିବୃତ୍ତର ବ୍ୟାସାର୍ଦ୍ଧ = କର୍ଣ୍ଣ/2 = 37/2 = 18.5 ସେମି", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles, Congruence and Similarity"], "concept": "Triangles, Congruence and Similarity", "confidence": "high"}, {"qid": "5e147145690ebf0d047b9ebe", "qs_no": 6, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "A circle is inscribed in quadrilateral ABCD touching AB, BC, CD and AD at the points P, Q, R and S, respectively, and &ang;B = 90&deg;. If AD = 24 cm, AB = 27 cm and DR = 6 cm, then what is the circumference of the circle?", "options": [{"prompt": "1", "value": "18&amp;pi;&amp;nbsp;"}, {"prompt": "2", "value": "20&amp;pi;&amp;nbsp;"}, {"prompt": "3", "value": "15&amp;pi;&amp;nbsp;"}, {"prompt": "4", "value": "12&amp;pi;&amp;nbsp;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक चतुर्भुज ABCD में एक वृत्त निहित है जो AB, BC, CD और AD को क्रमशः बिन्दुओं P, Q, R और S पर स्पर्श करता है, और ∠B = 90° है। यदि AD = 24 सेमी, AB = 27 सेमी और DR = 6 सेमी है, तो वृत्त की परिधि क्या है?", "options": [{"prompt": "1", "value": "18&pi; "}, {"prompt": "2", "value": "20&pi; "}, {"prompt": "3", "value": "15&pi; "}, {"prompt": "4", "value": "12&pi; "}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n\n<p>Tangents from an external point are equal: DR = DS = 6&nbsp;cm.</p>\n\n<p>AS = AD &minus; DS = 24 &minus; 6 = 18&nbsp;cm, and AP = AS = 18&nbsp;cm.</p>\n\n<p>PB = AB &minus; AP = 27 &minus; 18 = 9&nbsp;cm.</p>\n\n<p>Since angle B = 90<sup>0</sup>, the radius r&nbsp;of the inscribed circle is equal to PB = 9&nbsp;cm.</p>\n\n<p>Circumference = 2 &times; &pi; &times; r = 2 &times; &pi; &times; 9 = 18&pi;.</p>\n\n<p><strong>&there4; The correct answer is 18&pi; cm.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeater", "hn": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n\n<p>किसी बाहरी बिंदु से खींची गई स्पर्श रेखाएँ बराबर होती हैं: DR = DS = 6 सेमी।</p>\n\n<p>AS = AD − DS = 24 − 6 = 18 सेमी, और AP = AS = 18 सेमी।</p>\n\n<p>PB = AB − AP = 27 − 18 = 9 सेमी।</p>\n\n<p>चूँकि कोण B = 90<sup>0</sup> है, इसलिए अंतःवृत्त की त्रिज्या r, PB = 9 सेमी के बराबर होगी।</p>\n\n<p>परिधि = 2 × π × r = 2 × π × 9 = 18π.</p>\n\n<p><strong>∴ सही उत्तर 18π सेमी है।</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n\n<p><strong>दिया गया है:</strong></p>\n\n<p>एक चतुर्भुज ABCD जिसके भीतर एक अंतःवृत्त है जो P, Q, R, S पर स्पर्श करता है।</p>\n\n<p>AD = 24 सेमी, AB = 27 सेमी, DR = 6 सेमी, और ∠ B = 90<sup>0</sup> है।</p>\n\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n\n<p>1. किसी बाहरी बिंदु से वृत्त पर खींची गई स्पर्श रेखाओं की लंबाई बराबर होती", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles, Congruence and Similarity"], "concept": "Triangles, Congruence and Similarity", "confidence": "high"}, {"qid": "5ea98208f60d5d62fd1fc759", "qs_no": 7, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "O is the circumcenter of the isosceles &Delta;ABC. Given that AB = AC = 5 cm and BC = 6 cm. The radius of the circle is&nbsp;", "options": [{"prompt": "1", "value": "3.015 cm"}, {"prompt": "2", "value": "3.205 cm"}, {"prompt": "3", "value": "3.025 cm"}, {"prompt": "4", "value": "3.125 cm"}], "range": {"start": "", "end": ""}}, "hn": {"value": "O समद्विबाहु ΔABC का परिवृत्त है। दिया गया है कि AB = AC = 5 सेमी और BC = 6 सेमी है। तो वृत्त की त्रिज्या क्या है?", "options": [{"prompt": "1", "value": "3.015 सेमी "}, {"prompt": "2", "value": "3.205 सेमी "}, {"prompt": "3", "value": "3.025 सेमी "}, {"prompt": "4", "value": "3.125 सेमी "}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Height of the isosceles triangle (h) = √(5<sup>2</sup> − (6/2)<sup>2</sup>) = √(25 − 9) = 4 cm.</p>\n<p>Area of triangle (A) = 1/2 × base × height = 1/2 × 6 × 4 = 12 cm<sup>2</sup>.</p>\n<p>Circumradius (R) = (Product of all sides) ÷ (4 × Area).</p>\n<p>R = (5 × 5 × 6) ÷ (4 × 12) = 150 ÷ 48 = 3.125 cm.</p>\n<p><strong>∴ The correct answer is 3.125 cm.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong> AB = AC = 5 cm, BC = 6 cm. Triangle ABC is isosceles. O is the circumcenter.</p>\n<p><strong>Formula Used:</strong> Circumradius (R) = (a × b × c) / (4 × Area)</p>\n\n<img src=\"https://cdn.repeatermock.com/tb/3ad813f3b72d5251e2edd3b37c257e209cd11f6f5e116e08804705f3a71432fb.png\" style=\"max-width: 450px;\" />\n\n<p>⇒ Let AD be the altitude from A to BC. Since ABC is isosceles, D is the midpoint of BC.</p>\n<p>⇒ BD = DC = BC ÷ 2 = 6 ÷ 2 = 3 cm.</p>\n<p>⇒ In right-angled ΔABD, AD = √(AB<sup>2</sup> − BD<sup>2</sup>) = √(5<sup>2</sup> − 3<sup>2</sup>) = √(25 − 9) = √16 = 4 cm.</p>\n<p>⇒ Area of ΔABC = 1/2 × Base × Height = 1/2 × 6 × 4 = 12 cm<sup>2</sup>.</p>\n<p>⇒ Circumradius (R) = (AB × AC × BC) ÷ (4 × Area)</p>\n<p>⇒ R = (5 × 5 × 6) ÷ (4 × 12) = 150 ÷ 48</p>\n<p>⇒ R = 3.125 cm.</p>\n<p><strong>∴ The correct answer is 3.125 cm.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Circumradius of Equilateral Triangle</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">For an equilateral triangle with side 'a', the circumradius (R) is given by R = a / √3.</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Circumradius of Right-Angled Triangle</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">In a right-angled triangle, the circumradius (R) is exactly half of the hypotenuse (R = h / 2).</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Relation between R and Area</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">For any triangle with sides a, b, c and area K, the circumradius R = abc / 4K and the inradius r = K / s, where s is the semi-perimeter.</p", "hn": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>समद्विबाहु त्रिभुज की ऊंचाई (h) = √(5<sup>2</sup> − (6/2)<sup>2</sup>) = √(25 − 9) = 4 सेमी</p>\n<p>त्रिभुज का क्षेत्रफल (A) = 1/2 × आधार × ऊंचाई = 1/2 × 6 × 4 = 12 सेमी<sup>2</sup></p>\n<p>परित्रिज्या (R) = (सभी भुजाओं का गुणनफल) ÷ (4 × क्षेत्रफल)</p>\n<p>R = (5 × 5 × 6) ÷ (4 × 12) = 150 ÷ 48 = 3.125 सेमी</p>\n<p><strong>∴ सही उत्तर 3.125 सेमी है।</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>दिया गया है:</strong> AB = AC = 5 सेमी, BC = 6 सेमी। त्रिभुज ABC समद्विबाहु है। O परिकेंद्र है।</p>\n<p><strong>प्रयुक्त सूत्र:</strong> परित्रिज्या (R) = (a × b × c) / (4 × क्षेत्रफल)</p>\n\n<img src=\"https://cdn.repeatermock.com/tb/3ad813f3b72d5251e2edd3b37c257e209cd11f6f5e116e08804705f3a71432fb.png\" style=\"max-width: 450px;\" />\n\n<p>⇒ माना AD, A से BC पर डाला गया लंब है। चूँकि ABC समद्विबाहु है, इसलिए D, BC का मध्यबिंदु है।</p>\n<p>⇒ BD = DC = BC ÷ 2 = 6 ÷ 2 = 3 सेमी</p>\n<p>⇒ समकोण ΔABD में, AD = √(AB<sup>2</sup> − BD<sup>2</sup>) = √(5<sup>2</sup> − 3<sup>2</sup>) = √(25 − 9) = √16 = 4 सेमी</p>\n<p>⇒ ΔABC का क्षेत्रफल = 1/2 × आधार × ऊंचाई = 1/2 × 6 × 4 = 12 सेमी<sup>2</sup></p>\n<p>⇒ परित्रिज्या (R) = (AB × AC × BC) ÷ (4 × क्षेत्रफल)</p>\n<p>⇒ R = (5 × 5 × 6) ÷ (4 × 12) = 150 ÷ 48</p>\n<p>⇒ R = 3.125 सेमी</p>\n<p><strong>∴ सही उत्तर 3.125 सेमी है।</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">समबाहु त्रिभुज की परित्रिज्या</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">भुजा 'a' वाले समबाहु त्रिभुज के लिए, परित्रिज्या (R) को R = a / √3 द्वारा व्यक्त किया जाता है।</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">समकोण त्रिभुज की परित्रिज्या</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">एक समकोण त्रिभुज में, परित्रिज्या (R) कर्ण की ठीक आधी होती है (R = h / 2)।</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">R और क्षेत्रफल के बीच संबंध</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">भुजाओं a, b, c और क्षेत्रफल K वाले किसी भी त्रिभुज के लिए, परित्रिज्या R = abc / 4K और अंतःत्रिज्या r = K / s होती है, जहाँ s अर्ध-परिमाप है।</p>\n3e:Tb3f,\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Area of equilateral triangle = (√3 / 4) × side<sup>2</sup> = 36√3</p>\n<p>⇒ side<sup>2</sup> = 36 × 4 = 144 ⇒ side = 12</p>\n<p>Direct Formula: Circumradius (R) = side / √3</p>\n<p>⇒ R = 12 / √3 = 4√3</p>\n<p><strong>∴ The correct answer is 4√3.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Area of equilateral triangle ABC = 36√3</p>\n<p><strong>Formula Used:</strong></p>\n<p>1. Area of equilateral triangle = (√3 / 4) × a<sup>2</sup> (where a is the side)</p>\n<p>2. Circumradius (R) of equilateral triangle =", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles, Congruence and Similarity"], "concept": "Triangles, Congruence and Similarity", "confidence": "high"}, {"qid": "630b9f25f015663d7e793996", "qs_no": 8, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "ABC is an equilateral triangle. If the area of the triangle is 36<span style=\"\">&radic;</span><span style=\"\">3</span>, then what is the radius of circle circumscribing the triangle ABC ?", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&amp;radic;&lt;/span&gt;&lt;span style=&quot;&quot;&gt;3&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;3&amp;radic;3&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;4&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&amp;radic;&lt;/span&gt;&lt;span style=&quot;&quot;&gt;3&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;6&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&amp;radic;&lt;/span&gt;&lt;span style=&quot;&quot;&gt;3&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span style=\"\">ABC </span>एक समबाहु त्रिभुज है। यदि त्रिभुज का क्षेत्रफल 36<span style=\"\">√</span><span style=\"\">3</span> है, तो त्रिभुज ABC के <span style=\"\">परि</span>वृत्त की त्रिज्या कितनी है?", "options": [{"prompt": "1", "value": "<span style=\"\">2</span><span style=\"\">&radic;</span><span style=\"\">3</span>"}, {"prompt": "2", "value": "<span style=\"\">3</span><span style=\"\">&radic;</span><span style=\"\">3</span>"}, {"prompt": "3", "value": "<span style=\"\">4</span> <span style=\"\">&radic;</span> <span style=\"\">3</span>"}, {"prompt": "4", "value": "<span style=\"\">6</span><span style=\"\">&radic;</span><span style=\"\">3</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Area of equilateral triangle = (√3 / 4) × side<sup>2</sup> = 36√3</p>\n<p>⇒ side<sup>2</sup> = 36 × 4 = 144 ⇒ side = 12</p>\n<p>Direct Formula: Circumradius (R) = side / √3</p>\n<p>⇒ R = 12 / √3 = 4√3</p>\n<p><strong>∴ The correct answer is 4√3.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Area of equilateral triangle ABC = 36√3</p>\n<p><strong>Formula Used:</strong></p>\n<p>1. Area of equilateral triangle = (√3 / 4) × a<sup>2</sup> (where a is the side)</p>\n<p>2. Circumradius (R) of equilateral triangle = a / √3</p>\n\n<img src=\"https://cdn.repeatermock.com/tb/af0375dc969168c00f3e4b0940e5bfc75a2443d9dbd253cccfc92d9a5bf7d024.png\" style=\"max-width: 450px;\" />\n\n<p><strong>Calculations:</strong></p>\n<p>⇒ Area = (√3 / 4) × a<sup>2</sup> = 36√3</p>\n<p>⇒ a<sup>2</sup> = (36√3 × 4) / √3</p>\n<p>⇒ a<sup>2</sup> = 144</p>\n<p>⇒ a = √144 = 12</p>\n<p>⇒ Circumradius (R) = a / √3</p>\n<p>⇒ R = 12 / √3</p>\n<p>⇒ R = (4 × 3) / √3</p>\n<p>⇒ R = 4√3</p>\n<p><strong>∴ The correct answer is 4√3.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Inradius of Equilateral Triangle</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">The radius of the incircle (r) is given by r = a / (2√3). It is exactly half of the circumradius (R = 2r).</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Height of Equilateral Triangle</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">The altitude or height (h) is given by h = (√3 / 2) × a. Note that h = R + r = 3r.</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Area in terms of Height</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">The area of an equilateral triangle can also be calculated as Area = h<sup>2</sup> / √3.</p", "hn": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>समबाहु त्रिभुज का क्षेत्रफल = (√3 / 4) × (भुजा)<sup>2</sup> = 36√3</p>\n<p>⇒ (भुजा)<sup>2</sup> = 36 × 4 = 144 ⇒ भुजा = 12</p>\n<p>प्रत्यक्ष सूत्र: परित्रिज्या (R) = भुजा / √3</p>\n<p>⇒ R = 12 / √3 = 4√3</p>\n<p><strong>∴ सही उत्तर 4√3 है।</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>दिया गया है:</strong></p>\n<p>समबाहु त्रिभुज ABC का क्षेत्रफल = 36√3</p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p>1. समबाहु त्रिभुज का क्षेत्रफल = (√3 / 4) × a<sup>2</sup> (जहाँ a भुजा है)</p>\n<p>2. समबाहु त्रिभुज की परित्रिज्या (R) = a / √3</p>\n\n<img src=\"https://cdn.repeatermock.com/tb/af0375dc969168c00f3e4b0940e5bfc75a2443d9dbd253cccfc92d9a5bf7d024.png\" style=\"max-width: 450px;\" />\n\n<p><strong>गणना:</strong></p>\n<p>⇒ क्षेत्रफल = (√3 / 4) × a<sup>2</sup> = 36√3</p>\n<p>⇒ a<sup>2</sup> = (36√3 × 4) / √3</p>\n<p>⇒ a<sup>2</sup> = 144</p>\n<p>⇒ a = √144 = 12</p>\n<p>⇒ परित्रिज्या (R) = a / √3</p>\n<p>⇒ R = 12 / √3</p>\n<p>⇒ R = (4 × 3) / √3</p>\n<p>⇒ R = 4√3</p>\n<p><strong>∴ सही उत्तर 4√3 है।</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">समबाहु त्रिभुज की अंतःत्रिज्या</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">अंतःवृत्त की त्रिज्या (r) को r = a / (2√3) द्वारा दर्शाया जाता है। यह परित्रिज्या की ठीक आधी होती है (R = 2r)।</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">समबाहु त्रिभुज की ऊँचाई</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">शीर्षलंब या ऊँचाई (h) को h = (√3 / 2) × a द्वारा दर्शाया जाता है। ध्यान दें कि h = R + r = 3r होता है।</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">ऊँचाई के पदों में क्षेत्रफल</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">समबाहु त्रिभुज के क्षेत्रफल की गणना क्षेत्रफल = h<sup>2</sup> / √3 के रूप में भी की जा सकती है।</p>\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 18: Maths (Triangles and its Centres)\",\"sections\":[{\"_id\":\"6329b604972c5fb08aaf42e7\",\"qCount\":10,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":1,\"posMarks\":3,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isPartialMarking\":false,\"_id\":\"5c29edaffdb8bb0d53c96ad5\",\"en\":{\"value\":\"In a triangle PQR, &ang;PQR = 90&deg;, PQ = 10 cm and PR = 26 cm, then what is the value (in cm) of inradius of incircle?\",\"options\":[{\"prompt\":\"1\",\"value\":\"9\"},{\"prompt\":\"2\",\"value\":\"4\"},{\"prompt\":\"3\",\"value\":\"8\"},{\"prompt\":\"4\",\"value\":\"6\"}],\"Range\":{\"start\":\"\",\"end\":\"\"}},\"hn\":{\"value\":\"त्रिभुज PQR में, &ang;PQR = 90&deg;, PQ = 10 सेमी और PR = 26 सेमी है, तो अंतःवृत्त की अंतःत्रिज्या का मान (सेमी में) क्या है?&nbsp;\",\"options\":[{\"prompt\":\"1\",\"value\":\"9\"},{\"prompt\":\"2\",\"value\":\"4\"},{\"prompt\":\"3\",\"value\":\"8\"},{\"prompt\":\"4\",\"value\":\"6\"}],\"Range\":{\"start\":\"", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles, Congruence and Similarity"], "concept": "Triangles, Congruence and Similarity", "confidence": "high"}, {"qid": "5e9dc813f60d5d2e9f7d8d94", "qs_no": 9, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "If O is the orthocentre of &Delta;ABC and &ang;BOC = 100&deg;, the measure of &ang;BAC is", "options": [{"prompt": "1", "value": "100&amp;deg;"}, {"prompt": "2", "value": "180&amp;deg;"}, {"prompt": "3", "value": "80&amp;deg;"}, {"prompt": "4", "value": "200&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि O, ΔABC का लंबकेंद्र है और ∠BOC = 100° है, तो ∠BAC की माप है", "options": [{"prompt": "1", "value": "100&deg;"}, {"prompt": "2", "value": "180&deg;"}, {"prompt": "3", "value": "80&deg;"}, {"prompt": "4", "value": "200&deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>In any triangle, the angle formed by the orthocentre at the base side is supplementary to the opposite vertex angle.</p>\n<p>Property: ∠BOC + ∠BAC = 180°</p>\n<p>Given: ∠BOC = 100°</p>\n<p>⇒ ∠BAC = 180° − 100° = 80°</p>\n<p><strong>∴ The correct answer is 80°.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Triangle ΔABC with orthocentre O.</p>\n<p>Angle ∠BOC = 100°.</p>\n<p><strong>Formula:</strong></p>\n<p>The angle subtended by a side at the orthocentre (O) is: ∠BOC = 180° − ∠A (where ∠A is the vertex angle ∠BAC).</p>\n<img src=\"https://cdn.repeatermock.com/tb/ced151bbaf13a1ddcb58f4650641621f26e1cbbd64383b0089ca6ee840044c24.png\" style=\"max-width: 450px;\" />\n<p><strong>Calculations:</strong></p>\n<p>⇒ In ΔABC, let O be the intersection of altitudes AD and BE.</p>\n<p>⇒ In quadrilateral AF OE (where F and E are feet of altitudes on AB and AC), ∠F = ∠E = 90°.</p>\n<p>⇒ Since sum of angles in a quadrilateral is 360°, ∠A + ∠FOE = 180°.</p>\n<p>⇒ ∠FOE = ∠BOC (Vertically opposite angles).</p>\n<p>⇒ ∴ ∠A + ∠BOC = 180°.</p>\n<p>⇒ 100° + ∠A = 180°.</p>\n<p>⇒ ∠A = 180° − 100°.</p>\n<p>⇒ ∠A = 80°.</p>\n<p><strong>∴ The correct answer is 80°.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Circumcentre Angle Property</p>\n<p style='margin:0 0 8px 0;color:#444444;'>If O is the circumcentre of ΔABC, then the angle subtended at the centre is double the angle at the circumference: ∠BOC = 2 × ∠BAC.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Incentre Angle Property</p>\n<p style='margin:0 0 8px 0;color:#444444;'>If I is the incentre of ΔABC, the angle BOC is given by the formula: ∠BIC = 90° + (∠A ÷ 2).</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Excentre Angle Property</p>\n<p style='margin:0 0 8px 0;color:#444444;'>If E is the excentre opposite to vertex A, the angle formed is: ∠BEC = 90° − (∠A ÷ 2).</p", "hn": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>किसी भी त्रिभुज में, लंबकेंद्र द्वारा आधार भुजा पर बनने वाला कोण सम्मुख शीर्ष कोण का संपूरक होता है।</p>\n<p>गुणधर्म: ∠BOC + ∠BAC = 180°</p>\n<p>दिया गया है: ∠BOC = 100°</p>\n<p>⇒ ∠BAC = 180° − 100° = 80°</p>\n<p><strong>∴ सही उत्तर 80° है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>दिया गया है:</strong></p>\n<p>त्रिभुज ΔABC जिसका लंबकेंद्र O है।</p>\n<p>कोण ∠BOC = 100°।</p>\n<p><strong>सूत्र:</strong></p>\n<p>लंबकेंद्र (O) पर एक भुजा द्वारा अंतरित कोण है: ∠BOC = 180° − ∠A (जहाँ ∠A शीर्ष कोण ∠BAC है)।</p>\n<img src=\"https://cdn.repeatermock.com/tb/ced151bbaf13a1ddcb58f4650641621f26e1cbbd64383b0089ca6ee840044c24.png\" style=\"max-width: 450px;\" />\n<p><strong>गणना:</strong></p>\n<p>⇒ ΔABC में, माना O शीर्षलंबों AD और BE का प्रतिच्छेदन बिंदु है।</p>\n<p>⇒ चतुर्भुज AFOE में (जहाँ F और E क्रमशः AB और AC पर शीर्षलंबों के पाद हैं), ∠F = ∠E = 90°।</p>\n<p>⇒ चूँकि चतुर्भुज के कोणों का योग 360° होता है, इसलिए ∠A + ∠FOE = 180°।</p>\n<p>⇒ ∠FOE = ∠BOC (शीर्षाभिमुख कोण)।</p>\n<p>⇒ ∴ ∠A + ∠BOC = 180°।</p>\n<p>⇒ 100° + ∠A = 180°।</p>\n<p>⇒ ∠A = 180° − 100°।</p>\n<p>⇒ ∠A = 80°।</p>\n<p><strong>∴ सही उत्तर 80° है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>परिकेंद्र कोण गुणधर्म</p>\n<p style='margin:0 0 8px 0;color:#444444;'>यदि O, ΔABC का परिकेंद्र है, तो केंद्र पर अंतरित कोण परिधि पर बने कोण का दोगुना होता है: ∠BOC = 2 × ∠BAC।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>अंतःकेंद्र कोण गुणधर्म</p>\n<p style='margin:0 0 8px 0;color:#444444;'>यदि I, ΔABC का अंतःकेंद्र है, तो कोण BIC इस सूत्र द्वारा दिया जाता है: ∠BIC = 90° + (∠A ÷ 2)।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>बाह्यकेंद्र कोण गुणधर्म</p>\n<p style='margin:0 0 8px 0;color:#444444;'>यदि E, शीर्ष A के सम्मुख बाह्यकेंद्र है, तो बनने वाला कोण है: ∠BEC = 90° − (∠A ÷ 2)।</p>\n3c:Tcab,\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Height of the isosceles triangle (h) = √(5<sup>2</sup> − (6/2)<sup>2</sup>) = √(25 − 9) = 4 cm.</p>\n<p>Area of triangle (A) = 1/2 × base × height = 1/2 × 6 × 4 = 12 cm<sup>2</sup>.</p>\n<p>Circumradius (R) = (Product of all sides) ÷ (4 × Area).</p>\n<p>R = (5 × 5 × 6) ÷ (4 × 12) = 150 ÷ 48 = 3.125 cm.</p>\n<p><strong>∴ The correct answer is 3.125 cm.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong> AB = AC = 5 cm, BC = 6 ", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles, Congruence and Similarity"], "concept": "Triangles, Congruence and Similarity", "confidence": "high"}, {"qid": "5c1b450a99958a5337c5df8a", "qs_no": 10, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "In triangle PQR, the internal bisectors of &ang;Q and &ang;R meet at O. If &ang;QPR = 70&deg;, then what is the value of &ang;QOR?", "options": [{"prompt": "1", "value": "45&amp;deg;"}, {"prompt": "2", "value": "125&amp;deg;"}, {"prompt": "3", "value": "115&amp;deg;"}, {"prompt": "4", "value": "110&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "PQR त्रिभुज में, ∠Q और ∠R का आंतरिक समद्विभाजक O पर मिलता है। यदि ∠QPR = 70°, तो ∠QOR का मान क्या है?", "options": [{"prompt": "1", "value": "45&deg;"}, {"prompt": "2", "value": "125&deg;"}, {"prompt": "3", "value": "115&deg;"}, {"prompt": "4", "value": "110&deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>The angle formed by the internal bisectors of two angles of a triangle at the incenter O is given by the formula:</p>\n<p>∠QOR = 90° + (∠P ÷ 2)</p>\n<p>Given ∠P = 70°</p>\n<p>∠QOR = 90° + (70° ÷ 2) = 90° + 35° = 125°</p>\n<p><strong>∴ The correct answer is 125°.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong> ∠QPR = 70°, O is the intersection of internal bisectors of ∠Q and ∠R.</p>\n<p><strong>Formula:</strong> Angle at the incenter ∠QOR = 90° + (∠P / 2)</p>\n<img src=\"https://cdn.repeatermock.com/tb/97f213fde9f258bc8bd5eefabd26c2ba55c16bacfe660cfda264b44383321add.png\" style=\"max-width: 450px;\" />\n<p>⇒ In ΔPQR, ∠P + ∠Q + ∠R = 180°</p>\n<p>⇒ ∠Q + ∠R = 180° − 70° = 110°</p>\n<p>⇒ Divide by 2: (∠Q/2) + (∠R/2) = 55°</p>\n<p>⇒ In ΔOQR, ∠QOR + ∠OQR + ∠ORQ = 180°</p>\n<p>⇒ ∠QOR + (∠Q/2) + (∠R/2) = 180°</p>\n<p>⇒ ∠QOR + 55° = 180°</p>\n<p>⇒ ∠QOR = 180° − 55° = 125°</p>\n<p><strong>∴ The correct answer is 125°.</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Incenter Properties</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The incenter is the point of intersection of internal angle bisectors and is equidistant from all sides of the triangle.</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>External Bisector Angle</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The angle formed by external bisectors of ∠Q and ∠R is given by: 90° − (∠P / 2).</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>Circumcenter Angle</p>\n<p style='margin:0 0 8px 0;color:#444444;'>The angle formed by the sides at the circumcenter is twice the angle at the opposite vertex: ∠QCR = 2 × ∠P.</p", "hn": "\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>त्रिभुज के दो कोणों के आंतरिक समद्विभाजकों द्वारा अंतःकेंद्र O पर बनने वाला कोण इस सूत्र द्वारा दिया जाता है:</p>\n<p>∠QOR = 90° + (∠P ÷ 2)</p>\n<p>दिया गया है, ∠P = 70°</p>\n<p>∠QOR = 90° + (70° ÷ 2) = 90° + 35° = 125°</p>\n<p><strong>∴ सही उत्तर 125° है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Alternate Method</u></span></strong></span></p>\n<p><strong>दिया गया है:</strong> ∠QPR = 70°, O, ∠Q और ∠R के आंतरिक समद्विभाजकों का प्रतिच्छेदन बिंदु है।</p>\n<p><strong>सूत्र:</strong> अंतःकेंद्र पर कोण ∠QOR = 90° + (∠P / 2)</p>\n<img src=\"https://cdn.repeatermock.com/tb/97f213fde9f258bc8bd5eefabd26c2ba55c16bacfe660cfda264b44383321add.png\" style=\"max-width: 450px;\" />\n<p>⇒ ΔPQR में, ∠P + ∠Q + ∠R = 180°</p>\n<p>⇒ ∠Q + ∠R = 180° − 70° = 110°</p>\n<p>⇒ 2 से भाग देने पर: (∠Q/2) + (∠R/2) = 55°</p>\n<p>⇒ ΔOQR में, ∠QOR + ∠OQR + ∠ORQ = 180°</p>\n<p>⇒ ∠QOR + (∠Q/2) + (∠R/2) = 180°</p>\n<p>⇒ ∠QOR + 55° = 180°</p>\n<p>⇒ ∠QOR = 180° − 55° = 125°</p>\n<p><strong>∴ सही उत्तर 125° है।</strong></p>\n\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>अंतःकेंद्र के गुणधर्म</p>\n<p style='margin:0 0 8px 0;color:#444444;'>अंतःकेंद्र, आंतरिक कोण समद्विभाजकों का प्रतिच्छेदन बिंदु होता है और यह त्रिभुज की सभी भुजाओं से समदूरस्थ होता है।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>बाह्य समद्विभाजक कोण</p>\n<p style='margin:0 0 8px 0;color:#444444;'>∠Q और ∠R के बाह्य समद्विभाजकों द्वारा निर्मित कोण इस प्रकार दिया जाता है: 90° − (∠P / 2)।</p>\n<p style='margin:8px 0 2px 0;font-weight:700;color:#222222;'>परिकेंद्र कोण</p>\n<p style='margin:0 0 8px 0;color:#444444;'>परिकेंद्र पर भुजाओं द्वारा निर्मित कोण सम्मुख शीर्ष पर बने कोण का दोगुना होता है: ∠QCR = 2 × ∠P.</p>\n30:Tcbf,\n<span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png' width='26px' /> <u style='font-size: 21px; font-weight: 700; display: inline !important;'>Shortcut Trick</u></span>\n<p>In a triangle, the length of median XM = 1/2 √(2(XY<sup>2</sup> + XZ<sup>2</sup>) − YZ<sup>2</sup>).</p>\n<p>Given XY = 11, XZ = 7, YZ = 14.</p>\n<p>XM = 1/2 √(2(11<sup>2</sup> + 7<sup>2</sup>) − 14<sup>2</sup>) = 1/2 √(2(121 + 49) − 196) = 1/2 √(340 − 196).</p>\n<p>XM = 1/2 √144 = (1/2) × 12 = 6 cm.</p>\n<p>Centroid G divides median XM in ratio XG : GM = 2 : 1, so GM = (1/3) × XM.</p>\n<p>GM = (1/3) × 6 = 2 cm.</p>\n<p><strong>∴ The correct answer is 2 cm.</strong></p>\n<p><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles, Congruence and Similarity"], "concept": "Triangles, Congruence and Similarity", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 10 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
