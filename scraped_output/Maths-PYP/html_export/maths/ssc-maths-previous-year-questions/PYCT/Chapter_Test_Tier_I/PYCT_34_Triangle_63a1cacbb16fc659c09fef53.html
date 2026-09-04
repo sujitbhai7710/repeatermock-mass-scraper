@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 34: Triangle</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 34: Triangle</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-maths-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">8 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63a1cacbb16fc659c09fef53</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63a1cacbb16fc659c09fef53", "title": "PYCT 34: Triangle", "series_slug": "ssc-maths-previous-year-questions", "duration_min": 8, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "628542a7f87f5ae63c94033e", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "6376cdcdafcde7a434a72660", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In &Delta;ABC, DE || BC in such a way that A-D-B and A-E-C are equal. If&nbsp; &ang;ACB = 40&deg;, then&nbsp; &ang;DAE +&nbsp; &ang;ADE = ____.", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;240&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;120&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;140&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;230&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "&Delta;ABC में, DE || BC इस तरह से कि A-D-B और A-E-C बराबर हैं। यदि &ang;ACB = 40&deg; है, तो &ang;DAE + &ang;ADE = ____।", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;240&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;120&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;140&lt;/span&gt; &lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;230&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<span style=\"color: rgb(37, 37, 37);  \">ΔABCలో, DE || A-D-B మరియు A-E-C సమానంగా ఉండే విధంగా BC. ఒకవేళ  ∠ACB = 40°, అప్పుడు  ∠DAE +  ∠ADE = ____.</span>", "options": [{"prompt": "1", "value": "<span style=\"\">240</span><span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "<span style=\"\">120</span><span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "<span style=\"\">140</span><span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "<span style=\"\">230</span><span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}, "mr": {"value": "ΔABC मध्ये, DE || BC अशा प्रकारे ADB आणि AEC समान आहेत. जर ∠ACB = 40°, तर ∠DAE + ∠ADE = ____.", "options": [{"prompt": "1", "value": "<span style=\"\">240</span><span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "<span style=\"\">120</span><span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "<span style=\"\">140</span><span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "<span style=\"\">230</span><span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "ΔABC তে, DE || BC এমনভাবে আছে যাতে A-D-B এবং A-E-C সমান। যদি ∠ACB = 40° হয়, তাহলে ∠DAE + ∠ADE = ?", "options": [{"prompt": "1", "value": "<span style=\"\">240</span><span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "<span style=\"\">120</span><span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "<span style=\"\">140</span><span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "<span style=\"\">230</span><span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}, "gu": {"value": "ΔABC, DE માં || BC એવી રીતે કે A-D-B અને A-E-C સમાન છે. જો ∠ACB = 40°, તો ∠DAE + ∠ADE = ____.", "options": [{"prompt": "1", "value": "<span style=\"\">240</span><span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "<span style=\"\">120</span><span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "<span style=\"\">140</span><span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "<span style=\"\">230</span><span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ΔABC ಯಲ್ಲಿ, DE ||BC  A-D-B ಮತ್ತು A-E-C ಸಮಾನವಾಗಿರುವ ರೀತಿಯಲ್ಲಿದೆ  ∠ACB = 40° ಆಗಿದ್ದರೆ, ನಂತರ ∠DAE + ∠ADE = ____.", "options": [{"prompt": "1", "value": "<span style=\"\">240</span><span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "<span style=\"\">120</span><span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "<span style=\"\">140</span><span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "<span style=\"\">230</span><span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ΔABC இல், DE || BC ஐ போல A-D-B மற்றும் A-E-C ஆனது சமமாக இருக்கும். ∠ACB = 40° என்றால், ∠DAE +  ∠ADE = ____.", "options": [{"prompt": "1", "value": "<span style=\"\">240</span><span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "<span style=\"\">120</span><span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "<span style=\"\">140</span><span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "<span style=\"\">230</span><span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}, "or": {"value": " ΔABC ରେ, DE || BC ଏହିପରି ଭାବରେ ଯେ A-D-B ଏବଂ A-E-C ସମାନ ଅଟେ। ଯଦି ∠ACB = 40° ତେବେ ∠DAE + ∠ADE = ____।", "options": [{"prompt": "1", "value": "<span style=\"\">240</span><span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "<span style=\"\">120</span><span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "<span style=\"\">140</span><span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "<span style=\"\">230</span><span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><b>Given:</b></p>\n\n<p>A triangle ABC in which DE // BC&nbsp;</p>\n\n<p><b>Concept Used:</b></p>\n\n<p>Sum of the angles in a triangle is equal to 180 degrees&nbsp;</p>\n\n<p>If there are two parallel lines then corresponding angles are equal&nbsp;</p>\n\n<p>Corresponding angles : The angles&nbsp; that are formed when two parallel lines are intersected by the transversal&nbsp;</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"height: 188px; width: 176px;\" /></p>\n\n<p>Here, we have a triangle ABC in which DE // BC&nbsp;</p>\n\n<p>So, the&nbsp;<span class=\"math-tex\">\\(\\angle\\)</span>ACB =&nbsp;<span class=\"math-tex\">\\(\\angle\\)</span>AED = <span class=\"math-tex\">\\(40^\\circ\\)</span>&nbsp;(corresponding angles as DE//BC and AC is a transversal line which intersects them)&nbsp;</p>\n\n<p>Now,&nbsp; consider the &nbsp;triangle ADE&nbsp;as we know that&nbsp;</p>\n\n<p>Sum of the&nbsp; angles of a triangle = 180&nbsp;</p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\angle\\)</span>ADE +<span class=\"math-tex\">\\(\\angle\\)</span> DAE + <span class=\"math-tex\">\\(\\angle\\)</span>AED = 180&nbsp;</p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\angle\\)</span>ADE&nbsp;+ <span class=\"math-tex\">\\(\\angle\\)</span>DAE + 40 = 180</p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE =&nbsp;<span class=\"math-tex\">\\(140^\\circ\\)</span>&nbsp;</p>\n\n<p><strong>Hence, the required angle is 140 degree .</strong></p>", "hn": "\n<p><strong>दिया हुआ:</strong></p>\n\n<p>एक त्रिभुज ABC जिसमें DE//BC<span style=\"\">&nbsp;है</span></p>\n\n<p><b><span style=\"display: none;\">&nbsp;</span></b><strong><span style=\"\">प्रयुक्त अवधारणा</span></strong><b><span style=\"display: none;\">&nbsp;</span></b></p>\n\n<p>एक त्रिभुज में कोणों का योग 180 डिग्री के बराबर होता है</p>\n\n<p>यदि दो समांतर रेखाएँ हों तो संगत कोण बराबर होते हैं</p>\n\n<p>संगत कोण : वे कोण जो दो समांतर रेखाओं को एक तिर्यक रेखा द्वारा प्रतिच्छेद करने पर बनते हैं</p>\n\n<p><strong>गणना:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\" height: 188px; width: 176px;\" /></p>\n\n<p>यहाँ,&nbsp;हमारे पास एक त्रिभुज ABC है जिसमें DE // BC है</p>\n\n<p>इसलिए,<span style=\"\">&nbsp;</span><span class=\"math-tex\">\\(\\angle\\)</span><span style=\"\">ACB =&nbsp;</span><span class=\"math-tex\">\\(\\angle\\)</span><span style=\"\">AED =&nbsp;</span><span class=\"math-tex\">\\(40^\\circ\\)</span><span style=\"\">&nbsp;(संगत कोण DE//BC और AC एक तिर्यक रेखा है जो उन्हें प्रतिच्छेद करती है)</span></p>\n\n<p>अब, त्रिभुज ADE पर विचार करें जैसा कि हम जानते हैं</p>\n\n<p>त्रिभुज के कोणों का योग&nbsp;= 180&nbsp;</p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\angle\\)</span>ADE +<span class=\"math-tex\">\\(\\angle\\)</span> DAE + <span class=\"math-tex\">\\(\\angle\\)</span>AED = 180&nbsp;</p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\angle\\)</span>ADE&nbsp;+ <span class=\"math-tex\">\\(\\angle\\)</span>DAE + 40 = 180</p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE =&nbsp;<span class=\"math-tex\">\\(140^\\circ\\)</span>&nbsp;</p>\n\n<p><strong><span style=\"\">अतः, अभीष्ट कोण 140 डिग्री है।</span></strong></p>\n\n47:Ta44,\n<p><strong><span style=\"color: rgb(37, 37, 37);  \">ఇచ్చిన</span>వి:</strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">ఒక త్రిభుజం ABC దీనిలో DE // BC</span></p>\n\n<p><strong><span style=\"color: rgb(37, 37, 37);  \">ఉపయోగించిన భావన:</span></strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">త్రిభుజంలోని కోణాల మొత్తం 180 డిగ్రీలకు సమానం</span></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">రెండు సమాంతర రేఖలు ఉంటే, సంబంధిత కోణాలు సమానంగా ఉంటాయి</span></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">సంబంధిత కోణాలు : రెండు సమాంతర రేఖలు అడ్డంగా కలుస్తున్నప్పుడు ఏర్పడే కోణాలు</span></p>\n\n<p><strong><span style=\"color: rgb(37, 37, 37);  \">లెక్కింపు</span>:</strong></p>\n\n<p><img alt=\"\" sr", "te": "\n<p><strong><span style=\"color: rgb(37, 37, 37);  \">ఇచ్చిన</span>వి:</strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">ఒక త్రిభుజం ABC దీనిలో DE // BC</span></p>\n\n<p><strong><span style=\"color: rgb(37, 37, 37);  \">ఉపయోగించిన భావన:</span></strong></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">త్రిభుజంలోని కోణాల మొత్తం 180 డిగ్రీలకు సమానం</span></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">రెండు సమాంతర రేఖలు ఉంటే, సంబంధిత కోణాలు సమానంగా ఉంటాయి</span></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">సంబంధిత కోణాలు : రెండు సమాంతర రేఖలు అడ్డంగా కలుస్తున్నప్పుడు ఏర్పడే కోణాలు</span></p>\n\n<p><strong><span style=\"color: rgb(37, 37, 37);  \">లెక్కింపు</span>:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"height: 188px; width: 176px;\" /></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">ఇక్కడ, మనకు ABC త్రిభుజం ఉంది, దీనిలో DE // BC</span></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">కాబట్టి, ACB = AED =  (DE//BC మరియు AC వలె సంబంధిత కోణాలు వాటిని ఖండిస్తూ ఉండే విలోమ రేఖ</span>) </p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">ఇప్పుడు,  మనకు తెలిసిన  త్రిభుజం ADE ని పరిగణించండి </span></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">త్రిభుజం యొక్క కోణాల మొత్తం = 180</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE +<span class=\"math-tex\">\\(\\angle\\)</span> DAE + <span class=\"math-tex\">\\(\\angle\\)</span>AED = 180 </p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE + 40 = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE = <span class=\"math-tex\">\\(140^\\circ\\)</span> </p>\n\n<p><strong><span style=\"color: rgb(37, 37, 37);  \">అందువల్ల, అవసరమైన కోణం 140 డిగ్రీలు</span>.</strong></p>\n\n48:T80b,<p><b>दिलेल्याप्रमाणे:</b></p>\n\n<p>ABC त्रिकोण ज्यामध्ये DE // BC</p>\n\n<p><b>वापरलेली संकल्पना:</b></p>\n\n<p>त्रिकोणातील कोनांची बेरीज 180 अंश असते</p>\n\n<p>जर दोन समांतर रेषा असतील तर संबंधित कोन समान असतात</p>\n\n<p>संगत कोन : दोन समांतर रेषा आडवारेषेने छेदल्यावर जे कोन तयार होतात</p>\n\n<p><strong>गणना:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"height: 188px; width: 176px;\" /></p>\n\n<p>येथे, आपल्याकडे ABC त्रिकोण आहे ज्यामध्ये DE // BC</p>\n\n<p>तर, <span class=\"math-tex\">\\(\\angle\\)</span> ACB = <span class=\"math-tex\">\\(\\angle\\)</span> AED = <span class=\"math-tex\">\\(40^\\circ\\)</span> (DE//BC आणि AC प्रमाणे संबंधित कोन", "mr": "<p><b>दिलेल्याप्रमाणे:</b></p>\n\n<p>ABC त्रिकोण ज्यामध्ये DE // BC</p>\n\n<p><b>वापरलेली संकल्पना:</b></p>\n\n<p>त्रिकोणातील कोनांची बेरीज 180 अंश असते</p>\n\n<p>जर दोन समांतर रेषा असतील तर संबंधित कोन समान असतात</p>\n\n<p>संगत कोन : दोन समांतर रेषा आडवारेषेने छेदल्यावर जे कोन तयार होतात</p>\n\n<p><strong>गणना:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"height: 188px; width: 176px;\" /></p>\n\n<p>येथे, आपल्याकडे ABC त्रिकोण आहे ज्यामध्ये DE // BC</p>\n\n<p>तर, <span class=\"math-tex\">\\(\\angle\\)</span> ACB = <span class=\"math-tex\">\\(\\angle\\)</span> AED = <span class=\"math-tex\">\\(40^\\circ\\)</span> (DE//BC आणि AC प्रमाणे संबंधित कोन ही त्यांना छेदणारी ट्रान्सव्हर्सल रेषा आहे)</p>\n\n<p>आता, त्रिकोण ADE चा विचार करा जसे आपल्याला माहित आहे</p>\n\n<p>त्रिकोणाच्या कोनांची बेरीज = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span> ADE + <span class=\"math-tex\">\\(\\angle\\)</span> DAE + <span class=\"math-tex\">\\(\\angle\\)</span> AED = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span> ADE + <span class=\"math-tex\">\\(\\angle\\)</span> DAE + 40 = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span> ADE + <span class=\"math-tex\">\\(\\angle\\)</span> DAE = <span class=\"math-tex\">\\(140^\\circ\\)</span></p>\n\n<p><strong>म्हणून, आवश्यक कोन 140 अंश आहे.</strong></p>\n49:T8cd,\n<p><strong>প্রদত্ত:</strong></p>\n\n<p>একটি ত্রিভুজ ABC-এর DE // BC</p>\n\n<p><strong>অনুসৃত ধারণা:</strong></p>\n\n<p>একটি ত্রিভুজের কোণের সমষ্টি 180 ডিগ্রির সমান<span style=\"color: rgb(33, 37, 41);\">।</span></p>\n\n<p>যদি দুটি সমান্তরাল রেখা থাকে তবে সংশ্লিষ্ট কোণগুলি সমান<span style=\"color: rgb(33, 37, 41);\">।</span></p>\n\n<p>অনুরূপ কোণ: দুটি সমান্তরাল রেখাকে আড়াআড়ি রেখা দ্বারা ছেদ করলে যে কোণগুলি গঠিত হয়<span style=\"color: rgb(33, 37, 41);\">।</span></p>\n\n<p><strong>গণনা:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"color: rgb(33, 37, 41); height: 188px; width: 176px;\" /></p>\n\n<p>এখানে, একটি", "bn": "\n<p><strong>প্রদত্ত:</strong></p>\n\n<p>একটি ত্রিভুজ ABC-এর DE // BC</p>\n\n<p><strong>অনুসৃত ধারণা:</strong></p>\n\n<p>একটি ত্রিভুজের কোণের সমষ্টি 180 ডিগ্রির সমান<span style=\"color: rgb(33, 37, 41);\">।</span></p>\n\n<p>যদি দুটি সমান্তরাল রেখা থাকে তবে সংশ্লিষ্ট কোণগুলি সমান<span style=\"color: rgb(33, 37, 41);\">।</span></p>\n\n<p>অনুরূপ কোণ: দুটি সমান্তরাল রেখাকে আড়াআড়ি রেখা দ্বারা ছেদ করলে যে কোণগুলি গঠিত হয়<span style=\"color: rgb(33, 37, 41);\">।</span></p>\n\n<p><strong>গণনা:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"color: rgb(33, 37, 41); height: 188px; width: 176px;\" /></p>\n\n<p>এখানে, একটি ত্রিভুজ ABC আছে, যার DE // BC</p>\n\n<p>সুতরাং, ACB = AED = <span class=\"math-tex\">\\(40^\\circ\\)</span> (DE//BC এবং AC হিসাবে সংশ্লিষ্ট কোণগুলি একটি <span style=\"color: rgb(33, 37, 41);\">আড়াআড়ি</span> রেখা যা তাদের ছেদ করে)</p>\n\n<p>এখন, ত্রিভুজ ADE বিবেচনা করে পাই,</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">আমরা জানি, </span>একটি ত্রিভুজের কোণের সমষ্টি = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE + <span class=\"math-tex\">\\(\\angle\\)</span>AED = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE + 40 = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE = <span class=\"math-tex\">\\(140^\\circ\\)</span></p>\n\n<p><strong>সুতরাং, নির্ণেয় কোণ হল 140 ডিগ্রি।</strong></p>\n\n4a:T8f7,\n<p><b>ದತ್ತಾಂಶ:</b></p>\n\n<p>ಒಂದು ತ್ರಿಕೋನ ABC ಇದರಲ್ಲಿ DE // BC</p>\n\n<p><strong>ಬಳಸಲಾದ ಪರಿಕಲ್ಪನೆ</strong>:</p>\n\n<p>ತ್ರಿಕೋನದಲ್ಲಿನ ಕೋನಗಳ ಮೊತ್ತವು 180 ಡಿಗ್ರಿಗಳಿಗೆ ಸಮಾನವಾಗಿರುತ್ತದೆ</p>\n\n<p>ಎರಡು ಸಮಾನಾಂತರ ರೇಖೆಗಳಿದ್ದರೆ ಅನುಗುಣವಾದ ಕೋನಗಳು ಸಮಾನವಾಗಿರುತ್ತದೆ</p>\n\n<p>ಅನುಗುಣವಾದ ಕೋನಗಳು : ಎರಡು ಸಮಾನಾಂತರ ರೇಖೆಗಳು ಅಡ್ಡಹಾಯುವ ಮೂಲಕ ಛೇದಿಸಿದಾಗ ರೂಪುಗೊಳ್ಳುವ ಕೋನಗಳು</p>\n\n<p><strong>ಲೆಕ್ಕಾಚಾರ:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"height: 188px; width: 176px;\" /></p>\n\n<p>ಇಲ್ಲಿ, ನಾವು ABC ತ್ರಿಕೋನವನ್ನು ಹೊಂದಿದ್ದೇವೆ ಅದರಲ್ಲಿ DE // BC</p>\n\n<p>ಆದ್ದರಿಂದ, ∠ACB = ∠AED =<strong> <span style=\"color: rgb(33, 37", "ml": "", "gu": "<p><strong>આપેલ માહિતી:</strong></p>\n\n<p>ABC ત્રિકોણ જેમાં DE // BC</p>\n\n<p><strong>વપરાયેલ ખ્યાલ:</strong></p>\n\n<p>ત્રિકોણમાં ખૂણાઓનો સરવાળો 180 ડિગ્રી જેટલો છે</p>\n\n<p>જો બે સમાંતર રેખાઓ હોય તો અનુરૂપ ખૂણાઓ સમાન હોય છે</p>\n\n<p>અનુરૂપ ખૂણો : જ્યારે બે સમાંતર રેખાઓ ટ્રાંસવર્સલ દ્વારા છેદે છે ત્યારે બનેલા ખૂણા કહેવામાં આવે છે.</p>\n\n<p><strong>ગણતરી</strong>:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"color: rgb(33, 37, 41); height: 188px; width: 176px;\" /></p>\n\n<p>અહીં, આપણી પાસે ABC ત્રિકોણ છે જેમાં DE // BC</p>\n\n<p>તેથી, ACB = AED = <span class=\"math-tex\">\\(40^\\circ\\)</span> (DE//BC અને AC તરીકે અનુરૂપ ખૂણો એક ટ્રાંસવર્સલ રેખા છે જે તેમને છેદે છે)</p>\n\n<p>હવે, આપણે જાણીએ છીએ તેમ ત્રિકોણ ADE ને ધ્યાનમાં લો</p>\n\n<p>ત્રિકોણના ખૂણાઓનો સરવાળો = 180</p>\n\n<p>⇒ ADE + DAE + AED = 180</p>\n\n<p>⇒ ADE + DAE + 40 = 180</p>\n\n<p>⇒ ADE + DAE =</p>\n\n<p><strong>તેથી, જરૂરી ખૂણો 140 ડિગ્રી છે.</strong></p>\n", "kn": "\n<p><b>ದತ್ತಾಂಶ:</b></p>\n\n<p>ಒಂದು ತ್ರಿಕೋನ ABC ಇದರಲ್ಲಿ DE // BC</p>\n\n<p><strong>ಬಳಸಲಾದ ಪರಿಕಲ್ಪನೆ</strong>:</p>\n\n<p>ತ್ರಿಕೋನದಲ್ಲಿನ ಕೋನಗಳ ಮೊತ್ತವು 180 ಡಿಗ್ರಿಗಳಿಗೆ ಸಮಾನವಾಗಿರುತ್ತದೆ</p>\n\n<p>ಎರಡು ಸಮಾನಾಂತರ ರೇಖೆಗಳಿದ್ದರೆ ಅನುಗುಣವಾದ ಕೋನಗಳು ಸಮಾನವಾಗಿರುತ್ತದೆ</p>\n\n<p>ಅನುಗುಣವಾದ ಕೋನಗಳು : ಎರಡು ಸಮಾನಾಂತರ ರೇಖೆಗಳು ಅಡ್ಡಹಾಯುವ ಮೂಲಕ ಛೇದಿಸಿದಾಗ ರೂಪುಗೊಳ್ಳುವ ಕೋನಗಳು</p>\n\n<p><strong>ಲೆಕ್ಕಾಚಾರ:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"height: 188px; width: 176px;\" /></p>\n\n<p>ಇಲ್ಲಿ, ನಾವು ABC ತ್ರಿಕೋನವನ್ನು ಹೊಂದಿದ್ದೇವೆ ಅದರಲ್ಲಿ DE // BC</p>\n\n<p>ಆದ್ದರಿಂದ, ∠ACB = ∠AED =<strong> <span style=\"color: rgb(33, 37, 41);\">40</span></strong><span style=\"color: rgb(33, 37, 41);\">°</span> (DE//BC ಮತ್ತು AC ನಂತೆ ಅನುಗುಣವಾದ ಕೋನಗಳು ಅವುಗಳನ್ನು ಛೇದಿಸುವ ಒಂದು ಅಡ್ಡ ರೇಖೆಯಾಗಿದೆ)</p>\n\n<p>ಈಗ, ನಮಗೆ ತಿಳಿದಿರುವಂತೆ ADE ತ್ರಿಕೋನವನ್ನು ಪರಿಗಣಿಸಿ</p>\n\n<p>ತ್ರಿಕೋನದ ಕೋನಗಳ ಮೊತ್ತ = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE +<span class=\"math-tex\">\\(\\angle\\)</span> DAE + <span class=\"math-tex\">\\(\\angle\\)</span>AED = 180 </p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE + 40 = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE = <span class=\"math-tex\">\\(140^\\circ\\)</span> </p>\n\n<p><strong>ಆದ್ದರಿಂದ, ಅಗತ್ಯವಿರುವ ಕೋನವು 140 ಡಿಗ್ರಿ.</strong></p>\n\n4b:Ta6a,\n<p><b>கொடுக்கப்பட்டது:</b></p>\n\n<p>ABC என்ற முக்கோணத்தில் DE // BC ஆக இருக்கும்</p>\n\n<p><b>பயன்படுத்தப்பட்ட கருத்து:</b></p>\n\n<p>ஒரு முக்கோணத்தில் உள்ள கோணங்களின் கூட்டுத்தொகை 180 டிகிரிக்குச் சமமாக இருக்கும்</p>\n\n<p>இரண்டு இணை கோடுகள் இருந்தால், தொடர்புடைய கோணங்கள் சமமாக இருக்கும்</p>\n\n<p>தொடர்புடைய கோணங்கள்: இரண்டு இணை கோடுகள் குறுக்குவெட்டு மூலம் வெட்டப்படும் போது உருவாகும் கோணங்கள்</p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"height: 188px; width: 176px;\" /></p>\n\n<p>இங்கே, எங்களிடம் ஒரு முக்கோண ABC உள்ளது, அதில் DE // BC என்பதும் உள்ளது </p>\n\n<p>எனவே, ACB = AED = <span style=\"color: rgb(33, 37, 41);\"> </span><span class=\"math-tex\">\\(40^\\circ\\)</span><span style=\"colo", "ta": "\n<p><b>கொடுக்கப்பட்டது:</b></p>\n\n<p>ABC என்ற முக்கோணத்தில் DE // BC ஆக இருக்கும்</p>\n\n<p><b>பயன்படுத்தப்பட்ட கருத்து:</b></p>\n\n<p>ஒரு முக்கோணத்தில் உள்ள கோணங்களின் கூட்டுத்தொகை 180 டிகிரிக்குச் சமமாக இருக்கும்</p>\n\n<p>இரண்டு இணை கோடுகள் இருந்தால், தொடர்புடைய கோணங்கள் சமமாக இருக்கும்</p>\n\n<p>தொடர்புடைய கோணங்கள்: இரண்டு இணை கோடுகள் குறுக்குவெட்டு மூலம் வெட்டப்படும் போது உருவாகும் கோணங்கள்</p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"height: 188px; width: 176px;\" /></p>\n\n<p>இங்கே, எங்களிடம் ஒரு முக்கோண ABC உள்ளது, அதில் DE // BC என்பதும் உள்ளது </p>\n\n<p>எனவே, ACB = AED = <span style=\"color: rgb(33, 37, 41);\"> </span><span class=\"math-tex\">\\(40^\\circ\\)</span><span style=\"color: rgb(33, 37, 41);\"> (</span>தொடர்புடைய கோணங்கள் <span style=\"color: rgb(33, 37, 41);\">DE//BC </span>மற்றும் AC என்பது அவற்றை வெட்டும் ஒரு குறுக்குக் கோடு)</p>\n\n<p>இப்போது, நாமக்குத் தெரிந்த முக்கோணம் ADE ஐக் கவனியுங்கள்</p>\n\n<p>ஒரு முக்கோணத்தின் கோணங்களின் கூட்டுத்தொகை = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE +<span class=\"math-tex\">\\(\\angle\\)</span> DAE + <span class=\"math-tex\">\\(\\angle\\)</span>AED = 180 </p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE + 40 = 180</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE + <span class=\"math-tex\">\\(\\angle\\)</span>DAE = <span class=\"math-tex\">\\(140^\\circ\\)</span> </p>\n\n<p><strong>எனவே, தேவையான கோணம் 140 டிகிரி ஆகும்.</strong></p>\n\n4c:T893,\n<p><b>ଦତ୍ତ:</b></p>\n\n<p>ଏକ ତ୍ରିଭୁଜ ABC ଯେଉଁଥିରେ DE // BC </p>\n\n<p><b>ବ୍ୟବହୃତ ଧାରଣା:</b></p>\n\n<p>ଏକ ତ୍ରିଭୁଜର କୋଣଗୁଡ଼ିକର ଯୋଗଫଳ 180 ଡିଗ୍ରୀ ସହିତ ସମାନ </p>\n\n<p>ଯଦି ଦୁଇଟି ସମାନ୍ତରାଳ ରେଖା ଥାଏ ତେବେ ଅନୁରୂପ କୋଣଗୁଡ଼ିକ ସମାନ ହୁଏ </p>\n\n<p>ଅନୁରୂପ କୋଣଗୁଡ଼ିକ: ଯେଉଁ କୋଣଗୁଡ଼ିକ ଗଠିତ ହୁଏ ଯେତେବେଳେ ଦୁଇଟି ସମାନ୍ତରାଳ ରେଖା ଏକ ତିର୍ଯ୍ୟକ୍ ରେଖା ଦ୍ୱାରା ଛେଦିତ ହୁଏ </p>\n\n<p><strong>ଗଣନା:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"height: 188px; width: 176px;\" /></p>\n\n<p>ଏଠାରେ, ଆମର ଏକ ତ୍ରିଭୁଜ ABC ଅଛି ଯେଉଁଥିରେ DE // BC </p>\n\n<p>ତେଣୁ, <span class=\"math-tex\">\\(\\angle\\)</span>ACB = <span class=\"math-tex\">\\(\\angle\\)</span>AED = <span class=\"math-tex\">\\(40^\\circ\\)</span> (ଅନୁରୂପ କୋଣ ଯେହେତୁ DE//BC ଏବଂ AC ଏକ ତିର୍ଯ୍ୟକ୍ ରେଖା ଯାହା ସେମାନଙ୍କୁ ଛେଦ କରେ) </p>\n\n<p>ବର୍ତ୍ତମାନ, ତ୍ରିଭୁଜ ADE କୁ ବିଚାର କରନ୍ତୁ ଯେହେତୁ ଆମେ ଜାଣୁ ଯେ </p>\n\n<p>ଏକ ତ୍ରିଭୁଜର କୋଣଗୁଡ଼ିକର ଯୋଗଫଳ = 180 </p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\angle\\)</span>ADE +<span class=\"math-tex\">\\(\\an", "or": "\n<p><b>ଦତ୍ତ:</b></p>\n\n<p>ଏକ ତ୍ରିଭୁଜ ABC ଯେଉଁଥିରେ DE // BC </p>\n\n<p><b>ବ୍ୟବହୃତ ଧାରଣା:</b></p>\n\n<p>ଏକ ତ୍ରିଭୁଜର କୋଣଗୁଡ଼ିକର ଯୋଗଫଳ 180 ଡିଗ୍ରୀ ସହିତ ସମାନ </p>\n\n<p>ଯଦି ଦୁଇଟି ସମାନ୍ତରାଳ ରେଖା ଥାଏ ତେବେ ଅନୁରୂପ କୋଣଗୁଡ଼ିକ ସମାନ ହୁଏ </p>\n\n<p>ଅନୁରୂପ କୋଣଗୁଡ଼ିକ: ଯେଉଁ କୋଣଗୁଡ଼ିକ ଗଠିତ ହୁଏ ଯେତେବେଳେ ଦୁଇଟି ସମାନ୍ତରାଳ ରେଖା ଏକ ତିର୍ଯ୍ୟକ୍ ରେଖା ଦ୍ୱାରା ଛେଦିତ ହୁଏ </p>\n\n<p><strong>ଗଣନା:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f680191f72798e531be257e566cb5027cb74f60b4839465b1fb924c83e785e5a.png\" style=\"height: 188px; width: 176px;\" /></p>\n\n<p>ଏଠାରେ, ଆମର ଏକ ତ୍ରିଭୁଜ ABC ଅଛି ଯେଉଁଥିରେ DE // BC </p>\n\n<p>ତେଣୁ, <span class=\"math-tex\">\\(\\angle\\)</span>ACB = <span class=\"math-tex\">\\(\\angle\\)</span>AED = <span class=\"math-tex\">\\(40^\\circ\\)</span> (ଅନୁରୂପ କୋଣ ଯେହେତୁ DE//BC ଏବଂ AC ଏକ ତିର୍ଯ୍ୟକ୍ ରେଖା ଯାହା ସେମାନଙ୍କୁ ଛେଦ କରେ) </p>\n\n<p>ବର୍ତ୍ତମାନ, ତ୍ରିଭୁଜ ADE କୁ ବିଚାର କରନ୍ତୁ ଯେହେତୁ ଆମେ ଜାଣୁ ଯେ </p>\n\n<p>ଏକ ତ୍", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles"], "concept": "Triangles", "confidence": "high"}, {"qid": "6375f513ba7918a0d98f0ce8", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "A man goes 24 m towards east and then 10 m towards north. How far is he away from his initial position?", "options": [{"prompt": "1", "value": "23 m"}, {"prompt": "2", "value": "25 m"}, {"prompt": "3", "value": "26 m"}, {"prompt": "4", "value": "24 m"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक आदमी 24 मीटर पूर्व की ओर और फिर 10 मीटर उत्तर की ओर जाता है। वह अपनी आरंभिक स्थिति से कितनी दूर है?", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;23 मीटर&amp;nbsp;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;25 मीटर&amp;nbsp;&lt;/span&gt;"}, {"prompt": "3", "value": "26 मी&lt;span style=&quot;color: rgb(33, 37, 41);&quot;&gt;टर&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;24 मीटर&amp;nbsp;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"\"><span style=\"font-weight: 700;\">Given:</span></p>\n\n<p style=\"\"><img alt=\"A man goes 24m due east and then 10m due north. How far is he away from his  initial position?a)24 mb)28 mc)30 md)26 mCorrect answer is option 'D'. Can  you explain this\" src=\"https://cdn.repeatermock.com/tb/f0ee27a27168e30075b9060beb03f4770649828da984f428dd324197d8f7f5f1.png\" style=\"width: 419px; height: 206px;\" /></p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">Concept Used:</span></p>\n\n<p style=\"\">Hypotenuse<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;</span>= Perpendicular<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>&nbsp;+ Base<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;&nbsp;</span>(Pythagoras Theorem)</p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">Calculation:</span></p>\n\n<p style=\"\">&rArr; It is given in the question that, OA = 24 m and&nbsp;DA = 10 m</p>\n\n<p style=\"\">&rArr; OD<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;</span>= OA<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;</span>+ AD<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span></p>\n\n<p style=\"\">&rArr;&nbsp;OD<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2&nbsp;&nbsp;</span>= 24<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;</span>+ 10<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span></p>\n\n<p style=\"\">&rArr;&nbsp;OD<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">&nbsp;&nbsp;</span>=&nbsp;</p>\n\n<p style=\"\">&rArr; OD = 26 m</p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">Therefore, the man is 26 m away from his initial position.</span></p>", "hn": "\n<p style=\"\"><strong>दिया गया है:</strong></p>\n\n<p style=\"\"><img alt=\"A man goes 24m due east and then 10m due north. How far is he away from his  initial position?a)24 mb)28 mc)30 md)26 mCorrect answer is option 'D'. Can  you explain this\" src=\"https://cdn.repeatermock.com/tb/f0ee27a27168e30075b9060beb03f4770649828da984f428dd324197d8f7f5f1.png\" style=\"color: rgb(33, 37, 41); width: 419px; height: 206px;\" /></p>\n\n<p style=\"\"><strong>प्रयुक्त अवधारणा:</strong></p>\n\n<p style=\"\">कर्ण<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;</span>= लम्ब<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>&nbsp;+आधार<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;&nbsp;</span>(पाइथागोरस प्रमेय)</p>\n\n<p style=\"\"><strong>गणना:</strong></p>\n\n<p style=\"\">&rArr; प्रश्न में दिया गया है कि, OA = 24 मीटर और DA = 10 मीटर</p>\n\n<p style=\"\">&rArr; OD<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;</span>= OA<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;</span>+ AD<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span></p>\n\n<p style=\"\">&rArr;&nbsp;OD<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2&nbsp;&nbsp;</span>= 24<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;</span>+ 10<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span></p>\n\n<p style=\"\">&rArr;&nbsp;OD<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">&nbsp;&nbsp;</span>=&nbsp;</p>\n\n<p style=\"\">&rArr; OD = 26 <span style=\"color: rgb(33, 37, 41);\">मीटर</span></p>\n\n<p style=\"\"><strong>अतः, वह व्यक्ति अपनी प्रारंभिक स्थिति से 26 मीटर दूर है।</strong></p>\n\n43:T4e7,<p><strong>Given:</strong></p>\n\n<p>2&ang;A = 3&ang;B = 6&ang;C</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>The sum of all interior angles of the triangle = 180&deg;</", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles"], "concept": "Triangles", "confidence": "high"}, {"qid": "6376f3a3b800f2e87121867a", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In the given figure, DE || BC. If AD = 5 cm, DB = 10 cm, and AE = 8 cm, then AC is:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b7fcc86dd0f3809db2fc7b44e33c96944b49d97f67446543770b8a581f0be17d.png\" style=\"width: 196px; height: 177px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;24&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;&quot;&gt;cm&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;32&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;&quot;&gt;cm&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;8&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;&quot;&gt;cm&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;16&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;&quot;&gt;cm&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दी गई आकृति में,&nbsp;</font></font><span style=\"\">DE || BC है</span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">। </font><font style=\"vertical-align: inherit;\">यदि AD = 5 सेमी, DB = 10 सेमी, और AE = 8 सेमी है, तो AC है:</font></font></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b7fcc86dd0f3809db2fc7b44e33c96944b49d97f67446543770b8a581f0be17d.png\" style=\" width: 196px; height: 177px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;24&amp;nbsp;&lt;/font&gt;&lt;/font&gt;&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;सेमी&lt;/font&gt;&lt;/font&gt;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;32&amp;nbsp;&lt;/font&gt;&lt;/font&gt;&lt;/span&gt;&lt;span style=&quot;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;सेमी&lt;/font&gt;&lt;/font&gt;&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;8&lt;/span&gt; &lt;span style=&quot;&quot;&gt;सेमी&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;16&amp;nbsp;सेमी&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p style=\"\">ఇచ్చిన చిత్రంలో, DE || <span style=\"\">BC</span>. AD = 5 సెం.మీ, DB = 10 <span style=\"\">సెం.మీ</span>, మరియు AE = 8 <span style=\"\">సెం.మీ </span>అయితే, AC =?:<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b7fcc86dd0f3809db2fc7b44e33c96944b49d97f67446543770b8a581f0be17d.png\" style=\"width: 196px; height: 177px;\" /></p>\n", "options": [{"prompt": "1", "value": "24&nbsp;సెం.మీ"}, {"prompt": "2", "value": "32&nbsp;సెం.మీ"}, {"prompt": "3", "value": "8&nbsp;సెం.మీ"}, {"prompt": "4", "value": "16&nbsp;సెం.మీ"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b7fcc86dd0f3809db2fc7b44e33c96944b49d97f67446543770b8a581f0be17d.png\" style=\" width: 196px; height: 177px;\" /></p>\n\n<p><strong>Concept Used:</strong></p>\n\n<p>Similarity of triangles</p>\n\n<p>If a line is drawn parallel to one side of a triangle to intersect the other two sides in distinct points, the other two sides are divided in the same ratio.</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>&rArr; In the given diagram</p>\n\n<p><span style=\"&q", "hn": "\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया है:</font></font></strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b7fcc86dd0f3809db2fc7b44e33c96944b49d97f67446543770b8a581f0be17d.png\" style=\" width: 196px; height: 177px;\" /></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">प्रयुक्त अवधारणा:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">त्रिभुजों की </font></font>समरूपता</p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">यदि किसी त्रिभुज की एक भुजा के समांतर अन्य दो भुजाओं को अलग-अलग बिंदुओं पर प्रतिच्छेद करने के लिए एक रेखा खींची जाए, तो अन्य दो भुजाएँ एक ही अनुपात में विभाजित होती हैं।</font></font></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; दिए गए आरेख में</font></font></p>\n\n<p style=\"\">&rArr;&nbsp;DE || BC</p>\n\n<p style=\"\">&rArr;&nbsp;इसलिए,&nbsp;<span class=\"math-tex\">\\(\\frac{AD}{DB}\\)</span>&nbsp;=&nbsp;<span class=\"math-tex\">\\(\\frac{AE}{EC}\\)</span>&nbsp;</p>\n\n<p style=\"\">&rArr;&nbsp;<span class=\"math-tex\">\\(\\frac{5}{10}\\)</span>&nbsp;=&nbsp;<span class=\"math-tex\">\\(\\frac{8}{EC}\\)</span>​​</p>\n\n<p style=\"\">&rArr;&nbsp;EC =&nbsp;<span class=\"math-tex\">\\(\\frac{8\\times10}{5}\\)</span>&nbsp;= 8&nbsp;&times; 2 = 16​</p>\n\n<p style=\"\">&rArr;&nbsp;AC = AE + EC = 8 + 16 = 24<span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> सेमी</font></font></span></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">इसलिए,&nbsp;AC का मान 24 सेमी है।</font></font></strong></p>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 34: Triangle\",\"sections\":[{\"_id\":\"628542a7f87f5ae63c94033e\",\"qCount\":10,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":0.5,\"posMarks\":2,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isPartialMarking\":false,\"_id\":\"6376cdcdafcde7a434a72660\",\"en\":{\"value\":\"In &Delta;ABC, DE || BC in such a way that A-D-B and A-E-C are equal. If&nbsp; &ang;ACB", "te": "<p style=\"\"><strong>ఇచ్చిన దత్తాంశం:</strong></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b7fcc86dd0f3809db2fc7b44e33c96944b49d97f67446543770b8a581f0be17d.png\" style=\"width: 196px; height: 177px;\" /></p>\n\n<p><strong>ఉపయోగించిన కాన్సెప్ట్:</strong></p>\n\n<p>త్రిభుజాల సారూప్యత</p>\n\n<p>త్రిభుజం యొక్క ఒక వైపుకు సమాంతరంగా ఒక రేఖను ఇతర రెండు భుజాలను విభిన్న బిందువులలో కలిపేలా గీస్తే, మిగిలిన రెండు భుజాలు ఒకే నిష్పత్తిలో విభజించబడతాయి.</p>\n\n<p><strong>సాధన:</strong></p>\n\n<p>⇒ ఇచ్చిన చిత్రంలో</p>\n\n<p>⇒ DE || BC</p>\n\n<p>⇒ కాబట్టి, <span class=\"math-tex\">\\(\\frac{AD}{DB}\\)</span> = <span class=\"math-tex\">\\(\\frac{AE}{EC}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{5}{10}\\)</span> = <span class=\"math-tex\">\\(\\frac{8}{EC}\\)</span></p>\n\n<p>⇒ EC = <span class=\"math-tex\">\\(\\frac{8\\times10}{5}\\)</span> = 8 × 2 = 16</p>\n\n<p>⇒ AC = AE + EC = 8 + 16 = 24 సెం.మీ</p>\n\n<p><strong>కాబట్టి, AC విలువ 24 సెం.మీ.</strong></p>\n", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles"], "concept": "Triangles", "confidence": "high"}, {"qid": "63761bf916f4f6b5da90e723", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In ∆ABC, 2&ang;A = 3&ang;B = 6&ang;C. What is the value of the largest angle among these three angles?", "options": [{"prompt": "1", "value": "170&lt;sup&gt;o&lt;/sup&gt;"}, {"prompt": "2", "value": "90&lt;sup&gt;o&lt;/sup&gt;"}, {"prompt": "3", "value": "80&lt;sup&gt;o&lt;/sup&gt;"}, {"prompt": "4", "value": "150&lt;sup&gt;o&lt;/sup&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "∆ABC में, 2&ang;A = 3&ang;B = 6&ang;C है, इन तीनों कोणों में सबसे बड़े कोण का मान क्या है?", "options": [{"prompt": "1", "value": "170&lt;sup&gt;o&lt;/sup&gt;"}, {"prompt": "2", "value": "90&lt;sup&gt;o&lt;/sup&gt;"}, {"prompt": "3", "value": "80&lt;sup&gt;o&lt;/sup&gt;"}, {"prompt": "4", "value": "150&lt;sup&gt;o&lt;/sup&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>2&ang;A = 3&ang;B = 6&ang;C</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>The sum of all interior angles of the triangle = 180&deg;</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>&ang;A + &ang;B + &ang;C = 180&deg;</p>\n\n<p>&ang;A + <span class=\"math-tex\">\\(\\frac{2}{3}\\)</span>&ang;A&nbsp;+ <span class=\"math-tex\">\\(\\frac{1}{3}\\)</span>&ang;A&nbsp;= 180&deg;</p>\n\n<p>(1 +&nbsp;<span class=\"math-tex\">\\(\\frac{2}{3}\\)</span> + <span class=\"math-tex\">\\(\\frac{1}{3}\\)</span>)&ang;A&nbsp;= 180&deg;</p>\n\n<p>2&ang;A&nbsp;= 180&deg;</p>\n\n<p>&ang;A&nbsp;= 90&deg;</p>\n\n<p>&ang;B&nbsp;= 60&deg;</p>\n\n<p>&ang;C&nbsp;= 30&deg;</p>\n\n<p>&ang;A&nbsp;= 90&deg;&nbsp;is the value of the largest angle among these three angles.</p>\n\n<p><strong>Hence, the correct answer is option 2).</strong></p>\n", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p style=\"\">2&ang;A = 3&ang;B = 6&ang;C</p>\n\n<p><strong>प्रयुक्त अवधारणा:</strong></p>\n\n<p>त्रिभुज के सभी आंतरिक कोणों का योग = <span style=\"\">180&deg;</span></p>\n\n<p><strong>गणना:</strong></p>\n\n<p style=\"\">&ang;A + &ang;B + &ang;C = 180&deg;</p>\n\n<p style=\"\">&ang;A +&nbsp;<span class=\"math-tex\">\\(\\frac{2}{3}\\)</span>&ang;A&nbsp;+&nbsp;<span class=\"math-tex\">\\(\\frac{1}{3}\\)</span>&ang;A&nbsp;= 180&deg;</p>\n\n<p style=\"\">(1 +&nbsp;<span class=\"math-tex\">\\(\\frac{2}{3}\\)</span>&nbsp;+&nbsp;<span class=\"math-tex\">\\(\\frac{1}{3}\\)</span>)&ang;A&nbsp;= 180&deg;</p>\n\n<p style=\"\">2&ang;A&nbsp;= 180&deg;</p>\n\n<p style=\"\">&ang;A&nbsp;= 90&deg;</p>\n\n<p style=\"\">&ang;B&nbsp;= 60&deg;</p>\n\n<p style=\"\">&ang;C&nbsp;= 30&deg;</p>\n\n<p>इन तीनों कोणों में सबसे बड़े कोण का मान <span style=\"\">&ang;A = 90&deg;&nbsp;</span>है।</p>\n\n<p><strong>अतः, सही उत्तर विकल्प 2<span style=\"\">)</span> है।</strong></p>\n\n45:T88a,\n<p><b>Given:</b></p>\n\n<p>A triangle ABC in which DE // BC&nbsp;</p>\n\n<p><b>Concept Used:</b></p>\n\n<p>Sum of the angles in a triangle is equ", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles"], "concept": "Triangles", "confidence": "high"}, {"qid": "630baf282117dca045f8e6b6", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "x, y and z are the sides of a triangle. If z is the largest side and x<sup>2</sup> + y<sup>2</sup> &gt; z<sup>2</sup>, then the triangle is a :", "options": [{"prompt": "1", "value": "Isosceles right angled triangle"}, {"prompt": "2", "value": "Acute angled triangle"}, {"prompt": "3", "value": "Obtuse angled triangle"}, {"prompt": "4", "value": "Right angled triangle"}], "range": {"start": "", "end": ""}}, "hn": {"value": "x, y और z त्रिभुज की भुजाएँ हैं। यदि z सबसे बड़ी भुजा है और <span style=\"\">x</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + y</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> > z</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span>, तो त्रिभुज a है:", "options": [{"prompt": "1", "value": "समद्विबाहु समकोण त्रिभुज"}, {"prompt": "2", "value": "न्यून कोण त्रिभुज"}, {"prompt": "3", "value": "अधिक कोण त्रिभुज"}, {"prompt": "4", "value": "समकोण <span style=\"\">त्रिभुज</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>For any triangle with sides x, y, and z (where z is the longest side):</p>\n<p>If x<sup>2</sup> + y<sup>2</sup> = z<sup>2</sup> → Right Angled Triangle</p>\n<p>If x<sup>2</sup> + y<sup>2</sup> < z<sup>2</sup> → Obtuse Angled Triangle</p>\n<p>If x<sup>2</sup> + y<sup>2</sup> > z<sup>2</sup> → Acute Angled Triangle</p>\n<p>Given: x<sup>2</sup> + y<sup>2</sup> > z<sup>2</sup>, therefore the triangle must be acute.</p>\n<p><strong>∴ The correct answer is Acute angled triangle.</strong></p>\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong> Sides of triangle are x, y, and z. z is the largest side. Condition: x<sup>2</sup> + y<sup>2</sup> > z<sup>2</sup>.</p>\n<p><strong>Formula Used:</strong> Law of Cosines: cos Z = (x<sup>2</sup> + y<sup>2</sup> − z<sup>2</sup>) ÷ (2xy), where Z is the angle opposite to side z.</p>\n<img src=\"https://cdn.repeatermock.com/tb/db61edf6d00ecf414ea3e7b9d1111a5845d775bf9f5e53bca46f8d9e6018d7d6.png\" style=\"max-width: 450px;\" />\n<p>⇒ According to the Cosine Rule for the largest side z and its opposite angle Z:</p>\n<p>⇒ cos Z = (x<sup>2</sup> + y<sup>2</sup> − z<sup>2</sup>) ÷ (2xy)</p>\n<p>⇒ Since x<sup>2</sup> + y<sup>2</sup> > z<sup>2</sup>, then (x<sup>2</sup> + y<sup>2</sup> − z<sup>2</sup>) > 0.</p>\n<p>⇒ As x and y are lengths of sides, 2xy is always positive.</p>\n<p>⇒ ∴ cos Z > 0, which implies that angle Z is less than 90° (0 < Z < 90°).</p>\n<p>⇒ Since z is the largest side, Z is the largest angle. If the largest angle is acute, then all angles must be acute.</p>\n<p><strong>∴ The correct answer is Acute angled triangle.</strong></p>\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Right Angled Triangle Property</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">A triangle is right-angled if the square of the longest side is exactly equal to the sum of the squares of the other two sides (z<sup>2</sup> = x<sup>2</sup> + y<sup>2</sup>).</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Obtuse Angled Triangle Property</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">A triangle is obtuse-angled if the square of the longest side is greater than the sum of the squares of the other two sides (z<sup>2</sup> > x<sup>2</sup> + y<sup>2</sup>).</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Triangle Inequality Theorem</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">For any triangle to exist, the sum of any two sides must be strictly greater than the third side (x + y > z, y + z > x, and z + x > y).</p", "hn": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>किसी भी त्रिभुज के लिए जिसकी भुजाएँ x, y, और z हैं (जहाँ z सबसे लंबी भुजा है):</p>\n<p>यदि x<sup>2</sup> + y<sup>2</sup> = z<sup>2</sup> → समकोण त्रिभुज (Right Angled Triangle)</p>\n<p>यदि x<sup>2</sup> + y<sup>2</sup> < z<sup>2</sup> → अधिककोण त्रिभुज (Obtuse Angled Triangle)</p>\n<p>यदि x<sup>2</sup> + y<sup>2</sup> > z<sup>2</sup> → न्यूनकोण त्रिभुज (Acute Angled Triangle)</p>\n<p>दिया गया है: x<sup>2</sup> + y<sup>2</sup> > z<sup>2</sup>, इसलिए त्रिभुज निश्चित रूप से न्यूनकोण होना चाहिए।</p>\n<p><strong>∴ सही उत्तर न्यूनकोण त्रिभुज है।</strong></p>\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>दिया गया है:</strong> त्रिभुज की भुजाएँ x, y, और z हैं। z सबसे बड़ी भुजा है। शर्त: x<sup>2</sup> + y<sup>2</sup> > z<sup>2</sup></p>\n<p><strong>प्रयुक्त सूत्र:</strong> कोज्या का नियम (Law of Cosines): cos Z = (x<sup>2</sup> + y<sup>2</sup> ", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles"], "concept": "Triangles", "confidence": "high"}, {"qid": "6274d9df6e08d3aa09f98928", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In&nbsp;&Delta;ABC,&nbsp;&ang;A = 66&deg;, BD&nbsp;&perp; AC and CE&nbsp;&perp; AB. BD and EC intersect at P. The bisectors&nbsp;&ang;PBC and&nbsp;&ang;PCB meet at Q. What is the measure of&nbsp;&ang;BQC?", "options": [{"prompt": "1", "value": "127&amp;deg;&amp;nbsp;"}, {"prompt": "2", "value": "132&amp;deg;&amp;nbsp;"}, {"prompt": "3", "value": "143&amp;deg;&amp;nbsp;"}, {"prompt": "4", "value": "147&amp;deg;&amp;nbsp;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "&Delta;ABC में, <span style=\"\">&ang;A = 66&deg;</span>, BD &perp; AC और <span style=\"\">CE&nbsp;&perp; AB है</span>। BD और EC, P पर प्रतिच्छेद करते हैं। समद्विभाजक <span style=\"\">&ang;PBC&nbsp;</span>और <span style=\"\">&ang;PCB,&nbsp;</span>Q पर मिलते हैं। <span style=\"\">&ang;BQC</span>&nbsp;की माप क्या है?", "options": [{"prompt": "1", "value": "127&amp;deg;&amp;nbsp;"}, {"prompt": "2", "value": "132&amp;deg;&amp;nbsp;"}, {"prompt": "3", "value": "143&amp;deg;&amp;nbsp;"}, {"prompt": "4", "value": "147&amp;deg;&amp;nbsp;"}], "range": {"start": "", "end": ""}}, "bn": {"value": "একটি ΔABC-তে, ∠A = 66°, BD ⊥ AC এবং CE ⊥ AB। BD এবং EC পরস্পরকে P বিন্দুতে ছেদ করে। ∠PBC এবং ∠PCB-এর সমদ্বিখন্ডকদ্বয় Q বিন্দুতে মিলিত হয়। ∠BQC-এর পরিমাপ কত?", "options": [{"prompt": "1", "value": "127&deg;"}, {"prompt": "2", "value": "132&deg;"}, {"prompt": "3", "value": "143&deg;"}, {"prompt": "4", "value": "147&deg;"}], "range": {"start": "", "end": ""}}, "gu": {"value": "ΔABC માં, ∠A = 66°, BD ⊥ AC અને CE ⊥ AB છે. BD અને EC એ P પર છેદે છે. ∠PBC અને ∠PCB ના દ્વિભાજકો Q પર મળે છે. ∠BQC નું માપ શું છે?", "options": [{"prompt": "1", "value": "127&deg;"}, {"prompt": "2", "value": "132&deg;"}, {"prompt": "3", "value": "143&deg;"}, {"prompt": "4", "value": "147&deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p><strong>Given data:</strong></p>\n\n<p>&ang;A = 66&ordm;</p>\n\n<p><strong>Concept:</strong></p>\n\n<p>The angle formed by the&nbsp;internal bisectors of the angles of the triangle&nbsp;is equal to 90 degrees plus half the third angle.&nbsp;</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8814e97167de6b13645a8379a62f9e31f99b9114380e9ef405f890b13a02bfd6.png\" style=\"width: 229px; height: 236px;\" /></p>\n\n<p>In&nbsp;&Delta; ABC,</p>\n\n<p><span style=\"\">&ang;BQC = 90&ordm; +&nbsp;</span><span class=\"math-tex\">\\(∠BPC\\over 2\\)</span></p>\n\n<p><strong>Calculations:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/55dc15659f2c798e66aa2b771bd8dffe116c12db3ac74d823a8a07d9a795f97e.png\" /></p>\n\n<p><span style=\"\">In the quadrilateral AEPD</span></p>\n\n<p>&ang;EAD&nbsp;+&nbsp;<span style=\"\">&ang;PEA +&nbsp;&ang;EPD +&nbsp;&ang;PDA = 360&ordm;</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;&ang;EPD =&nbsp;360&ordm; - (66&ordm; + 90&ordm; + 90&ordm;)</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;&ang;EPD = 114&ordm;</span></p>\n\n<p>From figure-</p>\n\n<p><span style=\"\">&ang;EPD = 114&ordm; =&nbsp;&ang;BPC</span></p>\n\n<p style=\"\">&ang;BQC = 90&ordm; +&nbsp;<span class=\"math-tex\">\\(∠BPC\\over 2\\)</span></p>\n\n<p><span style=\"\">&ang;BQC = 90</span><span style=\"\">&ordm; +&nbsp;<span class=\"math-tex\">\\(114º\\over 2\\)</span></span>&nbsp;= 90<span style=\"\">&ordm; + 57&ordm; = 147&ordm; (since &ang;EPD and&nbsp;&nbsp;&ang;BPC are vertically opposite angles).</span></p>\n\n<p>&there4; , <strong>The value of&nbsp;<span style=\"\">&ang;BQC is&nbsp;147</span><span style=\"\">&ordm;.</span></strong></p>\n\n33:", "hn": "\n<p><strong>दिए गए आंकड़े:</strong></p>\n\n<p>&ang;A = 66&ordm;</p>\n\n<p><strong>अवधारणा:</strong></p>\n\n<p>त्रिभुज के कोणों के आंतरिक समद्विभाजक द्वारा बनाया गया कोण 90 डिग्री प्लस तीसरे कोण के आधे के बराबर होता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8814e97167de6b13645a8379a62f9e31f99b9114380e9ef405f890b13a02bfd6.png\" style=\" width: 229px; height: 236px;\" /></p>\n\n<p>&Delta; ABC में ,</p>\n\n<p><span style=\"\">&ang;BQC = 90&ordm; +&nbsp;</span><span class=\"math-tex\">\\(∠BPC\\over 2\\)</span></p>\n\n<p><strong>गणना:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/55dc15659f2c798e66aa2b771bd8dffe116c12db3ac74d823a8a07d9a795f97e.png\" /></p>\n\n<p>चतुर्भुज <span style=\"\">AEPD&nbsp;में</span><span style=\"\">​,</span></p>\n\n<p>&ang;EAD&nbsp;+&nbsp;<span style=\"\">&ang;PEA +&nbsp;&ang;EPD +&nbsp;&ang;PDA = 360&ordm;</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;&ang;EPD =&nbsp;360&ordm; - (66&ordm; + 90&ordm; + 90&ordm;)</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;&ang;EPD = 114&ordm;</span></p>\n\n<p>आकृति से-</p>\n\n<p style=\"\">&ang;EPD = 114&ordm; =&nbsp;&ang;BPC</p>\n\n<p style=\"\">&ang;BQC = 90&ordm; +&nbsp;</p>\n\n<p><span style=\"\">&ang;BQC = 90</span><span style=\"\">&ordm; +&nbsp;<span class=\"math-tex\">\\(114º\\over 2\\)</span></span>&nbsp;= 90<span style=\"\">&ordm; + 57&ordm; = 147&ordm; (चूँकि &ang;EPD और &ang;BPC </span><span style=\"color: rgb(102, 102, 102);   \">शीर्षाभिमुख</span>&nbsp;कोण हैं।<span style=\"\">)</span></p>\n\n<p>&there4;<strong>&nbsp;<span style=\"\">&ang;BQC का मान 147</span><span style=\"\">&ordm; है।</span></strong></p>\n\n34:T6ba,\n<p><strong>প্রদত্ত তথ্য:</strong></p>\n\n<p>∠A = 66º</p>\n\n<p><strong>ধারণা:</strong></p>\n\n<p>ত্রিভুজের কোণগুলির অভ্যন্তরীণ সমদ্বিখন্ডক দ্বারা গঠিত কোণ 90 ডিগ্রি এবং তৃতীয় কোণের অর্ধেকের সমান।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8814e97167de6b13645a8379a62f9e31f99b9114380e9ef405f890b13a0", "te": "", "mr": "", "bn": "\n<p><strong>প্রদত্ত তথ্য:</strong></p>\n\n<p>∠A = 66º</p>\n\n<p><strong>ধারণা:</strong></p>\n\n<p>ত্রিভুজের কোণগুলির অভ্যন্তরীণ সমদ্বিখন্ডক দ্বারা গঠিত কোণ 90 ডিগ্রি এবং তৃতীয় কোণের অর্ধেকের সমান।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8814e97167de6b13645a8379a62f9e31f99b9114380e9ef405f890b13a02bfd6.png\" style=\"width: 229px; height: 236px;\" /></p>\n\n<p>Δ ABC-তে,</p>\n\n<p><span style=\"\">∠BQC = 90º + </span><span class=\"math-tex\">\\(∠BPC\\over 2\\)</span></p>\n\n<p><strong>গণনা:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/55dc15659f2c798e66aa2b771bd8dffe116c12db3ac74d823a8a07d9a795f97e.png\" /></p>\n\n<p><span style=\"\">চতুর্ভুজ AEPD-তে</span></p>\n\n<p>∠EAD + <span style=\"\">∠PEA + ∠EPD + ∠PDA = 360º</span></p>\n\n<p><span style=\"\">⇒ ∠EPD = 360º - (66º + 90º + 90º)</span></p>\n\n<p><span style=\"\">⇒ ∠EPD = 114º</span></p>\n\n<p>চিত্র থেকে-</p>\n\n<p><span style=\"\">∠EPD = 114º = ∠BPC</span></p>\n\n<p style=\"\">∠BQC = 90º + <span class=\"math-tex\">\\(∠BPC\\over 2\\)</span></p>\n\n<p><span style=\"\">∠BQC = 90</span><span style=\"\">º + <span class=\"math-tex\">\\(114º\\over 2\\)</span></span> = 90<span style=\"\">º + 57º = 147º (যেহেতু ∠EPD এবং ∠BPC বিপ্রতীপ কোণ)।</span></p>\n\n<p>∴ , <strong>∠BQC-এর মান হল 147</strong><span style=\"\">º</span></p>\n\n35:T6d1,\n<p><strong>આપેલ માહિતી:</strong></p>\n\n<p>∠A = 66º</p>\n\n<p><strong>ખ્યાલ:</strong></p>\n\n<p>ત્રિકોણના ખૂણાઓના આંતરિક દ્વિભાજકો દ્વારા રચાયેલ ખૂણો એ 90 અંશ વત્તા ત્રીજા ખૂણાના અડધા બરાબર હોય છે.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8814e97167de6b13645a8379a62f9e31f99b911438", "ml": "", "gu": "\n<p><strong>આપેલ માહિતી:</strong></p>\n\n<p>∠A = 66º</p>\n\n<p><strong>ખ્યાલ:</strong></p>\n\n<p>ત્રિકોણના ખૂણાઓના આંતરિક દ્વિભાજકો દ્વારા રચાયેલ ખૂણો એ 90 અંશ વત્તા ત્રીજા ખૂણાના અડધા બરાબર હોય છે.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8814e97167de6b13645a8379a62f9e31f99b9114380e9ef405f890b13a02bfd6.png\" style=\"width: 229px; height: 236px;\" /></p>\n\n<p>In Δ ABC,</p>\n\n<p><span style=\"\">∠BQC = 90º + </span><span class=\"math-tex\">\\(∠BPC\\over 2\\)</span></p>\n\n<p><strong>ગણતરી:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/55dc15659f2c798e66aa2b771bd8dffe116c12db3ac74d823a8a07d9a795f97e.png\" /></p>\n\n<p><span style=\"\">ચતુષ્કોણ AEPD માં</span></p>\n\n<p>∠EAD + <span style=\"\">∠PEA + ∠EPD + ∠PDA = 360º</span></p>\n\n<p><span style=\"\">⇒ ∠EPD = 360º - (66º + 90º + 90º)</span></p>\n\n<p><span style=\"\">⇒ ∠EPD = 114º</span></p>\n\n<p>આકૃતિ પરથી-</p>\n\n<p><span style=\"\">∠EPD = 114º = ∠BPC</span></p>\n\n<p style=\"\">∠BQC = 90º + <span class=\"math-tex\">\\(∠BPC\\over 2\\)</span></p>\n\n<p><span style=\"\">∠BQC = 90</span><span style=\"\">º + <span class=\"math-tex\">\\(114º\\over 2\\)</span></span> = 90<span style=\"\">º + 57º = 147º (કારણ કે ∠EPD અને ∠BPC એ અભિકોણ છે).</span></p>\n\n<p>∴ , <strong><span style=\"\">∠BQC નું મૂલ્ય 147</span><span style=\"\">º છે.</span></strong></p>\n\n36:T8b2,\n<p><strong>Given:</strong></p>\n\n<p>PS &perp; QR</p>\n\n<p>&ang;Q = 66&deg;&nbsp;and&nbsp;&ang;R = 34&deg;</p>\n\n<p>PT&nbsp;is the bisector of &ang;QPR</p>\n\n<p><strong>Calculation:</stron", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles"], "concept": "Triangles", "confidence": "high"}, {"qid": "6275adad2c22b3f3f84a57ec", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In &Delta; LMN, the bisector of &ang;L and &ang;N intersect at an angle of 112&deg;. What is the measure (in degree) of &ang;M?", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "44"}, {"prompt": "3", "value": "72"}, {"prompt": "4", "value": "60"}], "range": {"start": "", "end": ""}}, "hn": {"value": "&Delta;LMN में, &ang;L और &ang;N का समद्विभाजक 112&deg; के कोण पर प्रतिच्छेदित करता है। &ang;M का माप (डिग्री में) क्या है?", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "44"}, {"prompt": "3", "value": "72"}, {"prompt": "4", "value": "60"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">The bisector of &ang;L and &ang;N intersect at an angle = 112&deg;</span></p>\n\n<p><strong><font color=\"#333333\"><span style=\"white-space: pre-wrap;\">Calculation:</span></font></strong></p>\n\n<p><strong><font color=\"#333333\"><span style=\"white-space: pre-wrap;\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/77162650fdf0fd39f57301348e02a1ea6ded3c3ab543523607862a1f843abf60.png\" style=\"width: 224px; height: 176px;\" /></span></font></strong></p>\n\n<p><font color=\"#333333\"><span style=\"white-space: pre-wrap;\">In &Delta;LMN, ON is the bisector of &ang;N and OL is the bisector of &ang;L</span></font></p>\n\n<p><font color=\"#333333\"><span style=\"white-space: pre-wrap;\">&ang;NOL = 112&deg;</span></font></p>\n\n<p><font color=\"#333333\"><span style=\"white-space: pre-wrap;\">So, </span></font><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&ang;NOL = 90&deg; + &ang;M/2</span></p>\n\n<p><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&rArr; 112&deg; = 90&deg; + &ang;M/2</span></p>\n\n<p><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&rArr; </span><span style=\" white-space: pre-wrap;\">&ang;M/2 = </span><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">112&deg; - 90&deg;</span></p>\n\n<p><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&rArr; </span><span style=\"white-space: pre-wrap; \">&ang;M/2 = 22&deg;</span></p>\n\n<p><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&rArr; </span><span style=\"white-space: pre-wrap; \">&ang;M = 2 &times; 22&deg; = 44&deg;</span></p>\n\n<p><strong>&there4;&nbsp;The value of&nbsp;<span style=\"white-space: pre-wrap; \">&ang;M is 44&deg;</span></strong></p>", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&ang;L</span> और &ang;N का समद्विभाजक एक कोण पर प्रतिच्छेददित करता है = 112&deg;</p>\n\n<p><strong>गणना:</strong></p>\n\n<p><span style=\"font-weight: 700; \"><font color=\"#333333\"><span style=\"white-space: pre-wrap;\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/77162650fdf0fd39f57301348e02a1ea6ded3c3ab543523607862a1f843abf60.png\" style=\"width: 224px; height: 176px;\" /></span></font></span></p>\n\n<p>&Delta;LMN में, ON, &ang;N का समद्विभाजक है और OL, <span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&ang;L</span> का समद्विभाजक है।</p>\n\n<p><font color=\"#333333\"><span style=\"white-space: pre-wrap;\">&ang;NOL = 112&deg;</span></font></p>\n\n<p><font color=\"#333333\"><span style=\"white-space: pre-wrap;\">इसलिए, </span></font><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&ang;NOL = 90&deg; + &ang;M/2</span></p>\n\n<p><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&rArr; 112&deg; = 90&deg; + &ang;M/2</span></p>\n\n<p><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&rArr; </span><span style=\" white-space: pre-wrap;\">&ang;M/2 = </span><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">112&deg; - 90&deg;</span></p>\n\n<p><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&rArr; </span><span style=\"white-space: pre-wrap; \">&ang;M/2 = 22&deg;</span></p>\n\n<p><span style=\"color: rgb(51, 51, 51); white-space: pre-wrap; \">&rArr; </span><span style=\"white-space: pre-wrap; \">&ang;M = 2 &times; 22&deg; = 44&deg;</span></p>\n\n<p><strong>&there4;&nbsp;<span style=\"white-space: pre-wrap; \">&ang;M का मान 44&deg; </span>है।</strong></p>\n\n3f:Tddf,\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles"], "concept": "Triangles", "confidence": "high"}, {"qid": "6274f5416e08d3aa09fcd73e", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In &Delta;PQR, &ang;Q = 66&deg; and&nbsp;&ang;R = 34<span style=\"\">&deg;</span>. T is a point on QR , and S is a point between Q and T such that PS&nbsp;&perp; QR and PT is the bisector of&nbsp;&ang;QPR. What is the measure of&nbsp;&ang;SPT?", "options": [{"prompt": "1", "value": "12&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "2", "value": "20&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "3", "value": "16&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "4", "value": "18&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "&Delta;PQR में, <span style=\"\">&ang;</span>Q = 66&deg; और &ang;R = 34&deg; है। <span style=\"\">T,&nbsp;QR&nbsp;</span>पर एक बिंदु है, और S, Q और T के बीच एक बिंदु इस प्रकार है कि PS &perp; QR है और <span style=\"\">PT,&nbsp;</span>&ang;<span style=\"\">QPR&nbsp;</span>का समद्विभाजक है। &ang;SPT का माप क्या है?", "options": [{"prompt": "1", "value": "12&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "2", "value": "20&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "3", "value": "16 &lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "4", "value": "18&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "ΔPQRలో, ∠Q = 66° మరియు ∠R = 34<span style=\"\">°</span>. T అనేది QR పై ఒక బిందువు, మరియు S అనేది Q మరియు T మధ్య ఒక బిందువు అయిన PS ⊥ QR మరియు PT అనేది ∠QPR యొక్క ద్విభాగం. ∠SPT యొక్క కోణం ఎంత?", "options": [{"prompt": "1", "value": "12<span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "20<span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "16<span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "18<span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}, "mr": {"value": "ΔPQR मध्ये, ∠Q = 66° आणि ∠R = 34° आहे. T हा QR वर एक बिंदू आहे, आणि S हा Q आणि T मधला बिंदू आहे की PS ⊥ QR आणि PT हा ∠QPR चा दुभाजक आहे. ∠SPT चे माप काय आहे?", "options": [{"prompt": "1", "value": "12<span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "20<span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "16<span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "18<span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "ΔPQR-এ, ∠Q = 66° এবং ∠R = 34°। T হল QR রেখার উপর একটি বিন্দু, এবং S হল Q এবং T এর মধ্যে অবস্থিত এমন একটি বিন্দু যার ফলে PS ⊥ QR হয় এবং PT, ∠QPR এর দ্বিখণ্ডক হয়। ∠SPT এর পরিমাপ কত?", "options": [{"prompt": "1", "value": "12<span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "20<span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "16<span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "18<span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ΔPQR ನಲ್ಲಿ, ∠Q = 66° ಮತ್ತು ∠R = 34°. T ಎಂಬುದು QR ನಲ್ಲಿನ ಒಂದು ಬಿಂದು, ಮತ್ತು S ಎಂಬುದು Q ಮತ್ತು T ನಡುವಿನ ಬಿಂದುವಾಗಿದ್ದು, PS ⊥ QR ಮತ್ತು PT ∠QPR ನ ಅರ್ಧಕವಾಗಿದೆ. ∠SPT ಯ ಅಳತೆ ಏನು?", "options": [{"prompt": "1", "value": "12<span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "20<span style=\"\">&deg;</span>"}, {"prompt": "3", "value": "16<span style=\"\">&deg;</span>"}, {"prompt": "4", "value": "18<span style=\"\">&deg;</span>"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ΔPQR இல், ∠Q = 66° மற்றும் ∠R = 34°. T என்பது QR இல் ஒரு புள்ளியாகும், மேலும் S என்பது Q மற்றும் T க்கு இடையேயான ஒரு புள்ளியாகும், அதாவது PS ⊥ QR மற்றும் PT என்பது ∠QPR இன் இருசமவெட்டியாகும். ∠SPT இன் அளவு என்ன?", "options": [{"prompt": "1", "value": "<span style=\"color: rgb(33, 37, 41);\">12</span><span style=\"color: rgb(33, 37, 41);\">&deg;</span>"}, {"prompt": "2", "value": "<span style=\"color: rgb(33, 37, 41);\">20</span><span style=\"color: rgb(33, 37, 41);\">&deg;</span>"}, {"prompt": "3", "value": "<span style=\"color: rgb(33, 37, 41);\">16</span><span style=\"color: rgb(33, 37, 41);\">&deg;</span>"}, {"prompt": "4", "value": "<span style=\"color: rgb(33, 37, 41);\">18</span><span style=\"color: rgb(33, 37, 41);\">&deg;</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>PS &perp; QR</p>\n\n<p>&ang;Q = 66&deg;&nbsp;and&nbsp;&ang;R = 34&deg;</p>\n\n<p>PT&nbsp;is the bisector of &ang;QPR</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/635fd8edbaa3e86aed5907cc464d684940975e0a792ef720a4a96bd88e6be94c.png\" style=\"height: 160px; width: 312px;\" /></p>\n\n<p>&ang;QPR = 180&deg; - 66<span style=\"\">&deg;</span> - 34<span style=\"\">&deg;</span></p>\n\n<p>&rArr; 80<span style=\"\">&deg;</span></p>\n\n<p><span style=\"\">&ang;QPT =&nbsp;&ang;TPR = 40&deg;&nbsp; &nbsp; [As PT angle bisector]</span></p>\n\n<p>In &Delta; PTR</p>\n\n<p>&ang;PTR&nbsp;+&nbsp;&ang;PRT&nbsp;+&nbsp;&ang;TPR = 180&deg;&nbsp;</p>\n\n<p>&rArr;&nbsp;<span style=\"\">&ang;PTR&nbsp;</span>=&nbsp;180&deg; - 34&deg; - 40&deg;</p>\n\n<p>&rArr; &ang;PTR = 106&deg;</p>\n\n<p>Now,</p>\n\n<p>&ang;PTS + &ang;PTR = 180&deg;</p>\n\n<p><span style=\"\">&rArr; &ang;PTS + 106&deg;&nbsp;= 180&deg;</span></p>\n\n<p><span style=\"\">&rArr; &ang;PTS</span><span style=\"\">&nbsp;= 180&deg; - 106&deg;</span></p>\n\n<p><span style=\"\">&rArr; &ang;PTS</span><span style=\"\">&nbsp;= 74&deg;</span></p>\n\n<p>So,</p>\n\n<p>&ang;SPT = 180&deg; - 90&deg; - 74&deg;</p>\n\n<p>&rArr;&nbsp;<span style=\"\">&ang;SPT = 16&deg;</span></p>\n\n<p><strong><span style=\"\">&there4; The measure of&nbsp;&ang;SPT is 16&deg;.</span></strong></p>", "hn": "\n<p><span style=\"font-weight: 700; \">दिया गया है:</span></p>\n\n<p>PS &perp; QR</p>\n\n<p>&ang;Q = 66&deg; और &ang;R = 34&deg;</p>\n\n<p>&nbsp;PT, &ang;QPR का समद्विभाजक है।</p>\n\n<p><span style=\"font-weight: 700; \">गणना:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/635fd8edbaa3e86aed5907cc464d684940975e0a792ef720a4a96bd88e6be94c.png\" style=\"height: 160px; width: 312px;\" /></p>\n\n<p>&ang;QPR = 180&deg; - 66<span style=\"\">&deg;</span> - 34<span style=\"\">&deg;</span></p>\n\n<p>&rArr; 80<span style=\"\">&deg;</span></p>\n\n<p><span style=\"\">&ang;QPT =&nbsp;&ang;TPR = 40&deg;&nbsp; &nbsp; [चूँकि PT, कोण समद्विभाजक है]</span></p>\n\n<p&", "te": "<p><strong>ఇచ్చిన:</strong></p>\n\n<p>PS ⊥ QR</p>\n\n<p>∠Q = 66° మరియు ∠R = 34°</p>\n\n<p>PT అనేది ∠QPR యొక్క ద్విభాగము</p>\n\n<p><strong>లెక్కింపు:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/635fd8edbaa3e86aed5907cc464d684940975e0a792ef720a4a96bd88e6be94c.png\" style=\"height: 160px; width: 312px;\" /></p>\n\n<p>∠QPR = 180° - 66<span style=\"\">°</span> - 34<span style=\"\">°</span></p>\n\n<p>⇒ 80<span style=\"\">°</span></p>\n\n<p><span style=\"\">∠QPT = ∠TPR = 40° [PT ద్విభాగా కోణంగా]</span></p>\n\n<p>Δ PTR ", "mr": "<p><strong>दिलेल्याप्रमाणे:</strong></p>\n\n<p>PS ⊥ QR</p>\n\n<p>∠Q = 66° आणि ∠R = 34°</p>\n\n<p>PT हा ∠QPR चा दुभाजक आहे</p>\n\n<p><strong>गणना:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/635fd8edbaa3e86aed5907cc464d684940975e0a792ef720a4a96bd88e6be94c.png\" style=\"height: 160px; width: 312px;\" /></p>\n\n<p>∠QPR = 180° - 66<span style=\"\">°</span> - 34<span style=\"\">°</span></p>\n\n<p>⇒ 80<span style=\"\">°</span></p>\n\n<p><span style=\"\">∠QPT = ∠TPR = 40°    </span>[PT कोन दुभाजक असल्यास]</p>\n\n<p>Δ <span style=\"color: rgb(33, 37, 41);\">PTR</span> मध्ये</p>\n\n<p>∠PTR + ∠PRT + ∠TPR = 180° </p>\n\n<p>⇒ <span style=\"\">∠PTR </span>= 180° - 34° - 40°</p>\n\n<p>⇒ ∠PTR = 106°</p>\n\n<p>आता,</p>\n\n<p>∠PTS + ∠PTR = 180°</p>\n\n<p><span style=\"\">⇒ ∠PTS + 106° = 180°</span></p>\n\n<p><span style=\"\">⇒ ∠PTS</span><span style=\"\"> = 180° - 106°</span></p>\n\n<p><span style=\"\">⇒ ∠PTS</span><span style=\"\"> = 74°</span></p>\n\n<p>तर,</p>\n\n<p>∠SPT = 180° - 90° - 74°</p>\n\n<p>⇒ <span style=\"\">∠SPT = 16°</span></p>\n\n<p><strong>∴ ∠SPT चे माप 16° आहे.</strong></p>\n3a:T5af,<p><strong>প্রদত্ত:</strong></p>\n\n<p>PS ⊥ QR</p>\n\n<p>∠Q = 66° এবং ∠R = 34°</p>\n\n<p>PT হল ∠QPR এ", "bn": "<p><strong>প্রদত্ত:</strong></p>\n\n<p>PS ⊥ QR</p>\n\n<p>∠Q = 66° এবং ∠R = 34°</p>\n\n<p>PT হল ∠QPR এর দ্বিখণ্ডক</p>\n\n<p><strong>গণনা:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/635fd8edbaa3e86aed5907cc464d684940975e0a792ef720a4a96bd88e6be94c.png\" style=\"height: 160px; width: 312px;\" /></p>\n\n<p>∠QPR = 180° - 66<span style=\"\">°</span> - 34<span style=\"\">°</span></p>\n\n<p>⇒ 80<span style=\"\">°</span></p>\n\n<p><span style=\"\">∠QPT = ∠TPR = 40°    </span>[যেহেতু PT হল একটি কোণ দ্বিখণ্ডক]</p>\n\n<p>Δ PTR এ</p>\n\n<p>∠PTR + ∠PRT + ∠TPR = 180° </p>\n\n<p>⇒ <span style=\"\">∠PTR </span>= 180° - 34° - 40°</p>\n\n<p>⇒ ∠PTR = 106°</p>\n\n<p>এখন,</p>\n\n<p>∠PTS + ∠PTR = 180°</p>\n\n<p><span style=\"\">⇒ ∠PTS + 106° = 180°</span></p>\n\n<p><span style=\"\">⇒ ∠PTS</span><span style=\"\"> = 180° - 106°</span></p>\n\n<p><span style=\"\">⇒\n ∠PTS</span><span style=\"\"> = 74°</span></p>\n\n<p>সুতরাং,</p>\n\n<p>∠SPT = 180° - 90° - 74°</p>\n\n<p>⇒ <span style=\"\">∠SPT = 16°</span></p>\n\n<p><strong>∴ ∠SPT এর পরিমাপ হল 16°।</strong></p>\n3b:T62e,\n<p><strong>ನೀಡಲಾಗಿದೆ:​</strong></p>\n\n<p>PS ⊥ QR</p>\n\n<p>∠Q = 66° ಮತ್ತು ∠R = 34°</p>\n\n<p><span style=\"\">", "ml": "", "gu": "", "kn": "\n<p><strong>ನೀಡಲಾಗಿದೆ:​</strong></p>\n\n<p>PS ⊥ QR</p>\n\n<p>∠Q = 66° ಮತ್ತು ∠R = 34°</p>\n\n<p><span style=\"\">PT, </span>∠QPR ನ <span style=\"\">ಅರ್ಧಕ</span>ವಾಗಿದೆ.</p>\n\n<p><strong>ಲೆಕ್ಕಾಚಾರ:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/635fd8edbaa3e86aed5907cc464d684940975e0a792ef720a4a96bd88e6be94c.png\" style=\"height: 160px; width: 312px;\" /></p>\n\n<p>∠QPR = 180° - 66<span style=\"\">°</span> - 34<span style=\"\">°</span></p>\n\n<p>⇒ 80<span style=\"\">°</span></p>\n\n<p><span style=\"\">∠QPT = ∠TPR = 40°   </span>[ಏಕೆಂದರೆ PT ಕೋನ <span style=\"\">ಅರ್ಧಕ</span>ವಾಗಿದೆ]</p>\n\n<p>Δ PTR ನಲ್ಲಿ</p>\n\n<p>∠PTR + ∠PRT + ∠TPR = 180° </p>\n\n<p>⇒ <span style=\"\">∠PTR </span>= 180° - 34° - 40°</p>\n\n<p>⇒ ∠PTR = 106°</p>\n\n<p>ಈಗ,</p>\n\n<p>∠PTS + ∠PTR = 180°</p>\n\n<p><span style=\"\">⇒ ∠PTS + 106° = 180°</span></p>\n\n<p><span style=\"\">⇒ ∠PTS</span><span style=\"\"> = 180° - 106°</span></p>\n\n<p><span style=\"\">⇒ ∠PTS</span><span style=\"\"> = 74°</span></p>\n\n<p>ಹಾಗಾಗಿ,</p>\n\n<p>∠SPT = 180° - 90° - 74°</p>\n\n<p>⇒ <span style=\"\">∠SPT = 16°</span></p>\n\n<p><strong><span style=\"\">∴ ∠SPT </span>ಯ ಅಳತೆಯು 16° ಆಗಿದೆ.</strong></p>\n\n3c:T812,\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">கொடுக்கப்பட்டது:</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">PS ⊥ QR</p>\n\n<", "ta": "\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">கொடுக்கப்பட்டது:</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">PS ⊥ QR</p>\n\n<p style=\"color: rgb(33, 37, 41);\">∠Q = 66° மற்றும் ∠R = 34°</p>\n\n<p style=\"color: rgb(33, 37, 41);\">PT என்பது ∠QPRஇன் இருசமவெட்டி ஆகும்.</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">கணக்கீடு:</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/635fd8edbaa3e86aed5907cc464d684940975e0a792ef720a4a96bd88e6be94c.png\" style=\"height: 160px; width: 312px;\" /></p>\n\n<p style=\"color: rgb(33, 37, 41);\">∠QPR = 180° - 66° - 34°</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 80°</p>\n\n<p style=\"color: rgb(33, 37, 41);\">∠QPT = &ang", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles"], "concept": "Triangles", "confidence": "high"}, {"qid": "6274315d292c4dfc2e689502", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In △ABC, &ang;A = 68&deg;. If I is the incentre of the triangle, then the measure of &ang;BIC is:", "options": [{"prompt": "1", "value": "68&amp;deg;"}, {"prompt": "2", "value": "56&amp;deg;"}, {"prompt": "3", "value": "124&amp;deg;"}, {"prompt": "4", "value": "112&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span style=\"\">△</span>ABC में, <span style=\"\">&ang;</span>A = 68&deg; है। यदि I त्रिभुज का अंतःकेंद्र है, तो <span style=\"\">&ang;</span>BIC का माप है:", "options": [{"prompt": "1", "value": "68&amp;deg;"}, {"prompt": "2", "value": "56&amp;deg;"}, {"prompt": "3", "value": "124&amp;deg;"}, {"prompt": "4", "value": "112&amp;deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><span style=\"font-weight: 700;\">Given:</span></p>\n\n<p><span style=\"\">In △ABC, &ang;A = 68&deg;</span></p>\n\n<p><span style=\"font-weight: 700;\">Concept used:</span></p>\n\n<p>&nbsp;&nbsp;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/bd904fc875827ea15b6b201dfa47458cd8643a9d23b343d1b455fc440cc54f50.png\" style=\" width: 224px; height: 159px;\" /></p>\n\n<p>&Delta;ABC is a triangle with incenter I.&nbsp;</p>\n\n<p>So,&nbsp;&ang;BIC = 90&deg; +&nbsp;<span class=\"math-tex\">\\({1 \\over 2}\\)</span>&nbsp;&times;&nbsp;&ang;BAC</p>\n\n<p><span style=\"font-weight: 700;\">Calculation:</span></p>\n\n<p>&nbsp;&nbsp;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/bd904fc875827ea15b6b201dfa47458cd8643a9d23b343d1b455fc440cc54f50.png\" style=\" width: 224px; height: 159px;\" /></p>\n\n<p><span style=\"\">According to the concept,</span></p>\n\n<p><span style=\"\">&ang;BIC = 90&deg; +&nbsp;</span><span class=\"math-tex\">\\({1 \\over 2}\\)</span><span style=\"\">&nbsp;&times;&nbsp;&ang;BAC</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;&ang;BIC = 90&deg; +&nbsp;</span><span class=\"math-tex\">\\({1 \\over 2}\\)</span><span style=\"\">&nbsp;&times;&nbsp;68&deg;</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;&ang;BIC = 90&deg; + 34</span><span style=\"\">&deg;</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;&ang;BIC = 124&deg;</span></p>\n\n<p><strong><span style=\"font-weight: 700; \">&there4; T</span><span style=\"\">he measure of &ang;BIC is&nbsp;124</span><span style=\"\">&deg;.</span></strong></p>\n\n", "hn": "\n<p><span style=\"font-weight: 700;\">दिया गया है:</span></p>\n\n<p><span style=\"\">△</span><span style=\"\">ABC में, &ang;A = 68&deg;</span></p>\n\n<p><span style=\"font-weight: 700;\">प्रयुक्त संकल्पना:</span></p>\n\n<p>&nbsp;&nbsp;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/bd904fc875827ea15b6b201dfa47458cd8643a9d23b343d1b455fc440cc54f50.png\" style=\" width: 224px; height: 159px;\" /></p>\n\n<p>&Delta;ABC एक त्रिभुज है जिसका <span style=\"\">अंतःकेंद्र&nbsp;</span>I है।</p>\n\n<p>इसलिए,&nbsp;&ang;BIC = 90&deg; +&nbsp;<span class=\"math-tex\">\\({1 \\over 2}\\)</span>&nbsp;&times;&nbsp;&ang;BAC</p>\n\n<p><span style=\"font-weight: 700;\">गणना:</span></p>\n\n<p>&nbsp;&nbsp;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/bd904fc875827ea15b6b201dfa47458cd8643a9d23b343d1b455fc440cc54f50.png\" style=\" width: 224px; height: 159px;\" /></p>\n\n<p>संकल्पना के अनुसार,</p>\n\n<p><span style=\"\">&ang;BIC = 90&deg; +&nbsp;</span><span class=\"math-tex\">\\({1 \\over 2}\\)</span><span style=\"\">&nbsp;&times;&nbsp;&ang;BAC</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;&ang;BIC = 90&deg; +&nbsp;</span><span class=\"math-tex\">\\({1 \\over 2}\\)</span><span style=\"\">&nbsp;&times;&nbsp;68&deg;</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;&ang;BIC = 90&deg; + 34</span><span style=\"\">&deg;</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;&ang;BIC = 124&deg;</span></p>\n\n<p><strong><span style=\"font-weight: 700; \">&there4; </span><span style=\"\">&ang;BIC </span>का माप 124&deg; है।</strong></p>\n\n32:T9a1,\n<p><strong>Given data:</strong></p>\n\n<p>&ang;A = 66&ordm;</p>\n\n<p><strong>Concept:</strong></p>\n\n<p&", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles"], "concept": "Triangles", "confidence": "high"}, {"qid": "6273ebc75a7c56ced256ee81", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "The sides AB and AC of &Delta;ABC are produced to points D and E, respectively. The bisectors of &ang;CBD and&nbsp;<span style=\"\">&ang;</span>BCE meet at P. If <span style=\"\">&ang;</span>A =&nbsp;88&deg;, the measure of <span style=\"\">&ang;</span>P is :", "options": [{"prompt": "1", "value": "46&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "2", "value": "56&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "3", "value": "51&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "4", "value": "61&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "&Delta;ABC की भुजाओं AB और AC को क्रमशः बिंदु D और E तक बढ़ाया जाता है। &ang;CBD और &ang;BCE के समद्विभाजक P पर मिलते हैं। यदि &ang;A = 88&deg; है, तो P का माप क्या है?", "options": [{"prompt": "1", "value": "46&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "2", "value": "56&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "3", "value": "51&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "4", "value": "61&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>&ang;A =&nbsp;88&ordm;</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>If P is the meeting point of bisectors of <span style=\"\">&ang;CBD</span> and&nbsp;<span style=\"\">&ang;BCE</span>. Then, &ang;P =&nbsp;<span class=\"math-tex\">\\(1\\over 2\\)</span>&nbsp;(180<span style=\"\">&ordm;</span>&nbsp;- &ang;A)</p>\n\n<p><span style=\"font-weight: 700; \"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0207f0b55ecadd99c4f9822222611f9474dd7b065ca8f461f295871b44b1b533.png\" style=\"", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p>&ang;A =&nbsp;88&ordm;</p>\n\n<p><strong>प्रयुक्त अवधारणा:</strong></p>\n\n<p>यदि P, &ang;CBD और BCE के समद्विभाजक का मिलन बिंदु है। तब, &ang;P =&nbsp;<span class=\"math-tex\">\\(1\\over 2\\)</span>&nbsp;(180<span style=\"\">&ordm;</span>&nbsp;- &ang;A) है</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0207f0b55ecadd99c4f9822222611f9474dd7b065ca8f461f295871b44b1b533.png\" style=\"font-weight: 700;  width: 183px; height: 198px;\" /></p>\n\n<p><strong>गणना:</strong></p>\n\n<p><img alt=\"\" src=&quo", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Triangles"], "concept": "Triangles", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 8 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>

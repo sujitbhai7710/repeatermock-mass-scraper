@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 22: Partnership Business</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 22: Partnership Business</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-maths-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">8 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63a1cac31a4bae2bc0f1b791</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63a1cac31a4bae2bc0f1b791", "title": "PYCT 22: Partnership Business", "series_slug": "ssc-maths-previous-year-questions", "duration_min": 8, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "628542a7f87f5ae63c94033e", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "5fe377251deff3b069494c51", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "A and B started a business investing amounts of Rs. 92,500 and Rs. 1,12,500 respectively. If B&#39;s share in the profit earned by them is Rs. 9,000, what is the total profit (in Rs.) earned by them together?", "options": [{"prompt": "1", "value": "19,000"}, {"prompt": "2", "value": "20,000"}, {"prompt": "3", "value": "21,240"}, {"prompt": "4", "value": "16,400"}], "range": {"start": "", "end": ""}}, "hn": {"value": "A और B ने क्रमशः 92,500 रुपये और 1,12,500 रुपये की राशि से व्यवसाय शुरू किया। यदि उनके द्वारा अर्जित लाभ में B का हिस्सा 9,000 रुपये है, तो उन दोनों द्वारा अर्जित किया हुआ कुल लाभ (रुपये में) कितना है?", "options": [{"prompt": "1", "value": "19,000"}, {"prompt": "2", "value": "20,000"}, {"prompt": "3", "value": "21,240"}, {"prompt": "4", "value": "16,400"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>A, B క్రమానుసారంగా రూ.92,500, రూ.1,12,500 చొప్పున పెట్టుబడి పెట్టి వ్యాపారాన్ని ప్రారంభించారు. ఒకవేళ వారు ఆర్జించిన లాభంలో B వాటా 9,000 రూపాయలు అయితే, వారు కలిసి ఆర్జించిన మొత్తం లాభం (రూ.ల్లో) ఎంత?</p>\n", "options": [{"prompt": "1", "value": "19000"}, {"prompt": "2", "value": "20000"}, {"prompt": "3", "value": "21240"}, {"prompt": "4", "value": "16400"}], "range": {"start": "", "end": ""}}, "mr": {"value": "A आणि B यांनी अनुक्रमे 92,500 रुपये आणि 1,12,500 रुपये गुंतवून व्यवसाय सुरु केला. जर त्यांनी मिळविलेल्या नफ्यात B चा वाटा 9,000 रुपये असेल, तर त्यांनी एकत्रितपणे  मिळवलेला एकूण नफा किती?", "options": [{"prompt": "1", "value": "19,000"}, {"prompt": "2", "value": "20,000"}, {"prompt": "3", "value": "21,240"}, {"prompt": "4", "value": "16,400"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>A এবং B যথাক্রমে 92,500 টাকা এবং 1,12,500 টাকা বিনিয়োগ করে একটি ব্যবসা শুরু করেন। যদি তাদের দ্বারা অর্জিত লাভের মধ্যে B<strong> </strong>এর অংশ 9,000 টাকা হয়, তাহলে একসাথে তাদের দ্বারা অর্জিত মোট লাভ (টাকায়) কত ?</p>\n", "options": [{"prompt": "1", "value": "19,000"}, {"prompt": "2", "value": "20,000"}, {"prompt": "3", "value": "21,240"}, {"prompt": "4", "value": "16,400"}], "range": {"start": "", "end": ""}}, "ta": {"value": "A மற்றும் B ஆகியோர் இணைந்து முறையே ரூ. 92,500 மற்றும் ரூ. 1,12,500 முதலீட்டில் ஒரு தொழிலை தொடங்குகின்றனர். அவர்கள் ஈட்டிய இலாபத்தில் B இன் பங்கு ரூ. 9,000 எனில், அவர்கள் ஈட்டிய மொத்த இலாபம் எவ்வளவு ரூபாய்?", "options": [{"prompt": "1", "value": "19,000"}, {"prompt": "2", "value": "20,000"}, {"prompt": "3", "value": "21,240"}, {"prompt": "4", "value": "16,400"}], "range": {"start": "", "end": ""}}, "or": {"value": "A ଏବଂ  B ଯଥାକ୍ରମେ  92,500 ଟଙ୍କା ଏବଂ  1,12,500 ଟଙ୍କା ରେ ବ୍ୟବସାୟ ଆରମ୍ଭ କରିଲେ । ଯଦି ତାଙ୍କ ଦ୍ଵାରା ଅର୍ଜିତ ଲାଭ ରେ  B ର ଅଂଶ 9,000 ଟଙ୍କା ଅଟେ, ତେବେ ଉଭୟ ଦ୍ଵାରା ଅର୍ଜିତ କରାଯାଇଥିବା ମୋଟ ଲାଭ (ଟଙ୍କା ରେ) କେତେ ଅଟେ ? ", "options": [{"prompt": "1", "value": "19,000"}, {"prompt": "2", "value": "20,000"}, {"prompt": "3", "value": "21,240"}, {"prompt": "4", "value": "16,400"}], "range": {"start": "", "end": ""}}, "pa": {"value": "A ਅਤੇ B ਨੇ ਕ੍ਰਮਵਾਰ 92,500 ਰੁਪਏ ਅਤੇ 1,12,500 ਰੁਪਏ ਦੀ ਰਕਮ ਦਾ ਨਿਵੇਸ਼ ਕਰਕੇ ਇੱਕ ਕਾਰੋਬਾਰ ਸ਼ੁਰੂ ਕੀਤਾ। ਜੇ ਉਹਨਾਂ ਦੁਆਰਾ ਕਮਾਏ ਗਏ ਮੁਨਾਫੇ ਵਿੱਚ B ਦਾ ਹਿੱਸਾ 9,000 ਰੁਪਏ ਹੈ, ਤਾਂ ਉਹਨਾਂ ਦੁਆਰਾ ਇਕੱਠੇ ਕਮਾਇਆ ਗਿਆ ਕੁੱਲ ਲਾਭ (ਰੁਪਏ ਵਿੱਚ) ਕਿੰਨਾ ਹੈ?", "options": [{"prompt": "1", "value": "19,000"}, {"prompt": "2", "value": "20,000"}, {"prompt": "3", "value": "21,240"}, {"prompt": "4", "value": "16,400"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>Investment of A&nbsp; =&nbsp;Rs. 92,500</p>\n\n<p>Investment of B =&nbsp;Rs. 1,12,500</p>\n\n<p>B&#39;s share in profit = Rs. 9,000</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>If time of investment is equal for A and B&nbsp;then, ratio of profit earned by A an", "hn": "<p><strong>दिया है:</strong></p>\n\n<p>A के द्वारा किया निवेश&nbsp; = 92,500 रुपये</p>\n\n<p>B&nbsp;के द्वारा किया निवेश = 1,12,500&nbsp;रुपये</p>\n\n<p>B का लाभ में हिस्सा = 9,000&nbsp;रुपये</p>\n\n<p><strong>प्रयुक्त अवधारणा:</strong></p>\n\n<p>यदि निवेश की अवधि A और B के लिए बराबर है, तो A और B द्वारा अर्जित लाभ का अनुपात निवेश के अनुपात के समान है।</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>लाभ का अनुपात&nbsp; = 92,500 : 1,12,500</p>\n\n<p>&rArr; 37 : 45</p>\n\n<p>माना की कुल लाभ&nbsp;y है।</p>\n\n<p>लाभ में B का हिस्सा = {45/(45 + 37)}&nbsp;&times; y</p>\n\n<p>&rArr; (45/82)&nbsp;&times; y = 9,000</p>\n\n<p>&rArr; y = 7,38,000/45</p>\n\n<p>&rArr; y = 16,400</p>\n\n<p><strong>&there4; उन दोनों द्वारा अर्जित कुल लाभ 16,400&nbsp;रुपये है।</strong></p>\n41:T902,\n<p><span id=\"docs-internal-guid-af294df8-7fff-babb-6fd2-7ca8f3c43a40\"><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">दिलेले आहे</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">:</span></span></p>\n\n<p>A ची गुंतवणूक = ", "te": "<p><strong>ఇవ్వబడినవి:</strong></p>\n\n<p>పెట్టుబడి రూ. 92,500</p>\n\n<p>B పెట్టుబడి = రూ. 1,12,500</p>\n\n<p>లాభంలో B వాటా = రూ.</p>\n\n<p><strong>ఉపయోగించిన కాన్సెప్ట్:</strong></p>\n\n<p>పెట్టుబడి సమయం A మరియు Bలకు సమానంగా ఉన్నట్లయితే, అప్పుడు A మరియు B ద్వారా ఆర్జించిన లాభం నిష్పత్తి, చేసిన పెట్టుబడి నిష్పత్తికి సమానంగా ఉంటుంది.</p>\n\n<p><strong>లెక్కింపు:</strong></p>\n\n<p>లాభం నిష్పత్తి = 92,500 : 1,12,500</p>\n\n<p>⇒ 37:45</p>\n\n<p>మొత్తం లాభం y అనుకుందాం.</p>\n\n<p>లాభంలో B వాటా = {45/(45 + 37)} × y</p>\n\n<p>⇒ (45/82) × y = 9,000</p>\n\n<p>⇒ y = 7,38,000/45</p>\n\n<p>⇒ y = 16,400</p>\n\n<p><strong>∴ వారు కలిసి ఆర్జించిన మొత్తం లాభం రూ. 16400</strong></p>\n", "mr": "\n<p><span id=\"docs-internal-guid-af294df8-7fff-babb-6fd2-7ca8f3c43a40\"><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">दिलेले आहे</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">:</span></span></p>\n\n<p>A ची गुंतवणूक = 92,500 रुपये</p>\n\n<p>B ची गुंतवणूक = 1,12,500 रुपये</p>\n\n<p>नफ्यात B चा वाटा = 9,000 रुपये</p>\n\n<p><strong>वापरलेली संकल्पना:</strong></p>\n\n<p>जर A आणि B साठी गुंतवणूकीचा कालावधी समान असेल, तर A आणि B यांनी  मिळवलेल्या नफ्याचे गुणोत्तर हे केलेल्या गुंतवणूकीच्या गुणोत्तराच्या समान असते. </p>\n\n<p><span id=\"docs-internal-guid-95c4449a-7fff-f29a-3f47-22d7178aef11\"><span style=\"  backg", "bn": "<p><strong>প্রদত্ত:</strong></p>\n\n<p>A এর বিনিয়োগ = 92,500 টাকা</p>\n\n<p>B এর বিনিয়োগ = 1,12,500 টাকা</p>\n\n<p>লাভের মধ্যে B<span style=\"font-weight: 700;\"> </span>এর অংশ = 9,000 টাকা</p>\n\n<p><strong>অনুসৃত ধারণা:</strong></p>\n\n<p>যদি বিনিয়োগের সময় A এবং B এর জন্য সমান হয়, তাহলে A এবং B দ্বারা অর্জিত লাভের অনুপাত বিনিয়োগের অনুপাতের সমান হবে।</p>\n\n<p><strong>গণনা:</strong></p>\n\n<p>লাভের অনুপাত = 92,500 : 1,12,500</p>\n\n<p>⇒ 37 : 45</p>\n\n<p>ধরি মোট লাভ হল y</p>\n\n<p>লাভের মধ্যে B<span style=\"font-weight: 700;\"> </span>এর অংশ = {45/(45 + 37)} × y</p>\n\n<p>⇒ (45/82) × y = 9,000</p>\n\n<p>⇒ y = 7,38,000/45</p>\n\n<p>⇒ y = 16,400</p>\n\n<p><strong><span style=\"font-weight: 700;\">∴ </span>একসাথে তাদের দ্বারা অর্জিত মোট লাভ হল 16,400 টাকা।</strong></p>\n", "ml": "", "gu": "", "kn": "", "ta": "<p><span style=\"font-weight: 700;\">கொடுக்கப்பட்டது:</span></p>\n\n<p>A இன் முதலீடு  = ரூ. 92,500</p>\n\n<p>B இன் முதலீடு = ரூ. 1,12,500</p>\n\n<p>இலாபத்தில் B இன் பங்கு = ரூ. 9,000</p>\n\n<p><span style=\"font-weight: 700;\">பயன்படுத்தப்பட்ட சூத்திரம்:</span></p>\n\n<p>A மற்றும் B இன் முதலீட்டு காலம் சமம் என்றால், பின், A மற்றும் B ஈட்டிய இலாப விகிதம் என்பது அவர்களின் முதலீட்டு விகிதத்திற்கு சமம் ஆகும்.</p>\n\n<p><span style=\"font-weight: 700;\">கணக்கீடு:</span></p>\n\n<p>இலாப விகிதம் = 92,500 : 1,12,500</p>\n\n<p>⇒ 37 : 45</p>\n\n<p>மொத்த இலாபம் y ஆக இருக்கட்டும்</p>\n\n<p>இலாபத்தில் B இன் பங்கு = {45/(45 + 37)} × y</p>\n\n<p>⇒ (45/82) × y = 9,000</p>\n\n<p>⇒ y = 7,38,000/45</p>\n\n<p>⇒ y = 16,400</p>\n\n<p><span style=\"font-weight: 700;\">∴ அவர்கள் இணைந்து ஈட்டிய இலாபம் ரூ. 16,400 ஆகும்.</span></p>\n", "or": "<p><strong>ଦିଆଯାଇଛି:</strong></p>\n\n<p>A ଦ୍ଵାରା କରାଯାଇଥିବା ନିବେଶ = 92,500 ଟଙ୍କା</p>\n\n<p>B <span style=\"color: rgb(33, 37, 41);\">ଦ୍ଵାରା କରାଯାଇଥିବା ନିବେଶ</span> = 1,12,500 ଟଙ୍କା</p>\n\n<p>B ର ଲାଭ ଅଂଶ  = 9,000 ଟଙ୍କା</p>\n\n<p><strong>ବ୍ୟବହୃତ ଅବଧାରଣା:</strong></p>\n\n<p>ଯଦି ନିବେଶ ର ଅବଧି  A ଏବଂ  B ପାଇଁ ସମାନ ଅଟେ, ତେବେ A ଏବଂ  B ଦ୍ଵାରା ଅର୍ଜିତ ଲାଭ ର ଅନୁପାତ ନିବେଶ ର ଅନୁପାତ ସହିତ ସମାନ ଅଟେ ।  </p>\n\n<p><strong>ଗଣନା:</strong></p>\n\n<p>ଲାଭ ର ଅନୁପାତ  = 92,500 : 1,12,500</p>\n\n<p>⇒ 37 : 45</p>\n\n<p>ମନେକର ମୋଟ ଲାଭ  y ଅଟେ ।</p>\n\n<p>ଲାଭ ରେ  B ର ଅଂଶ  = {45/(45 + 37)} × y</p>\n\n<p>⇒ (45/82) × y = 9,000</p>\n\n<p>⇒ y = 7,38,000/45</p>\n\n<p>⇒ y = 16,400</p>\n\n<p><strong>∴  ଉଭୟ ଦ୍ଵାରା ଅର୍ଜିତ ମୋଟ ଲାଭ  16,400 ଟଙ୍କା ଅଟେ ।</strong></p>\n", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p><b>ਦਿੱਤਾ ਗਿਆ ਹੈ:</b></p>\n\n<p>A ਦਾ ਨਿਵੇਸ਼ = 92,500 ਰੁਪਏ</p>\n\n<p>B ਦਾ ਨਿਵੇਸ਼ = 1,12,500 ਰੁਪਏ</p>\n\n<p>ਮੁਨਾਫੇ ਵਿੱਚ B ਦਾ ਹਿੱਸਾ = 9,000 ਰੁਪਏ</p>\n\n<p><b>ਵਰਤਿਆ ਗਿਆ ਸੰਕਲਪ:</b></p>\n\n<p>ਜੇ A ਅਤੇ B ਲਈ ਨਿਵੇਸ਼ ਦਾ ਸਮਾਂ ਬਰਾਬਰ ਹੈ, ਤਾਂ A ਅਤੇ B ਦੁਆਰਾ ਕਮਾਏ ਗਏ ਲਾਭ ਦਾ ਅਨੁਪਾਤ ਕੀਤੇ ਗਏ ਨਿਵੇਸ਼ ਦੇ ਅਨੁਪਾਤ ਦੇ ਬਰਾਬਰ ਹੈ।</p>\n\n<p><b>ਗਣਨਾਵਾਂ:</b></p>\n\n<p>ਲਾਭ ਦਾ ਅਨੁਪਾਤ = 92,500 : 1,12,500</p>\n\n<p>⇒ 37 : 45</p>\n\n<p>ਮੰਨ ਲਓ ਕੁੱਲ ਲਾਭ y ਹੈ।</p>\n\n<p>ਲਾਭ ਵਿੱਚ B ਦਾ ਹਿੱਸਾ = {45/(45 + 37)} x y</p>\n\n<p>⇒ (45/82) x y = 9,000</p>\n\n<p>⇒ y = 7,38,000/45</p>\n\n<p>⇒ y = 16,400</p>\n\n<p><b>∴ ਉਹਨਾਂ ਦੁਆਰਾ ਇਕੱਠੇ ਕਮਾਇਆ ਗਿਆ ਕੁੱਲ ਲਾਭ 16,400 ਰੁਪਏ ਹੈ।</b></p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Partnership"], "concept": "Partnership", "confidence": "high"}, {"qid": "5fe9b0f52bbb3ccef122ef72", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Three partners shared the profit in a business in the ratio 8 : 7 : 5. They invested their capitals for 7 months, 8 months and 14 months, respectively. What was the ratio of their capitals?", "options": [{"prompt": "1", "value": "20 : 64 : 49"}, {"prompt": "2", "value": "64 : 49 : 20"}, {"prompt": "3", "value": "20 : 49 : 64"}, {"prompt": "4", "value": "49 : 64 : 20"}], "range": {"start": "", "end": ""}}, "hn": {"value": "तीन भागीदारों ने 8: 7: 5. के अनुपात में एक व्यवसाय में लाभ साझा किया, उन्होंने क्रमशः 7 महीने, 8 महीने और 14 महीने के लिए अपनी मूलधन का निवेश किया। उनकी मूलधन का अनुपात क्या था?", "options": [{"prompt": "1", "value": "20 : 64 : 49"}, {"prompt": "2", "value": "64 : 49 : 20"}, {"prompt": "3", "value": "20 : 49 : 64"}, {"prompt": "4", "value": "49 : 64 : 20"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>Profit ratio of three partners = 8 : 7 : 5</p>\n\n<p>Period of investment of 1<sup>st</sup> partner = 7 months</p>\n\n<p>Period of investment of 2<sup>nd</sup> partner = 8 months</p>\n\n<p>Period of investment of 3<sup>rd</sup> partner = 14 months</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>Person&rsquo;s Profit = Investment &times; time period</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Let the investment and time period be 7x : 8y : 14z</p>\n\n<p>7x/8y = 8/7</p>\n\n<p>&rArr; 49x = 64y</p>\n\n<p>&rArr; y = 49x/64</p>\n\n<p>7x/14z = 8/5</p>\n\n<p>&rArr; 35x = 112z</p>\n\n<p>&rArr; z = 35x/112</p>\n\n<p>&rArr; z = 5x/16</p>\n\n<p>x : y : z = x : 49x/64 : 5x/16</p>\n\n<p>&rArr; Multiply by 64</p>\n\n<p>x : y : z = 64 : 49 : 20</p>\n\n<p><strong>&there4;</strong><strong> The investment ratio is 64 : 49 : 20</strong></p>\n\n<p><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Shortcut Trick</u></span></strong></span>&nbsp;</strong>We know that,&nbsp;</p>\n\n<p>&rArr; Profit = Invested Capital&nbsp;&times; Invested Time&nbsp;</p>\n\n<p>Let the invested capital of all 3 be a, b, and c respectively,&nbsp;</p>\n\n<p>&rArr;&nbsp;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f7e870443db50ef72e40ede2dc8a5dc6cd385fb31151d36a0d3b937dbad5a99e.png\" style=\"height: 98px; width: 190px;\" /></p>\n\n<p>Now we get,</p>\n\n<p>&rArr; a&nbsp;&times; 7 = 8</p>\n\n<p>&rArr; a = 8/7</p>\n\n<p>similarly, we get, b = 7/8 &amp; c = 5/14</p>\n\n<p>Now we have a = 8/7, b = 7/8,&nbsp; and c = 5/14</p>\n\n<p>Multiplying by 56, we get,&nbsp;</p>\n\n<p>&rArr; 8/7(56), 7/8(56), and 5/14(56)</p>\n\n<p>&rArr; 64, 49, and 20</p>\n\n<p><span style=\"font-weight: 700;\">&there4;</span><span style=\"font-weight: 700;\">&nbsp;The investment ratio is 64 : 49 : 20.</span></p>", "hn": "\n<p style=\"\"><span style=\"font-weight: 700;\">दिया गया है&nbsp;:</span></p>\n\n<p style=\"\">तीन भागीदारों का लाभ अनुपात = 8 : 7 : 5</p>\n\n<p style=\"\">पहले&nbsp;<span style=\"\">भागीदार&nbsp;के निवेश की अवधि</span> = 7 महीने</p>\n\n<p style=\"\">दूसरे <span style=\"\">भागीदार</span><span style=\"\">&nbsp;के निवेश की अवधि</span> = 8 महीने</p>\n\n<p style=\"\">तीसरे&nbsp;<span style=\"\">भागीदार</span><span style=\"\">&nbsp;</span>के निवेश की अवधि = 14 महीने</p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">उपयोग की गई अवधारणा:</span></p>\n\n<p style=\"\">व्यक्ति का लाभ = निवेश &times; समय अवधि</p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">गणना:</span></p>\n\n<p style=\"\">माना ", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Partnership"], "concept": "Partnership", "confidence": "high"}, {"qid": "5fed802c46ebb8af598adf5f", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "3 friends A, B and C are working in a company. The salary of A is Rs. 45000 per month. C&#39;s monthly salary is 3/5 of B&#39;s monthly salary. B&#39;s monthly salary is double of A&#39;s monthly salary. What is the total salary of A, B and C per month ?", "options": [{"prompt": "1", "value": "Rs. 1,80,000"}, {"prompt": "2", "value": "Rs. 1,90,000"}, {"prompt": "3", "value": "Rs. 1,89,000"}, {"prompt": "4", "value": "Rs. 1,79,000"}], "range": {"start": "", "end": ""}}, "hn": {"value": "3 दोस्त A, B और C एक कंपनी में काम कर रहे हैं। A का वेतन 45000 रुपये प्रति माह है। C का मासिक वेतन B के मासिक वेतन का 3/5 है। B का मासिक वेतन A के मासिक वेतन से दोगुना है। A, B और C का प्रति माह कुल वेतन कितना है?", "options": [{"prompt": "1", "value": "1,80,000 रुपये"}, {"prompt": "2", "value": "1,90,000 रुपये"}, {"prompt": "3", "value": "1,89,000 रुपये"}, {"prompt": "4", "value": "1,79,000 रुपये"}], "range": {"start": "", "end": ""}}, "bn": {"value": "3 বন্ধু A, B এবং C একটি কোম্পানিতে কাজ করে। A এর বেতন প্রতি মাসে 45000 টাকা। C এর মাসিক বেতন B এর মাসিক বেতনের 3/5। B এর মাসিক বেতন A এর মাসিক বেতনের দ্বিগুণ। A, B এবং C এর প্রতি মাসে মোট বেতন কত?", "options": [{"prompt": "1", "value": "1,80,000 টাকা"}, {"prompt": "2", "value": "1,90,000 টাকা"}, {"prompt": "3", "value": "1,89,000 টাকা"}, {"prompt": "4", "value": "1,79,000 টাকা"}], "range": {"start": "", "end": ""}}, "ta": {"value": "A, B மற்றும் C ஆகிய 3 நண்பர்கள் ஒரு நிறுவனத்தில் பணிபுரிகின்றனர். A இன் சம்பளம் மாதம்  ரூ.45000. C இன் மாதச் சம்பளம் B இன் மாதச் சம்பளத்தில் 3/5 ஆகும். B இன் மாதச் சம்பளம் A இன் மாதச் சம்பளத்தின் இருமடங்காகும். A, B மற்றும் C இன் மொத்த மாத சம்பளம் எவ்வளவு?", "options": [{"prompt": "1", "value": "ரூ. 1,80,000"}, {"prompt": "2", "value": "ரூ. 1,90,000"}, {"prompt": "3", "value": "ரூ. 1,89,000"}, {"prompt": "4", "value": "ரூ. 1,79,000"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>&rArr; A&#39;s salary = Rs.45000</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>&rArr; B&#39;s salary = 45000 &times; 2 = Rs.90000</p>\n\n<p>&rArr; C&#39;s salary = 90000 &times; 3/5 = Rs.54000</p>\n\n<p><strong>&there4; Total salary of A, B and C = 90000 + 45000 + 54000 = Rs.1,89,000</strong></p>\n", "hn": "<p><strong>दिया गया है:</strong></p>\n\n<p>&rArr; A का वेतन = 45000 रुपये</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>&rArr; B का वेतन = 45000 &times; 2 = 90000&nbsp;रुपये</p>\n\n<p>&rArr; C का वेतन = 90000 &times; 3/5 = 54000&nbsp;रुपये</p>\n\n<p><strong>&there4; A, B और C का कुल वेतन = 90000 + 45000 + 54000 = 1,89,000 रुपये​</strong></p>\n", "te": "", "mr": "", "bn": "<p><strong>প্রদত্ত:</strong></p>\n\n<p>⇒ A এর বেতন = 45000 টাকা</p>\n\n<p><strong>গণনা:</strong></p>\n\n<p>⇒ B এর বেতন = 45000 <span style=\"color: rgb(33, 37, 41);\">× </span>2 = 90000 টাকা</p>\n\n<p>⇒ C এর বেতন = 90000 × 3/5 = 54000 টাকা</p>\n\n<p><strong>∴ A, B এবং C এর মোট বেতন = 90000 + 45000 + 54000 = 1,89,000 টাকা</strong></p>\n", "ml": "", "gu": "", "kn": "", "ta": "<p><strong>கொடுக்கப்பட்டது:</strong></p>\n\n<p>⇒ A இன் சம்பளம் = ரூ.45000</p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p>⇒ B இன் சம்பளம் = 45000 × 2 = ரூ.90000</p>\n\n<p>⇒ C இன் சம்பளம் = 90000 × 3/5 = ரூ.54000</p>\n\n<p><strong>∴ A, B மற்றும் C இன் மொத்த சம்பளம் = 90000 + 45000 + 54000 = ரூ.1,89,000</strong></p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "5fe1d3cc2ad95b28ac8af932", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "A, B and C started a business investing amounts of Rs. 13,750, Rs. 16,250 and Rs. 18,750 respectively. lf B&#39;s share in the profit earned by them is Rs. 5,200. what is the difference in the profit (in Rs.) earned by A and C ?", "options": [{"prompt": "1", "value": "1,200"}, {"prompt": "2", "value": "1,600"}, {"prompt": "3", "value": "1,800"}, {"prompt": "4", "value": "1,500"}], "range": {"start": "", "end": ""}}, "hn": {"value": "A, B और C ने क्रमशः 13,750 रुपये, 16,250 रुपये और 18,750 रुपये का निवेश कर एक व्यापार शुरू किया। यदि उनके द्वारा अर्जित लाभ में B का हिस्सा 5,200 रुपये है। A और C द्वारा अर्जित लाभ (<span style=\"\">रुपये</span> में) में कितना अंतर है?", "options": [{"prompt": "1", "value": "1,200"}, {"prompt": "2", "value": "1,600"}, {"prompt": "3", "value": "1,800"}, {"prompt": "4", "value": "1,500"}], "range": {"start": "", "end": ""}}, "mr": {"value": "A, B आणि C यांनी अनुक्रमे 13,750 रुपये, 16,250 रुपये आणि 18,750 रुपये गुंतवून एक व्यवसाय सुरू केला. त्यांना मिळालेल्या नफ्यातील B चा वाटा 5,200 रुपये आहे. तर A आणि C ला मिळालेल्या नफ्यातील फरक (रुपयांमध्ये) काय आहे?", "options": [{"prompt": "1", "value": "1,200"}, {"prompt": "2", "value": "1,600"}, {"prompt": "3", "value": "1,800"}, {"prompt": "4", "value": "1,500"}], "range": {"start": "", "end": ""}}, "pa": {"value": "A, B ਅਤੇ C ਨੇ ਕ੍ਰਮਵਾਰ 13,750 ਰੁਪਏ, 16,250 ਰੁਪਏ ਅਤੇ 18,750 ਰੁਪਏ ਦੀ ਰਕਮ ਦਾ ਨਿਵੇਸ਼ ਕਰਕੇ ਇੱਕ ਕਾਰੋਬਾਰ ਸ਼ੁਰੂ ਕੀਤਾ। ਜੇ ਉਹਨਾਂ ਦੁਆਰਾ ਕਮਾਏ ਗਏ ਮੁਨਾਫੇ ਵਿੱਚ B ਦਾ ਹਿੱਸਾ 5,200 ਰੁਪਏ ਹੈ, ਤਾਂ A ਅਤੇ C ਦੁਆਰਾ ਕਮਾਏ ਗਏ ਮੁਨਾਫੇ ਵਿੱਚ ਕੀ ਅੰਤਰ (ਰੁਪਏ ਵਿੱਚ) ਹੈ?", "options": [{"prompt": "1", "value": "1,200"}, {"prompt": "2", "value": "1,600"}, {"prompt": "3", "value": "1,800"}, {"prompt": "4", "value": "1,500"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>A, B and C started a business investing amounts of Rs. 13,750, Rs. 16,250 and Rs. 18,750 respectively.</p>\n\n<p><strong>Concept Used:</strong></p>\n\n<p>In the partnership business profit is distributed in the ratio of their Investment.</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Ratio of investment of A, B and C is 13750 : 16250 : 18750</p>\n\n<p>&rArr; 11 : 13 : 15</p>\n\n<p>B&#39;s share is 13 units&nbsp;&rarr; 5200</p>\n\n<p>&rArr; 1 unit&nbsp;&rarr; 400</p>\n\n<p>Difference in the profit earned by A and C is (15 - 11) = 4 unit</p>\n\n<p>1 unit&nbsp;&rarr; Rs. 400</p>\n\n<p>&rArr; 4 unit&nbsp;&rarr; Rs. 400&nbsp;&times; 4 = Rs. 1600</p>\n\n<p><strong>&there4; The difference in the profit&nbsp;earned by A and C is Rs. 1600.</strong></p>\n", "hn": "\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया गया है:</font></font></strong></p>\n\n<p>A, B और C ने क्रमशः 13,750 रुपये, 16,250 रुपये और 18,750 रुपये की राशि निवेश कर एक व्यवसाय शुरू किया।</p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">प्रयुक्त अवधारणा:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">साझेदारी में व्यापार लाभ उनके निवेश के अनुपात में वितरित किया जाता है।</font></font></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></strong></p>\n\n<p>A, B और C<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> के निवेश का अनुपात 13750 : 16250 : 18750</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; 11: 13: 15</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">B का भाग 13 इकाई है &rarr; 5200</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; 1 इकाई &rarr; 400</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">A और C द्वारा अर्जित लाभ में अंतर (15 - 11) = 4 इकाई</font></font></p>\n\n<p>1 इकाई &rarr; 400&nbsp;रुपये</p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; 4 इकाई &rarr; </font></font>400&nbsp;रुपये<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> &times; 4 =&nbsp;</font><font style=\"vertical-align: inherit;\">1600 रुपये</font></font></p>\n\n<p><span style=\"font-weight: 700;\">&there4;&nbsp;</span><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> </font></font></strong><strong>A और C<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> द्वारा अर्जित लाभ में अंतर&nbsp;</font></font>1600 रुपये​ है<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">।</font></font></strong></p>\n\n3e:T77a,\n<p><font face=\"Lohit Devanagari\"><span lang=\"hi-IN\"><strong><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal;\"><font color=\"#333333\"><font face=\"Helvetica Neue, Helvetica, Arial, sans-serif\"><font style=\"\">दिलेल्या प्रमाणे</font></font></font></span></strong></span></font><strong><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal;\"><font color=\"#333333\"><font face=\"Helvetica Neue, Helvetica, Arial, sans-serif\"><font style=\"\">:</font></font></font></span><", "te": "", "mr": "\n<p><font face=\"Lohit Devanagari\"><span lang=\"hi-IN\"><strong><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal;\"><font color=\"#333333\"><font face=\"Helvetica Neue, Helvetica, Arial, sans-serif\"><font style=\"\">दिलेल्या प्रमाणे</font></font></font></span></strong></span></font><strong><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal;\"><font color=\"#333333\"><font face=\"Helvetica Neue, Helvetica, Arial, sans-serif\"><font style=\"\">:</font></font></font></span></strong></p>\n\n<p>A, B आणि C यांनी रु.13,750, रु.16,250 आणि रु. 18,750 अनुक्रमे गुंतवले.</p>\n\n<p><strong>वापरलेली संकल्पना:</strong></p>\n\n<p>भागीदारीमध्ये व्यवसाय नफा त्यांच्या गुंतवणूकीच्या प्रमाणात वितरित केला जातो.</p>\n\n<p><font face=\"Lohit Devanagari\"><span lang=\"hi-IN\"><strong><font color=\"#333333\"><font face=\"Helvetica Neue, Helvetica, Arial, sans-serif\"><font style=\"\"><b>आकडेमोड</b></font></font></font>:</strong></span></font></p>\n\n<p>A, B आणि C यांच्या गुंतवणूकीचे प्रमाण 13750: 16250: 18750 आहे</p>\n\n<p>⇒ 11: 13: 15</p>\n\n<p>B चा वाटा 13 युनिट्स → 5200 आहे</p>\n\n<p>⇒ 1 युनिट → 400</p>\n\n<p>A आणि C द्वारे मिळवलेल्या नफ्यात फरक (15 - 11) = 4 युनिट</p>\n\n<p>1 युनिट → रु. 400</p>\n\n<p>⇒ 4 युनिट → रु. 400. 4 = रु. 1600</p>\n\n<p><strong>A आणि C द्वारे मिळवलेल्या नफ्यातील फरक रू. 1600</strong></p>\n\n3f:T404,<p><strong>Given:</strong></p>\n\n<p>Investment of A&nbsp; =&nbsp;Rs. 92,500</p>\n\n<p>Investment of B =&nbsp;Rs. 1,12,500</p>\n\n<p>B&#39;s share in profit = Rs. 9,000</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>If time of investment is equal for A and B&nbsp;then, ratio of profit earned by A and B is same as the ratio of investment done.</p>\n\n<p><strong>Calculations:</strong></p>\n\n<p", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p><strong>ਦਿੱਤਾ ਗਿਆ </strong><span style=\"font-weight: bolder;\">ਹੈ</span><strong>:</strong></p>\n\n<p>A, B ਅਤੇ C ਨੇ ਕ੍ਰਮਵਾਰ 13,750 ਰੁਪਏ, 16,250 ਰੁਪਏ ਅਤੇ 18,750 ਰੁਪਏ ਦੀ ਰਕਮ ਦਾ ਨਿਵੇਸ਼ ਕਰਕੇ ਇੱਕ ਕਾਰੋਬਾਰ ਸ਼ੁਰੂ ਕੀਤਾ।</p>\n\n<p><strong>ਵਰਤਿਆ ਗਿਆ ਸੰਕਲਪ:</strong></p>\n\n<p>ਭਾਈਵਾਲੀ ਦੇ ਕਾਰੋਬਾਰ ਵਿੱਚ ਲਾਭ ਉਹਨਾਂ ਦੇ ਨਿਵੇਸ਼ ਦੇ ਅਨੁਪਾਤ ਵਿੱਚ ਵੰਡਿਆ ਜਾਂਦਾ ਹੈ।</p>\n\n<p><strong>ਗਣਨਾ:</strong></p>\n\n<p>A, B ਅਤੇ C ਦੇ ਨਿਵੇਸ਼ ਦਾ ਅਨੁਪਾਤ 13750 : 16250 : 18750 ਹੈ</p>\n\n<p>⇒ 11 : 13 : 15</p>\n\n<p>B ਦਾ ਹਿੱਸਾ 13 ਯੂਨਿਟ ਹੈ → 5200</p>\n\n<p>⇒ 1 ਯੂਨਿਟ → 400</p>\n\n<p>A ਅਤੇ C ਦੁਆਰਾ ਕਮਾਏ ਗਏ ਮੁਨਾਫੇ ਵਿੱਚ ਅੰਤਰ (15 - 11) = 4 ਯੂਨਿਟ</p>\n\n<p>1 ਯੂਨਿਟ → 400 ਰੁਪਏ</p>\n\n<p>⇒ 4 ਯੂਨਿਟ → 400 x 4 = 1600 ਰੁਪਏ</p>\n\n<p><strong>∴ A ਅਤੇ C ਦੁਆਰਾ ਕਮਾਏ ਗਏ ਮੁਨਾਫੇ ਵਿੱਚ ਅੰਤਰ 1600 ਰੁਪਏ ਹੈ।</strong></p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Partnership"], "concept": "Partnership", "confidence": "high"}, {"qid": "5c20b54a94a1ec739aa8bfa5", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "A starts a taxi service by investing Rs. 25 lakhs. After 3 months, B joined the business by investing Rs. 40 lakhs then 4 months after B joined, C joined them by investing Rs. 50 lakhs. One year after A started the business, they all together make Rs. 2,73,000 in profit. What is C&#39;s share of the profit (in Rs)?", "options": [{"prompt": "1", "value": "100000"}, {"prompt": "2", "value": "1,25,000"}, {"prompt": "3", "value": "75,000"}, {"prompt": "4", "value": "1,50,000"}], "range": {"start": "", "end": ""}}, "hn": {"value": "A, 25 लाख रूपये का निवेश कर एक टैक्सी सेवा शुरू करता है। 3 महीने बाद, B, 40 लाख रूपये का निवेश कर व्यापार से जुड़ता है फिर B के जुड़ने के 4 महीने बाद, C भी 50 लाख रूपये का निवेश कर उनके साथ जुड़ता है। A के व्यापार शुरू करने के एक वर्ष बाद, उन सभी ने मिलकर रु. 2,73,000 का&nbsp;<span style=\"font-family: var(--bs-body-font-family); font-size: var(--bs-body-font-size); font-weight: var(--bs-body-font-weight); text-align: var(--bs-body-text-align);\">लाभ कमाया</span>. लाभ में C का हिस्सा (रूपये में) क्या होगा?", "options": [{"prompt": "1", "value": "100000"}, {"prompt": "2", "value": "1,25,000"}, {"prompt": "3", "value": "75,000"}, {"prompt": "4", "value": "1,50,000"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>25 लाख रुपये गुंतवून A एक टॅक्सी सेवा सुरू करतो. 3 महिन्यांनंतर, B, 40 लाख रुपये गुंतवून व्यवसायात सामील होतो. नंतर B सामील झाल्याच्या 4 महिन्यांनंतर, C देखील 50 लाख रुपये गुंतवून त्यांच्यात सामील होतो. A ने व्यवसाय सुरू केल्यापासून, एक वर्षानंतर ते 2,73,000 रुपये नफा बनवतात. तर नफ्यातील C चा वाटा (रुपयांमध्ये) किती आहे?</p>\n", "options": [{"prompt": "1", "value": "100000"}, {"prompt": "2", "value": "1,25,000"}, {"prompt": "3", "value": "75,000"}, {"prompt": "4", "value": "1,50,000"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Profit Ratio = (Capital A × Time A) : (Capital B × Time B) : (Capital C × Time C)</p>\n<p>Ratio = (25 × 12) : (40 × 9) : (50 × 5) = 300 : 360 : 250 = 30 : 36 : 25</p>\n<p>Sum of ratios = 30 + 36 + 25 = 91 units</p>\n<p>91 units = ₹2,73,000 → 1 unit = ₹3,000</p>\n<p>C profit = 25 units × 3,000 = ₹75,000</p>\n<p><strong>∴ The correct answer is ₹75,000.</strong></p>\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Investment of A = ₹25 lakhs, B = ₹40 lakhs, C = ₹50 lakhs</p>\n<p>Time period: A = 12 months, B = 12 − 3 = 9 months, C = 12 − (3 + 4) = 5 months</p>\n<p>Total Profit = ₹2,73,000</p>\n<p><strong>Formula Used:</strong></p>\n<p>Profit Ratio = (Investment<sub>1</sub> × Time<sub>1</sub>) : (Investment<sub>2</sub> × Time<sub>2</sub>) : (Investment<sub>3</sub> × Time<sub>3</sub>)</p>\n<img src=\"https://cdn.repeatermock.com/tb/a0598225c43b3181a6495da6038ed37c1a8b31d2d1ea54f1cfea10c66b88dfc4.png\" style=\"max-width: 450px;\" />\n<p><strong>Calculations:</strong></p>\n<p>⇒ Profit Ratio A : B : C = (25 × 12) : (40 × 9) : (50 × 5)</p>\n<p>⇒ Profit Ratio A : B : C = 300 : 360 : 250</p>\n<p>⇒ Simplified Ratio = 30 : 36 : 25</p>\n<p>⇒ Sum of ratio parts = 30 + 36 + 25 = 91</p>\n<p>⇒ C share of profit = (Ratio of C ÷ Sum of ratios) × Total Profit</p>\n<p>⇒ C share = (25 ÷ 91) × 2,73,000</p>\n<p>⇒ C share = 25 × 3,000</p>\n<p>⇒ C share = ₹75,000</p>\n<p><strong>∴ The correct answer is ₹75,000.</strong></p>\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Ratio of Profit</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">In any partnership, the profit is distributed in the ratio of the product of capital and the time period for which it is invested: P<sub>1</sub> : P<sub>2</sub> = C<sub>1</sub>T<sub>1</sub> : C<sub>2</sub>T<sub>2</sub>.</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Ratio of Capital and Time</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">If the profit ratio and time ratio are known, the capital ratio is C<sub>1</sub> : C<sub>2</sub> = (P<sub>1</sub>/T<sub>1</sub>) : (P<sub>2</sub>/T<sub>2</sub>). Similarly, for time, T<sub>1</sub> : T<sub>2</sub> = (P<sub>1</sub>/C<sub>1</sub>) : (P<sub>2</sub>/C<sub>2</sub>).</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Working vs Sleeping Partner</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">A working partner manages the business and may receive a salary or additional commission from the profit before the remaining profit is shared among all partners based on investment.</p>\n35:Tc04,\n<span sty", "hn": "<p>A ने 12 महीने के लिए 25 लाख निवेश किए, B ने 9 महीने के लिए 40 लाख निवेश किए और C ने 5 महीने के लिए 50 लाख निवेश किए।</p>\n\n<p>&rArr; निवेश का अनुपात = 25 &times; 12 ∶ 40 &times; 9 ∶ 50 &times; 5 = 30 ∶ 36 ∶ 25</p>\n\n<p>इसलिए, लाभ इस अनुपात में बाँटा जाएगा = 30 ∶ 36 ∶ 25</p>\n\n<p>&nbsp;कुल लाभ = ₹ 273000</p>\n\n<p>&there4; लाभ में C का हिस्सा = 25/91 &times; 273000 = ₹ 75000</p>\n", "te": "", "mr": "<p>A, 12 महिन्यांसाठी 25 लाख, B ने 9 महिन्यांसाठी 40 लाख आणि C ने 5 महिन्यांसाठी 50 लाखांची गुंतवणूक केली</p>\n\n<p>⇒ गुंतवणुकीचे गुणोत्तर = 25 x 12 ∶ 40 x 9 ∶ 50 x 5 = 30 ∶ 36 ∶ 25</p>\n\n<p>तर, नफा = 30 ∶ 36 ∶ 25 या प्रमाणात सामायिक केला जाईल</p>\n\n<p>एकूण नफा = रु. 273000</p>\n\n<p>∴ नफ्यात C चा वाटा = 25/91 x 273000 = रु. 75000</p>\n", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Partnership"], "concept": "Partnership", "confidence": "high"}, {"qid": "5c20b58906e94d2a1191aa7a", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>A, B and C invest in a business in the ratio 4 ∶ 5 ∶ 7. C is a sleeping partner, so his share of profits will be half of what it would have been if he were a working partner. If they make Rs 36,000 profit of which 25% is reinvested in the business, how much does B get (in Rs)?</p>\n", "options": [{"prompt": "1", "value": "7560"}, {"prompt": "2", "value": "10800"}, {"prompt": "3", "value": "8640"}, {"prompt": "4", "value": "9200"}], "range": {"start": "", "end": ""}}, "hn": {"value": "A, B और C, 4 : 5 : 7 के अनुपात में एक व्यापार में निवेश करते हैं। C एक निष्क्रिय साझेदार है, अतः लाभ में उसका हिस्सा सक्रिय साझेदार से आधा होगा। यदि उन्हें 36,000 रूपये का लाभ होता है जिसका 25% व्यापार में पुनर्निवेश किया, B को कितना मिलेगा (₹ में)?", "options": [{"prompt": "1", "value": "7560"}, {"prompt": "2", "value": "10800"}, {"prompt": "3", "value": "8640"}, {"prompt": "4", "value": "9200"}], "range": {"start": "", "end": ""}}, "te": {"value": "<div id=\"translation\">\n<div>A, B మరియు C ముగ్గురు వ్యక్తులు 4 ∶ 5 ∶ 7 నిష్పత్తిలో ఒక వ్యాపారంలో పెట్టుబడి పెడతారు. C ఒక క్రియారహిత భాగస్వామి. కాబట్టి అతని వాటా పనిచేసే భాగస్వామి వాటాలో సగం ఉంటుంది. మొత్తం రూ .36,000 లాభం వచ్చింది. అందులో 25% వ్యాపారంలో తిరిగి పెట్టుబడి పెడితే, Bకి ఎంత వాటా వస్తుంది (రూ.)?</div>\n</div>\n", "options": [{"prompt": "1", "value": "7560"}, {"prompt": "2", "value": "10800"}, {"prompt": "3", "value": "8640"}, {"prompt": "4", "value": "9200"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>A, B आणि C हे 4 ∶ 5 ∶ 7 या गुणोत्तरात एका व्यवसायात गुंतवणूक करतात. C हा निष्क्रिय भागीदार आहे, त्यामुळे त्याच्या नफ्यातील वाटा हा तो कार्यरत भागीदार असला असता तर त्याच्या निम्मा असेल. जर त्यांना 36,000 रुपये नफा झाला, ज्यातील 25% भाग पुन्हा व्यवसायात गुंतवला गेला, तर B चा वाटा (रुपयांमध्ये) किती?</p>\n", "options": [{"prompt": "1", "value": "7560"}, {"prompt": "2", "value": "10800"}, {"prompt": "3", "value": "8640"}, {"prompt": "4", "value": "9200"}], "range": {"start": "", "end": ""}}, "bn": {"value": "A, B এবং C একটি ব্যবসাতে 4 ∶ 5 ∶ 7 অনুপাতে বিনিয়োগ করলো। C হলো নিষ্ক্রিয় অংশীদার (sleeping partner), সুতরাং তার লভ্যাংশটি সে যদি সক্রিয় অংশীদার হত, তাহলে যা হত, তার অর্ধেক হবে। তারা যদি 36,000 টাকার মুনাফা লাভ করে যার  25% ব্যবসায় পুনরায় বিনিয়োগ করা হয়, তাহলে B কত টাকা পাবেন (টাকায়)?<br />\n", "options": [{"prompt": "1", "value": "7560"}, {"prompt": "2", "value": "10800"}, {"prompt": "3", "value": "8640"}, {"prompt": "4", "value": "9200"}], "range": {"start": "", "end": ""}}, "or": {"value": "<p>A, B ଏବଂ C 4 ∶ 5 ∶ 7 ଅନୁପାତରେ ଏକ ବ୍ୟବସାୟରେ ବିନିଯୋଗ କରେ | C ହେଉଛି ଏକ ଶୋଇଥିବା ସାଥୀ, ତେଣୁ ଯଦି ସେ କାର୍ଯ୍ୟରତ ଅଂଶୀଦାର ହୋଇଥାନ୍ତେ ତା’ହେଲେ ଲାଭର ଅଂଶ ଅଧା ହେବ | ଯଦି ସେମାନେ 36,000 ଟଙ୍କା ଲାଭ କରନ୍ତି, ଯେଉଁଥିରୁ 25% ବ୍ୟବସାୟରେ ପୁନଃ ନିବେଶ କରାଯାଏ, B କେତେ (ଟଙ୍କା) ପାଇବ  ନିର୍ଦ୍ଧାରଣ କର?</p>\n", "options": [{"prompt": "1", "value": "7560"}, {"prompt": "2", "value": "10800"}, {"prompt": "3", "value": "8640"}, {"prompt": "4", "value": "9200"}], "range": {"start": "", "end": ""}}, "pa": {"value": "<p>A, B ਅਤੇ C ਇੱਕ ਕਾਰੋਬਾਰ ਵਿੱਚ 4 ∶ 5 ∶ 7 ਦੇ ਅਨੁਪਾਤ ਵਿੱਚ ਨਿਵੇਸ਼ ਕਰਦੇ ਹਨ। C ਇੱਕ ਸਲੀਪਿੰਗ ਪਾਰਟਨਰ ਹੈ, ਇਸ ਲਈ ਉਸਦੇ ਲਾਭ ਦਾ ਹਿੱਸਾ ਉਸਦੇ ਅੱਧਾ ਹੋਵੇਗਾ ਜੇਕਰ ਉਹ ਇੱਕ ਕਾਰਜਕਾਰੀ ਪਾਰਟਨਰ ਹੁੰਦਾ। ਜੇ ਉਹ 36,000 ਰੁਪਏ ਦਾ ਲਾਭ ਕਮਾਉਂਦੇ ਹਨ ਜਿਸ ਵਿੱਚੋਂ 25% ਕਾਰੋਬਾਰ ਵਿੱਚ ਦੁਬਾਰਾ ਨਿਵੇਸ਼ ਕੀਤਾ ਜਾਂਦਾ ਹੈ, ਤਾਂ B ਨੂੰ ਕਿੰਨਾ ਮਿਲਦਾ ਹੈ (ਰੁਪਏ ਵਿੱਚ)?</p>\n", "options": [{"prompt": "1", "value": "7560"}, {"prompt": "2", "value": "10800"}, {"prompt": "3", "value": "8640"}, {"prompt": "4", "value": "9200"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Distributed Profit = 75% of 36,000 = ₹27,000.</p>\n<p>Working Profit Ratio (A : B : C) = 4 : 5 : 7.</p>\n<p>Actual Profit Ratio (C is sleeping) = 4 : 5 : (7 ÷ 2) = 8 : 10 : 7.</p>\n<p>B's share = [10 ÷ (8 + 10 + 7)] × 27,000 = (10 ÷ 25) × 27,000 = ₹10,800.</p>\n<p><strong>∴ The correct answer is ₹10800.</strong></p>\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Investment Ratio (A : B : C) = 4 : 5 : 7</p>\n<p>Total Profit = ₹36,000</p>\n<p>Reinvestment = 25%</p>\n<p>Condition: C's share is halved (sleeping partner).</p>\n<img src=\"https://cdn.repeatermock.com/tb/a68882971e6c2b43b9049e5a3ee6fb3a600e4fe98cd45f5096b8fd1c764187cc.png\" style=\"max-width: 450px;\" />\n<p><strong>Calculations:</strong></p>\n<p>⇒ Amount to be distributed = Total Profit − 25% of Total Profit</p>\n<p>⇒ Distributed Profit = 36,000 × (75/100) = ₹27,000</p>\n<p>⇒ Ratio of profits (A : B : C) = 4 : 5 : (7 ÷ 2)</p>\n<p>⇒ Multiplying by 2 to remove fractions = 8 : 10 : 7</p>\n<p>⇒ Sum of ratio parts = 8 + 10 + 7 = 25 units</p>\n<p>⇒ 25 units = ₹27,000</p>\n<p>⇒ 1 unit = 27,000 ÷ 25 = ₹1,080</p>\n<p>⇒ B's share = 10 units = 10 × 1,080 = ₹10,800</p>\n<p><strong>∴ The correct answer is ₹10800.</strong></p>\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Profit Sharing Rule</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">In any partnership, Profit Ratio = (Capital<sub>1</sub> × Time<sub>1</sub>) : (Capital<sub>2</sub> × Time<sub>2</sub>). If time is same, profit ratio is simply the capital ratio.</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Sleeping Partner</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">A partner who invests capital but does not participate in the management of the business. Often, working partners receive an extra salary or commission before the profit is split.</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Net Distributed Profit</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">Profit distributed among partners = Gross Profit − (Salaries + Reserves/Reinvestments + Taxes).</p>\n36:Tdbe,\n<span s", "hn": "<p>चूंकि C एक निष्क्रिय साझेदार है और लाभ में उसका हिस्सा सक्रिय साझेदार से आधा होगा।</p>\n\n<p>&rArr; लाभ इस अनुपात में बाँटा जाएगा = 4 ∶ 5 ∶ 7/2 = 8 : 10 : 7</p>\n\n<p>लाभ = 36000 और जब 25% पुनर्निवेश किया जाता है तब</p>\n\n<p>A, B और C क बीच बटने वाला लाभ = 36000 &times; 0.75 = ₹ 27000</p>\n\n<p>&there4; B का हिस्सा = 10/25 &times; 27000 = ₹ 10800</p>\n", "te": "<p>C ఒక క్రియారహిత భాగస్వామి. కాబట్టి అతని వాటా పనిచేసే భాగస్వామి వాటాలో సగం ఉంటుంది. </p>\n\n<p>⇒ లాభం పంచుకునే నిష్పత్తి = 4 ∶ 5 ∶ 7/2 = 8 : 10 : 7</p>\n\n<p>లాభం = 36000 మరియు, 25% తిరిగి పెట్టుబడి పెడతారు.</p>\n\n<p>లాభంలో A, B & C యొక్క వాటా = 36000 × 0.75 = రూ. 27000</p>\n\n<p>∴ B యొక్క వాటా = 10/25 × 27000 = రూ. 10800</p>\n", "mr": "<p>C हा स्लीपिंग पार्टनर असल्याने, त्याचा वाटा हा तो कार्यरत भागीदार असला असता तर त्याच्या निम्मा असेल.</p>\n\n<p>⇒ गुणोत्तर, ज्यामध्ये नफा सामायिक केला जाईल = 4 ∶ 5 ∶ 7/2 = 8 : 10 : 7</p>\n\n<p>नफा = 36000 आणि जेव्हा 25% पुन्हा व्यवसायात गुंतवले जातात,</p>\n\n<p>A, B आणि C दरम्यान नफ्याचा वाटा =<span style=\"color: rgb(33, 37, 41);\"> 36000 × 0.75 = 27000 रुपये</span></p>\n\n<p>∴ B चा वाटा = <span style=\"color: rgb(33, 37, 41);\">10/25 × 27000 = 10800 रुपये</span></p>\n", "bn": "<p>যেহেতু C হলো নিষ্ক্রিয় অংশীদার এবং তার লাভের অংশটি  সে যদি সক্রিয় অংশীদার হত, তাহলে যা হত, তার অর্ধেক হয়</p>\n\n<p>⇒ যেই অনুপাতে লভ্যাংশ ভাগ করা হবে = 4 ∶ 5 ∶ 7/2 = 8 : 10 : 7</p>\n\n<p>লাভ = 36000 এবং যদি 25% ব্যবসায় পুনরায় বিনিয়োগ করা হয়,তাহলে</p>\n\n<p> A, B এবং C এর মধ্যে লভ্যাংশ ভাগ হবে = 36000 × 0.75 = 27000 টাকা </p>\n\n<p>∴ B এর ভাগ হবে  = 10/25 × 27000 = 10800 টাকা। </p>\n", "ml": "", "gu": "", "kn": "", "ta": "", "or": "<p>ଯେହେତୁ C ଶୋଇଥିବା ସାଥୀ ଏବଂ ତାଙ୍କର ଲାଭର ଅଂଶ ଅଧା ହେବ ଯଦି ସେ ଜଣେ କାର୍ଯ୍ୟରତ ସାଥୀ ହୋଇଥାନ୍ତେ |</p>\n\n<p>⇒ଅନୁପାତ ଯେଉଁଥିରେ ଲାଭ ବାଣ୍ଟାଯିବ= 4 ∶ 5 ∶ 7/2 = 8 : 10 : 7</p>\n\n<p>ଲାଭ = 36000 ଏବଂ ଯେତେବେଳେ 25% ପୁନଃ ନିବେଶ ହୁଏ |</p>\n\n<p>A, B & C = 36000 × 0.75 = 27000  ଟଙ୍କା ମଧ୍ୟରେ ଅଂଶୀଦାର ହେବାକୁ ଥିବା ଲାଭ </p>\n\n<p>∴ B ର ଅଂଶ = 10/25 × 27000 = <span style=\"color: rgb(33, 37, 41);\">10800 </span><span style=\"color: rgb(37, 37, 37);\">ଟଙ୍କା</span> </p>\n", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>ਕਿਉਂਕਿ C ਸਲੀਪਿੰਗ ਪਾਰਟਨਰ ਹੈ ਅਤੇ ਉਸਦੇ ਲਾਭ ਦਾ ਹਿੱਸਾ ਉਸਦੇ ਅੱਧਾ ਹੋਵੇਗਾ ਜੇਕਰ ਉਹ ਇੱਕ ਕਾਰਜਕਾਰੀ ਪਾਰਟਨਰ ਹੁੰਦਾ।</p>\n\n<p>⇒ ਲਾਭ ਵੰਡਣ ਦਾ ਅਨੁਪਾਤ = 4 ∶ 5 ∶ 7/2 = 8 : 10 : 7</p>\n\n<p>ਲਾਭ = 36000 ਅਤੇ ਜਦੋਂ 25% ਦੁਬਾਰਾ ਨਿਵੇਸ਼ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਤਾਂ</p>\n\n<p>A, B ਅਤੇ C ਵਿੱਚ ਵੰਡਿਆ ਜਾਣ ਵਾਲਾ ਲਾਭ = 36000 x 0.75 = 27000 ਰੁਪਏ</p>\n\n<p>∴ B ਦਾ ਹਿੱਸਾ = 10/25 x 27000 = 10800 ਰੁਪਏ</p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Partnership"], "concept": "Partnership", "confidence": "high"}, {"qid": "5c287a95fdb8bb0d53c7a240", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>A and B started a business investing some amount in the ratio of 5 : 6. C joined them after 6 months with an amount equal to 2/3<sup>rd</sup> of B. What was their total proﬁt&nbsp;(in Rs) at the end of the year, if C got Rs. 21,600 as his share?</p>\n", "options": [{"prompt": "1", "value": "46800"}, {"prompt": "2", "value": "56160&amp;nbsp;"}, {"prompt": "3", "value": "70200&amp;nbsp;"}, {"prompt": "4", "value": "140400"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>A और B ने 5 : 6 के अनुपात में कुछ राशि का निवेश करके एक व्यवसाय शुरू किया। C, 6 महीने के बाद B द्वारा निवेशित राशि के 2/3 के बराबर निवेश करके उनके साथ व्यवसाय में शामिल हुआ। यदि C को अपने हिस्से के रूप में 21,600 रुपये मिलते हैं तो वर्ष के अंत में उनका लाभ (रुपये में) क्या था?</p>\n", "options": [{"prompt": "1", "value": "46800"}, {"prompt": "2", "value": "56160&amp;nbsp;"}, {"prompt": "3", "value": "70200&amp;nbsp;"}, {"prompt": "4", "value": "140400"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>A మరియు B లు 5: 6 నిష్పత్తిలో కొంత మొత్తాన్ని పెట్టుబడిగా పెట్టి ఒక వ్యాపారాన్ని ప్రారంభించారు. B ద్వారా పెట్టుబడి పెట్టిన మొత్తంలో 2/3కు సమానమైన పెట్టుబడి పెట్టడం ద్వారా C 6 నెలల తరువాత వ్యాపారంలో చేరారు. ఒకవేళ C తన <span style=\"\">భాగస్వామ్యంగా</span> రూ. 21,600 పొందినట్లయితే, సంవత్సరం చివరిలో అతడి లాభం (రూ.ల్లో) ఎంత?</p>\n", "options": [{"prompt": "1", "value": "46800"}, {"prompt": "2", "value": "56160"}, {"prompt": "3", "value": "70200"}, {"prompt": "4", "value": "140400"}], "range": {"start": "", "end": ""}}, "mr": {"value": "A आणि B यांनी 5 : 6 गुणोत्तरात काही रक्कम गुंतवून एक व्यवसाय सुरू केला. 6 महिन्यांनंतर, C हा  B च्या 2/3 भागाच्या बरोबरीने सामील झाला, जर C ला त्याचा वाटा म्हणून 21,600 रुपये मिळाले असतील तर वर्षाकाठी त्यांचा एकूण नफा (रुपयांमध्ये) किती होता?", "options": [{"prompt": "1", "value": "46800"}, {"prompt": "2", "value": "56160&nbsp;"}, {"prompt": "3", "value": "70200&nbsp;"}, {"prompt": "4", "value": "140400"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>A ও B 5 : 6 অনুপাতে অর্থ বিনিয়োগ করে একটি ব্যবসা শুরু করার 6 মাস পর C B-এর 2/3 অংশ অর্থ নিয়ে ব্যবসায় যোগ দেয়। বছর শেষে লভ্যাংশ হিসাবে C 21,600 টাকা পেলে তাদের মোট লাভ কত টাকা ছিল?</p>\n", "options": [{"prompt": "1", "value": "46800"}, {"prompt": "2", "value": "56160&nbsp;"}, {"prompt": "3", "value": "70200&nbsp;"}, {"prompt": "4", "value": "140400"}], "range": {"start": "", "end": ""}}, "pa": {"value": "<p>A ਅਤੇ B ਨੇ 5 : 6 ਦੇ ਅਨੁਪਾਤ ਵਿੱਚ ਕੁਝ ਰਕਮ ਦਾ ਨਿਵੇਸ਼ ਕਰਕੇ ਇੱਕ ਕਾਰੋਬਾਰ ਸ਼ੁਰੂ ਕੀਤਾ। C 6 ਮਹੀਨਿਆਂ ਬਾਅਦ B ਦੇ 2/3<sup>rd</sup> ਦੇ ਬਰਾਬਰ ਰਕਮ ਨਾਲ ਉਹਨਾਂ ਨਾਲ ਜੁੜ ਗਿਆ। ਸਾਲ ਦੇ ਅੰਤ ਵਿੱਚ ਉਹਨਾਂ ਦਾ ਕੁੱਲ ਲਾਭ (ਰੁਪਏ ਵਿੱਚ) ਕਿੰਨਾ ਸੀ, ਜੇਕਰ C ਨੂੰ ਉਸਦੇ ਹਿੱਸੇ ਵਜੋਂ 21,600 ਰੁਪਏ ਮਿਲੇ ਸਨ?</p>\n", "options": [{"prompt": "1", "value": "46800"}, {"prompt": "2", "value": "56160"}, {"prompt": "3", "value": "70200"}, {"prompt": "4", "value": "140400"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Profit Ratio A : B : C = (Investment × Time) for each partner.</p>\n<p>Investment Ratio → A : B : C = 5 : 6 : (2/3 × 6) = 5 : 6 : 4.</p>\n<p>Profit Ratio → (5 × 12 months) : (6 × 12 months) : (4 × 6 months) = 60 : 72 : 24 = 5 : 6 : 2.</p>\n<p>C profit = 2 units = ₹21,600 ⇒ 1 unit = ₹10,800.</p>\n<p>Total Profit = (5 + 6 + 2) = 13 units = 13 × 10,800 = ₹140,400.</p>\n<p><strong>∴ The correct answer is ₹140,400.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Investment ratio of A and B = 5 : 6</p>\n<p>C investment = 2/3<sup>rd</sup> of B investment</p>\n<p>Time period for A and B = 12 months (end of year)</p>\n<p>Time period for C = 6 months (joined after 6 months)</p>\n<p>C profit share = ₹21,600</p>\n\n<img src=\"https://cdn.repeatermock.com/tb/8ca3e10c1b42bf5b5ce6f82b47b70a60727942ad8f64d9b28e1b2f5061c7c835.png\" style=\"max-width: 450px;\" />\n\n<p><strong>Calculations:</strong></p>\n<p>Let the investments of A and B be 5x and 6x respectively.</p>\n<p>⇒ C investment = (2 ÷ 3) × 6x = 4x</p>\n<p>⇒ Profit share of A = 5x × 12 = 60x</p>\n<p>⇒ Profit share of B = 6x × 12 = 72x</p>\n<p>⇒ Profit share of C = 4x × 6 = 24x</p>\n<p>⇒ Ratio of Profit A : B : C = 60x : 72x : 24x</p>\n<p>⇒ Simplified Ratio = 5 : 6 : 2</p>\n<p>⇒ Share of C in profit = 2 ÷ (5 + 6 + 2) = 2/13</p>\n<p>⇒ 2/13 × Total Profit = 21,600</p>\n<p>⇒ Total Profit = (21,600 × 13) ÷ 2</p>\n<p>⇒ Total Profit = 10,800 × 13</p>\n<p>⇒ Total Profit = 140,400</p>\n<p><strong>∴ The correct answer is ₹140,400.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Basic Partnership Law</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">Profit is always distributed in the ratio of the product of Capital (Investment) and Time: P<sub>1</sub> : P<sub>2</sub> = (C<sub>1</sub> × T<sub>1</sub>) : (C<sub>2</sub> × T<sub>2</sub>).</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Total Profit Calculation</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">If the share of one partner is given as 's' out of 'n' total ratio parts, then Total Profit = (Given Share Value ÷ s) × n.</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Sleeping Partner Concept</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">A partner who only invests money but does not participate in management is a sleeping partner. Active partners may sometimes take a salary before the profit is divided.</p>\n37:T52e,&l", "hn": "<p>हम जानते हैं कि,</p>\n\n<p>हिस्सा &prop; समय &times; निवेश</p>\n\n<p>&rArr; C द्वारा निवेशित राशि = (2/3) &times; 6 = 4</p>\n\n<p>&rArr; समय = 6 महीने = 1/2 वर्ष</p>\n\n<p>&rArr; C का हिस्सा = k &times; 4 &times; 1/2</p>\n\n<p>&rArr; 2k = 21600</p>\n\n<p>&rArr; k = 10800</p>\n\n<p>&rArr; कुल लाभ = &Sigma;(समय &times; निवेश) &times; k = {(5 &times; 1) + (6 &times; 1) + (4 &times; 1/2)} &times; k</p>\n\n<p>&rArr; 10800 &times; 13 = 140400 रु.</p>\n", "te": "<p>అది మాకు తెలుసు,</p>\n\n<p>భాగస్వామ్యం ∝ సమయం × పెట్టుబడి</p>\n\n<p>⇒ C <span style=\"\">ద్వారా పెట్టుబడి పెట్టబడిన డబ్బు</span> = (2/3) × 6 = 4 </p>\n\n<p>⇒ సమయం = 6 నెలలు = 1/2 సంవత్సరం</p>\n\n<p>⇒ C యొక్క <span style=\"\">భాగస్వామ్యం</span> = k × 4 × 1/2 </p>\n\n<p>⇒ 2k = 21600</p>\n\n<p>⇒ k = 10800</p>\n\n<p>⇒ మొత్తం లాభం = Σ(సమయం × పెట్టుబడి) × k = {(5 × 1) + (6 × 1) + (4 × 1/2)} × k</p>\n\n<p>⇒ 10800 × 13 = రూ 140400</p>\n", "mr": "<p>आम्हाला माहित आहे की,</p>\n\n<p>सामायिक करा ∝ वेळ x गुंतवणूक</p>\n\n<p>⇒ C = (2/3) x 6 = 4 द्वारे गुंतवलेले पैसे</p>\n\n<p>⇒ वेळ = 6 महिने = 1/2 वर्ष</p>\n\n<p>⇒ C = kx 4 x 1/2 साठी शेअर करा</p>\n\n<p>⇒ 2k = 21600</p>\n\n<p>⇒ k = 10800</p>\n\n<p>⇒ एकूण नफा = Σ(वेळ x गुंतवणूक) xk = {(5 x 1) + (6 x 1) + (4 x 1/2)} xk</p>\n\n<p>⇒ 10800 x 13 = रु. 140400</p>\n", "bn": "<p>আমরা জানি,</p>\n\n<p>লভ্যাংশ ∝ সময় × বিনিয়োগ</p>\n\n<p>⇒ C দ্বারা বিনিয়োগকৃত অর্থ = (2/3) × 6 = 4</p>\n\n<p>⇒ সময় = 6 মাস = 1/2 বছর</p>\n\n<p>⇒ C-এর লভ্যাংশ = k × 4 × 1/2</p>\n\n<p>⇒ 2k = 21600</p>\n\n<p>⇒ k = 10800</p>\n\n<p>⇒ মোট লাভ = Σ(সময় × বিনিয়োগ) × k = {(5 × 1) + (6 × 1) + (4 × 1/2)} × k</p>\n\n<p>⇒ 10800 × 13 = 140400 টাকা</p>\n", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>ਅਸੀਂ ਜਾਣਦੇ ਹਾਂ ਕਿ,</p>\n\n<p>ਹਿੱਸਾ ∝ ਸਮਾਂ x ਨਿਵੇਸ਼</p>\n\n<p>⇒ C ਦੁਆਰਾ ਨਿਵੇਸ਼ ਕੀਤਾ ਗਿਆ ਪੈਸਾ = (2/3) x 6 = 4</p>\n\n<p>⇒ ਸਮਾਂ = 6 ਮਹੀਨੇ = 1/2 ਸਾਲ</p>\n\n<p>⇒ C ਲਈ ਹਿੱਸਾ = k x 4 x 1/2</p>\n\n<p>⇒ 2k = 21600</p>\n\n<p>⇒ k = 10800</p>\n\n<p>⇒ ਕੁੱਲ ਲਾਭ = Σ(ਸਮਾਂ x ਨਿਵੇਸ਼) x k = {(5 x 1) + (6 x 1) + (4 x 1/2)} x k</p>\n\n<p>⇒ 10800 x 13 = 140400 ਰੁਪਏ</p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Partnership"], "concept": "Partnership", "confidence": "high"}, {"qid": "5f3cef7e3f5da10d0b04af1f", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Sumit, Ravi, and Puneet invest Rs. 45000, Rs. 81000, and Rs. 90000 respectively to start a business. At the end of the year, the total profit earned is Rs. 4800. 30% of the total profit earned is given to charity and the rest is divided among them in the ratio of their profit. What will be the share of Sumit?", "options": [{"prompt": "1", "value": "Rs. 700"}, {"prompt": "2", "value": "Rs. 1260"}, {"prompt": "3", "value": "Rs. 131"}, {"prompt": "4", "value": "Rs. 1400"}], "range": {"start": "", "end": ""}}, "hn": {"value": "सुमित, रवि और पुनीत एक व्यवसाय शुरू करने के लिए क्रमशः 45000 रुपये, 81000 रुपये और 90000 रुपये का निवेश करते हैं।&nbsp;वर्ष के अंत में कुल लाभ 4800 रुपये होता है।&nbsp;कुल लाभ का 30% दान में दिया जाता है और बाकी उनके बीच बांटा जाता है।&nbsp;सुमित का शेयर क्या होगा?", "options": [{"prompt": "1", "value": "700&amp;nbsp;रुपये"}, {"prompt": "2", "value": "1260&amp;nbsp;रुपये"}, {"prompt": "3", "value": "131&amp;nbsp;रुपये"}, {"prompt": "4", "value": "1400&amp;nbsp;रुपये"}], "range": {"start": "", "end": ""}}, "te": {"value": "సుమిత్, రవి మరియు పునీత్ వ్యాపారాన్ని ప్రారంభించడానికి వరుసగా రూ.45000, రూ.81000 మరియు రూ.90000 పెట్టుబడి పెట్టారు. సంవత్సరం చివరిలో మొత్తం లాభం రూ.4800. మొత్తం లాభంలో 30% దాతృత్వానికి విరాళంగా ఇవ్వబడుతుంది మరియు మిగిలినది వారి మధ్య విభజించబడింది. సుమిత్ వాటా ఎంత?", "options": [{"prompt": "1", "value": "రూ. 700"}, {"prompt": "2", "value": "రూ. 1260"}, {"prompt": "3", "value": "రూ. 131"}, {"prompt": "4", "value": "రూ. 1400"}], "range": {"start": "", "end": ""}}, "mr": {"value": "सुमित, रवी आणि पुनीत व्यवसाय सुरु करण्यासाठी अनुक्रमे 45000 रुपये, 81000 रुपये, आणि 90000 रुपये गुंतवतात. वर्षाच्या शेवटी, एकूण 4800 रुपये नफा कमावला आहे. एकूण कमावलेल्या नफ्यापैकी 30% दान केले जातात आणि उर्वरित रक्कम त्यांच्या नफ्याच्या गुणोत्तरात विभागली जाते. सुमितचा वाटा काय असेल?", "options": [{"prompt": "1", "value": "700 रुपये&nbsp;"}, {"prompt": "2", "value": "1260&nbsp;<span style=\"color: rgb(33, 37, 41);\">रुपये</span>"}, {"prompt": "3", "value": "131&nbsp;<span style=\"color: rgb(33, 37, 41);\">रुपये</span>"}, {"prompt": "4", "value": "1400&nbsp;<span style=\"color: rgb(33, 37, 41);\">रुपये</span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "সুমিত, রবি এবং পুনীত একটি ব্যবসা শুরু করার জন্য যথাক্রমে 45000 টাকা, 81000 টাকা এবং 90000 টাকা বিনিয়োগ করেছে। বছরের শেষে, অর্জিত মোট লাভ হল 4800 টাকা। মোট অর্জিত লাভের 30% দাতব্য প্রতিষ্ঠানে দেওয়া হয় এবং বাকিটা তাদের লাভের অনুপাতে তাদের মধ্যে ভাগ করা হয়। সুমিতের ভাগ কত হবে?", "options": [{"prompt": "1", "value": "700&nbsp;টাকা"}, {"prompt": "2", "value": "1260&nbsp;টাকা"}, {"prompt": "3", "value": "131&nbsp;টাকা"}, {"prompt": "4", "value": "1400&nbsp;টাকা"}], "range": {"start": "", "end": ""}}, "gu": {"value": "સુમિત, રવિ અને પુનીત બિઝનેસ શરૂ કરવા માટે અનુક્રમે રૂ. 45,000, રૂ. 81000 અને રૂ. 90,000નું રોકાણ કરે છે. વર્ષના અંતે કુલ 4800 રૂપિયાનો નફો થયો છે. જે કુલ નફો થાય છે તેના 30% ભાગ દાનમાં આપવામાં આવે છે અને બાકીનો નફો તેમના નફાના ગુણોત્તરમાં તેમની વચ્ચે વહેંચવામાં આવે છે. સુમિતનો હિસ્સો કેટલો હશે?", "options": [{"prompt": "1", "value": "રૂ. 700"}, {"prompt": "2", "value": "રૂ. 1260"}, {"prompt": "3", "value": "રૂ. 131"}, {"prompt": "4", "value": "રૂ. 1400"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ಸುಮಿತ್, ರವಿ ಮತ್ತು ಪುನೀತ್ ವ್ಯವಹಾರವನ್ನು ಪ್ರಾರಂಭಿಸಲು ಕ್ರಮವಾಗಿ ರೂ. 45000, ರೂ. 81000, ಮತ್ತು ರೂ.90000 ಹೂಡಿಕೆ ಮಾಡುತ್ತಾರೆ. ವರ್ಷದ ಕೊನೆಯಲ್ಲಿ ಗಳಿಸಿದ ಒಟ್ಟು ಲಾಭ ರೂ. 4800. ಗಳಿಸಿದ ಒಟ್ಟು ಲಾಭದ 30% ಅನ್ನು ದಾನಕ್ಕೆ ನೀಡಲಾಗುತ್ತದೆ ಮತ್ತು ಉಳಿದ ಲಾಭದ ಮೊತ್ತವನ್ನು ಅವರ ಲಾಭದ ಅನುಪಾತದಲ್ಲಿ ವಿಂಗಡಿಸಲಾಗುತ್ತದೆ. ಸುಮಿತ್ ಅವರ ಪಾಲು ಎಷ್ಟು?", "options": [{"prompt": "1", "value": "ರೂ. 700"}, {"prompt": "2", "value": "ರೂ. 1260"}, {"prompt": "3", "value": "ರೂ. 131"}, {"prompt": "4", "value": "ರೂ. 1400"}], "range": {"start": "", "end": ""}}, "ta": {"value": "சுமித், ரவி மற்றும் புனித் ஆகியோர் தொழில் தொடங்க முறையே ரூ. 45000, ரூ. 81000, மற்றும் ரூ.  90000 முதலீடு செய்கின்றனர். ஆண்டின் இறுதியில் ஈட்டிய மொத்த இலாபம் ரூ. 4800. சம்பாதித்த மொத்த இலாபத்தில் 30% தொண்டு நிறுவனங்களுக்கு வழங்கப்படுகிறது, மீதமுள்ளவை அவர்களின் இலாபத்தின் விகிதத்தில் பிரிக்கப்படுகின்றன. சுமித்தின் பங்கு என்னவாக இருக்கும்?", "options": [{"prompt": "1", "value": "ரூ. 700"}, {"prompt": "2", "value": "ரூ. 1260"}, {"prompt": "3", "value": "ரூ. 131"}, {"prompt": "4", "value": "ரூ. 1400"}], "range": {"start": "", "end": ""}}, "or": {"value": "ସୁମିତ, ରବି ଏବଂ ପୁନୀତ ଏକ ବ୍ୟବସାୟ ଆରମ୍ଭ କରିବା ପାଇଁ ଯଥାକ୍ରମେ Rs. 45000, Rs. 81000, ଏବଂ Rs. 90000 ନିବେଶ କରନ୍ତି। ବର୍ଷ ଶେଷରେ, ଅର୍ଜିତ ମୋଟ ଲାଭ ହେଉଛି Rs. 4800। ମୋଟ ଅର୍ଜିତ ଲାଭର 30% ଦାନରେ ଦିଆଯାଏ ଏବଂ ବାକି ଅଂଶ ସେମାନଙ୍କ ମଧ୍ୟରେ ସେମାନଙ୍କର ଲାଭ ଅନୁପାତରେ ବିଭକ୍ତ କରାଯାଏ। ସୁମିତଙ୍କ ଅଂଶ କେତେ ହେବ?", "options": [{"prompt": "1", "value": "Rs. 700"}, {"prompt": "2", "value": "Rs. 1260"}, {"prompt": "3", "value": "Rs. 131"}, {"prompt": "4", "value": "Rs. 1400"}], "range": {"start": "", "end": ""}}, "pa": {"value": "ਸੁਮਿਤ, ਰਵੀ ਅਤੇ ਪੁਨੀਤ ਇੱਕ ਕਾਰੋਬਾਰ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਕ੍ਰਮਵਾਰ Rs. 45000, Rs. 81000, ਅਤੇ Rs. 90000 ਨਿਵੇਸ਼ ਕਰਦੇ ਹਨ। ਸਾਲ ਦੇ ਅੰਤ ਵਿੱਚ, ਕਮਾਇਆ ਗਿਆ ਕੁੱਲ ਲਾਭ Rs. 4800 ਹੈ। ਕਮਾਏ ਗਏ ਕੁੱਲ ਲਾਭ ਦਾ 30% ਦਾਨ ਵਿੱਚ ਦਿੱਤਾ ਜਾਂਦਾ ਹੈ ਅਤੇ ਬਾਕੀ ਨੂੰ ਉਹਨਾਂ ਦੇ ਲਾਭ ਦੇ ਅਨੁਪਾਤ ਵਿੱਚ ਉਹਨਾਂ ਵਿੱਚ ਵੰਡਿਆ ਜਾਂਦਾ ਹੈ। ਸੁਮਿਤ ਦਾ ਹਿੱਸਾ ਕੀ ਹੋਵੇਗਾ?", "options": [{"prompt": "1", "value": "Rs. 700"}, {"prompt": "2", "value": "Rs. 1260"}, {"prompt": "3", "value": "Rs. 131"}, {"prompt": "4", "value": "Rs. 1400"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p style=\"\"><strong style=\"\">Given: </strong></p>\n\n<p style=\"\">Sumit investment = Rs. 45000</p>\n\n<p style=\"\">Ravi investment = Rs. 81000</p>\n\n<p style=\"\">Puneet investment = Rs. 90000</p>\n\n<p style=\"\">Total profit = Rs. 4800</p>\n\n<p style=\"\">Profit given in charity = 30% of 4800 = 1440</p>\n\n<p style=\"\"><strong style=\"\">Formula used: </strong></p>\n\n<p style=\"\">Profit ratio = Investment ratio &times; Time (in months)</p>\n\n<p style=\"\"><strong style=\"\">Calculation: </strong></p>\n\n<p style=\"\">Person Sumit Ravi Puneet</p>\n\n<p style=\"\">Investment (in Rs.) 45000 : 81000 : 90000</p>\n\n<p style=\"\">Investment Ratio 5 : 9 : 10</p>\n\n<p style=\"\">Time (in months) 12 : 12 : 12</p>\n\n<p style=\"\">Profit ratio 5 : 9 :&nbsp;10</p>\n\n<p style=\"\">Profit share distributed in Sumit, Ravi, and Puneet = 4800 &ndash; 1440 = 3360</p>\n\n<p style=\"\">&there4; Share of Sumit = 5 &times; (3360/24) = Rs. 700</p>\n", "hn": "\n<p style=\"\"><span style=\"font-weight: 700;\">दिया है</span><span style=\"font-weight: 700;\">:</span><strong style=\"\"> </strong></p>\n\n<p style=\"\">सुमित के द्वारा किया गया निवेश = 45000&nbsp;रुपये</p>\n\n<p style=\"\">रवि &nbsp;के द्वारा किया गया निवेश =&nbsp;81000&nbsp;रुपये</p>\n\n<p style=\"\">पुनीत&nbsp;के द्वारा किया गया निवेश = 90000&nbsp;रुपये</p>\n\n<p style=\"\">कुल लाभ = 4800&nbsp;रुपये</p>\n\n<p style=\"\">दान में दी गयी&nbsp;लाभ की राशी&nbsp;&nbsp;= 30% of 4800 = 1440</p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">उपयोग किया गया सूत्र:</span><strong style=\"\"> </strong></p>\n\n<p style=\"\">लाभ का अनुपात = निवेश का अनुपात &times; समय (महीने&nbsp;में)</p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">गणना:</span><strong style=\"\"> </strong></p>\n\n<p style=\"\">व्यक्ति: सुमित, रवि, पुनीत</p>\n\n<p style=\"\">निवेश (रुपए में) 45000 81000 90000</p>\n\n<p style=\"\">निवेश&nbsp;का अनुपात 5 9 10</p>\n\n<p style=\"\">समय (महीने&nbsp;में) 12 12 12</p>\n\n<p style=\"\">लाभ का अनुपात 5 9 10</p>\n\n<p style=\"\">सुमित, रवि और पुनीत के बीच&nbsp;लाभ का वितरण&nbsp;= 4800 &ndash; 1440 = 3360</p>\n\n<p style=\"\">&there4; सुमित का शेयर = 5 &times; (3360/24) = Rs. 700</p>\n\n39:T760,<p style=\"\"><strong style=\"\">दिलेले आहे:</strong></p>\n\n<p style=\"\">सुमितची गुंतवणूक = 45000 रुपये</p>\n\n<p style=\"\">रवीची गुंतवणूक = <span style=\"color: rgb(33, 37, 41);\">81000 रुपये </span></p>\n\n<p style=\"\">पुनीतची गुंतवणूक = 90000 रुपये</p>\n\n<p style=\"\">एकूण नफा = <span style=\"color: rgb(33, 37, 41);\">4800</span></p>\n\n<p style=\"\">दान केलेला\\ नफा = 4800 च्या 30% = 1440</p>\n\n<p style=\"\"><strong style=\"\">वापरलेले सूत्र:</strong></p>\n\n<p style=\"\">नफ्याचे गुणोत्तर = गुंतवणुकीचे प्रमाण x मुदत (महिन्यांमध्ये)</p>\n\n<p style=\"\"><s", "te": "<p style=\"\"><strong style=\"\">ఇచ్చిన:</strong></p>\n\n<p style=\"\">సుమిట్ పెట్టుబడి = రూ. 45000</p>\n\n<p style=\"\">రవి పెట్టుబడి = రూ. 81000</p>\n\n<p style=\"\">పునీత్ పెట్టుబడి = రూ. 90000</p>\n\n<p style=\"\">మొత్తం లాభం = రూ. 4800</p>\n\n<p style=\"\">దాతృత్వంలో ఇచ్చిన లాభం = 4800 = 1440లో 30%</p>\n\n<p style=\"\"><strong style=\"\">ఉపయోగించిన సూత్రం:</strong></p>\n\n<p style=\"\">లాభ నిష్పత్తి = పెట్టుబడి నిష్పత్తి x సమయం (నెలల్లో)</p>\n\n<p style=\"\"><strong style=\"\">సాధన:</strong></p>\n\n<p style=\"\">వ్యక్తి సుమిత్ రవి పునీత్</p>\n\n<p style=\"\">పెట్టుబడి (రూ.లలో) 45000 : 81000 : 90000</p>\n\n<p style=\"\">పెట్టుబడి నిష్పత్తి 5 : 9 : 10</p>\n\n<p style=\"\">సమయం (నెలల్లో) 12 : 12 : 12</p>\n\n<p style=\"\">లాభ నిష్పత్తి 5 : 9 : 10</p>\n\n<p style=\"\">సుమిత్, రవి మరియు పునీత్‌లలో పంపిణీ చేయబడిన లాభాల వాటా = 4800 - 1440 = 3360</p>\n\n<p style=\"\">∴ సుమిత్ వాటా = 5 x (3360/24) = రూ. 700</p>\n", "mr": "<p style=\"\"><strong style=\"\">दिलेले आहे:</strong></p>\n\n<p style=\"\">सुमितची गुंतवणूक = 45000 रुपये</p>\n\n<p style=\"\">रवीची गुंतवणूक = <span style=\"color: rgb(33, 37, 41);\">81000 रुपये </span></p>\n\n<p style=\"\">पुनीतची गुंतवणूक = 90000 रुपये</p>\n\n<p style=\"\">एकूण नफा = <span style=\"color: rgb(33, 37, 41);\">4800</span></p>\n\n<p style=\"\">दान केलेला\\ नफा = 4800 च्या 30% = 1440</p>\n\n<p style=\"\"><strong style=\"\">वापरलेले सूत्र:</strong></p>\n\n<p style=\"\">नफ्याचे गुणोत्तर = गुंतवणुकीचे प्रमाण x मुदत (महिन्यांमध्ये)</p>\n\n<p style=\"\"><strong style=\"\">गणना:</strong></p>\n\n<p style=\"\">व्यक्ती :- सुमित रवी पुनीत</p>\n\n<p style=\"\">गुंतवणूक (रुपयांमध्ये) 45000 : 81000 : 90000</p>\n\n<p style=\"\">गुंतवणुकीचे <span style=\"color: rgb(33,", "bn": "<p style=\"\"><strong style=\"\">প্রদত্ত:</strong></p>\n\n<p style=\"\">সুমিতের বিনিয়োগ = 45000 <span style=\"color: rgb(33, 37, 41);\">টাকা</span></p>\n\n<p style=\"\">রবির বিনিয়োগ = 81000 <span style=\"color: rgb(33, 37, 41);\">টাকা</span></p>\n\n<p style=\"\">পুনীতের বিনিয়োগ = 90000 <span style=\"color: rgb(33, 37, 41);\">টাকা</span></p>\n\n<p style=\"\">মোট লাভ = 4800 <span style=\"color: rgb(33, 37, 41);\">টাকা</span></p>\n\n<p style=\"\">দাতব্য় প্রদত্ত লাভ = 4800 = 1440 এর 30%</p>\n\n<p style=\"\"><strong>অনুসৃত</strong> <strong style=\"\">সূত্র:</strong></p>\n\n<p style=\"\">লাভের অনুপাত = বিনিয়োগ অনুপাত x সময় (মাসে)</p>\n\n<p style=\"\"><strong style=\"\">গণনা:</strong></p>\n\n<p style=\"\">ব্যক্তি: সুমিত রবি পুনীত</p>\n\n<p style=\"\">বিনিয়োগ (টাকায়): 45000 : 81000 : 90000</p>\n\n<p style=\"\">বিনিয়োগের অনুপাত: 5 : 9 : 10</p>\n\n<p style=\"\">সময় (মাসে): 12 : 12 : 12</p>\n\n<p style=\"\">লাভের অনুপাত: 5 : 9 : 10</p>\n\n<p style=\"\">সুমিত, রবি এবং পুনীতের লাভের ভাগ বন্টন = 4800 - 1440 = 3360</p>\n\n<p style=\"\">∴ সুমিতের ভাগ = 5 x (3360/24) = <span style=\"color: rgb(33, 37, 41);\">700 </span>টাকা।</p>\n3b:T662,<p style=\"\"><strong style=\"\">ನೀಡಲಾಗಿದೆ:</strong></p>\n\n<p style=\"\"><span style=\"\">ಸುಮಿತ್</span> ಮಾಡಿದ ಹೂಡಿಕೆ = ರೂ. 45000</p>\n\n<p style=\"\">ರವಿ <span style=\"color: rgb(33, 37, 41);\">ಮಾಡಿದ </span>ಹೂಡಿಕೆ = ರೂ. 81000</p>\n\n<p style=\"\">ಪುನೀತ್ <span style=\"color: rgb(33, 37, 41);\">ಮಾಡಿದ </span>ಹೂಡಿಕೆ = ರೂ. 90000</p>\n\n<p style=\"\">ಒಟ್ಟು ಲಾಭ = ರೂ. 4800</p>\n\n<p style=\"\">ದತ್ತಿಗಾಗಿ ನೀಡಿದ ಲಾ\nಭ = 4800 <span style=\"color: rgb(33, 37, 41);\">ರಲ್ಲಿ 30% </span>= 1440 </p>\n\n<p style=\"\"><str", "ml": "", "gu": "<p style=\"\"><strong style=\"\">આપેલ:</strong></p>\n\n<p style=\"\">સુમિત રોકાણ = રૂ. 45000</p>\n\n<p style=\"\">રવિ રોકાણ = રૂ. 81000</p>\n\n<p style=\"\">પુનીત રોકાણ = રૂ. 90000</p>\n\n<p style=\"\">કુલ નફો = રૂ. 4800</p>\n\n<p style=\"\">દાનમાં આપેલ નફો = 4800<span data-darkreader-inline-color=\"\" style=\"color: rgb(33, 37, 41); --darkreader-inline-color: #d1cdc7;\"> ના 30%</span> = 1440</p>\n\n<p style=\"\"><strong style=\"\">વપરાયેલ સૂત્ર:</strong></p>\n\n<p style=\"\">નફો ગુણોત્તર = રોકાણ ગુણોત્તર x સમય (મહિનાઓમાં)</p>\n\n<p style=\"\"><strong style=\"\">ગણતરી:</strong></p>\n\n<p style=\"\">વ્યક્તિ સુમિત રવિ પુનીત</p>\n\n<p style=\"\">રોકાણ (રૂ.માં) 45000 : 81000 : 90000</p>\n\n<p style=\"\">રોકાણ ગુણોત્તર 5 : 9 : 10</p>\n\n<p style=\"\">સમય (મહિનાઓમાં) 12 : 12 : 12</p>\n\n<p style=\"\">નફાનો ગુણોત્તર 5 : 9 : 10</p>\n\n<p style=\"\">સુમિત, રવિ અને પુનીતમાં વહેંચાયેલ નફાનો હિસ્સો = 4800 - 1440 = 3360</p>\n\n<p style=\"\">∴ સુમિતનો હિસ્સો = 5 x (3360/24) = રૂ. 700</p>\n", "kn": "<p style=\"\"><strong style=\"\">ನೀಡಲಾಗಿದೆ:</strong></p>\n\n<p style=\"\"><span style=\"\">ಸುಮಿತ್</span> ಮಾಡಿದ ಹೂಡಿಕೆ = ರೂ. 45000</p>\n\n<p style=\"\">ರವಿ <span style=\"color: rgb(33, 37, 41);\">ಮಾಡಿದ </span>ಹೂಡಿಕೆ = ರೂ. 81000</p>\n\n<p style=\"\">ಪುನೀತ್ <span style=\"color: rgb(33, 37, 41);\">ಮಾಡಿದ </span>ಹೂಡಿಕೆ = ರೂ. 90000</p>\n\n<p style=\"\">ಒಟ್ಟು ಲಾಭ = ರೂ. 4800</p>\n\n<p style=\"\">ದತ್ತಿಗಾಗಿ ನೀಡಿದ ಲಾ\nಭ = 4800 <span style=\"color: rgb(33, 37, 41);\">ರಲ್ಲಿ 30% </span>= 1440 </p>\n\n<p style=\"\"><strong style=\"\">ಬಳಸಿದ ಸೂತ್ರ:</strong></p>\n\n<p style=\"\">ಲಾಭದ ಅನುಪಾತ = ಹೂಡಿಕೆಯ ಅನುಪಾತ x ಸಮಯ (ತಿಂಗಳಲ್ಲಿ)</p>\n\n<p style=\"\"><strong style=\"\">ಲೆಕ್ಕಾಚಾರ:</strong></p>\n\n<p sty", "ta": "<p style=\"\"><strong style=\"\">கொடுக்கப்பட்டது:</strong></p>\n\n<p style=\"\">சுமிட் முதலீடு = ரூ. 45000</p>\n\n<p style=\"\">ரவி முதலீடு = ரூ. 81000</p>\n\n<p style=\"\">புனித் முதலீடு = ரூ. 90000</p>\n\n<p style=\"\">மொத்த இலாபம் = ரூ. 4800</p>\n\n<p style=\"\">தொண்டு மூலம் வழங்கப்படும் இலாபம் = 4800 <span style=\"color: rgb(33, 37, 41);\">இல் 30%</span>= 1440 </p>\n\n<p style=\"\"><strong style=\"\">பயன்படுத்தப்படும் சூத்திரம்:</strong></p>\n\n<p style=\"\">இலாப விகிதம் = முதலீட்டு விகிதம் × நேரம் (மாதங்களில்)</p>\n\n<p style=\"\"><strong style=\"\">கணக்கீடு:</strong></p>\n\n<p style=\"\">நபர் சுமித் ரவி புனித்</p>\n\n<p style=\"\">முதலீடு (ரூ.யில்) 45000 : 81000 : 90000</p>\n\n<p style=\"\">முதலீட்டு விகிதம் 5 : 9 : 10</p>\n\n<p style=\"\">நேரம் (மாதங்களில்) 12 : 12 : 12</p>\n\n<p style=\"\">இலாப விகிதம் 5 : 9 : 10</p>\n\n<p style=\"\">சுமித், ரவி மற்றும் புனீத் ஆகியோரில் விநியோகிக்கப்பட்ட இலாபப் பங்கு = 4800 – 1440 = 3360</p>\n\n<p style=\"\">∴ சுமித்தின் பங்கு = 5 × (3360/24) = ரூ. 700</p>\n", "or": "<p style=\"\"><strong style=\"\">ଦିଆଯାଇଛି: </strong></p>\n\n<p style=\"\">ସୁମିତଙ୍କ ପୁଞ୍ଜି ବିନିଯୋଗ = Rs. 45000</p>\n\n<p style=\"\">ରବିଙ୍କ ପୁଞ୍ଜି ବିନିଯୋଗ = Rs. 81000</p>\n\n<p style=\"\">ପୁନୀତଙ୍କ ପୁଞ୍ଜି ବିନିଯୋଗ = Rs. 90000</p>\n\n<p style=\"\">ମୋଟ ଲାଭ = Rs. 4800</p>\n\n<p style=\"\">ଦାନରେ ଦିଆଯାଇଥିବା ଲାଭ = 4800 ର 30% = 1440</p>\n\n<p style=\"\"><strong style=\"\">ବ୍ୟବହୃତ ସୂତ୍ର: </strong></p>\n\n<p style=\"\">ଲାଭର ଅନୁପାତ = ପୁଞ୍ଜି ବିନିଯୋଗର ଅନୁପାତ × ସମୟ (ମାସରେ)</p>\n\n<p style=\"\"><strong style=\"\">ଗଣନା: </strong></p>\n\n<p style=\"\">ବ୍ୟକ୍ତି ସୁମିତ ରବି ପୁନୀତ</p>\n\n<p style=\"\">ପୁଞ୍ଜି ବିନିଯୋଗ (Rs. ରେ) 45000 : 81000 : 90000</p>\n\n<p style=\"\">ପୁଞ୍ଜି ବିନିଯୋଗର ଅନୁପାତ 5 : 9 : 10</p>\n\n<p style=\"\">ସମୟ (ମାସରେ) 12 : 12 : 12</p>\n\n<p style=\"\">ଲାଭର ଅନୁପାତ 5 : 9 : 10</p>\n\n<p style=\"\">ସୁମିତ, ରବି ଏବଂ ପୁନୀତଙ୍କ ମଧ୍ୟରେ ବଣ୍ଟନ କରାଯାଇଥିବା ଲାଭର ଅଂଶ = 4800 – 1440 = 3360</p>\n\n<p style=\"\">∴ ସୁମିତଙ୍କ ଅଂଶ = 5 × (3360/24) = Rs. 700</p>", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p style=\"\"><strong style=\"\">ਦਿੱਤਾ ਗਿਆ ਹੈ: </strong></p>\n\n<p style=\"\">ਸੁਮਿਤ ਦਾ ਨਿਵੇਸ਼ = Rs. 45000</p>\n\n<p style=\"\">ਰਵੀ ਦਾ ਨਿਵੇਸ਼ = Rs. 81000</p>\n\n<p style=\"\">ਪੁਨੀਤ ਦਾ ਨਿਵੇਸ਼ = Rs. 90000</p>\n\n<p style=\"\">ਕੁੱਲ ਲਾਭ = Rs. 4800</p>\n\n<p style=\"\">ਦਾਨ ਵਿੱਚ ਦਿੱਤਾ ਗਿਆ ਲਾਭ = 4800 ਦਾ 30% = 1440</p>\n\n<p style=\"\"><strong style=\"\">ਵਰਤਿਆ ਗਿਆ ਫਾਰਮੂਲਾ: </strong></p>\n\n<p style=\"\">ਲਾਭ ਦਾ ਅਨੁਪਾਤ = ਨਿਵੇਸ਼ ਦਾ ਅਨੁਪਾਤ × ਸਮਾਂ (ਮਹੀਨਿਆਂ ਵਿੱਚ)</p>\n\n<p style=\"\"><strong style=\"\">ਗਣਨਾ: </strong></p>\n\n<p style=\"\">ਵਿਅਕਤੀ ਸੁਮਿਤ ਰਵੀ ਪੁਨੀਤ</p>\n\n<p style=\"\">ਨਿਵੇਸ਼ (Rs. ਵਿੱਚ) 45000 : 81000 : 90000</p>\n\n<p style=\"\">ਨਿਵੇਸ਼ ਦਾ ਅਨੁਪਾਤ 5 : 9 : 10</p>\n\n<p style=\"\">സമਾਂ (ਮਹੀਨਿਆਂ ਵਿੱਚ) 12 : 12 : 12</p>\n\n<p style=\"\">ਲਾਭ ਦਾ ਅਨੁਪਾਤ 5 : 9 : 10</p>\n\n<p style=\"\">ਸੁਮਿਤ, ਰਵੀ ਅਤੇ ਪੁਨੀਤ ਵਿੱਚ ਵੰਡਿਆ ਗਿਆ ਲਾਭ ਦਾ ਹਿੱਸਾ = 4800 – 1440 = 3360</p>\n\n<p style=\"\">∴ ਸੁਮਿਤ ਦਾ ਹਿੱਸਾ = 5 × (3360/24) = Rs. 700</p>", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Partnership"], "concept": "Partnership", "confidence": "high"}, {"qid": "5bb873c4412dc30c431d7a00", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Aman, Kamal and Ratan start a business. The ratio of their investments is 12 : 4 : 3. If at the end the ratio of their profits is 3 : 16 : 9, then what is the ratio of time period of their investment?", "options": [{"prompt": "1", "value": "9 : 64 : 81"}, {"prompt": "2", "value": "4 : 36 : 9"}, {"prompt": "3", "value": "1 : 16 : 12"}, {"prompt": "4", "value": "3 : 64 : 9"}], "range": {"start": "", "end": ""}}, "hn": {"value": "अमन, कमल और रतन एक व्यवसाय शुरू करते हैं। उनके निवेश का अनुपात 12 : 4 : 3 है। यदि अंत में उनके लाभ का अनुपात 3 : 16 : 9 है, तब उनके निवेश की अवधि का अनुपात क्या है?", "options": [{"prompt": "1", "value": "9 : 64 : 81"}, {"prompt": "2", "value": "4 : 36 : 9"}, {"prompt": "3", "value": "1 : 16 : 12"}, {"prompt": "4", "value": "3 : 64 : 9"}], "range": {"start": "", "end": ""}}, "mr": {"value": "अमन, कमल आणि रतन यांनी एक व्यवसाय सुरू केला. त्यांच्या गुंतवणुकीचे गुणोत्तर 12 : 4 : 3 आहे. जर शेवटी त्यांच्या नफ्याचे गुणोत्तर 3 : 16 : 9 असेल, तर त्यांच्या गुंतवणुकीच्या मुदतीचे गुणोत्तर किती असेल? ", "options": [{"prompt": "1", "value": "9 : 64 : 81"}, {"prompt": "2", "value": "4 : 36 : 9"}, {"prompt": "3", "value": "1 : 16 : 12"}, {"prompt": "4", "value": "3 : 64 : 9"}], "range": {"start": "", "end": ""}}, "bn": {"value": "আমান, কমল এবং রতন একটি ব্যবসা শুরু করে। তাদের বিনিয়োগের অনুপাত 12 : 4 : 3। যদি শেষে তাদের লাভের অনুপাত 3 : 16 : 9 হয়, তবে তাদের বিনিয়োগের সময়কালের অনুপাত কত?", "options": [{"prompt": "1", "value": "9 : 64 : 81"}, {"prompt": "2", "value": "4 : 36 : 9"}, {"prompt": "3", "value": "1 : 16 : 12"}, {"prompt": "4", "value": "3 : 64 : 9"}], "range": {"start": "", "end": ""}}, "pa": {"value": "ਅਮਨ, ਕਮਲ ਅਤੇ ਰਤਨ ਇੱਕ ਕਾਰੋਬਾਰ ਸ਼ੁਰੂ ਕਰਦੇ ਹਨ। ਉਹਨਾਂ ਦੇ ਨਿਵੇਸ਼ਾਂ ਦਾ ਅਨੁਪਾਤ 12 : 4 : 3 ਹੈ। ਜੇਕਰ ਅੰਤ ਵਿੱਚ ਉਹਨਾਂ ਦੇ ਮੁਨਾਫ਼ਿਆਂ ਦਾ ਅਨੁਪਾਤ 3 : 16 : 9 ਹੈ, ਤਾਂ ਉਹਨਾਂ ਦੇ ਨਿਵੇਸ਼ ਦੇ ਸਮੇਂ ਦੀ ਮਿਆਦ ਦਾ ਅਨੁਪਾਤ ਕੀ ਹੈ?", "options": [{"prompt": "1", "value": "9 : 64 : 81"}, {"prompt": "2", "value": "4 : 36 : 9"}, {"prompt": "3", "value": "1 : 16 : 12"}, {"prompt": "4", "value": "3 : 64 : 9"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>Investment ratio:</p>\n\n<p>Aman : Kamal : Ratan = 12 : 4 : 3</p>\n\n<p>Profit ratio:</p>\n\n<p><span style=\"\">Aman : Kamal : Ratan = 3&nbsp;: 16&nbsp;: 9</span></p>\n\n<p><strong><span style=\"\">Concept used:</span></strong></p>\n\n<p><span style=\"\">Ratio of their profit = Ratio of their investments &times; time</span></p>\n\n<p><strong><span style=\"\">Calculation:</span></strong></p>\n\n<p>Let Aman, Kamal and Ratan invest their money for time t<sub>1</sub>, t<sub>2</sub> and t<sub>3</sub> respectively.</p>\n\n<p>Ratio of their profit = Ratio of their investments &times; time</p>\n\n<p>&rArr; 3 : 16 : 9 = 12 &times; t<sub>1</sub> : 4 &times; t<sub>2</sub> : 3 &times; t<sub>3</sub></p>\n\n<p>Now we take two ratios to simplify.</p>\n\n<p>&rArr; 3/16 = (12 &times; t<sub>1</sub>)/(4 &times; t<sub>2</sub>)</p>\n\n<p>&rArr; t<sub>1</sub>/t<sub>2</sub> = 1/16</p>\n\n<p>Now we take two other ratios to simplify.</p>\n\n<p>&rArr; 16/9 = (4 &times; t<sub>2</sub>)/(3 &times; t<sub>3</sub>)</p>\n\n<p>&rArr; t<sub>2</sub>/t<sub>3</sub> = 4/3</p>\n\n<p>&rArr; t<sub>1</sub> : t<sub>2</sub> = 1 : 16&nbsp; &nbsp; &nbsp; ----(1)</p>\n\n<p><span style=\"\">&rArr;&nbsp;</span>t<sub>2</sub> : t<sub>3</sub> = 4 : 3&nbsp; &nbsp; &nbsp; &nbsp;----(2)</p>\n\n<p>To make t<sub>2 </sub>equal, we multiply eq. 2 with 4</p>\n\n<p>&rArr; t<sub>2</sub> : t<sub>3</sub> = (4 : 3) &times; 4 = 16 : 12</p>\n\n<p><span style=\"\">&rArr;</span> t<sub>1 </sub>: t<sub>2</sub> : t<sub>3</sub> = 1 : 16 : 12</p>\n\n<p><strong>&there4; The correct answer is <span style=\"\">1 : 16 : 12</span>.</strong></p>", "hn": "\n<p>माना अमन, कमल और रतन अपना धन क्रमशः t<sub>1</sub>, t<sub>2</sub> और t<sub>3</sub> समय के लिए निवेश करते हैं। उनके लाभ का अनुपात = उनके निवेश का अनुपात &times; समय</p>\n\n<p>&rArr; 3 : 16 : 9 = 12 &times; t<sub>1</sub> : 4 &times; t<sub>2</sub> : 3 &times; t<sub>3</sub></p>\n\n<p>अब हम सरल करने के लिए दो अनुपात लेते हैं।</p>\n\n<p>&rArr; 3/16 = (12 &times; t<sub>1</sub>)/(4 &times; t<sub>2</sub>)</p>\n\n<p>&rArr; t<sub>1</sub>/t<sub>2</sub> = 1/16</p>\n\n<p>अब हम सरल करने के लिए दो अन्य अनुपात लेते हैं।</p>\n\n<p>&rArr; 16/9 = (4 &times; t<sub>2</sub>)/(3 &times; t<sub>3</sub>)</p>\n\n<p>&rArr; t<sub>2</sub>/t<sub>3</sub> = 4/3</p>\n\n<p>t<sub>1</sub> : t<sub>2</sub> = 1 : 16&nbsp; &nbsp; &nbsp; ----(1)</p>\n\n<p>t<sub>2</sub> : t<sub>3</sub> = 4 : 3&nbsp; &nbsp; &nbsp; ----(2)</p>\n\n<p>t<sub>2</sub> को बराबर बनाने के लिए, हम समीकरण 2 को 4 के साथ गुणा करते हैं।</p>\n\n<p>&rArr; t<sub>2</sub> : t<sub>3</sub> = (4 : 3) &times; 4 = 16 : 12</p>\n&there4; t<sub>1 </sub>: t<sub>2</sub> : t<sub>3</sub> = 1 : 16 : 12\n32:T5c5,<p>अमन, कमल आणि रतन यांना त्यांचे पैसे अनुक्रमे t<sub>1</sub>, t<sub>2</sub> आणि t<sub>3</sub> मुदतीसाठी गुंतवले असे मानू.</p>\n\n<p>त्यांच्या नफ्याचे गुणोत्तर = त्यांच्या गुंतवणुकीचे गुणोत्तर × मुदत</p>\n\n<p>⇒ 3 : 16 : 9 = 12 × t<sub>1</sub> : 4 × t<sub>2</sub> : 3 × t<sub>3</sub></p>\n\n<p>आता आपण सोडवण्यासाठी दोन गुणोत्तरे घेऊ.</p>\n\n<p>⇒ 3/16 = (12 &", "te": "", "mr": "<p>अमन, कमल आणि रतन यांना त्यांचे पैसे अनुक्रमे t<sub>1</sub>, t<sub>2</sub> आणि t<sub>3</sub> मुदतीसाठी गुंतवले असे मानू.</p>\n\n<p>त्यांच्या नफ्याचे गुणोत्तर = त्यांच्या गुंतवणुकीचे गुणोत्तर × मुदत</p>\n\n<p>⇒ 3 : 16 : 9 = 12 × t<sub>1</sub> : 4 × t<sub>2</sub> : 3 × t<sub>3</sub></p>\n\n<p>आता आपण सोडवण्यासाठी दोन गुणोत्तरे घेऊ.</p>\n\n<p>⇒ 3/16 = (12 × t<sub>1</sub>)/(4 × t<sub>2</sub>)</p>\n\n<p>⇒ t<sub>1</sub>/t<sub>2</sub> = 1/16</p>\n\n<p>आता आपण सोडवण्यासाठी दुसरी दोन गुणोत्तरे घेऊ.</p>\n\n<p>⇒ 16/9 = (4 × t<sub>2</sub>)/(3 × t<sub>3</sub>)</p>\n\n<p>⇒ t<sub>2</sub>/t<sub>3</sub> = 4/3</p>\n\n<p>t<sub>1</sub> : t<sub>2</sub> = 1 : 16      ----(1)</p>\n\n<p>t<sub>2</sub> : t<sub>3</sub> = 4 : 3       ----(2)</p>\n\n<p>t<sub>2 </sub>समान करण्यासाठी, आपण समीकरण 2 ला 4 ने गुणू </p>\n\n<p>⇒ t<sub>2</sub> : t<sub>3</sub> = (4 : 3) × 4 = 16 : 12</p>\n∴ t<sub>1 </sub>: t<sub>2</sub> : t<sub>3</sub> = 1 : 16 : 1233:T879,\n<p><strong>ਦਿੱਤਾ ਗਿਆ ਹੈ:</strong></p>\n\n<p>ਨਿਵੇਸ਼ ਅਨੁਪਾਤ:</p>\n\n<p>ਅਮਨ : ਕਮਲ : ਰਤਨ = 12 : 4 : 3</p>\n\n<p>ਮੁਨਾਫ਼ੇ ਦਾ ਅਨੁਪਾਤ:</p>\n\n<p><span style=\"\">ਅਮਨ : ਕਮਲ : ਰਤਨ = 3 : 16 : 9</span></p>\n\n<p><strong><span style=\"\">ਵਰਤਿਆ ਗਿਆ ਸੰਕਲਪ:</span></strong></p>\n\n<p><span style=\"\">ਉਹਨਾਂ ਦੇ ਮੁਨਾਫ਼ੇ ਦਾ ਅਨੁਪਾਤ = ਉਹਨਾਂ ਦੇ ਨਿਵੇਸ਼ ਦਾ ਅਨੁਪਾਤ x ਸਮਾਂ</span></p>\n\n<p><strong><span style=\"\">ਗਣਨਾ:</span></strong></p>\n\n<p>ਮੰਨ ਲਓ ਕਿ ਅਮਨ, ਕਮਲ ਅਤੇ ਰਤਨ ਆਪਣਾ ਪੈ", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Partnership"], "concept": "Partnership", "confidence": "high"}, {"qid": "5b33524678c9ea4158b12eb7", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Raman, Manan and Kamal are partners and invest in a business such that Raman invests 2/5th of total and Manan invest 3/8th of the total. What is the ratio of profit of Raman, Manan and Kamal respectively", "options": [{"prompt": "1", "value": "16 : 15 : 9"}, {"prompt": "2", "value": "16 : 15 : 31"}, {"prompt": "3", "value": "2 : 3 : 5"}, {"prompt": "4", "value": "15 : 16 : 9"}], "range": {"start": "", "end": ""}}, "hn": {"value": "रमन, मनन, और कमल भागीदार हैं और एक व्यापार में इस तरह निवेश करते हैं कि रमन कुल मूल्य का 2/5 निवेश करता है और मनन कुल मूल्य का 3/8 निवेश करता है। क्रमशः रमन, मनन, और कमल के लाभ प्रतिशत का अनुपात क्या है?", "options": [{"prompt": "1", "value": "16 : 15 : 9"}, {"prompt": "2", "value": "16 : 15 : 31"}, {"prompt": "3", "value": "2 : 3 : 5"}, {"prompt": "4", "value": "15 : 16 : 9"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p><strong>Calculation:-</strong></p>\n\n<p>Raman&rsquo;s share = 2/5 = 40%</p>\n\n<p>Manan&rsquo;s share = 3/8 = 37.5%</p>\n\n<p>&rArr; Kamal&rsquo;s share = 100 - 40 - 37.5 = 22.5</p>\n\n<p>Ratio = 40 : 37.5 : 22.5 = 80 : 75 : 45 = 16 : 15 : 9&nbsp;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span>&nbsp;<strong>Calculation:-</strong></p>\n\n<p>Let the invested total sum be x</p>\n\n<p>&there4;&nbsp;Raman invests = 2x/5</p>\n\n<p>Manan invests = 3x/5</p>\n\n<p>So, Kamal invests = x - 2x/5 - 3x/5</p>\n\n<p>= (40x - 16x - 15x)/40</p>\n\n<p>= 9x/40</p>\n\n<p>∵ Investment&nbsp;&prop; Profit</p>\n\n<p>The Ratio of investment equals the ratio of profit.</p>\n\n<p>&there4; Profit ratio = 2/5 : 3/8 : 9/40</p>\n\n<p>By making the denominator equal</p>\n\n<p>= 16 : 15 : 9</p>\n\n<p><strong>&there4; The required ratio is 16 : 15 : 9.&nbsp;&nbsp;</strong></p>\n\n", "hn": "\n<p style=\"\"><span style=\"font-weight: 700;\">गणना:-</span></p>\n\n<p style=\"\">रमन का हिस्सा = 2/5 = 40%</p>\n\n<p style=\"\">मनन का हिस्सा = 3/8 = 37.5%</p>\n\n<p style=\"\">&rArr; कमल का हिस्सा = 100 - 40 - 37.5 = 22.5</p>\n\n<p><span style=\"\">अनुपात = 40 : 37.5 : 22.5 = 80 : 75 : 45 = 16 : 15 : 9&nbsp;<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></span><strong>गणना: -</strong></", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Partnership"], "concept": "Partnership", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 8 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>

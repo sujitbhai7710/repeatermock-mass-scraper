@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 16: Algebra - Linear Equation in 1 Variable</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 16: Algebra - Linear Equation in 1 Variable</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-maths-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">8 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63a1cabe6bafecd22a5d7448</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63a1cabe6bafecd22a5d7448", "title": "PYCT 16: Algebra - Linear Equation in 1 Variable", "series_slug": "ssc-maths-previous-year-questions", "duration_min": 8, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "628542a7f87f5ae63c94033e", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "5bb870a817d5420c2ac6bf23", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "If &radic;y = &radic;4 - &radic;6, then find the value of y<sup>2</sup> - 20y + 12.", "options": [{"prompt": "1", "value": "4"}, {"prompt": "2", "value": "8"}, {"prompt": "3", "value": "10"}, {"prompt": "4", "value": "12"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि &radic;y = &radic;4 - &radic;6 है, तब y<sup>2</sup> - 20y + 12 का मान ज्ञात कीजिये।", "options": [{"prompt": "1", "value": "4"}, {"prompt": "2", "value": "8"}, {"prompt": "3", "value": "10"}, {"prompt": "4", "value": "12"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p><span style=\"\">&radic;y = &radic;4 - &radic;6</span></p>\n\n<p><strong><span style=\"\">Formula used:</span></strong></p>\n\n<p><span style=\"\">(a - b)<sup>2</sup></span>&nbsp;= a<sup>2</sup>&nbsp;+ b<sup>2</sup>&nbsp;- 2ab</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>According to the question:</p>\n\n<p><span style=\"\">&rArr;&nbsp;</span>&radic;y = &radic;4 - &radic;6</p>\n\n<p>Squaring both side of the equation:</p>\n\n<p>&rArr; (&radic;y)<sup>2</sup>&nbsp;= (&radic;4 - &radic;6)<sup>2</sup></p>\n\n<p>&rArr; y = (&radic;4)<sup>2</sup> + (&radic;6)<sup>2</sup> &ndash; 2 &times; &radic;4 &times; &radic;6 = 4 + 6 &ndash; 4&radic;6</p>\n\n<p>&rArr; y = 10 - 4&radic;6<img src=\"file:///C:/Users/UMESHK~1/AppData/Local/Temp/msohtmlclip1/01/clip_image002.png\" style=\"height:20px; width:4px\" /></p>\n\n<p><span style=\"\">Squaring both side of&nbsp;</span><span style=\"\">the equation again:</span></p>\n\n<p>&rArr; y<sup>2</sup> = (10 - 4&radic;6)<sup>2</sup>&nbsp;</p>\n\n<p><span style=\"\">&rArr;</span> <span style=\"\">&nbsp;y</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span>&nbsp;=&nbsp;(10)<sup>2</sup>&nbsp;+ (4&radic;6)<sup>2</sup>&nbsp;&ndash; 2 &times; 10 &times; 4&radic;6</p>\n\n<p><span style=\"\">&rArr;</span> <span style=\"\">y</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\">&nbsp;=&nbsp;</span>100 + 96 &ndash; 80&radic;6</p>\n\n<p>&rArr; y<sup>2 </sup>= 196 - 80&radic;6</p>\n\n<p>We have to find value of y<sup>2</sup> - 20y + 12 so put the value of y&nbsp;and y<sup>2</sup>&nbsp;in this eq.</p>\n\n<p><span style=\"\">&rArr; y</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\">&nbsp;- 20y + 12</span></p>\n\n<p>&rArr; 196 &ndash; 80&radic;6 &ndash; 20 (10 &ndash; 4&radic;6) + 12</p>\n\n<p>&rArr; 196 - 80&radic;6 &ndash; 200 + 80&radic;6 + 12</p>\n\n<p>&rArr; 208 - 200 = 8</p>\n\n<p><strong>&there4; The correct answer is <span style=\"\">8</span>.</strong></p>", "hn": "\n<p>&radic;y = &radic;4 - &radic;6</p>\n\n<p>समीकरण का वर्ग करते हैं</p>\n\n<p>&rArr; (&radic;y)<sup>2</sup>&nbsp;= (&radic;4 - &radic;6)<sup>2</sup></p>\n\n<p>&rArr; y = (&radic;4)<sup>2</sup> + (&radic;6)<sup>2</sup> &ndash; 2 &times; &radic;4 &times; &radic;6 = 4 + 6 &ndash; 4&radic;6</p>\n\n<p>&rArr; y = 10 - 4&radic;6</p>\n\n<p>पुनः समीकरण का वर्ग करते हैं</p>\n\n<p>&rArr; y<sup>2</sup> = (10 - 4&radic;6)<sup>2</sup>&nbsp;= (10)<sup>2</sup>&nbsp;+ (4&radic;6)<sup>2</sup>&nbsp;&ndash; 2 &times; 10 &times; 4&radic;6 = 100 + 96 &ndash; 80&radic;6</p>\n\n<p>&rArr; y<sup>2 </sup>= 196 - 80&radic;6</p>\n\n<p>हमें y<sup>2</sup> - 20y + 12 का मान ज्ञात करना है इसलिए&nbsp; <span class=\"math-tex\">\\(y\\)</span>&nbsp;और y<sup>2</sup>&nbsp;का मान इस समीकरण में रखते हैं</p>\n\n<p>&rArr; 196 &ndash; 80&radic;6 &ndash; 20 (10 &ndash; 4&radic;6) + 12</p>\n\n<p>&rArr; 196 - 80&radic;6 &ndash; 200 + 80&radic;6 + 12</p>\n&rArr; 208 - 200 = 8\n33:T43e,<p><strong>Calculation:</strong></p>\n\n<p>Let the fraction be x/y</p>\n\n<p>When 3 is added to both the numerator and denominator of th", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Linear Equation in 1 Variable"], "concept": "Linear Equation in 1 Variable", "confidence": "high"}, {"qid": "5bbc46a54bbd900c4b28d947", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In a fraction when 3 is added to its numerator and denominator it becomes 3/5. And it becomes 3/7 when 3 is subtracted from both the numerator and denominator. Find the fraction.", "options": [{"prompt": "1", "value": "12/17"}, {"prompt": "2", "value": "14/17"}, {"prompt": "3", "value": "9/17"}, {"prompt": "4", "value": "11/19"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक भिन्न में जब उसके अंश और हर में 3 जोड़ दिया जाता है तो यह 3/5 हो जाता है और जब उसके अंश और हर में से 3 घटा दिया जाता है तब वह 3/7 बन जाता है। भिन्न ज्ञात कीजिये।", "options": [{"prompt": "1", "value": "&lt;span style=&quot;color: rgb(33, 37, 41);&quot;&gt;12/17&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;color: rgb(33, 37, 41);&quot;&gt;14/17&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;color: rgb(33, 37, 41);&quot;&gt;9/17&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;color: rgb(33, 37, 41);&quot;&gt;11/19&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><strong>Calculation:</strong></p>\n\n<p>Let the fraction be x/y</p>\n\n<p>When 3 is added to both the numerator and denominator of the fraction, we get</p>\n\n<p>(x + 3)/(y + 3) = (3/5)</p>\n\n<p>&rArr; 5x + 15 = 3y + 9</p>\n\n<p>&rArr; 5x + 6 = 3y&nbsp; &nbsp; ----(1)</p>\n\n<p>When 3 is subtracted with both the numerator and denominator of the fraction,</p>\n\n<p>(x &ndash; 3)/(y &ndash; 3) = (3/7)</p>\n\n<p>&rArr; 7x &ndash; 21 = 3y &ndash; 9</p>\n\n<p>&rArr; 7x <span style=\"color: rgb(33, 37, 41);\">&ndash;&nbsp;</span>12 = 3y&nbsp; &nbsp;----(2)</p>\n\n<p>Substituting the value of &lsquo;y&rsquo; from Equation 2 in Equation 1, we get</p>\n\n<p>5x + 6 = 7x - 12</p>\n\n<p>&rArr; 2x = 18</p>\n\n<p>&rArr; x = 9</p>\n\n<p>&rArr; y = [(5 &times; 9) + 6]/3 =17</p>\n&there4; Required Fraction = (x/y) = 9/17", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Linear Equation in 1 Variable"], "concept": "Linear Equation in 1 Variable", "confidence": "high"}, {"qid": "5bbc4846bbd0080c2a168ff7", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "If <span class=\"math-tex\">\\(n + \\frac{n}{2} + \\frac{n}{4} + \\frac{n}{8} = 45~~\\)</span>, then find the value of &lsquo;n&rsquo; which will satisfy the equation.&nbsp;", "options": [{"prompt": "1", "value": "16"}, {"prompt": "2", "value": "24"}, {"prompt": "3", "value": "36"}, {"prompt": "4", "value": "48"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि <span class=\"math-tex\">\\(n + \\frac{n}{2} + \\frac{n}{4} + \\frac{n}{8} = 45\\)</span>&nbsp;है, तब &lsquo;n&rsquo; का वह मान ज्ञात कीजिये जो समीकरण को संतुष्ट करता है।", "options": [{"prompt": "1", "value": "16"}, {"prompt": "2", "value": "24"}, {"prompt": "3", "value": "36"}, {"prompt": "4", "value": "48"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><strong>Calculation:</strong></p>\n\n<p>LCM of (2, 4, 8) is 8</p>\n\n<p>Multiplying each term on both sides with 8, we get</p>\n\n<p>8n + 4n + 2n + n = (45 &times; 8)</p>\n\n<p>&rArr; 15n = 360</p>\n\n<p>&rArr; n = 360/15 = 24</p>\n&there4; Value of &lsquo;n&rsquo; which satisfies the given equation is 24", "hn": "<p><strong>गणना:</strong></p>\n\n<p>(2, 4, 8) का लघुत्तम समापवर्त्य 8 है</p>\n\n<p>दोनों ओर प्रत्येक पद को 8 से गुणा करने पर, हमें प्राप्त होता है</p>\n\n<p>8n + 4n + 2n + n = (45 &times; 8)</p>\n\n<p>&rArr; 15n = 360</p>\n\n<p>&rArr; n = 360/15 = 24</p>\n&there4; &lsquo;n&rsquo; का वह मान 24 है जो समीकरण को संतुष्ट करता है।", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Linear Equation in 1 Variable"], "concept": "Linear Equation in 1 Variable", "confidence": "high"}, {"qid": "5bd81de459dd770c67ff0b64", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "A crate of egg holds one rotten egg out of every 25 egg in it. If 5 out of 8 rotten eggs are unusable and there are total 10 unusable eggs in the crate, then calculate the number of eggs in the crate.", "options": [{"prompt": "1", "value": "380"}, {"prompt": "2", "value": "400"}, {"prompt": "3", "value": "420"}, {"prompt": "4", "value": "440"}], "range": {"start": "", "end": ""}}, "hn": {"value": "अंडे की एक टोकरी में प्रत्येक 25 अंडे में से एक अंडा सड़ा हुआ है। यदि 8 सड़े हुए&nbsp;अंडे में से 5&nbsp;अनुपयोगी हैं और टोकरी में कुल 10 अनुपयोगी अंडे हैं, तो टोकरी में अंडों के संख्या की गणना कीजिए।", "options": [{"prompt": "1", "value": "380"}, {"prompt": "2", "value": "400"}, {"prompt": "3", "value": "420"}, {"prompt": "4", "value": "440"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>గుడ్డు పెట్టెలో ప్రతి 25 గుడ్డులో ఒక కుళ్లిన గుడ్డు ఉంటుంది. ఒకవేళ 8 కుళ్లిన గుడ్లలో 5 ఉపయోగించలేనివి మరియు గుడ్డు పెట్టెలో మొత్తం 10 ఉపయోగించలేని గుడ్లు ఉన్నట్లయితే, అప్పుడు గుడ్డు పెట్టెలోని గుడ్ల సంఖ్యను లెక్కించండి?</p>\n", "options": [{"prompt": "1", "value": "380"}, {"prompt": "2", "value": "400"}, {"prompt": "3", "value": "420"}, {"prompt": "4", "value": "440"}], "range": {"start": "", "end": ""}}, "mr": {"value": "अंड्याच्या एका टोकरीमध्ये प्रत्येक 25 अंड्यांपैकी एक कुजलेले अंडे असते. जर 8 पैकी 5 कुजलेली अंडी निरुपयोगी असतील आणि टोकरीमध्ये एकूण 10 निरुपयोगी अंडी असतील, तर <span style=\"display: none;\"> </span>क्रेट<span style=\"display: none;\"> </span>मधील अंडींची संख्या मोजा.", "options": [{"prompt": "1", "value": "380"}, {"prompt": "2", "value": "400"}, {"prompt": "3", "value": "420"}, {"prompt": "4", "value": "440"}], "range": {"start": "", "end": ""}}, "bn": {"value": "ডিমের একটি ঝুড়িতে প্রতি 25 টি ডিমের মধ্যে একটি পচা ডিম থাকে। যদি 8 টি পচা ডিমের মধ্যে 5 টি ব্যবহারযোগ্য না হয় এবং ঝুড়িতে মোট 10 টি অব্যবহারযোগ্য ডিম থাকে তবে ঝুড়িতে ডিমের সংখ্যা গণনা করুন।", "options": [{"prompt": "1", "value": "380"}, {"prompt": "2", "value": "400"}, {"prompt": "3", "value": "420"}, {"prompt": "4", "value": "440"}], "range": {"start": "", "end": ""}}, "gu": {"value": "ઈંડાની એક ટોકરી દર 25 ઈંડામાંથી એક સડેલું ઈંડું ધરાવે છે. જો 8માંથી 5 સડેલા ઇંડા બિનઉપયોગી હોય અને ટોકરીમાં કુલ 10 બિનઉપયોગી ઈંડા હોય, તો ટોકરીમાં ઈંડાની સંખ્યાની ગણતરી કરો.", "options": [{"prompt": "1", "value": "380"}, {"prompt": "2", "value": "400"}, {"prompt": "3", "value": "420"}, {"prompt": "4", "value": "440"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<span style=\"\">ಒಂದು ಬುಟ್ಟಿ ಮೊಟ್ಟೆಯಲ್ಲಿ ಪ್ರತಿ 25 ಮೊಟ್ಟೆಗಳಲ್ಲಿ ಒಂದು </span>ಕೊಳೆತ ಮೊಟ್ಟೆಯನ್ನು ಹೊಂದಿರುತ್ತದೆ<span style=\"\">. ಒಂದು ವೇಳೆ 8 ಕೊಳೆತ ಮೊಟ್ಟೆಗಳಲ್ಲಿ 5 </span>ನಿಷ್ಪ್ರಯೋಜಕವಾಗಿದ್ದರೆ<span style=\"\"> ಮತ್ತು ಬುಟ್ಟಿಯಲ್ಲಿ ಒಟ್ಟು 10 </span>ಬಳಸಲಾಗದ<span style=\"\"> ಮೊಟ್ಟೆಗಳಿದ್ದರೆ, ಬುಟ್ಟಿಯಲ್ಲಿರುವ ಮೊಟ್ಟೆಗಳ ಸಂಖ್ಯೆಯನ್ನು ಎಣಿಸಿ.</span>", "options": [{"prompt": "1", "value": "380"}, {"prompt": "2", "value": "400"}, {"prompt": "3", "value": "420"}, {"prompt": "4", "value": "440"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ஒரு முட்டையில் உள்ள ஒவ்வொரு 25 முட்டைகளிலும் ஒரு அழுகிய முட்டை உள்ளது. 8 அழுகிய முட்டைகளில் 5 பயன்படுத்த முடியாதவையாகவும், மொத்தமாக 10 முட்டைகள் பயன்படுத்த முடியாதவையாகவும் இருந்தால், கூட்டில் உள்ள முட்டைகளின் எண்ணிக்கையைக் கணக்கிடுங்கள்.", "options": [{"prompt": "1", "value": "380"}, {"prompt": "2", "value": "400"}, {"prompt": "3", "value": "420"}, {"prompt": "4", "value": "440"}], "range": {"start": "", "end": ""}}, "or": {"value": "ଅଣ୍ଡାର ଏକ ପାତ୍ର ଏଥିରେ ଥିବା ପ୍ରତ୍ୟେକ 25 ଟି ଅଣ୍ଡାରୁ ଗୋଟିଏ ପତଳା ଅଣ୍ଡା ଧରିଥାଏ | ଯଦି 8 ଟି ପତଳା ଅଣ୍ଡା ମଧ୍ୟରୁ 5 ଟି ବ୍ୟବହାର ଯୋଗ୍ୟ ନୁହେଁ ଏବଂ ଖାଲରେ ସମୁଦାୟ 10 ଟି ବ୍ୟବହାର ଯୋଗ୍ୟ ଅଣ୍ଡା ଅଛି, ତେବେ ଖାଲରେ ଅଣ୍ଡା ସଂଖ୍ୟା ଗଣନା କରନ୍ତୁ |", "options": [{"prompt": "1", "value": "380"}, {"prompt": "2", "value": "400"}, {"prompt": "3", "value": "420"}, {"prompt": "4", "value": "440"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>In every 25 eggs 1 egg is rotten</p>\n\n<p>In every 8 rotten eggs 5 are unusable</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>There are 5 unusable eggs out of 8 rotten eggs</p>\n\n<p>&rArr; There are 5&nbsp;&times; 2 = 10 unusable eggs out of 8&nbsp;&times; 2 = 16 rotten eggs.</p>\n\n<p>Now,</p>\n\n<p>1 egg is rotten out of 25 eggs</p>\n\n<p><strong>&there4; 16 eggs are rotten out of 25&nbsp;&times; 16 = 400 eggs.</strong></p>\n", "hn": "<p><strong>दिया हुआ-</strong></p>\n\n<p>प्रत्येक 25 अंडे में 1 अंडा सड़ा हुआ होता है</p>\n\n<p>हर 8 सड़े अंडे में 5 अनुपयोगी होते हैं</p>\n\n<p><strong>गणना-</strong></p>\n\n<p>8 सड़े हुए अंडों में से 5 अनुपयोगी अंडे हैं</p>\n\n<p>&rArr; 8 &times; 2 = 16 सड़े हुए अंडों में से 5 &times; 2 = 10 बेकार अंडे हैं।</p>\n\n<p>अभी,</p>\n\n<p>1 अंडा 25 अंडे से सड़ा हुआ है</p>\n\n<p><strong>&there4;&nbsp;16&nbsp;अंडे से सड़े हुए&nbsp;25 &times; 16 = 400 अंडे</strong>&nbsp;</p>\n", "te": "<p><strong>ఇచ్చినది:</strong></p>\n\n<p>​గుడ్డు పెట్టెలో ప్రతి 25 గుడ్లలో 1 గుడ్డు కుళ్ళిపోయింది</p>\n\n<p>ప్రతి 8 కుళ్ళిన గుడ్లలో 5 ఉపయోగించలేనివి</p>\n\n<p><strong>గణన:</strong></p>\n\n<p>8 కుళ్ళిన గుడ్లలో 5 ఉపయోగించలేని గుడ్లు ఉన్నాయి</p>\n\n<p>⇒ 8 x 2 = 16 కుళ్ళిన గుడ్లలో 5 x 2 = 10 ఉపయోగించలేని గుడ్లు ఉన్నాయి.</p>\n\n<p>ఇప్పుడు,</p>\n\n<p>25 గుడ్లలో 1 గుడ్డు కుళ్ళిపోయింది</p>\n\n<p><strong>∴ 25 x 16 = 400 గుడ్లలో 16 గుడ్లు కుళ్ళిపోయాయి.</strong></p>\n", "mr": "<p><strong>दिलेले आहे:</strong></p>\n\n<p>प्रत्येक 25 अंड्यांमध्ये 1 अंडे कुजलेले असते</p>\n\n<p>प्रत्येक 8 कुजलेल्या अंडींपैकी 5 निरुपयोगी आहेत</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>8 कुजलेल्या अंड्यांपैकी 5 निरुपयोगी अंडी आहेत</p>\n\n<p>8 × 2 = 16 कुजलेल्या अंड्यांपैकी 5 × 2 = 10 निरुपयोगी अंडी आहेत.</p>\n\n<p>आता,</p>\n\n<p>25 अंड्यांपैकी 1 अंडं कुजलेले आहे</p>\n\n<p><strong>∴ 25 × 16 = 400 अंड्यांपैकी 16 अंडी कुजलेली आहेत.</strong></p>\n", "bn": "<p><strong>প্রদত্ত-</strong></p>\n\n<p>প্রতি 25 টি ডিমের মধ্যে 1 টি ডিম পচা হয়</p>\n\n<p>প্রতি 8 টি পচা ডিমের মধ্যে 5 টি ব্যবহারযোগ্য নয়</p>\n\n<p><strong>গণনা-</strong></p>\n\n<p>পচা ডিমের মধ্যে 5 টি অব্যবহারযোগ্য ডিম রয়েছে</p>\n\n<p>⇒ 8 × 2 = 16 টি পচা ডিমের মধ্যে 5 × 2 = 10 টি অব্যবহারযোগ্য ডিম রয়েছে।</p>\n\n<p>এখন,</p>\n\n<p>1 টি ডিম পচা হয় 25 টি ডিমের মধ্যে </p>\n\n<p><strong>∴ 16 টি ডিম পচা হয় 25 × 16 = 400 ডিমের মধ্যে ।</strong></p>\n", "ml": "", "gu": "<p><strong>આપેલ:</strong></p>\n\n<p>દર 25 ઈંડામાં 1 ઈંડું સડેલું છે</p>\n\n<p>દર 8 સડેલા ઈંડામાં 5 બિનઉપયોગી છે</p>\n\n<p><strong>ગણતરી:</strong></p>\n\n<p>8 સડેલા ઇંડામાંથી 5 બિનઉપયોગી ઇંડા છે</p>\n\n<p>⇒ 8 × 2 = 16 સડેલા ઇંડામાંથી 5 × 2 = 10 બિનઉપયોગી ઇંડા છે.</p>\n\n<p>હવે,</p>\n\n<p>25 ઇંડામાંથી 1 ઈંડું સડેલું છે</p>\n\n<p><strong>∴ 25 × 16 = 400 ઇંડામાંથી 16 ઇંડા સડેલા છે.</strong></p>\n", "kn": "<div><span style=\"\"><strong>ನೀಡಲಾಗಿದೆ</strong>-</span></div>\n\n<div> </div>\n\n<div><span style=\"\">ಪ್ರತಿ 25 ಮೊಟ್ಟೆಗಳಲ್ಲಿ 1 ಕೊಳೆತಿರುವ </span>ಮೊಟ್ಟೆ ಇದೆ</div>\n\n<div> </div>\n\n<div><span style=\"\">ಪ್ರತಿ 8 ಕೊಳೆತ ಮೊಟ್ಟೆಗಳಲ್ಲಿ 5 ನಿಷ್ಪ್ರಯೋಜಕವಾಗಿದೆ</span></div>\n\n<div> </div>\n\n<div><span style=\"\"><strong>ಲೆಕ್ಕಾಚಾರ</strong> -</span></div>\n\n<div> </div>\n\n<div><span style=\"\">8 ಕೊಳೆತ ಮೊಟ್ಟೆಗಳಲ್ಲಿ 5 </span><span style=\"color: rgb(33, 37, 41);\">ನಿಷ್ಪ್ರಯೋಜಕ</span><span style=\"\"> ಮೊಟ್ಟೆಗಳಾಗಿವೆ</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ 8 × 2 = 16 ಕೊಳೆತ ಮೊಟ್ಟೆಗಳಲ್ಲಿ, 5 × 2 = 10 </span><span style=\"color: rgb(33, 37, 41);\">ನಿಷ್ಪ್ರಯೋಜಕ</span><span style=\"\"> ಮೊಟ್ಟೆಗಳಿವೆ.</span></div>\n\n<div> </div>\n\n<div><span style=\"\">ಈಗ,</span></div>\n\n<div> </div>\n\n<div><span style=\"\">25 ಮೊಟ್ಟೆಗಳಲ್ಲಿ 1 ಮೊಟ್ಟೆ ಕೊಳೆತವಾಗಿದೆ</span></div>\n\n<div> </div>\n\n<div><strong><span style=\"\">∴ 25 × 16 = 400 ಮೊಟ್ಟೆಗಳಲ್ಲಿ 16 ಮೊಟ್ಟೆಗಳು ಕೊಳೆತವಾಗಿವೆ.</span></strong></div>\n", "ta": "<p><strong>கொடுக்கப்பட்டது:</strong></p><p> ஒவ்வொரு 25 முட்டைகளிலும் 1 முட்டை அழுகியிருக்கும்</p><p> ஒவ்வொரு 8 அழுகிய முட்டைகளிலும் 5 பயன்படுத்த முடியாதவை</p><p> <strong>கணக்கீடு:</strong></p><p> 8 அழுகிய முட்டைகளில் 5 பயன்படுத்த முடியாத முட்டைகள் உள்ளன</p><p> ⇒ 8 × 2 = 16 அழுகிய முட்டைகளில் 5 × 2 = 10 பயன்படுத்த முடியாத முட்டைகள் உள்ளன.</p><p> இப்போது,</p><p> 25 முட்டைகளில் 1 முட்டை அழுகிவிட்டது</p><p> <strong>∴ 25 × 16 = 400 முட்டைகளில் 16 முட்டைகள் அழுகியவை.</strong></p>", "or": "<p><strong>ଦିଆଯାଇଥିବା:</strong></p>\n\n<p>ପ୍ରତି 25 ଟି ଅଣ୍ଡାରେ 1 ଟି ଅଣ୍ଡା କ୍ଷୟ ହୋଇଯାଏ </p>\n\n<p>ପ୍ରତ୍ୟେକ 8 ଟି ପତଳା ଅଣ୍ଡାରେ 5 ଟି ବ୍ୟବହାର ଯୋଗ୍ୟ ନୁହେଁ </p>\n\n<p><strong>ଗଣନା:</strong></p>\n\n<p>R ଟି ପତଳା ଅଣ୍ଡା ମଧ୍ୟରୁ 5 ଟି ଅବ୍ୟବହୃତ ଅଣ୍ଡା ଅଛି </p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒</span> 8 × 2 = 16 ପତଳା ଅଣ୍ଡା ମଧ୍ୟରୁ 5 × 2 = 10 ବ୍ୟବହାର ଯୋଗ୍ୟ ଅଣ୍ଡା ଅଛି </p>\n\n<p>ବର୍ତ୍ତମାନ,</p>\n\n<p>25 ଟି ଅଣ୍ଡାରୁ 1 ଟି ଅଣ୍ଡା କ୍ଷୟ ହୋଇଛି </p>\n\n<p>∴ 25 × 16 = 400 ଅଣ୍ଡାରୁ 16 ଟି ଅଣ୍ଡା କ୍ଷୟ ହୋଇଯାଏ |</p>\n", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Linear Equation in 1 Variable"], "concept": "Linear Equation in 1 Variable", "confidence": "high"}, {"qid": "5b3c9ee33228e82e6bd8223b", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "The 2nd and 6th term of an arithmetic progression are 8 and 20 respectively. What is the 20th term?", "options": [{"prompt": "1", "value": "56"}, {"prompt": "2", "value": "65"}, {"prompt": "3", "value": "62"}, {"prompt": "4", "value": "59"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक समान्तर श्रेणी का दूसरा और छठा पद क्रमशः 8 और 20 है। 20वीं पद क्या है?", "options": [{"prompt": "1", "value": "56"}, {"prompt": "2", "value": "65"}, {"prompt": "3", "value": "62"}, {"prompt": "4", "value": "59"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>Let the first term of A.P. be a and let the difference be d</p>\n\n<p>&rArr; a + d = 8&nbsp;&nbsp; ----(i)</p>\n\n<p>&rArr; a + 5d = 20&nbsp;&nbsp; ----(ii)</p>\n\n<p>Subtracting (i) from (ii)</p>\n\n<p>&rArr; 4d = 20 - 8 = 12</p>\n\n<p>&rArr; d = 3</p>\n\n<p>Putting the value of d in (i)</p>\n\n<p>&rArr; a + 3 = 8</p>\n\n<p>&rArr; a = 8 - 3 = 5</p>\nSo, 20<sup>th</sup> term = a + 19d = 5 + 19 &times; (3) = 5 + 57 = 62", "hn": "<p>माना कि समान्तर श्रेणी की पहली पद a है और अंतर d है।</p>\n\n<p>&rArr; a + d = 8&nbsp;&nbsp; ----(i)</p>\n\n<p>&rArr; a + 5d = 20&nbsp;&nbsp; ----(ii)</p>\n\n<p>(i) को (ii) से घटाने पर,</p>\n\n<p>&rArr; 4d = 20 - 8 = 12</p>\n\n<p>&rArr; d = 3</p>\n\n<p>d का मान (i) में रखने पर, &rArr; a + 3 = 8</p>\n\n<p>&rArr; a = 8 - 3 = 5</p>\nइसलिए, बीसवाँ पद = a + 19d = 5 + 19 &times; (3) = 5 + 57 = 62", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Linear Equation in 1 Variable"], "concept": "Linear Equation in 1 Variable", "confidence": "high"}, {"qid": "5b3dba3c6c5a2f0c24889785", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>A bag has Rs 43 in the form of 5-rupee, 50-paise and 10-paise coins in the ratio of 1 : 5 : 11. What is the total number of 50-paise coins?</p>\n", "options": [{"prompt": "1", "value": "5"}, {"prompt": "2", "value": "25"}, {"prompt": "3", "value": "50"}, {"prompt": "4", "value": "40"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>एक बैग में 5-रूपये, 50-पैसे एवं 10-पैसे के सिक्के 1 : 5 : 11 के अनुपात में हैं, जिनका मूल्य 43 रूपये है। 50-पैसे के सिक्कों की कुल संख्या क्या है?</p>\n", "options": [{"prompt": "1", "value": "5"}, {"prompt": "2", "value": "25"}, {"prompt": "3", "value": "50"}, {"prompt": "4", "value": "40"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>Let number of coins in the form of 5-rupee, 50-paise and 10-paise in the bag is x, 5x and 11x respectively</p>\n\n<p>Total Amount = 43</p>\n\n<p>&rArr; x &times; 5 + 5x &times; 1/2 + 11x &times; 1/10 = 43</p>\n\n<p>&rArr; (<span style=\"color: rgb(33, 37, 41);\">50x + 25x + 11x)/10 = 43</span></p>\n\n<p>&rArr; 50x + 25x + 11x = 430</p>\n\n<p>&rArr; 86x = 430</p>\n\n<p>&rArr; x = 430/86</p>\n\n<p>&rArr; x = 5</p>\n\n<p>&there4; The total number of 50-paise coins = 5 &times; 5 = 25</p>\n", "hn": "<p style=\"\">माना बैग में 5-रूपये, 50-पैसे एवं 10-पैसे के रूप में सिक्कों की संख्या क्रमशः x, 5x एवं 11x है।</p>\n\n<p>कुल राशि = 43</p>\n\n<p>&rArr; x &times; 5 + 5x &times; 1/2 + 11x &times; 1/10 = 43</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">&rArr; (</span><span style=\"color: rgb(33, 37, 41);\">50x + 25x + 11x)/10 = 43</span></p>\n\n<p>&rArr; 50x + 25x + 11x = 430</p>\n\n<p>&rArr; 86x = 430</p>\n\n<p>&rArr; x = 430/86</p>\n\n<p>&rArr; x = 5</p>\n\n<p>&there4; 50-पैसे के सिक्कों की कुल संख्या = 5 &times; 5 = 25</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Linear Equation in 1 Variable"], "concept": "Linear Equation in 1 Variable", "confidence": "high"}, {"qid": "5b46f8fe7de5572fcfba61a4", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "What is the simplified value of&nbsp;<span class=\"math-tex\">\\(\\left( {{x^{32}} + \\frac{1}{{{x^{32}}}}} \\right)\\left( {{x^8} + \\frac{1}{{{x^8}}}} \\right)\\left( {x - \\frac{1}{x}} \\right)\\left( {{x^{16}} + \\frac{1}{{{x^{16}}}}} \\right)\\left( {x + \\frac{1}{x}} \\right)\\left( {{x^4} + \\frac{1}{{{x^4}}}} \\right)?\\)</span>", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\left( {{x^{64}} + \\frac{1}{{{x^{64}}}}} \\right)\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{{\\left( {{x^{64}} + \\frac{1}{{{x^{64}}}}} \\right)}}{{\\left( {{x^2} + \\frac{1}{{{x^2}}}} \\right)}}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{{\\left( {{x^{64}} - \\frac{1}{{{x^{64}}}}} \\right)}}{{\\left( {{x^2} + \\frac{1}{{{x^2}}}} \\right)}}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{{\\left( {{x^{32}} + \\frac{1}{{{x^{32}}}}} \\right)}}{{\\left( {x + \\frac{1}{x}} \\right)}}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span class=\"math-tex\">\\(\\left( {{x^{32}} + \\frac{1}{{{x^{32}}}}} \\right)\\left( {{x^8} + \\frac{1}{{{x^8}}}} \\right)\\left( {x - \\frac{1}{x}} \\right)\\left( {{x^{16}} + \\frac{1}{{{x^{16}}}}} \\right)\\left( {x + \\frac{1}{x}} \\right)\\left( {{x^4} + \\frac{1}{{{x^4}}}} \\right)?\\)</span>&nbsp;को सरल कीजिए।", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\left( {{x^{64}} + \\frac{1}{{{x^{64}}}}} \\right)\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{{\\left( {{x^{64}} + \\frac{1}{{{x^{64}}}}} \\right)}}{{\\left( {{x^2} + \\frac{1}{{{x^2}}}} \\right)}}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{{\\left( {{x^{64}} - \\frac{1}{{{x^{64}}}}} \\right)}}{{\\left( {{x^2} + \\frac{1}{{{x^2}}}} \\right)}}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{{\\left( {{x^{32}} + \\frac{1}{{{x^{32}}}}} \\right)}}{{\\left( {x + \\frac{1}{x}} \\right)}}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><strong>Given:</strong><br />\n<span style=\"color: rgb(33, 37, 41);\">(x</span><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">32</span><span style=\"color: rgb(33, 37, 41);\">&nbsp;+ 1/x</span><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">32</span><span style=\"color: rgb(33, 37, 41);\">) (x</span><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">8</span><span style=\"color: rgb(33, 37, 41);\">&nbsp;+ 1/x</span><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">8</span><span style=\"color: rgb(33, 37, 41);\">) (x</span><span style=\"color: rgb(33, 37, 41);\">&nbsp;- 1/x</span><span style=\"color: rgb(33, 37, 41);\">) (x</span><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">16</span><span style=\"color: rgb(33, 37, 41);\">&nbsp;+ 1/x</span><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">16</span><span style=\"color: rgb(33, 37, 41);\">)(x + 1/x) (x</span><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">4</span><span style=\"color: rgb(33, 37, 41);\">&nbsp;+ 1/x</span><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">4</span><span style=\"color: rgb(33, 37, 41);\">)</span></p>\n\n<p>so</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">&rArr; (x</span><span style=\"color: rgb(33, 37, 41); position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">32</span><span style=\"color: rgb(33, 37, 41);\">&nbsp;+ 1/x</span><span style=\"color: rgb(33, 37, 41); position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">32</span><span style=\"color: rgb(33, 37, 41);\">) (x</span><span style=\"color: rgb(33, 37, 41); position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">8</span><span style=\"color: rgb(33, 37, 41);\">&nbsp;+ 1/x</span><span style=\"color: rgb(33, 37, 41); position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">8</span><span style=\"color: rgb(33, 37, 41);\">) <strong>(x - 1/x) (x + 1/x)</strong>&nbsp;(x</span><span style=\"color: rgb(33, 37, 41); position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">16</span><span style=\"color: rgb(33, 37, 41);\">&nbsp;+ 1/x</span><span style=\"color: rgb(33, 37, 41); position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">16</span><span style=\"color: rgb(33, 37, 41);\">) (x</span><span style=\"color: rgb(33, 37, 41); position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">4</span><span style=\"color: rgb(33, 37, 41);\">&nbsp;+ 1/x</span><span style=\"color: rgb(33, 37, 41); position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">4</span><span style=\"color: rgb(33, 37, 41);\">)</span></p>\n\n<p>(x<sup>32</sup> + 1/x<sup>32</sup>) (x<sup>8</sup> + 1/x<sup>8</sup>) (x<sup>2</sup> - 1/x<sup>2</sup>) (x<sup>16</sup> + 1/x<sup>16</sup>) (x<sup>4</sup> + 1/x<sup>4</sup>)</p>\n\n<p>Now we multiply by (x<sup>2</sup> + 1/x<sup>2</sup>) and divide by (x<sup>2</sup> + 1/x<sup>2</sup>) so the solution be same</p>\n\n<p>[<strong>(x<sup>2</sup> + 1/x<sup>2</sup>)</strong> (x<sup>32</sup> + 1/x<sup>32</sup>) (x<sup>8</sup> + 1/x<sup>8</sup>)<strong> (x<sup>2</sup> - 1/x<sup>2</sup>)</strong> (x<sup>16</sup> + 1/x<sup>16</sup>) (x<sup>4</sup> + 1/x<sup>4</sup>)]/(x<sup>2</sup> + 1/x<sup>2</sup>)</p>\n\n<p>&rArr; <strong>(x<sup>4</sup> - 1/x<sup>4</sup>) </strong>(x<sup>32</sup> + 1/x<sup>32</sup>) (x<sup>8</sup> + 1/x<sup>8</sup>) (x<sup>16</sup> + 1/x<sup>16</sup>)<strong> (x<sup>4</sup> + 1/x<sup>4</sup>)</strong>]/(x<sup><span style=\"font-size:10.5px\">2</span></sup>&nbsp;+ 1/x<sup>2</sup>)</p>\n\n<p><span style=\"\">&rArr;<strong>&nbsp;</strong></span><strong>(x<sup>8</sup> - 1/x<sup>8</sup>) </strong>(x<sup>32</sup> + 1/x<sup>32</sup>)<strong> (x<sup>8</sup> + 1/x<sup>8</sup>) </strong>(x<sup>16</sup> + 1/x<sup>16</sup>)]/(x<sup>2</sup> + 1/x<sup>2</sup>)</p>\n\n<p><span style=\"\">&rArr;<strong>&nbsp;</strong></span><strong>(x<sup>16</sup> - 1/x<sup>16</sup>)</strong> (x<sup>32</sup> + 1/x<sup>32</sup>) <strong>(x<sup>16</sup> + 1/x<sup>16</sup>)</strong>]/(x<sup><span style=\"font-size:10.5px\">2</span></sup>&nbsp;+ 1/x<sup>2</sup>)</p>\n\n<p><span style=\"\">&rArr;&nbsp;</span>(x<sup>32</sup> - 1/x<sup>32</sup>) (x<sup>32</sup> + 1/x<sup>32</sup>)/(x<sup>2</sup> + 1/x<sup>2</sup>)</p>\n<span style=\"\">&rArr;&nbsp;</span><strong>(x<sup>64</sup> - 1/x<sup>64</sup>)/(x<sup>2</sup> + 1/x<sup>2</sup>)</strong>", "hn": "\n<p><span data-sheets-userformat=\"{&quot;2&quot;:31299,&quot;3&quot;:{&quot;1&quot;:0},&quot;4&quot;:{&quot;1&quot;:2,&quot;2&quot;:16777215},&quot;9&quot;:0,&quot;12&quot;:0,&quot;14&quot;:{&quot;1&quot;:2,&quot;2&quot;:5790043},&quot;15&quot;:&quot;Roboto, sans-serif&quot;,&quot;16&quot;:11,&quot;17&quot;:1}\" data-sheets-value=\"{&quot;1&quot;:2,&quot;2&quot;:&quot;दिया है:&quot;}\" style=\"  font-weight: bold;\">दिया है:</span></p>\n\n<p>(x<sup>32</sup> + 1/x<sup>32</sup>) (x<sup>8</sup> + 1/x<sup>8</sup>) (x<sup>2</sup> - 1/x<sup>2</sup>) (x<sup>16</sup> + 1/x<sup>16</sup>) (x<sup>4</sup> + 1/x<sup>4</sup>)</p>\n\n<p style=\"color: rgb(33, 37, 41);\">&rArr;&nbsp;(x<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">32</span>&nbsp;+ 1/x<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">32</span>) (x<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">8</span>&nbsp;+ 1/x<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">8</span>)&nbsp;<span style=\"font-weight: bolder;\">(x - 1/x) (x + 1/x)</span>&nbsp;(x<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">16</span>&nbsp;+ 1/x<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">16</span>) (x<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">4</span>&nbsp;+ 1/x<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">4</span>)</p>\n\n<p style=\"color: rgb(33, 37, 41);\">(x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">32</span>&nbsp;+ 1/x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">32</span>) (x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">8</span>&nbsp;+ 1/x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">8</span>) (x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>&nbsp;- 1/x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>) (x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">16</span>&nbsp;+ 1/x<span style=\"position: relative;  line-hei", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Linear Equation in 1 Variable"], "concept": "Linear Equation in 1 Variable", "confidence": "high"}, {"qid": "5ba9c53c8c0c440c48642444", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "1800 chocolates were distributed among the students of a class. Each student got twice as many chocolates as the number of students in the class. Calculate the number of students in the class.", "options": [{"prompt": "1", "value": "30"}, {"prompt": "2", "value": "40"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "90"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक कक्षा के छात्रों के बीच 1800 चॉकलेट वितरित की गयीं। प्रत्येक छात्र को कक्षा में छात्रों की संख्या से दोगुनी चॉकलेट मिलीं। कक्षा में छात्रों की संख्या की गणना कीजिये।", "options": [{"prompt": "1", "value": "30"}, {"prompt": "2", "value": "40"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "90"}], "range": {"start": "", "end": ""}}, "te": {"value": "<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px; \">ఒక తరగతి విద్యార్థులకు 1800 చాక్లెట్లు పంపిణీ చేశారు. ఒక్కో విద్యార్థికి తరగతిలోని విద్యార్థుల సంఖ్య కంటే రెట్టింపు చాక్లెట్లు వచ్చాయి. తరగతిలో విద్యార్థుల సంఖ్యను లెక్కించండి.</div>\n", "options": [{"prompt": "1", "value": "30"}, {"prompt": "2", "value": "40"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "90"}], "range": {"start": "", "end": ""}}, "mr": {"value": "एका वर्गातील विद्यार्थ्यांना 1800 चॉकलेटचे वाटप करण्यात आले. प्रत्येक विद्यार्थ्याला वर्गातील विद्यार्थ्यांच्या दुप्पट चॉकलेट्स मिळाली. तर वर्गातील विद्यार्थ्यांची संख्या मोजा.", "options": [{"prompt": "1", "value": "30"}, {"prompt": "2", "value": "40"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "90"}], "range": {"start": "", "end": ""}}, "bn": {"value": "একটি শ্রেণীর শিক্ষার্থীদের মধ্যে 1800 চকোলেট বিতরণ করা হয়েছিল। প্রত্যেক শিক্ষার্থী শ্রেণীর শিক্ষার্থী সংখ্যার দ্বিগুণ চকোলেট পেয়েছিল। শ্রেণীর শিক্ষার্থী সংখ্যা গণনা করুন।", "options": [{"prompt": "1", "value": "30"}, {"prompt": "2", "value": "40"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "90"}], "range": {"start": "", "end": ""}}, "gu": {"value": "એક વર્ગના વિદ્યાર્થીઓને 1800 ચોકલેટનું વિતરણ કરવામાં આવ્યું હતું. દરેક વિદ્યાર્થીને વર્ગના વિદ્યાર્થીઓની સંખ્યા કરતા બમણી ચોકલેટ મળી. વર્ગમાં વિદ્યાર્થીઓની સંખ્યાની ગણતરી કરો.", "options": [{"prompt": "1", "value": "30"}, {"prompt": "2", "value": "40"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "90"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<span style=\"\">ಒಂದು ತರಗತಿಯ ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ 1800 ಚಾಕೊಲೇಟ್‌ಗಳನ್ನು ವಿತರಿಸಲಾಯಿತು. ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಯು ತರಗತಿಯಲ್ಲಿರುವ ವಿದ್ಯಾರ್ಥಿಗಳ ಸಂಖ್ಯೆಗಿಂತ ಎರಡು ಪಟ್ಟು ಹೆಚ್ಚು ಚಾಕೊಲೇಟ್‌ಗಳನ್ನು ಪಡೆದರು. ತರಗತಿಯಲ್ಲಿರುವ ವಿದ್ಯಾರ್ಥಿಗಳ ಸಂಖ್ಯೆಯನ್ನು ಎಣಿಸಿ.</span>", "options": [{"prompt": "1", "value": "30"}, {"prompt": "2", "value": "40"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "90"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ஒரு வகுப்பின் மாணவர்கள் மத்தியில் 1800 சாக்லேட்டுகள் விநியோகிக்கப்பட்டன. ஒவ்வொரு மாணவருக்கும் வகுப்பில் உள்ள மாணவர்களின் எண்ணிக்கையை விட இரண்டு மடங்கு சாக்லேட்டுகள் கிடைத்தன எனில், வகுப்பில் உள்ள மாணவர்களின் எண்ணிக்கையை காண்க.", "options": [{"prompt": "1", "value": "30"}, {"prompt": "2", "value": "40"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "90"}], "range": {"start": "", "end": ""}}, "or": {"value": "ଏକ ଶ୍ରେଣୀର ଛାତ୍ରମାନଙ୍କ ମଧ୍ୟରେ 1800 ଚକୋଲେଟ୍ ବଣ୍ଟନ କରାଯାଇଥିଲା | ପ୍ରତ୍ୟେକ ଛାତ୍ର ଶ୍ରେଣୀର ଛାତ୍ରଙ୍କ ତୁଳନାରେ ଦୁଇଗୁଣ ଚକୋଲେଟ୍ ପାଇଥିଲେ | ଶ୍ରେଣୀରେ ଛାତ୍ର ସଂଖ୍ୟା ଗଣନା କରନ୍ତୁ |", "options": [{"prompt": "1", "value": "30"}, {"prompt": "2", "value": "40"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "90"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p><strong><span data-darkreader-inline-color=\"\" style=\"color: rgb(88, 89, 91); --darkreader-inline-color: #afa99e;\">Deatialed solution:-</span></strong><br />\n<br />\nLet the number of students in the class be &lsquo;x&rsquo;</p>\n\n<p>No. of chocolates received by each student = 2x</p>\n\n<p>Total number of chocolates = 2x &times; x</p>\n\n<p>&rArr; 2x<sup>2</sup> = 1800</p>\n\n<p>&rArr; x<sup>2</sup> = 900</p>\n\n<p>&rArr; x = &radic;900 = 30</p>\n<strong>&there4; There are 30 students in the class.</strong>", "hn": "<p>माना कक्षा में छात्रों की संख्या &lsquo;x&rsquo; है।</p>\n\n<p>प्रत्येक छात्र को प्राप्त चॉकलेट की संख्या = 2x</p>\n\n<p>चॉकलेट की कुल संख्या = 2x &times; x</p>\n\n<p>&rArr; 2x<sup>2</sup> = 1800</p>\n\n<p>&rArr; x<sup>2</sup> = 900</p>\n\n<p>&rArr; x = &radic;900 = 30</p>\n&there4; कक्षा में 30 छात्र हैं।", "te": "\n<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px; \">తరగతిలోని విద్యార్థుల సంఖ్య ‘x’గా ఉండనివ్వండి</div>\n\n<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px; \"> </div>\n\n<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px; \"> </div>\n\n<div id=\"translation\" style=\"color: rgb(37, 37, 37);  display: inline;\">\n<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px;\">ప్రతి విద్యార్థి అందుకున్న చాక్లెట్ల సంఖ్య = 2x</div>\n\n<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px;\"> </div>\n\n<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px;\"> </div>\n</div>\n\n<div id=\"translation\" style=\"color: rgb(37, 37, 37);  display: inline;\">\n<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px;\">మొత్తం చాక్లెట్ల సంఖ్య = 2x × x</div>\n\n<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px;\"> </div>\n\n<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px;\"> </div>\n</div>\n\n<p>⇒ 2x<sup>2</sup> = 1800</p>\n\n<p>⇒ x<sup>2</sup> = 900</p>\n\n<p>⇒ x = √900 = 30</p>\n\n<div id=\"translation\" style=\"color: rgb(37, 37, 37);  display: inline;\">\n<div class=\"gtx-body\" style=\"display: inline;  margin: 5px auto; padding: 5px 0px;\">∴ తరగతిలో 30 మంది విద్యార్థులు ఉన్నారు</div>\n</div>\n\n31:Tcc0,\n<p><strong>Given:</strong></p>\n\n<p><span style=\"\">&radic;y = &radic;4 - &radic;6</span></p>\n\n<p><strong><span style=\"\">Formula used:</span&g", "mr": "<p><strong>तपशीलवार उत्तर:-​</strong></p>\n\n<p>समजा वर्गातील विद्यार्थ्यांची संख्या ‘x’ आहे,</p>\n\n<p>प्रत्येक विद्यार्थ्याला मिळालेल्या चॉकलेट्सची संख्या = 2x</p>\n\n<p>चॉकलेट्सची एकूण संख्या = 2x × x</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 2x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> = 1800</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> = 900</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ x = √900 = 30</p>\n\n<p><strong>∴ वर्गात 30 विद्यार्थी आहेत.</strong></p>\n", "bn": "<p>ধরি, শ্রেণীর শিক্ষার্থী সংখ্যা ‘x’</p>\n\n<p>প্রত্যেক শিক্ষার্থী দ্বারা প্রাপ্ত চকোলেট সংখ্যা = 2x</p>\n\n<p>চকোলেটের মোট সংখ্যা = 2x × x</p>\n\n<p>⇒ 2x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> = 1800</p>\n\n<p>⇒ x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> = 900</p>\n\n<p>⇒ x = √900 = 30</p>\n\n<p>∴ শ্রেণীতে 30 জন শিক্ষার্থী রয়েছে।</p>\n", "ml": "", "gu": "<p><strong>વિગતવાર ઉકેલ:-</strong></p>\n\n<p>ધારો કે વર્ગમાં વિદ્યાર્થીઓની સંખ્યા 'x' છે</p>\n\n<p>દરેક વિદ્યાર્થીને મળેલી ચોકલેટની સંખ્યા = 2x</p>\n\n<p>ચોકલેટની કુલ સંખ્યા = 2x × x</p>\n\n<p>⇒ 2x<sup>2</sup> = 1800</p>\n\n<p>⇒ x<sup>2</sup> = 900</p>\n\n<p>⇒ x = √900 = 30</p>\n<strong>∴ વર્ગમાં 30 વિદ્યાર્થીઓ છે.</strong>", "kn": "<div><strong><span style=\"\">ವಿವರವಾದ ಪರಿಹಾರ:-</span></strong></div>\n\n<div> </div>\n\n<div><span style=\"\">ತರಗತಿಯಲ್ಲಿರುವ ವಿದ್ಯಾರ್ಥಿಗಳ ಸಂಖ್ಯೆ ‘x’ ಆಗಿರಲಿ.</span></div>\n\n<div> </div>\n\n<div><span style=\"\">ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಯು ಸ್ವೀಕರಿಸಿದ ಚಾಕೊಲೇಟ್‌ಗಳ ಸಂಖ್ಯೆ = 2x</span></div>\n\n<div> </div>\n\n<div><span style=\"\">ಚಾಕೊಲೇಟ್‌ಗಳ ಒಟ್ಟು ಸಂಖ್ಯೆ = 2x × x</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ 2x2 = 1800</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ x2 = 900</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ x = √900 = 30</span></div>\n\n<div> </div>\n\n<div><strong><span style=\"\">∴ ತರಗತಿಯಲ್ಲಿ 30 ವಿದ್ಯಾರ್ಥಿಗಳಿದ್ದಾರೆ.</span></strong></div>\n", "ta": "<p>வகுப்பில் உள்ள மாணவர்களின் எண்ணிக்கை 'x' ஆக இருக்கட்டும்</p>\n\n<p>ஒவ்வொரு மாணவரும் பெற்ற சாக்லேட்டுகளின் எண்ணிக்கை = 2x</p>\n\n<p>மொத்த சாக்லேட்டுகளின் எண்ணிக்கை = 2x × x</p>\n\n<p>⇒ 2x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> = 1800</p>\n\n<p>⇒ x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> = 900</p>\n\n<p>⇒ x = √900 = 30</p>\n∴ வகுப்பில் உள்ள மாணவர்களின் எண்ணிக்கை 30 ஆகும். ", "or": "<p><strong>ବିସ୍ତୃତ ସମାଧାନ: -</strong><br />\nଶ୍ରେଣୀର ଛାତ୍ରମାନଙ୍କ ସଂଖ୍ୟା ‘x’ ହେଉ <br />\nପ୍ରତ୍ୟେକ ଛାତ୍ରଙ୍କ ଦ୍ଵାରା ଗ୍ରହଣ କରାଯାଇଥିବା ଚକୋଲେଟ୍ ସଂଖ୍ୟା = 2x <br />\nସମୁଦାୟ ଚକୋଲେଟ୍ = 2x × x </p>\n\n<p>⇒ 2x<sup>2</sup> = 1800</p>\n\n<p>⇒ x<sup>2</sup> = 900</p>\n\n<p>⇒ x = √900 = 30</p>\n<strong>∴ ଶ୍ରେଣୀରେ 30 ଜଣ ଛାତ୍ର ଅଛନ୍ତି |</strong>", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Linear Equation in 1 Variable"], "concept": "Linear Equation in 1 Variable", "confidence": "high"}, {"qid": "5c330752fdb8bb10c045b63f", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Divide 150 into two parts such that the sum of their reciprocals is 3/112. Calculate both the parts.", "options": [{"prompt": "1", "value": "50, 90"}, {"prompt": "2", "value": "70, 80"}, {"prompt": "3", "value": "60, 90"}, {"prompt": "4", "value": "50, 100"}], "range": {"start": "", "end": ""}}, "hn": {"value": "150 को दो भागों में इस प्रकार विभाजित कीजिए कि उनके व्युत्क्रमों का योग 3/112 हो जाए। दोनों भागों की गणना कीजिए।", "options": [{"prompt": "1", "value": "50, 90"}, {"prompt": "2", "value": "70, 80"}, {"prompt": "3", "value": "60, 90"}, {"prompt": "4", "value": "50, 100"}], "range": {"start": "", "end": ""}}, "te": {"value": "150ని రెండు భాగాలుగా విభజించండి, వాటి వృత్కమాల మొత్తం 3/112. రెండు భాగాలను లెక్కించండి.", "options": [{"prompt": "1", "value": "50, 90"}, {"prompt": "2", "value": "70, 80"}, {"prompt": "3", "value": "60, 90"}, {"prompt": "4", "value": "50, 100"}], "range": {"start": "", "end": ""}}, "mr": {"value": "150 ला दोन भागांमध्ये विभाजित करा की त्यांच्या परस्परसंख्येची बेरीज 3/112 असेल. तर दोन्ही भागांची गणना करा.", "options": [{"prompt": "1", "value": "50, 90"}, {"prompt": "2", "value": "70, 80"}, {"prompt": "3", "value": "60, 90"}, {"prompt": "4", "value": "50, 100"}], "range": {"start": "", "end": ""}}, "bn": {"value": "150 কে এমন দুটি অংশে ভাগ করুন যাতে তাদের অন্যোন্য়কের যোগফল 3/112 হয়। উভয় অংশ গণনা করুন।", "options": [{"prompt": "1", "value": "50, 90"}, {"prompt": "2", "value": "70, 80"}, {"prompt": "3", "value": "60, 90"}, {"prompt": "4", "value": "50, 100"}], "range": {"start": "", "end": ""}}, "gu": {"value": "150 ને એવા બે ભાગમાં વિભાજીત કરો કે તેમના વ્યસ્તનો સરવાળો 3/112 થાય. બંને ભાગની ગણતરી કરો.", "options": [{"prompt": "1", "value": "50, 90"}, {"prompt": "2", "value": "70, 80"}, {"prompt": "3", "value": "60, 90"}, {"prompt": "4", "value": "50, 100"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<span style=\"\">150 ಅನ್ನು ಎರಡು ಭಾಗಗಳಾಗಿ ವಿಭಜಿಸಿ, ಅವುಗಳ ವಿಲೋಮಗಳ ಮೊತ್ತವು 3/112 ಆಗುತ್ತದೆ. ಎರಡೂ ಭಾಗಗಳನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.</span>", "options": [{"prompt": "1", "value": "50, 90"}, {"prompt": "2", "value": "70, 80"}, {"prompt": "3", "value": "60, 90"}, {"prompt": "4", "value": "50, 100"}], "range": {"start": "", "end": ""}}, "ta": {"value": "150 ஐ இரண்டு பகுதிகளாகப் பிரிக்கவும், அதாவது அவற்றின் தலைகீழ் மதிப்புகளின் கூட்டுத்தொகை 3/112 ஆகும். இரண்டு பகுதிகளையும் கணக்கிடுங்கள்.", "options": [{"prompt": "1", "value": "50, 90"}, {"prompt": "2", "value": "70, 80"}, {"prompt": "3", "value": "60, 90"}, {"prompt": "4", "value": "50, 100"}], "range": {"start": "", "end": ""}}, "or": {"value": "150 କୁ ଦୁଇ ଭାଗରେ ବିଭକ୍ତ କରନ୍ତୁ ଯେପରି ସେମାନଙ୍କର ପାରସ୍ପରିକ ସମଷ୍ଟି ହେଉଛି 3/112 | ଉଭୟ ଅଂଶ ଗଣନା କର |", "options": [{"prompt": "1", "value": "50, 90"}, {"prompt": "2", "value": "70, 80"}, {"prompt": "3", "value": "60, 90"}, {"prompt": "4", "value": "50, 100"}], "range": {"start": "", "end": ""}}, "pa": {"value": "150 ਨੂੰ ਦੋ ਹਿੱਸਿਆਂ ਵਿੱਚ ਇਸ ਤਰ੍ਹਾਂ ਵੰਡੋ ਕਿ ਉਨ੍ਹਾਂ ਦੇ ਉਲਟਕ੍ਰਮ ਦਾ ਜੋੜ 3/112 ਹੋਵੇ। ਦੋਵਾਂ ਹਿੱਸਿਆਂ ਦੀ ਗਣਨਾ ਕਰੋ<span style=\"\">। </span>", "options": [{"prompt": "1", "value": "50, 90"}, {"prompt": "2", "value": "70, 80"}, {"prompt": "3", "value": "60, 90"}, {"prompt": "4", "value": "50, 100"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><span style=\"font-weight: 700; \">Calculation:</span></p>\n\n<p>Let the two parts be &lsquo;x&rsquo; and &lsquo;(150 &ndash; x)&rsquo;</p>\n\n<p>Sum of their reciprocals = 3/112</p>\n\n<p>&rArr; 1/x + 1/(150 &ndash; x) = 3/112</p>\n\n<p>&rArr; (150 &ndash; x + x)/x(150 &ndash; x) = 3/112</p>\n\n<p>&rArr; 150/x(150 &ndash; x) = 3/112</p>\n\n<p>&rArr; 150 &times; 112/3 = x(150 &ndash; x)</p>\n\n<p>&rArr; 5600 = 150x &ndash; x<sup>2</sup></p>\n\n<p>&rArr; x<sup>2</sup> &ndash; 150x + 5600 = 0</p>\n\n<p>&rArr; x<sup>2</sup> &ndash; 70x &ndash; 80x + 5600 = 0</p>\n\n<p>&rArr; x(x &ndash; 70) &ndash; 80(x &ndash; 70) = 0</p>\n\n<p>&rArr; (x &ndash; 70)(x &ndash; 80) = 0</p>\n\n<p>&rArr; x = 70, 80</p>\n<strong>&there4; The two parts are 70 and 80</strong>", "hn": "<p>माना दो भाग &lsquo;x&rsquo; और &lsquo;(150 &ndash; x)&rsquo; हैं</p>\n\n<p>उनके व्युत्क्रमों का योग = 3/112</p>\n\n<p>&rArr; 1/x + 1/(150 &ndash; x) = 3/112</p>\n\n<p>&rArr; (150 &ndash; x + x)/x(150 &ndash; x) = 3/112</p>\n\n<p>&rArr; 150/x(150 &ndash; x) = 3/112</p>\n\n<p>&rArr; 150 &times; 112/3 = x(150 &ndash; x)</p>\n\n<p>&rArr; 5600 = 150x &ndash; x<sup>2</sup></p>\n\n<p>&rArr; x<sup>2</sup> &ndash; 150x + 5600 = 0</p>\n\n<p>&rArr; x<sup>2</sup> &ndash; 70x &ndash; 80x + 5600 = 0</p>\n\n<p>&rArr; x(x &ndash; 70) &ndash; 80(x &ndash; 70) = 0</p>\n\n<p>&rArr; (x &ndash; 70)(x &ndash; 80) = 0</p>\n\n<p>&rArr; x = 70, 80</p>\n<strong>&there4; दो भाग 70 और 80 हैं।</strong>", "te": "<p>రెండు భాగాలు 'x' మరియు '(150 - x)'</p>\n\n<p>వాటి వృత్కమాల మొత్తం = 3/112</p>\n\n<p>⇒ 1/x + 1/(150 – x) = 3/112</p>\n\n<p>⇒ (150 – x + x)/x(150 – x) = 3/112</p>\n\n<p>⇒ 150/x(150 – x) = 3/112</p>\n\n<p>⇒ 150 × 112/3 = x(150 – x)</p>\n\n<p>⇒ 5600 = 150x – x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span></p>\n\n<p>⇒ x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> – 150x + 5600 = 0</p>\n\n<p>⇒ x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> – 70x – 80x + 5600 = 0</p>\n\n<p>⇒ x(x – 70) – 80(x – 70) = 0</p>\n\n<p>⇒ (x – 70)(x – 80) = 0</p>\n\n<p>⇒ x = 70, 80</p>\n∴ రెండు భాగాలు 70 మరియు 80", "mr": "<p><strong>गणना:</strong></p>\n\n<p>समजा दोन भाग 'x' आणि '(150 - x)' आहे </p>\n\n<p>त्यांच्या परस्परांची बेरीज = 3/112</p>\n\n<p>⇒ 1/x + 1/(150 – x) = 3/112</p>\n\n<p>⇒ (150 – x + x)/x(150 – x) = 3/112</p>\n\n<p>⇒ 150/x(150 – x) = 3/112</p>\n\n<p>⇒ 150 × 112/3 = x(150 – x)</p>\n\n<p>⇒ 5600 = 150x – x<sup>2</sup></p>\n\n<p>⇒ x<sup>2</sup> – 150x + 5600 = 0</p>\n\n<p>⇒ x<sup>2</sup> – 70x – 80x + 5600 = 0</p>\n\n<p>⇒ x(x – 70) – 80(x – 70) = 0</p>\n\n<p>⇒ (x – 70)(x – 80) = 0</p>\n\n<p>⇒ x = 70, 80</p>\n<strong>∴ दोन भाग 70 आणि 80 आहेत</strong>", "bn": "<p>ধরি, অংশ দু'টি হল ‘x’ এবং ‘(150 – x)’</p>\n\n<p>তাদের অন্যোন্য়কের যোগফল = 3/112</p>\n\n<p>⇒ 1/x + 1/(150 – x) = 3/112</p>\n\n<p>⇒ (150 – x + x)/x(150 – x) = 3/112</p>\n\n<p>⇒ 150/x(150 – x) = 3/112</p>\n\n<p>⇒ 150 × 112/3 = x(150 – x)</p>\n\n<p>⇒ 5600 = 150x – x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span></p>\n\n<p>⇒ x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> – 150x + 5600 = 0</p>\n\n<p>⇒ x<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> – 70x – 80x + 5600 = 0</p>\n\n<p>⇒ x(x – 70) – 80(x – 70) = 0</p>\n\n<p>⇒ (x – 70)(x – 80) = 0</p>\n\n<p>⇒ x = 70, 80</p>\n∴ অংশ দু'টি হল 70 এবং 80", "ml": "", "gu": "<p><span style=\"font-weight: 700; \">ગણતરી:</span></p>\n\n<p>ધારો કે બંને ભાગ ‘x’ અને ‘(150 – x)’ છે</p>\n\n<p>તેમના વ્યસ્તનો સરવાળો = 3/112</p>\n\n<p>⇒ 1/x + 1/(150 – x) = 3/112</p>\n\n<p>⇒ (150 – x + x)/x(150 – x) = 3/112</p>\n\n<p>⇒ 150/x(150 – x) = 3/112</p>\n\n<p>⇒ 150 × 112/3 = x(150 – x)</p>\n\n<p>⇒ 5600 = 150x – x<sup>2</sup></p>\n\n<p>⇒ x<sup>2</sup> – 150x + 5600 = 0</p>\n\n<p>⇒ x<sup>2</sup> – 70x – 80x + 5600 = 0</p>\n\n<p>⇒ x(x – 70) – 80(x – 70) = 0</p>\n\n<p>⇒ (x – 70)(x – 80) = 0</p>\n\n<p>⇒ x = 70, 80</p>\n<strong>∴ બંને ભાગ 70 અને 80 છે</strong>", "kn": "<p><span style=\"font-weight: 700; \">ಲೆಕ್ಕಾಚಾರ:</span></p>\n\n<div><span style=\"\">ಎರಡು ಭಾಗಗಳು 'x' ಮತ್ತು '(150 - x)' ಆಗಿರಲಿ</span></div>\n\n<div> </div>\n\n<div><span style=\"\">ಅವುಗಳ ವಿಲೋಮಗಳ ಮೊತ್ತ = 3/112</span></div>\n\n<div> </div>\n\n<p>⇒ 1/x + 1/(150 – x) = 3/112</p>\n\n<p>⇒ (150 – x + x)/x(150 – x) = 3/112</p>\n\n<p>⇒ 150/x(150 – x) = 3/112</p>\n\n<p>⇒ 150 × 112/3 = x(150 – x)</p>\n\n<p>⇒ 5600 = 150x – x<sup>2</sup></p>\n\n<p>⇒ x<sup>2</sup> – 150x + 5600 = 0</p>\n\n<p>⇒ x<sup>2</sup> – 70x – 80x + 5600 = 0</p>\n\n<p>⇒ x(x – 70) – 80(x – 70) = 0</p>\n\n<p>⇒ (x – 70)(x – 80) = 0</p>\n\n<p>⇒ x = 70, 80</p>\n<strong>∴ ಎರಡು ಭಾಗಗಳು 70 ಮತ್ತು 80</strong>", "ta": "<p><span style=\"font-weight: 700; \">கணக்கீடு:</span></p>\n\n<p>இரண்டு பகுதிகளும் 'x' மற்றும் '(150 - x)' ஆக இருக்கட்டும்</p>\n\n<p>அவற்றின் தலைகீழ் மதிப்புகளின் கூட்டுத்தொகை = 3/112</p>\n\n<p>⇒ 1/x + 1/(150 – x) = 3/112</p>\n\n<p>⇒ (150 – x + x)/x(150 – x) = 3/112</p>\n\n<p>⇒ 150/x(150 – x) = 3/112</p>\n\n<p>⇒ 150 × 112/3 = x(150 – x)</p>\n\n<p>⇒ 5600 = 150x – x<sup>2</sup></p>\n\n<p>⇒ x<sup>2</sup> – 150x + 5600 = 0</p>\n\n<p>⇒ x<sup>2</sup> – 70x – 80x + 5600 = 0</p>\n\n<p>⇒ x(x – 70) – 80(x – 70) = 0</p>\n\n<p>⇒ (x – 70)(x – 80) = 0</p>\n\n<p>⇒ x = 70, 80</p>\n<strong>∴ இரண்டு பகுதிகளும் 70 மற்றும் 80 ஆகும்</strong>", "or": "<p><strong>ଗଣନା:</strong></p>\n\n<p>ଦୁଇଟି ଅଂଶକୁ ‘x’ ଏବଂ ‘(150 - x)’ ହେବାକୁ ଦିଅ </p>\n\n<p>ସେମାନଙ୍କର ପ୍ରତିକ୍ରିୟାଗୁଡ଼ିକର ସମଷ୍ଟି = 3/112 </p>\n\n<p>⇒ 1/x + 1/(150 – x) = 3/112</p>\n\n<p>⇒ (150 – x + x)/x(150 – x) = 3/112</p>\n\n<p>⇒ 150/x(150 – x) = 3/112</p>\n\n<p>⇒ 150 × 112/3 = x(150 – x)</p>\n\n<p>⇒ 5600 = 150x – x<sup>2</sup></p>\n\n<p>⇒ x<sup>2</sup> – 150x + 5600 = 0</p>\n\n<p>⇒ x<sup>2</sup> – 70x – 80x + 5600 = 0</p>\n\n<p>⇒ x(x – 70) – 80(x – 70) = 0</p>\n\n<p>⇒ (x – 70)(x – 80) = 0</p>\n\n<p>⇒ x = 70, 80</p>\n<strong>∴ ଦୁଇଟି ଅଂଶ ହେଉଛି 70 ଏବଂ 80 </strong>", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>ਮੰਨ ਲਓ ਦੋ ਹਿੱਸੇ ‘x’ ਅਤੇ ‘(150 – x)’ ਹਨ<span style=\"\">। </span></p>\n\n<p>ਉਨ੍ਹਾਂ ਦੇ ਉਲਟਕ੍ਰਮ ਦਾ ਜੋੜ = 3/112</p>\n\n<p>⇒ 1/x + 1/(150 – x) = 3/112</p>\n\n<p>⇒ (150 – x + x)/x(150 – x) = 3/112</p>\n\n<p>⇒ 150/x(150 – x) = 3/112</p>\n\n<p>⇒ 150 × 112/3 = x(150 – x)</p>\n\n<p>⇒ 5600 = 150x – x<sup>2</sup></p>\n\n<p>⇒ x<sup>2</sup> – 150x + 5600 = 0</p>\n\n<p>⇒ x<sup>2</sup> – 70x – 80x + 5600 = 0</p>\n\n<p>⇒ x(x – 70) – 80(x – 70) = 0</p>\n\n<p>⇒ (x – 70)(x – 80) = 0</p>\n\n<p>⇒ x = 70, 80</p>\n∴ ਦੋ ਹਿੱਸੇ 70 ਅਤੇ 80 ਹਨ<span style=\"\">। </span>", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Linear Equation in 1 Variable"], "concept": "Linear Equation in 1 Variable", "confidence": "high"}, {"qid": "5ea9411ff60d5d33d9554395", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "A number is divided into three parts such that thrice the first part, six times the second part and eight times the third part are equal. If the first part is Rs. 1600, what is the third part?", "options": [{"prompt": "1", "value": "Rs. 900"}, {"prompt": "2", "value": "Rs. 750"}, {"prompt": "3", "value": "Rs. 450"}, {"prompt": "4", "value": "Rs. 600"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक संख्या को तीन भागों में इस प्रकार विभाजित किया जाता है जिससे पहले भाग का तीनगुना, दूसरे भाग का छह गुना और तीसरे भाग का आठ गुना बराबर है। यदि पहला भाग 1600 रुपए है, तो तीसरा भाग क्या है?", "options": [{"prompt": "1", "value": "900&amp;nbsp;रुपए"}, {"prompt": "2", "value": "750​&amp;nbsp;रुपए"}, {"prompt": "3", "value": "450​&amp;nbsp;रुपए"}, {"prompt": "4", "value": "600​&amp;nbsp;रुपए"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>ఒక సంఖ్యను మూడు భాగాలుగా విభజిస్తారు, మొదటి భాగం మూడు సార్లు, రెండవ భాగం ఆరు రెట్లు మరియు మూడవ భాగం ఎనిమిది రెట్లు సమానంగా ఉంటాయి. మొదటి భాగం రూ.1600 అయితే, మూడో భాగం ఎంత?</p>\n", "options": [{"prompt": "1", "value": "రూ. 900"}, {"prompt": "2", "value": "రూ. 750"}, {"prompt": "3", "value": "రూ. 450"}, {"prompt": "4", "value": "రూ. 600"}], "range": {"start": "", "end": ""}}, "mr": {"value": "पहिल्या भागाच्या तिप्पट, दुसर्‍या भागाच्या सहा पट आणि तिसरा भाग आठ पट अशा तीन भागांत विभागलेला असतो. जर पहिला भाग 1600 रुपयांचा आहे, तर तिसरा भाग किती आहे?", "options": [{"prompt": "1", "value": "900 रुपये&nbsp;"}, {"prompt": "2", "value": "750&nbsp;<span style=\"color: rgb(33, 37, 41);\">रुपये&nbsp;</span>"}, {"prompt": "3", "value": "450&nbsp;<span style=\"color: rgb(33, 37, 41);\">रुपये&nbsp;</span>"}, {"prompt": "4", "value": "600&nbsp;<span style=\"color: rgb(33, 37, 41);\">रुपये&nbsp;</span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "একটি সংখ্যাকে তিন ভাগে এমনভাবে ভাগ করা হয় যে, প্রথম ভাগের তিনগুণ, দ্বিতীয় অংশের ছয় গুণ এবং তৃতীয় অংশের আট গুণ সমান হয়। প্রথম অংশ 1600 টাকা হলে, তৃতীয় অংশ কত হবে? ", "options": [{"prompt": "1", "value": "900 টাকা&nbsp;"}, {"prompt": "2", "value": "750 টাকা&nbsp;"}, {"prompt": "3", "value": "450 টাকা&nbsp;"}, {"prompt": "4", "value": "600 টাকা&nbsp;"}], "range": {"start": "", "end": ""}}, "gu": {"value": "સંખ્યાને ત્રણ ભાગમાં વહેંચવામાં આવે છે જેમ કે પ્રથમ ભાગના ત્રણ ગણા, બીજા ભાગના છ ગણા અને ત્રીજા ભાગના આઠ ગણા સમાન હોય છે. જો પ્રથમ ભાગ રૂ. 1600, તો ત્રીજો ભાગ શું છે?", "options": [{"prompt": "1", "value": "રૂ. 900"}, {"prompt": "2", "value": "રૂ. 750"}, {"prompt": "3", "value": "રૂ. 450"}, {"prompt": "4", "value": "રૂ. 600"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<span style=\"\">ಮೊದಲ ಭಾಗದ ಮೂರು ಪಟ್ಟು, ಎರಡನೇ ಭಾಗದ ಆರು ಪಟ್ಟು ಮತ್ತು ಮೂರನೇ ಭಾಗದ ಎಂಟು ಪಟ್ಟು ಸಮಾನವಾಗಿರುವ ರೀತಿಯಲ್ಲಿ ಸಂಖ್ಯೆಯನ್ನು ಮೂರು ಭಾಗಗಳಾಗಿ ವಿಂಗಡಿಸಲಾಗಿದೆ. ಒಂದು ವೇಳೆ ಮೊದಲ ಭಾಗವು </span>ರೂ.<span style=\"\">1600  ಆಗಿದ್ದರೆ, ಮೂರನೇ ಭಾಗ ಯಾವುದು?</span>", "options": [{"prompt": "1", "value": "ರೂ. 900"}, {"prompt": "2", "value": "<span style=\"color: rgb(33, 37, 41);\">ರೂ</span>. 750"}, {"prompt": "3", "value": "<span style=\"color: rgb(33, 37, 41);\">ರೂ</span>. 450"}, {"prompt": "4", "value": "<span style=\"color: rgb(33, 37, 41);\">ರೂ</span>. 600"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ஒரு எண் மூன்று பகுதிகளாக பிரிக்கப்பட்டுள்ளது, அதாவது முதல் பகுதி மூன்று முறை, இரண்டாவது பகுதி ஆறு மடங்கு மற்றும் மூன்றாம் பகுதி எட்டு மடங்கு சமம். முதல் பாகம் என்றால் ரூ. 1600, மூன்றாம் பகுதி என்ன?", "options": [{"prompt": "1", "value": "ரூ. 900"}, {"prompt": "2", "value": "ரூ. 750"}, {"prompt": "3", "value": "ரூ. 450"}, {"prompt": "4", "value": "ரூ. 600"}], "range": {"start": "", "end": ""}}, "or": {"value": "ଏକ ସଂଖ୍ୟାକୁ ତିନି ଭାଗରେ ବିଭକ୍ତ କରାଯାଇଛି ଯେପରିକି ପ୍ରଥମ ଭାଗକୁ ତିନିଥର, ଦ୍ୱିତୀୟ ଭାଗର ୬ ଗୁଣ ଏବଂ ତୃତୀୟ ଭାଗର ଆଠ ଗୁଣ ସମାନ | ଯଦି ପ୍ରଥମ ଭାଗ 1600 ଟଙ୍କା, ତୃତୀୟ ଭାଗ କ’ଣ?", "options": [{"prompt": "1", "value": "Rs. 900"}, {"prompt": "2", "value": "Rs. 750"}, {"prompt": "3", "value": "Rs. 450"}, {"prompt": "4", "value": "Rs. 600"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p>Let the number divide by x, y and z, then</p>\n\n<p>&rArr; 3x = 6y = 8z</p>\n\n<p>Let 3x = 6y = 8z = k</p>\n\n<p>&rArr; 3x = k</p>\n\n<p>&rArr; x = k/3</p>\n\n<p>Similarly,</p>\n\n<p>&rArr; 6y = k</p>\n\n<p>&rArr; y = k/6 and</p>\n\n<p>&rArr; 8z = k</p>\n\n<p>&rArr; z = k/8</p>\n\n<p>Ratio of x : y : z = k/3 : k/6 : k/8 = 24/3 : 24/6 : 24/8 = 8 : 4 : 3</p>\n\n<p>&rArr; 8 unit = 1600</p>\n\n<p>&rArr; 1 unit = 200</p>\n\n<p>&rArr; 3 unit = 600</p>\n\n<p><strong>Short Trick: </strong></p>\n\n<p>If 3x = 6y = 8z, then</p>\n\n<p>x : y : z = 1/3 : 1/6 : 1/8 = 8 : 4 : 3</p>\n\n<p>&rArr; 8 unit = 1600</p>\n\n<p>&rArr; 1 unit = 200</p>\n&rArr; 3 unit = 600", "hn": "<p>माना कि संख्या को x, y और z में विभाजित किया जाता है, तो</p>\n\n<p>&rArr; 3x = 6y = 8z</p>\n\n<p>माना कि 3x = 6y = 8z = k</p>\n\n<p>&rArr; 3x = k</p>\n\n<p>&rArr; x = k/3</p>\n\n<p>उसीप्रकार,</p>\n\n<p>&rArr; 6y = k</p>\n\n<p>&rArr; y = k/6 और&nbsp;</p>\n\n<p>&rArr; 8z = k</p>\n\n<p>&rArr; z = k/8</p>\n\n<p>x : y : z का अनुपात = k/3 : k/6 : k/8 = 24/3 : 24/6 : 24/8 = 8 : 4 : 3</p>\n\n<p>&rArr; 8 इकाई = 1600</p>\n\n<p>&rArr; 1 इकाई = 200</p>\n\n<p>&rArr; 3 इकाई = 600</p>\n\n<p>लघु विधि:</p>\n\n<p>यदि 3x = 6y = 8z है, तो&nbsp;</p>\n\n<p>x : y : z = 1/3 : 1/6 : 1/8 = 8 : 4 : 3</p>\n\n<p>&rArr; 8 इकाई = 1600</p>\n\n<p>&rArr; 1 इकाई = 200</p>\n\n<p>&rArr; 3 इकाई = 600</p>\n", "te": "<p>సంఖ్యను x, y మరియు z విభజించారు అనుకుందాం</p>\n\n<p>⇒ 3x = 6y = 8z</p>\n\n<p>3x = 6y = 8z = k అనుకుందాం</p>\n\n<p>⇒ 3x = k</p>\n\n<p>⇒ x = k/3</p>\n\n<p>అదేవిధంగా,</p>\n\n<p>⇒ 6y = k</p>\n\n<p>⇒ y = k/6 మరియు</p>\n\n<p>⇒ 8z = k</p>\n\n<p>⇒ z = k/8</p>\n\n<p>x : y : z యొక్క <span style=\"color: rgb(33, 37, 41);\">నిష్పత్తి</span> = k/3 : k/6 : k/8 = 24/3 : 24/6 : 24/8 = 8 : 4 : 3 </p>\n\n<p>⇒ 8 యూనిట్ = 1600</p>\n\n<p>⇒ 1 యూనిట్ = 200</p>\n\n<p>⇒ 3 యూనిట్ = 600</p>\n\n<p><strong>చిన్న ట్రిక్:</strong></p>\n\n<p>ఒకవేళ 3x = 6y = 8z అయితే, అప్పుడు</p>\n\n<p>x : y : z = 1/3 : 1/6 : 1/8 = 8 : 4 : 3</p>\n\n<p>⇒ 8 యూనిట్ = 1600</p>\n\n<p>⇒ 1 యూనిట్ = 200</p>\n⇒ 3 యూనిట్ = 600", "mr": "<p>समजा संख्येला x, y आणि z ने भागूया </p>\n\n<p>⇒ 3x = 6y = 8z</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">समजा </span>3x = 6y = 8z = k </p>\n\n<p>⇒ 3x = k</p>\n\n<p>⇒ x = k/3</p>\n\n<p>त्याचप्रमाणे,</p>\n\n<p>⇒ 6y = k</p>\n\n<p>⇒ y = k/6 आणि</p>\n\n<p>⇒ 8z = k</p>\n\n<p>⇒ z = k/8</p>\n\n<p>x चे गुणोत्तर : y : z = k/3 : k/6 : k/8 = 24/3 : 24/6 : 24/8 = 8 : 4 : 3</p>\n\n<p>⇒ 8 एकक = 1600</p>\n\n<p>⇒ 1 <span style=\"color: rgb(33, 37, 41);\">एकक</span> = 200</p>\n\n<p>⇒ 3 <span style=\"color: rgb(33, 37, 41);\">एकक</span> = 600</p>\n\n<p><strong>लघु युक्ती:</strong></p>\n\n<p>जर 3x = 6y = 8z, तर</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">x : y : z = 1/3 : 1/6 : 1/8 = 8 : 4 : 3</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 8 एकक = 1600</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 1 एकक = 200</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 3 एकक = 600</p>\n", "bn": "<p>ধরি, সংখ্যাটিকে x, y এবং z দিয়ে ভাগ করা যাক</p>\n\n<p>⇒ 3x = 6y = 8z</p>\n\n<p>ধরি, 3x = 6y = 8z = k</p>\n\n<p>⇒ 3x = k</p>\n\n<p>⇒ x = k/3</p>\n\n<p>একইভাবে,</p>\n\n<p>⇒ 6y = k</p>\n\n<p>⇒ y = k/6 এবং</p>\n\n<p>⇒ 8z = k</p>\n\n<p>⇒ z = k/8</p>\n\n<p>x : y : z এর অনুপাত = k/3 : k/6 : k/8 = 24/3 : 24/6 : 24/8 = 8 : 4 : 3</p>\n\n<p>⇒ 8 একক = 1600</p>\n\n<p>⇒ 1 <span style=\"color: rgb(33, 37, 41);\">একক</span> = 200</p>\n\n<p>⇒ 3 <span style=\"color: rgb(33, 37, 41);\">একক</span> = 600</p>\n\n<p><strong>সংক্ষিপ্ত পদ্ধতি: </strong></p>\n\n<p>যদি 3x = 6y = 8z হয়, তাহলে </p>\n\n<p>x : y : z = 1/3 : 1/6 : 1/8 = 8 : 4 : 3</p>\n\n<p>⇒ 8 একক = 1600</p>\n\n<p>⇒ 1 <span style=\"color: rgb(33, 37, 41);\">একক</span> = 200</p>\n⇒ 3 <span style=\"color: rgb(33, 37, 41);\">একক</span> = 600 ", "ml": "", "gu": "<p>ધારો કે સંખ્યાને x, y અને z વડે ભાગીશું.</p>\n\n<p>⇒ 3x = 6y = 8z</p>\n\n<p>ધારો કે, 3x = 6y = 8z = k</p>\n\n<p>⇒ 3x = k</p>\n\n<p>⇒ x = k/3</p>\n\n<p>તેવી જ રીતે,</p>\n\n<p>⇒ 6y = k</p>\n\n<p>⇒ y = k/6 અને</p>\n\n<p>⇒ 8z = k</p>\n\n<p>⇒ z = k/8</p>\n\n<p>xનો ગુણોત્તર : y : z = k/3 : k/6 : k/8 = 24/3 : 24/6 : 24/8 = 8 : 4 : 3</p>\n\n<p>⇒ 8 એકમ = 1600</p>\n\n<p>⇒ 1 એકમ = 200</p>\n\n<p>⇒ 3 એકમ = 600</p>\n\n<p><strong>ટૂંકી રીત:</strong></p>\n\n<p>જો 3x = 6y = 8z, તો</p>\n\n<p>x : y : z = 1/3 : 1/6 : 1/8 = 8 : 4 : 3</p>\n\n<p>⇒ 8 એકમ = 1600</p>\n\n<p>⇒ 1 એકમ = 200</p>\n⇒ 3 એકમ = 600", "kn": "\n<div><span style=\"\">ಸಂಖ್ಯೆಯನ್ನು x, y ಮತ್ತು z ಎಂದು ವಿಂಗಡಿಸೋಣ</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ 3x = 6y = 8z</span></div>\n\n<div> </div>\n\n<div><span style=\"\">3x = 6y = 8z = k ಆಗಿರಲಿ</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ 3x = </span><span style=\"color: rgb(33, 37, 41);\">k</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ x = k/3</span></div>\n\n<div> </div>\n\n<div><span style=\"\">ಹಾಗೆಯೇ,</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ 6y = </span><span style=\"color: rgb(33, 37, 41);\">k</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ y = k/6 ಮತ್ತು</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ 8z = </span><span style=\"color: rgb(33, 37, 41);\">k</span></div>\n\n<div> </div>\n\n<div><span style=\"\">⇒ z = k/8</span></div>\n\n<div> </div>\n\n<div><span style=\"\">x : y : z </span><span sty", "ta": "<p>எண்ணை x, y மற்றும் z ஆல் வகுக்கட்டும்</p>\n\n<p>⇒ 3x = 6y = 8z</p>\n\n<p>3x = 6y = 8z = k எனலாம்</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒ 3x = k</span></p>\n\n<p>⇒ x = k/3</p>\n\n<p>இதேபோல்,</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒ 6y = k</span></p>\n\n<p>⇒ y = k/6 மற்றும்</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒ 8z = k</span></p>\n\n<p>⇒ z = k/8</p>\n\n<p>x : y : z = k/3 : k/6 : k/8 = 24/3 : 24/6 : 24/8 = 8 : 4 : 3 விகிதம்</p>\n\n<p>⇒ 8 அலகு = 1600</p>\n\n<p>⇒ 1 அலகு = 200</p>\n\n<p>⇒ 3 அலகு = 600</p>\n\n<p><strong>குறுகிய தந்திரம்:</strong></p>\n\n<p>3x = 6y = 8z என்றால்</p>\n\n<p>x : y : z = 1/3 : 1/6 : 1/8 = 8 : 4 : 3</p>\n\n<p>⇒ 8 அலகு = 1600</p>\n\n<p>⇒ 1 அலகு = 200</p>\n⇒ 3 அலகு = 600", "or": "<p>ସଂଖ୍ୟାକୁ x, y ଏବଂ z ଦ୍ୱାରା ଭାଗ କରିବାକୁ ଦିଅ </p>\n\n<p>⇒ 3x = 6y = 8z</p>\n\n<p>3x ଦିଅନ୍ତୁ= 6y = 8z = k  </p>\n\n<p>⇒ 3x = k</p>\n\n<p>⇒ x = k/3</p>\n\n<p>ସେହିଭଳି,</p>\n\n<p>⇒ 6y = k</p>\n\n<p>⇒ y = k/6 ଏବଂ</p>\n\n<p>⇒ 8z = k</p>\n\n<p>⇒ z = k/8</p>\n\n<p>xର ଅନୁପାତ  : y : z = k/3 : k/6 : k/8 = 24/3 : 24/6 : 24/8 = 8 : 4 : 3</p>\n\n<p>⇒ 8 <span style=\"color: rgb(33, 37, 41);\">ୟୁନିଟ୍ </span>= 1600</p>\n\n<p>⇒ 1 <span style=\"color: rgb(33, 37, 41);\">ୟୁନିଟ୍ </span>= 200</p>\n\n<p>⇒ 3 <span style=\"color: rgb(33, 37, 41);\">ୟୁନିଟ୍ </span>= 600</p>\n\n<p><strong>ସଂକ୍ଷିପ୍ତ କୌଶଳ:</strong></p>\n\n<p>ଯଦି 3x = 6y = 8z, ତେବେ </p>\n\n<p>x : y : z = 1/3 : 1/6 : 1/8 = 8 : 4 : 3</p>\n\n<p>⇒ 8 ୟୁନିଟ୍ = 1600</p>\n\n<p>⇒ 1 <span style=\"color: rgb(33, 37, 41);\">ୟୁନିଟ୍ </span>= 200</p>\n⇒ 3 <span style=\"color: rgb(33, 37, 41);\">ୟୁନିଟ୍ </span> = 600", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Linear Equation in 1 Variable"], "concept": "Linear Equation in 1 Variable", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 8 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
