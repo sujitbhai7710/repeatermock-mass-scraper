@@ -5,13 +5,13 @@ name: Scrape RepeaterMock (Full Matrix)
 # - Manual workflow_dispatch only (no cron — to avoid overlapping runs)
 # - The MERGE job at the end POSTs to a Cloudflare Worker endpoint which
 #   triggers the NEXT run via GitHub API with a classic PAT (GH_PAT secret).
-# - This guarantees: matrix → merge → trigger next matrix → ... (serialized)
+# - For testing: use --tests-per-job input to limit tests per series
 # ─────────────────────────────────────────────────────────────────────────────
 on:
   workflow_dispatch:
     inputs:
-      max_tests_per_job:
-        description: 'Max tests per job (empty = unlimited, scrapes ALL tests including PRO candidates)'
+      tests_per_job:
+        description: 'Max tests per job (empty = unlimited). Use 5 for test mode.'
         required: false
         default: ''
 
@@ -27,13 +27,12 @@ concurrency:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 335  # GitHub hard limit is 360 min; leave 25 min for commit/push
+    timeout-minutes: 335
     strategy:
       fail-fast: false
-      max-parallel: 20  # GitHub Free tier private repo limit
+      max-parallel: 20
       matrix:
         include:
-          # === SSC PYP Series (2000+ free tests each) ===
           - job_name: "Maths-PYP"
             series: "https://repeatermock.com/tb/test-series/ssc-maths-previous-year-questions"
             workers: "4"
@@ -46,7 +45,6 @@ jobs:
           - job_name: "GK-PYP"
             series: "https://repeatermock.com/tb/test-series/ssc-gk-previous-year-questions"
             workers: "4"
-          # === SSC Main Series (2026) ===
           - job_name: "SSC-CGL-2026"
             series: "https://repeatermock.com/tb/test-series/ssc-cgl"
             workers: "4"
@@ -68,7 +66,6 @@ jobs:
           - job_name: "SSC-SelPost-2026"
             series: "https://repeatermock.com/tb/test-series/ssc-selection-post"
             workers: "4"
-          # === SSC Previous Year Series (2025) ===
           - job_name: "SSC-CHSL-2025"
             series: "https://repeatermock.com/tb/test-series/ssc-chsl-previous"
             workers: "4"
@@ -78,7 +75,6 @@ jobs:
           - job_name: "SSC-MTS-2025"
             series: "https://repeatermock.com/tb/test-series/ssc-mts-previous"
             workers: "4"
-          # === RRB Series ===
           - job_name: "RRB-Group-D"
             series: "https://repeatermock.com/tb/test-series/rrb-group-d"
             workers: "4"
@@ -125,22 +121,67 @@ jobs:
           PYTHONUNBUFFERED: "1"
           PYTHONIOENCODING: "utf-8"
         run: |
-          MAX_TESTS_ARG=""
-          if [ -n "${{ github.event.inputs.max_tests_per_job }}" ]; then
-            MAX_TESTS_ARG="--stop-after ${{ github.event.inputs.max_tests_per_job }}"
+          STOP_AFTER_ARG=""
+          if [ -n "${{ github.event.inputs.tests_per_job }}" ]; then
+            STOP_AFTER_ARG="--stop-after ${{ github.event.inputs.tests_per_job }}"
           fi
 
-          # Each job writes to its OWN directory — no overlap, no git race
           JOB_DIR="scraped_output/${{ matrix.job_name }}"
 
-          # Per-worker 429 breaker: each worker stops after 5× 429s (independent of others)
-          # Workers commit every 5 tests — no data loss on cancel/timeout
           python3 repeatermock_scraper.py \
             --series-url "${{ matrix.series }}" \
             --output-dir "$JOB_DIR" \
             --workers ${{ matrix.workers }} \
             --max-runtime 320 \
-            $MAX_TESTS_ARG || true
+            $STOP_AFTER_ARG || true
+
+      - name: Show progress summary for ${{ matrix.job_name }}
+        if: always()
+        run: |
+          JOB_DIR="scraped_output/${{ matrix.job_name }}"
+          echo "=========================================="
+          echo "  PROGRESS SUMMARY: ${{ matrix.job_name }}"
+          echo "=========================================="
+          if [ -f "$JOB_DIR/progress.json" ]; then
+            python3 << 'PYEOF'
+          import json
+          with open("scraped_output/${{ matrix.job_name }}/progress.json") as f:
+              p = json.load(f)
+          total_scraped = sum(len(v.get("scraped", {})) for v in p.values())
+          total_failed = sum(len(v.get("failed", {})) if isinstance(v.get("failed"), dict) else len(v.get("failed", [])) for v in p.values())
+          total_pro = sum(len(v.get("pro", {})) for v in p.values())
+          print(f"✅ Total scraped: {total_scraped}")
+          print(f"⚠️  Total failed:  {total_failed}")
+          print(f"💰 Total PRO:      {total_pro}")
+          print(f"📊 Grand total:    {total_scraped + total_failed + total_pro}")
+          # Show per-series breakdown
+          for series, data in sorted(p.items()):
+              s = len(data.get("scraped", {}))
+              f = len(data.get("failed", {})) if isinstance(data.get("failed"), dict) else len(data.get("failed", []))
+              pr = len(data.get("pro", {}))
+              print(f"  - {series:30s}: {s} scraped, {f} failed, {pr} PRO")
+          PYEOF
+          else
+            echo "  (no progress.json found)"
+          fi
+          echo ""
+          if [ -f "$JOB_DIR/images_manifest.json" ]; then
+            python3 -c "
+          import json
+          with open('$JOB_DIR/images_manifest.json') as f:
+              m = json.load(f)
+          print(f'📷 Images downloaded: {m.get(\"total_images\", 0)}')
+          "
+          fi
+          if [ -f "$JOB_DIR/image_failures.json" ]; then
+            python3 -c "
+          import json
+          with open('$JOB_DIR/image_failures.json') as f:
+              m = json.load(f)
+          print(f'⚠️  Image failures: {m.get(\"total_failures\", 0)}')
+          "
+          fi
+          echo "=========================================="
 
       - name: Commit ${{ matrix.job_name }} results
         run: |
@@ -148,10 +189,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           JOB_DIR="scraped_output/${{ matrix.job_name }}"
           if [ -d "$JOB_DIR" ]; then
-            # Add job-specific directory (includes progress.json, ai_export/, html_export/, PRO_TESTS.json, PRO_LINKS.txt)
             git add "$JOB_DIR/" -f
             git commit -m "scrape: ${{ matrix.job_name }} $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "Nothing to commit"
-            # Pull-rebase-push with retries (other jobs may be pushing simultaneously)
             git pull --rebase origin main || true
             git push origin HEAD || echo "Push failed (will retry)"
             sleep 5
@@ -161,13 +200,8 @@ jobs:
 
   # ─────────────────────────────────────────────────────────────────────────
   # MERGE JOB: runs AFTER all 22 scrape jobs complete
-  # 1. git pull to get ALL per-job commits
-  # 2. Flatten structure: scraped_output/{job_name}/ai_export/* → scraped_output/ai_export/
-  # 3. Merge all PRO_TESTS.json + PRO_LINKS.txt into top-level ones
-  # 4. Run generate_index.py (sees ALL data → real index)
-  # 5. Run build_database.py (sees ALL data → real database_index.json)
-  # 6. Commit + push
-  # 7. POST to Cloudflare Worker → triggers next matrix run (via GH_PAT)
+  # NO database/index generation — those scripts moved to database_maker_script/
+  # Only merges per-series pro.json files into top-level PRO_TESTS.json + PRO_LINKS.txt
   # ─────────────────────────────────────────────────────────────────────────
   merge:
     needs: scrape
@@ -180,66 +214,25 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install deps
-        run: pip install playwright
-
       - name: Pull all per-job commits
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Force-pull all per-job commits that may have landed after our checkout
           git pull --rebase origin main || true
           echo "=== Per-job directories present ==="
           ls -la scraped_output/ 2>/dev/null || echo "(no scraped_output yet)"
 
-      - name: Flatten structure (merge per-job dirs into top-level)
-        run: |
-          mkdir -p scraped_output/ai_export scraped_output/html_export
-
-          # Merge ai_export files from all per-job dirs
-          for dir in scraped_output/*/; do
-            job=$(basename "$dir")
-            # Skip top-level non-job dirs
-            if [ "$job" = "ai_export" ] || [ "$job" = "html_export" ] || [ "$job" = "database" ]; then
-              continue
-            fi
-            # Copy ai_export files (preserves subject/series/section/subsection structure)
-            if [ -d "$dir/ai_export" ]; then
-              cp -r "$dir/ai_export/"* scraped_output/ai_export/ 2>/dev/null || true
-            fi
-            # Copy html_export files
-            if [ -d "$dir/html_export" ]; then
-              cp -r "$dir/html_export/"* scraped_output/html_export/ 2>/dev/null || true
-            fi
-          done
-
-          echo "=== Top-level ai_export contents ==="
-          find scraped_output/ai_export -type f 2>/dev/null | head -10
-          echo "..."
-          find scraped_output/ai_export -type f 2>/dev/null | wc -l
-          echo "total AI JSON files"
-
-      - name: Merge PRO_TESTS.json + PRO_LINKS.txt from all jobs
+      - name: Merge per-series pro.json into top-level PRO_TESTS.json + PRO_LINKS.txt
         run: |
           python3 << 'PYEOF'
           import json, os, glob
           from datetime import datetime, timezone
 
-          # Use a dict keyed by test_id so the SAME test from multiple sources
-          # (per-job PRO_TESTS.json + per-job progress.json 'pro' key) is only kept ONCE.
-          # Per-job PRO_TESTS.json is the source of truth (has full metadata).
-          # Progress.json 'pro' key is a fallback for test_ids missing from PRO_TESTS.json.
           all_pro_by_id = {}
 
-          # Source 1: per-job PRO_TESTS.json files (pretty JSON written by PROTracker)
-          # This is the authoritative source — has title, series_name, section, etc.
-          pro_files = glob.glob("scraped_output/*/PRO_TESTS.json")
-          print(f"Found {len(pro_files)} per-job PRO_TESTS.json files")
-          pro_count_1 = 0
+          # Read all per-series pro.json files
+          pro_files = glob.glob("scraped_output/*/pro.json")
+          print(f"Found {len(pro_files)} per-series pro.json files")
           for pf in pro_files:
               try:
                   with open(pf) as f:
@@ -248,59 +241,22 @@ jobs:
                       tid = t.get("test_id")
                       if tid and tid not in all_pro_by_id:
                           all_pro_by_id[tid] = t
-                          pro_count_1 += 1
                       elif tid:
-                          # Already have this test_id — keep the one with more metadata
                           existing = all_pro_by_id[tid]
                           if not existing.get("title") and t.get("title"):
                               all_pro_by_id[tid] = t
               except Exception as e:
                   print(f"  ⚠️ couldn't parse {pf}: {e}")
-          print(f"  → {pro_count_1} unique PRO tests from PRO_TESTS.json files")
-
-          # Source 2: per-job progress.json files (under 'pro' key)
-          # FALLBACK ONLY: only add test_ids NOT already in all_pro_by_id (Bug #5 fix)
-          progress_files = glob.glob("scraped_output/*/progress.json")
-          print(f"Found {len(progress_files)} per-job progress.json files (fallback)")
-          pro_count_2 = 0
-          for pf in progress_files:
-              try:
-                  with open(pf) as f:
-                      data = json.load(f)
-                  for series_slug, series_data in data.items():
-                      if not isinstance(series_data, dict):
-                          continue
-                      for tid, meta in series_data.get("pro", {}).items():
-                          if tid in all_pro_by_id:
-                              continue  # Already have it from PRO_TESTS.json
-                          # Fallback entry — minimal metadata
-                          all_pro_by_id[tid] = {
-                              "test_id": tid,
-                              "title": meta.get("title", ""),
-                              "series_slug": series_slug,
-                              "series_name": series_slug,
-                              "section": "",
-                              "subsection": "",
-                              "attempt_url": f"https://repeatermock.com/tb/test-series/{series_slug}/test/{tid}/attempt?lang=en",
-                              "analysis_url": f"https://repeatermock.com/tb/test-series/{series_slug}/test/{tid}/analysis",
-                              "solution_url": f"https://repeatermock.com/tb/test-series/{series_slug}/test/{tid}/solution",
-                              "first_seen": meta.get("timestamp", ""),
-                              "source": "progress.json fallback",
-                          }
-                          pro_count_2 += 1
-              except Exception as e:
-                  print(f"  ⚠️ couldn't parse {pf}: {e}")
-          print(f"  → {pro_count_2} additional PRO tests from progress.json (fallback only)")
 
           all_pro_tests = list(all_pro_by_id.values())
-          print(f"  → Total unique PRO tests: {len(all_pro_tests)}")
+          print(f"Total unique PRO tests: {len(all_pro_tests)}")
 
           # Write merged PRO_TESTS.json at top level
           os.makedirs("scraped_output", exist_ok=True)
           merged = {
               "generated_at": datetime.now(timezone.utc).isoformat(),
               "total_pro_tests": len(all_pro_tests),
-              "description": "Merged PRO tests from ALL 22 matrix jobs. These returned 402 Payment Required when attempted with free (guest) cookies. They require a RepeaterMock PRO subscription. Sources: per-job PRO_TESTS.json (primary) + per-job progress.json 'pro' key (fallback for missing test_ids only).",
+              "description": "Merged PRO tests from ALL 22 per-series pro.json files. These returned 402 Payment Required when attempted with free (guest) cookies. They require a RepeaterMock PRO subscription.",
               "how_to_use": [
                   "1. Log in to repeatermock.com with a PRO subscription account",
                   "2. Copy any URL from pro_tests[].attempt_url below",
@@ -312,7 +268,7 @@ jobs:
           with open("scraped_output/PRO_TESTS.json", "w") as f:
               json.dump(merged, f, indent=2, ensure_ascii=False)
 
-          # Write merged PRO_LINKS.txt at top level (plain URLs, one per line)
+          # Write plain-text URL list
           with open("scraped_output/PRO_LINKS.txt", "w") as f:
               f.write(f"# PRO Test Links — Total: {len(all_pro_tests)}\n")
               f.write(f"# These tests require a RepeaterMock PRO subscription.\n")
@@ -320,62 +276,24 @@ jobs:
               for t in all_pro_tests:
                   f.write(f"{t['attempt_url']}\n")
 
-          print(f"✅ Merged {len(all_pro_tests)} unique PRO tests → scraped_output/PRO_TESTS.json + PRO_LINKS.txt")
+          print(f"✅ Wrote scraped_output/PRO_TESTS.json + PRO_LINKS.txt ({len(all_pro_tests)} tests)")
           PYEOF
-
-      - name: Generate combined question index
-        run: |
-          # Reads from scraped_output/ai_export/ (top-level, post-flatten)
-          python3 generate_index.py --output-dir scraped_output || echo "Index generation failed (non-fatal)"
-
-      - name: Generate chapter-wise database
-        run: |
-          # Reads from scraped_output/ai_export/ (top-level, post-flatten)
-          python3 build_database.py --output-dir scraped_output || echo "Database generation failed (non-fatal)"
-
-      - name: Verify database_index.json is non-zero
-        run: |
-          if [ -f "scraped_output/database/database_index.json" ]; then
-            COUNT=$(python3 -c "import json; d=json.load(open('scraped_output/database/database_index.json')); print(d['stats']['total_questions'])")
-            echo "=== Database total_questions: $COUNT ==="
-            if [ "$COUNT" = "0" ]; then
-              echo "⚠️ WARNING: database_index.json shows 0 questions — checking ai_export contents"
-              find scraped_output/ai_export -type f -name "*.json" | wc -l
-            fi
-          else
-            echo "⚠️ database_index.json not found"
-          fi
 
       - name: Commit merged results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Remove per-job ai_export/html_export/index/database dirs (already merged to top-level)
-          # to avoid bloat in the repo. Keep per-job progress.json + PRO_TESTS.json + PRO_LINKS.txt for traceability.
-          for dir in scraped_output/*/; do
-            job=$(basename "$dir")
-            if [ "$job" = "ai_export" ] || [ "$job" = "html_export" ] || [ "$job" = "database" ]; then
-              continue
-            fi
-            rm -rf "$dir/ai_export" "$dir/html_export" "$dir/database" "$dir/index.json" "$dir/index.html" 2>/dev/null || true
-          done
-
-          # Defensive: scan for any files >50 MB and warn (GitHub rejects files >100 MB)
+          # Defensive: scan for any files >50 MB and warn (GitHub rejects >100 MB)
           echo "=== Checking for large files (>50 MB) ==="
           LARGE_FILES=$(find scraped_output/ -type f -size +50M 2>/dev/null)
           if [ -n "$LARGE_FILES" ]; then
             echo "⚠️ Large files detected (will not be committed):"
             echo "$LARGE_FILES"
-            # Remove them — they can't be committed to GitHub anyway
             find scraped_output/ -type f -size +50M -delete 2>/dev/null || true
           fi
-
-          # Stage and commit
           git add scraped_output/ -f
-          git commit -m "merge: combined index + database + PRO_LINKS $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "Nothing to commit"
-
-          # Pull-rebase-push with retries (per-job scrapes may still be pushing in parallel)
+          git commit -m "merge: combined PRO_TESTS.json + PRO_LINKS.txt $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "Nothing to commit"
+          # Pull-rebase-push with retries
           for i in 1 2 3; do
             if git pull --rebase origin main; then
               if git push origin HEAD; then
@@ -395,7 +313,7 @@ jobs:
         run: |
           if [ -z "$CF_TRIGGER_URL" ] || [ -z "$CF_TRIGGER_TOKEN" ]; then
             echo "⚠️ CF_TRIGGER_URL or CF_TRIGGER_TOKEN not set in secrets — skipping auto-trigger"
-            echo "To enable auto-trigger: add secrets CF_TRIGGER_URL and CF_TRIGGER_TOKEN"
+            echo "This is expected during testing. For full scrape, redeploy Cloudflare Worker."
             exit 0
           fi
           echo "Triggering next matrix run via Cloudflare Worker..."
