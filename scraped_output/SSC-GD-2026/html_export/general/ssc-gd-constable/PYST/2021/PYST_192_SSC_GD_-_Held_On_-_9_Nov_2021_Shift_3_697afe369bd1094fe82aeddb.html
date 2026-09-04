@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYST 192: SSC GD कांस्टेबल - हिंदी (Held On - 9 Nov, 2021 Shift 3)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYST 192: SSC GD कांस्टेबल - हिंदी (Held On - 9 Nov, 2021 Shift 3)</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-gd-constable</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">25</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">15 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">50.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">697afe369bd1094fe82aeddb</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "697afe369bd1094fe82aeddb", "title": "PYST 192: SSC GD कांस्टेबल - हिंदी (Held On - 9 Nov, 2021 Shift 3)", "series_slug": "ssc-gd-constable", "duration_min": 15, "max_marks": 50.0, "languages": ["Hindi"], "sections": [{"section_id": "6391d10d3bde1f85141d4255", "section_name": "Test", "q_count": 25, "max_marks": 50.0, "questions": [{"qid": "6264e757b4080f0972ab23d2", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए&nbsp; गए वाक्य का वह भाग ज्ञात करें जिसमें कोई त्रुटि है। यदि कोई त्रुटि नहीं है, तो &#39;कोई त्रुटि नहीं है&#39; चुनें।</p>\n\n<p>महात्मा गांधी के (1)/ सन्देशों से देश (2)/ सर्वाधिक प्रभावित हुआ (3)/ कोई त्रुटि नहीं है (4)</p>\n", "options": [{"prompt": "1", "value": "4"}, {"prompt": "2", "value": "3"}, {"prompt": "3", "value": "1"}, {"prompt": "4", "value": "2\n&lt;div&gt;&amp;nbsp;&lt;/div&gt;\n"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>सही उत्तर है <strong>- &quot;2&quot; </strong>l वाक्य के <strong>भाग <span style=\"color: rgb(88, 89, 91);   \">2&nbsp;</span>में त्रुटि है l</strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>सही वाक्य इस प्रकार बनेगा :- महात्मा गांधी के<strong> संदेश से देश </strong>सर्वाधिक प्रभावित हुआ l</li>\n\t<li><strong>&#39;संदेश&#39; </strong>शब्द एक ऐसा शब्द है, जो <strong>एकवचन </strong>तथा <strong>बहुवचन</strong> दोनों में एक समान प्रयोग किया जाता है l\n\t<ul>\n\t\t<li><strong>&#39;सन्देशों&#39; </strong>संदेश शब्द का बहुवचन रूप नहीं है l</li>\n\t\t<li>उदाहरण :- मेरा <strong>सन्देश </strong>तुम्हे मिल गया होगा l</li>\n\t\t<li>सभी अपने अपने परिवारों के <strong>सन्देश </strong>का इंतज़ार कर रहे थे l</li>\n\t</ul>\n\t</li>\n\t<li>अन्य विकल्प गलत उत्तर है क्योंकि वाक्य के अन्य किसी भाग में त्रुटि नहीं है l&nbsp;</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>एकवचन </strong>संज्ञा केवल एक चीज का प्रतिनिधित्व करती है, लेकिन <strong>बहुवचन </strong>संज्ञाएं एक से अधिक का प्रतिनिधित्व करती हैं ।</li>\n\t<li>यदि कोई अकेला खड़ा होता है तो हम उसे &quot;व्यक्ति&quot; (एकवचन) कहते हैं, लेकिन यदि एक से अधिक व्यक्ति हैं, तो हम उसे &quot;लोग&quot; (बहुवचन) कहते हैं।\n\t<ul>\n\t\t<li><strong>संदेश</strong> - समाचार, खबर, विचार।</li>\n\t</ul>\n\t</li>\n</ul>\n\n3b:Tdcc,\n<p>सही उत्तर है - <strong>&quot;पतिव्रता होना&quot;</strong> l<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&#39;सती-सावित्री होना&#39; मुहावरे </strong>के लिए सही अर्थ है -<strong> पतिव्रता होना l</strong></li>\n\t<li><strong>सती-सवित्री मुहावरे का वाक्य प्रयोग -</strong>\n\t<ul>\n\t\t<li>भारतीय नारियां प्राचीन काल से ही <strong>सती-सावित्री </strong>के समान पूजी जाती रही हैं।</li>\n\t</ul>\n\t</li>\n\t<li><strong>अन्य विकल्प :- </strong>गलत उत्तर है क्योंकि अन्य कोई भी विकल्प &#39;सती - सावित्री होना&#39; मुहावरे ", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["वाक्यगत अशुद्धियाँ"], "concept": "वाक्यगत अशुद्धियाँ", "confidence": "high"}, {"qid": "6264cf72b14979097dd4b67f", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए गए वाक्य में रेखांंकित खंड को प्रतिस्थापित करने के&nbsp; लिए सबसे उपयुक्त विकल्प का चयन करें। यदि इसे प्रतिस्थापित करने की आवश्यकता नहीं है, तो&nbsp; विकल्प &lsquo;किसी बदलाव की आवश्यकता नहीं है&rsquo; का चयन करें।</p>\n\n<p>दक्षिण भारत के मंदिरों में <u>वास्तु कला के दर्शन होते हैं।</u></p>\n", "options": [{"prompt": "1", "value": "वस्तु कला के दर्शन होते है।&amp;nbsp;"}, {"prompt": "2", "value": "वस्तु कला के दर्शन होते हैं।"}, {"prompt": "3", "value": "किसी बदलाव की आवश्यकता नहीं है।"}, {"prompt": "4", "value": "वास्तु कला के दर्शन होता हैं।"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;किसी बदलाव की आवश्यकता नहीं है।&quot;</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>सही​ वाक्य :-</strong>\n\n\t<ul>\n\t\t<li>दक्षिण भारत के मंदिरों में<u> <strong>वास्तु कला के दर्शन होते हैं।</strong></u></li>\n\t</ul>\n\t</li>\n\t<li>प्रस्तुत वाक्य में लिंग संबंधी, वचन संबंधी और वर्तनी संबंधी <strong>कोई भी त्रुटि नहीं है l</strong></li>\n</ul>\n\n<p><strong>अन्य विकल्प :-</strong></p>\n\n<ul>\n\t<li>गलत उत्तर है क्योंकि दिए गए वाक्य में किसी भी बदलाव की आवश्यकता नहीं है l</li>\n\t<li>दिए गए अन्य विकल्पों में <strong>वर्तनी संबंधी और वचन संबंधी त्रुटि</strong> है l</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>शुद्ध वाक्य </strong>वे हैं जो किसी भी व्याकरण संबंधी त्रुटियों से मुक्त हैं।</li>\n\t<li>शब्द में प्रयुक्त ध्वनियों को जिस क्रम से उच्चरित किया जाता है, लिखने में भी उसी क्रम से विन्यस्त करने का नाम <strong>वर्तनी</strong> या वर्ण-विन्यास है l</li>\n\t<li>संज्ञा, सर्वनाम, विशेषण के जिस रूप से हमें संख्या का पता चले उसे <strong>वचन </strong>कहते हैं।\n\t<ul>\n\t\t<li><strong>वास्तु कला</strong> - वास्तु या भवन निर्माण की कला जिसके अंतर्गत चित्रण और तक्षण दोनों आते हैं; वास्तुशास्त्र; वास्तुशिल्प; स्थापत्यकला l​</li>\n\t</ul>\n\t</li>\n</ul>\n\n30:Tb3e,\n<p>सही उत्तर है -<strong> &quot;क्षत - विक्षत&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>क्षत - विक्षत </strong>सही<strong> विलोम-शब्द <span style=\"color: rgb(88, 89, 91);   \">युग्म</span></strong><span style=\"color: rgb(88, 89, 91);   \">&nbsp;</span>नहीं है l\n\n\t<ul>\n\t\t<li><strong>क्षत</strong> का अर्थ - क्षतिग्रस्त l</li>\n\t\t<li><strong>विक्षत का अर्थ</strong> - घायल, ज़ख्मी।</li>\n\t</ul>\n\t</li>\n\t<li><strong>यह दोनों एक दूसरे के पर्यायवाची हैं ना की विलोम l</strong></li>\n\t<li>इनका विलोम शब्द है - <strong>अक्षत </strong>l</li>\n\t<l", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["वाक्यगत अशुद्धियाँ"], "concept": "वाक्यगत अशुद्धियाँ", "confidence": "high"}, {"qid": "6264e54fb4080f0972aae9a6", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए गए वाक्य में रेखांकित खंड को प्रतिस्थापित करने के लिए सबसे उपयुक्त विकल्प का चयन करें। यदि इसे प्रतिस्थापित करने की आवश्यकता नहीं है, तो&nbsp; विकल्प &lsquo;किसी बदलाव की आवश्यकता नहीं है&rsquo; का चयन करें।</p>\n\n<p>राहुल ने अपने <u>प्रिय मित्र को कहानी की पुस्तक दिये।</u></p>\n", "options": [{"prompt": "1", "value": "प्रिय मित्र को कहानी का पुस्तक&amp;nbsp; दिये।"}, {"prompt": "2", "value": "प्रिय मित्र को कहानी की पुस्तक दी।"}, {"prompt": "3", "value": "प्रिय मित्र को कहानी की पुस्तकें दिये।"}, {"prompt": "4", "value": "किसी बदलाव की आवश्यकता नहीं है।"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;प्रिय मित्र को कहानी की पुस्तक दी।&quot;</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>सही वाक्य:- </strong>\n\n\t<ul>\n\t\t<li><strong>​</strong>राहुल ने अपने <u><strong>प्रिय मित्र को कहानी की पुस्तक दी।</strong></u></li>\n\t</ul>\n\t</li>\n\t<li>प्रश्न में दिए गए वाक्य -<strong> &#39;राहुल ने अपने प्रिय मित्र को कहानी की पुस्तक दिये।&#39;</strong> में अशुद्ध हिंदी का प्रयोग किया गया है l</li>\n\t<li><strong>&#39;पुस्तक&#39; एकवचन</strong> शब्द है, जिसके साथ<strong> &#39;दी&#39; </strong>शब्द का प्रयोग उचित है l\n\t<ul&g", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["वाक्यगत अशुद्धियाँ"], "concept": "वाक्यगत अशुद्धियाँ", "confidence": "high"}, {"qid": "6264ed87d3e7f6d3ceea4315", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "सही वर्तनी वाले शब्द का चयन करें।", "options": [{"prompt": "1", "value": "हर्षित"}, {"prompt": "2", "value": "हसित"}, {"prompt": "3", "value": "हरसित"}, {"prompt": "4", "value": "हरषित"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;हर्षित&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&quot;हर्षित&quot; </strong>शब्द में<strong> सही वर्तनी </strong>का प्रयोग है l</li>\n\t<li><strong>हर्षित का अर्थ -</strong>\n\t<ul>\n\t\t<li>प्रसन्नमय, रोमांचित।</li>\n\t</ul>\n\t</li>\n\t<li><strong>वाक्य प्रयोग -</strong>\n\t<ul>\n\t\t<li>आत्मज्ञानी साधक को ऊंची या नीची किसी भी स्थिति में न <strong>हर्षित </strong>होना चाहिए, न कुपित ।</li>\n\t</ul>\n\t</li>\n\t<li>अन्य विकल्प गलत उत्तर है क्योंकि अन्य तीनों विकल्पों में <strong>&#39;हर्षित&#39;</strong> शब्द की गलत वर्तनी का प्रयोग किया गया है l इनमें मात्राओं संबंधी और वर्ण संबंधी त्रुटियां है l&nbsp;</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>शब्द में प्रयुक्त ध्वनियों को जिस क्रम से उच्चरित किया जाता है, लिखने में भी उसी क्रम से विन्यस्त करने का नाम <strong>वर्तनी</strong> या वर्ण-विन्यास है।</li>\n\t<li><strong>कुछ गलत वर्तनी वाले शब्दों की सही वर्तनी इस प्रकार है:-</strong>\n\t<ul>\n\t\t<li>आतिसबाजी - आतिशबाजी l</li>\n\t\t<li>अत्याक्षरी - अंत्याक्षरी l</li>\n\t\t<li>उत्तरदाई - उत्तरदायी l&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n41:Tbba,\n<p>सही उत्तर है - <strong>&quot;अद्वितीय&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&quot;जिसके समान दूसरा नहीं&quot; वाक्यांश</strong> के लिए <strong>एक शब्द है - अद्वितीय l</strong></li>\n\t<li>अन्य विकल्प :-\n\t<ul>\n\t\t<li><strong>चतुर </strong>- जिसकी बुद्धि तेज हो l</li>\n\t\t<li><strong>द्वितीय</strong> - जिसके समान दूसरा हो l</li>\n\t\t<li><strong>बहुत ही सुंदर </strong>-", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["वर्तनी"], "concept": "वर्तनी", "confidence": "high"}, {"qid": "6264d181f72379daaaea9a24", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए&nbsp;गए वाक्य का वह भाग ज्ञात करें जिसमे&nbsp;कोई&nbsp;त्रुटि है।&nbsp;यदि कोई <span style=\"\">त्रुटि&nbsp;</span>नहीं है, तो &#39;कोई&nbsp;<span style=\"\">त्रुटि</span> नहीं है&#39; चुनें।</p>\n\n<p>प्रत्येक प्राणी (1)/ को आत्मनिर्भर (2)/&nbsp;होना चाहिए (3)/ कोई त्रुटि नहीं है (4)</p>\n", "options": [{"prompt": "1", "value": "1"}, {"prompt": "2", "value": "4"}, {"prompt": "3", "value": "3"}, {"prompt": "4", "value": "2"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;4&quot; </strong>l वाक्य में कोई त्रुटि नहीं है l<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>सही वाक्य :-</strong><strong> </strong>\n\n\t<ul>\n\t\t<li><strong>प्रत्येक प्राणी को आत्मनिर्भर होना चाहिए l</strong> - इस वाक्य में लिंग संबंधी, वचन संबंधी और वर्तनी संबंधी<strong> कोई भी त्रुटि नहीं है l</strong></li>\n\t</ul>\n\t</li>\n\t<li>​<span style=\"font-weight: 700;\">आत्मनिर्भर&nbsp;</span>-\n\t<ul>\n\t\t<li>आत्माश्रय, स्वाश्रय, अपने पैरों पर खड़ा होना।</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong>​अन्य विकल्प :-</strong></p>\n\n<ul>\n\t<li>गलत उत्तर है क्योंकि दिए गए वाक्य में किसी भी प्रकार की कोई त्रुटि नहीं है l&nbsp;</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>शुद्ध वाक्य</strong> वे हैं जो किसी भी व्याकरण संबंधी त्रुटियों से मुक्त हैं।</li>\n\t<li>शब्द में प्रयुक्त ध्वनियों को जिस क्रम से उच्चरित किया जाता है, लिखने में भी उसी क्रम से विन्यस्त करने का नाम <strong>वर्तनी </strong>या वर्ण-विन्यास है l</li>\n\t<li>संज्ञा, सर्वनाम, विशेषण के जिस रूप से हमें संख्या का पता चले उसे <strong>वचन </strong>कहते हैं।</li>\n</ul>\n\n32:Tfb9,\n<p>सही उत्तर है -<strong> &quot;घड़ों</strong><strong>&quot; l</strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>सही वाक्य:-</strong>\n\n\t<ul>\n\t\t<li>उस पर <u><strong>घड़ों</strong></u><strong> </strong>पानी पड़ गया।&nbsp;</li>\n\t</ul>\n\t</li>\n\t<li><strong>घड़ों पानी पड़ना</strong> - ये एक प्रकार का मुहावरा है<span style=\"color: rgb(33, 37, 41);\">।</span>&nbsp;</li>\n\t<li>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["वाक्यगत अशुद्धियाँ"], "concept": "वाक्यगत अशुद्धियाँ", "confidence": "high"}, {"qid": "6264e7be306c1e61b82eb406", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>निम्नलिखित प्रश्न में, दिए गए चार विकल्पों में से, उस विकल्प का चयन करें जो मुहावरे का अर्थ व्यक्त करता है।</p>\n\n<p>सती - सावित्री होना</p>\n", "options": [{"prompt": "1", "value": "सरल&amp;nbsp;&lt;span style=&quot;&quot;&gt;होना&lt;/span&gt;"}, {"prompt": "2", "value": "सत्यवादी&amp;nbsp;&lt;span style=&quot;&quot;&gt;होना&lt;/span&gt;"}, {"prompt": "3", "value": "ढृढ़निश्चयी&amp;nbsp;&lt;span style=&quot;&quot;&gt;होना&lt;/span&gt;"}, {"prompt": "4", "value": "पतिव्रता&amp;nbsp;&lt;span style=&quot;&quot;&gt;होना&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;पतिव्रता होना&quot;</strong> l<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&#39;सती-सावित्री होना&#39; मुहावरे </strong>के लिए सही अर्थ है -<strong> पतिव्रता होना l</strong></li>\n\t<li><strong>सती-सवित्री मुहावरे का वाक्य प्रयोग -</strong>\n\t<ul>\n\t\t<li>भारतीय नारियां प्राचीन काल से ही <strong>सती-सावित्री </strong>के समान पूजी जाती रही हैं।</li>\n\t</ul>\n\t</li>\n\t<li><strong>अन्य विकल्प :- </strong>गलत उत्तर है क्योंकि अन्य कोई भी विकल्प &#39;सती - सावित्री होना&#39; मुहावरे का अर्थ नहीं बताता l</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>मुहावरा </strong>शब्द एक अरबी शब्द है जिसका अर्थ होता है - अभ्यास करना।</li>\n\t<li>मुहावरे वाक्य के अंश होते हैं। मुहावरों से सामान्य अर्थ नहीं बल्कि, विशेष अर्थ निकलता है। इनके प्रयोग से भाषा में सरसता व रोचकता आ जाती है। इनका प्रयोग वाक्यों में ही जाने वाली अन्य बातों के साथ जुड़कर होता है। वाक्यों में मुहावरों का प्रयोग किया जाता है, अर्थों का नहीं।</li>\n\t<li><strong>कुछ अन्य मुहावरे और उनके अर्थ :- </strong>\n\t<ul>\n\t\t<li>सोने का मृग - भ्रम, धोखा होना l</li>\n\t\t<li>सब धान बाईस पसेरी - सबको एक समान समझकर व्यवहार करना l&nbsp;&nbsp;</li>\n\t\t<li>हाथ धोकर पीछे पड़ना - बहुत तंग करना l</li>\n\t</ul>\n\t</li>\n</ul>\n\n3c:T1128,\n<p>सही उत्तर है -<strong> &quot;सब धान बाईस पसेरी होना&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&lsquo;अच्छा - बुरा सबको एक-सा समझना&rsquo;</strong> के लिए सही <strong>मुहावरा </strong>है - <strong>सब धान बाईस पसेरी होना l</strong></li>\n\t<li><strong>&nbsp;सब धान बाईस पसेरी होना</strong> मुहावरे का वाक्य प्रयोग -\n\t<ul>\n\t\t<li>तुम तो न बड़ा देखते हो न छोटा सबसे बहस करने लगते हो, तुम सबको<strong> सब धान बाईस पसेरी जैसा</strong> समझते हो क्या ?</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong>अन्य विकल्प :-</strong></p>\n\n<ul>\n\t<li>गलत उत्तर है क्योंकि अन्य किसी भी मुहावरे का अर्थ &lsquo;अच्छा - ", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6264e8083bf28492728d52c2", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "&lsquo;अच्छा - बुरा सबको एक-सा समझना&rsquo; यह अर्थ किस मुहावरे से प्रकट होता है?", "options": [{"prompt": "1", "value": "सब धान बाईस पसेरी होना"}, {"prompt": "2", "value": "सबको एक डंडे से हांकना&amp;nbsp;"}, {"prompt": "3", "value": "सब्ज-बाग नजर आना"}, {"prompt": "4", "value": "सब नौबत होना"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>सही उत्तर है -<strong> &quot;सब धान बाईस पसेरी होना&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&lsquo;अच्छा - बुरा सबको एक-सा समझना&rsquo;</strong> के लिए सही <strong>मुहावरा </strong>है - <strong>सब धान बाईस पसेरी होना l</strong></li>\n\t<li><strong>&nbsp;सब धान बाईस पसेरी होना</strong> मुहावरे का वाक्य प्रयोग -\n\t<ul>\n\t\t<li>तुम तो न बड़ा देखते हो न छोटा सबसे बहस करने लगते हो, तुम सबको<strong> सब धान बाईस पसेरी जैसा</strong> समझते हो क्या ?</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong>अन्य विकल्प :-</strong></p&g", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6264e6a9b4080f0972ab11a9", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए गए शब्द का समानार्थी शब्द चुनें।</p>\n\n<p>शून्य&nbsp;</p>\n", "options": [{"prompt": "1", "value": "शूर"}, {"prompt": "2", "value": "खाली"}, {"prompt": "3", "value": "वीर"}, {"prompt": "4", "value": "पराक्रमी"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>सही उत्तर है <strong>- &quot;खाली&quot; l</strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>शून्य </strong>के लिए सही <strong>समानार्थी </strong>शब्द है - <strong>खाली </strong>l</li>\n\t<li><strong>शून्य </strong>के अन्य सभी समानार्थी :-\n\t<ul>\n\t\t<li>अर्श, विदित, विमुख, रहित, हीन, एकांत, रिक्त, निर्जन l</li>\n\t</ul>\n\t</li>\n\t<li><strong>अन्य विकल्प :-</strong><strong> </strong>\n\t<ul>\n\t\t<li><strong>शूर, वीर, पराक्रमी - &#39;शून्य&#39;</strong> के लिए सही समानार्थी शब्द नहीं है l</li>\n\t\t<li>यह तीनों एक दूसरे के लिए सही समानार्थी शब्द है l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>ऐसे शब्द जिनका एक ही अर्थ होता है,<strong> समानार्थी शब्द </strong>कहलाते हैं l</li>\n\t<li><strong>कुछ अन्य समानार्थी:-</strong>\n\t<ul>\n\t\t<li>साँप - सर्प, नाग, विषधर, व्याल, भुजंग, उरग, अहि पन्नग।</li>\n\t\t<li>जंगल - वन, कानन, बीहड़, विटप, विपिन।</li>\n\t\t<li>घर - गृह, सदन, आवास, आलय, गेह, निवास, निलय, मंदिर।</li>\n\t</ul>\n\t</li>\n</ul>\n\n39:Tbb7,\n<p>सही उत्तर है -<strong> &quot;1&quot; l </strong>वाक्य के <strong>भाग 1 में त्रुटि है l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>सही वाक्य:-</strong>\n\n\t<ul>\n\t\t<li><strong>मुझे </strong>तुम", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6264e8e4b4080f0972ab585b", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए गए शब्द के समानार्थी शब्द का चयन कीजिए।</p>\n\n<p>दंतायुध</p>\n", "options": [{"prompt": "1", "value": "दंतावाल"}, {"prompt": "2", "value": "कंबु"}, {"prompt": "3", "value": "वराह"}, {"prompt": "4", "value": "कंबुक"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>सही उत्तर है <strong>- &quot;वराह&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&lsquo;दंतायुध&rsquo; </strong>के लिए सही <strong>समानार्थी&nbsp; </strong>है - <strong>वराह </strong>l</li>\n\t<li><strong>दंतायुध </strong>शब्द के अन्य समानार्थी -\n\t<ul>\n\t\t<li>सूअर, मेढ़ा, साँड़, मगर/घड़ियाल तथा बादल l</li>\n\t</ul>\n\t</li>\n\t<li><strong>अन्य विकल्प:</strong>-\n\t<ul>\n\t\t<li>&#39;दंतायुध&#39; शब्द के समानार्थी शब्द नहीं है l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>ऐसे शब्द जिनका एक ही अर्थ होता है, <strong>समानार्थी</strong> <strong>शब्द </strong>कहलाते हैं l</li>\n\t<li><strong>कुछ अन्य समानार्थी शब्द</strong><strong>:- </strong>\n\t<ul>\n\t\t<li>पत्थर <span id=\"cke_bm_8154S\" style=\"display: none;\">&nbsp;</span><span id=\"cke_bm_8122S\" style=\"display: none;\">&nbsp;</span>- आकाश, प्रस्तर, पाहन&nbsp;</li>\n\t\t<li>पानी- जल, वारि, नीर, तोय, सलिल</li>\n\t\t<li>असुर- राक्षस, दैत्य, <span id=\"cke_bm_8154E\" style=\"display: none;\">&nbsp;</span><span id=\"cke_bm_8122E\" style=\"display: none;\">&nbsp;</span>दानव</li>\n\t</ul>\n\t</li>\n</ul>\n\n3e:Ta60,\n<p>सही उत्तर है -<strong> &quot;</strong>अत्यल्प<strong>&quot; l<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6264e6ddb4080f0972ab165b", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए गए वाक्य का वह भाग ज्ञात करें जिसमें कोई त्रुटि है। यदि कोई त्रुटि नहीं है, तो &lsquo;कोई त्रुटि नहीं है&rsquo; चुनें।</p>\n\n<p>मेरे को (1)/ तुम्हारा काम (2)/ पसंद है। (3)/ कोई त्रुटि नहीं है। (4)</p>\n", "options": [{"prompt": "1", "value": "1"}, {"prompt": "2", "value": "4"}, {"prompt": "3", "value": "2"}, {"prompt": "4", "value": "3"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>सही उत्तर है -<strong> &quot;1&quot; l </strong>वाक्य के <strong>भाग 1 में त्रुटि है l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>सही वाक्य:-</strong>\n\n\t<ul>\n\t\t<li><strong>मुझे </strong>तुम्हारा काम पसंद है l</li>\n\t</ul>\n\t</li>\n\t<li>प्रश्न में दिया गया वाक्य त्रुटिपूर्ण है क्योंकि<strong> &#39;मेरे को&#39; </strong>शुद्ध हिंदी में प्रयोग हेतु गलत वाक्यांश है l\n\t<ul>\n\t\t<li>यहां पर<strong> &#39;मुझे&#39; </strong>शब्द का प्रयोग उचित है l</li>\n\t\t<li><strong>&#39;मुझे&#39; </strong>उत्तम पुरुष सर्वनाम का उदाहरण है l</li>\n\t</ul>\n\t</li>\n\t<li><strong>अन्य विकल्प :- </strong>गलत उत्तर है क्योंकि वाक्य के अन्य किसी भी भाग में त्रुटि नहीं है l&nbsp;</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>उत्तम पुरुष</strong> - जिस सर्वनाम का प्रयोग वक्ता खुद के बारे में बताने के लिए करता है।\n\n\t<ul>\n\t\t<li><strong>जैसे : </strong>मैं, मुझे, मुझको, मेरा, मेरी आदि।</li>\n\t</ul>\n\t</li>\n\t<li><strong>कुछ उदाहरण:-</strong></li>\n\t<li>मैं खाना खाना चाहता हूँ।</li>\n\t<li>मेरा नाम विकास है।</li>\n</ul>\n\n3a:Td95,\n<p>सही उत्तर है <strong>- &quot;2&quot; </strong>l वाक्य के <strong>भाग <span style=\"color: rgb(88, 89, 91);   \">2&nbsp;</span>में त्रुटि है l</strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>सही वाक्य इस प्रकार बनेगा :- महात्मा गांधी के<strong> संदेश से देश </strong>सर्वाधिक प्रभावित हुआ l</li>\n\t<li&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["वाक्यगत अशुद्धियाँ"], "concept": "वाक्यगत अशुद्धियाँ", "confidence": "high"}, {"qid": "6264ed0ff72379daaaee1bc7", "qs_no": 11, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए गए शब्द का विलोम चुनें।</p>\n\n<p>अत्यधिक&nbsp;</p>\n", "options": [{"prompt": "1", "value": "अत्यल्प"}, {"prompt": "2", "value": "अल्प"}, {"prompt": "3", "value": "अधिक"}, {"prompt": "4", "value": "प्रभूत"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>सही उत्तर है -<strong> &quot;</strong>अत्यल्प<strong>&quot; l<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&lsquo;अत्यधिक&rsquo; </strong>के लिए सही विलोम है - <strong>अत्यल्प</strong><strong><span style=\"color: rgb(88, 89, 91);   \">&nbsp;</span></strong>l</li>\n\t<li><strong>अत्यधिक </strong>का अर्थ -\n\t<ul>\n\t\t<li>बहुत ज्यादा l</li>\n\t</ul>\n\t</li>\n\t<li><strong>अत्यल्प</strong><strong> </strong>का अर्थ -\n\t<ul>\n\t\t<li>बहुत थोड़ा।</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong>अन्य विकल्प:-</strong></p>\n\n<ul>\n\t<li><strong>अल्प और अधिक</strong> एक दूसरे के विलोम है l</li>\n\t<li><strong>प्रभूत</strong> का कोई हिंदी विलोम मौजूद नहीं है l</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>ऐसे शब्द जो एक दूसरे के विपरीतार्थक हो, <strong>विलोम शब्द</strong> कहलाते हैं l</li>\n\t<li><strong>कुछ अन्य विलोम शब्द युग्म:-</strong>&nbsp;\n\t<ul>\n\t\t<li>हार- जीत, आय- व्यय, आजादी- गुलामी, नवीन- प्राचीन l</li>\n\t</ul>\n\t</li>\n</ul>\n\n3f:Te68,\n<p>सही उत्तर है - <strong>&quot;वास्तुकला&quot; l</strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6264e66e1d0458db447702b0", "qs_no": 12, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए गये वाक्यांश के लिए एक शब्द दीजिये।</p>\n\n<p>कमल की दण्ड</p>\n", "options": [{"prompt": "1", "value": "पराग"}, {"prompt": "2", "value": "पुरन्द्र"}, {"prompt": "3", "value": "औरस"}, {"prompt": "4", "value": "मृणाल"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>सही उत्तर है <strong>- &quot;मृणाल&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&#39;कमल की दण्ड&#39; वाक्यांश</strong> के लिए एक शब्द है - <strong>मृणाल </strong>l&nbsp;</li>\n\t<li><strong>अन्य विकल्प :-</strong>\n\t<ul>\n\t\t<li>पराग - पौधे द्वारा संश्लेषित शर्करा युक्त तरल पदार्थ l</li>\n\t\t<li>पुरन्द्र -&nbsp; पुर, नगर या घर को तोड़ने वाला l</li>\n\t\t<li>औरस - विवाहित स्त्री से उत्पन्न, जायज l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>जब किसी वाक्य में प्रयुक्त या स्वतन्त्र, किसी वाक्यांश के लिए किसी एक शब्द का प्रयोग किया जाता है, जो उस वाक्यांश के अर्थ को पूरी तरह सिद्ध करता हो तो उसे वाक्यांश के लिए एक शब्द कहते हैं, अर्थात अनेक शब्दों के लिए एक शब्द को प्रयुक्त करना ही<strong> वाक्यांश के लिए एक शब्द</strong> कहलाता है।</li>\n\t<li><strong>कुछ अन्य वाक्यांशों के लिए एक शब्द:-</strong>\n\t<ul>\n\t\t<li>विशेषज्ञ - किसी विषय का विशेष ज्ञान रखने वाला l</li>\n\t\t<li>बहुज्ञ - बहुत अधिक जानने वाला l</li>\n\t\t<li>मर्मज्ञ - मर्म को समझने वाला l</li>\n\t</ul>\n\t</li>\n</ul>\n\n38:Tae7,\n<p>सही उत्तर है <strong>- &quot;खाली&quot; l</strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>शून्य </strong>के लिए सही <strong>समानार्थी </strong>शब्द है - <strong>खाली </strong>l</li>\n\t<li><strong>शून्य </strong>के अन्य सभी समानार्थी :-\n\t<ul>\n\t\t<li>अर्श, विदित, विमुख, रहित, हीन, एकांत, रिक्त, निर्जन l</li>\n\t</ul>\n\t</li>\n\t<li><strong>अन्य विकल्प :-</strong><strong> </strong>\n\t<ul>\n\t\t<li><strong&g", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6264e5afdbcd668bbdb021d6", "qs_no": 13, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>रिक्त स्थान को भरने के&nbsp; लिए सबसे उपयुक्त शब्द का चयन करें।</p>\n\n<p>विपत्ति में ______ से काम लेना चाहिए।</p>\n", "options": [{"prompt": "1", "value": "शौर्य"}, {"prompt": "2", "value": "वीरता"}, {"prompt": "3", "value": "साहस"}, {"prompt": "4", "value": "बल"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>सही उत्तर है -<strong> &quot;साहस&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य:</strong>\n\n\t<ul>\n\t\t<li>विपत्ति में <u><strong>साहस</strong></u> से काम लेना चाहिए।</li>\n\t</ul>\n\t</li>\n\t<li><strong>साहस</strong> <strong>का अर्थ</strong> है -\n\t<ul>\n\t\t<li>हिम्मत, हौसला, जीवट, निर्भयता l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong>अन्य विकल्प :-</strong><strong> </strong></p>\n\n<ul>\n\t<li><strong>&#39;साहस&#39; </strong>शब्द के लिए <strong>समरूपी भिन्नार्थक शब्द</strong> है, जिनके अर्थ कुछ समान होते हैं परंतु इनमें कुछ भिन्नता भी होती है जो अक्सर इनके वाक्य प्रयोग से स्पष्ट होती है l</li>\n\t<li>अन्य विकल्प दिए गए वाक्य के लिए सही शब्द नहीं है l</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>विकल्पों में दिए शब्दों के अर्थ और वाक्य प्रयोग</strong><strong>:-</strong></li>\n\t<li><strong>वीरता, शौर्य </strong>(बहादुरी - आमतौर पर शौर्य शब्द का प्रयोग दुश्मन के समक्ष वीरता दिखाने के लिए किया जाता है) l\n\t<ul>\n\t\t<li><strong>वाक्य </strong>- औरंगजेब के समय वहां के राजा दीपचंद ने अद्भुत <strong>शौर्य एवं वीरता </strong>का प्रदर्शन किया l</li>\n\t</ul>\n\t</li>\n\t<li><strong>बल </strong>(शारीरिक शक्ति, ताक़त) l\n\t<ul>\n\t\t<li><strong>वाक्य - </strong>उसने पूरे <strong>बल </strong>से, अपनी समूची देह से उसका विरोध किया l</li>\n\t</ul>\n\t</li>\n</ul>\n\n35:Tcea,\n<p>सही उत्तर है - <strong>&quot;व्यावसायिक&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>व्यावसायिक </strong>शब्द में<strong> सही वर्तनी</strong> का प्रयोग है l</li>\n\t<li><strong>व्यावसायिक </strong>का अर्थ -\n\t<ul>\n\t\t<li>व्यवसाय संबंधी।</li>\n\t</ul>\n\t</li>\n\t<li><strong>वाक्य प्रयोग </strong>-\n\t<ul>\n\t\t<li>मैं <u><strong>व्यावसायिक </strong></u>शोषण के मुद्दे पर काम करती हूँ, क्योंकि यह कर्मचारियों की म", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["रिक्त स्थानों की पूर्ति"], "concept": "रिक्त स्थानों की पूर्ति", "confidence": "high"}, {"qid": "6264edbfdbcd668bbdb11e8f", "qs_no": 14, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "जिसके समान दूसरा नहीं - शब्द समूह के स्थान पर एक शब्द लिखिए।", "options": [{"prompt": "1", "value": "चतुर"}, {"prompt": "2", "value": "बहुत ही सुंदर"}, {"prompt": "3", "value": "द्वितीय"}, {"prompt": "4", "value": "अद्वितीय"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;अद्वितीय&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&quot;जिसके समान दूसरा नहीं&quot; वाक्यांश</strong> के लिए <strong>एक शब्द है - अद्वितीय l</strong></li>\n\t<li>अन्य विकल्प :-\n\t<ul>\n\t\t<li><strong>चतुर </strong>- जिसकी बुद्धि तेज हो l</li>\n\t\t<li><strong>द्वितीय</strong> - जिसके समान दूसरा हो l</li>\n\t\t<li><strong>बहुत ही सुंदर </strong>- खूबसूरत l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>जब किसी वाक्य में प्रयुक्त या स्वतन्त्र, किसी वाक्यांश के लिए किसी एक शब्द का प्रयोग किया जाता है, जो उस वाक्यांश के अर्थ को पूरी तरह सिद्ध करता हो तो उसे वाक्यांश के लिए एक शब्द कहते हैं, अर्थात अनेक शब्दों के लिए एक शब्द को प्रयुक्त करना ही<strong> वाक्यांश के लिए एक शब्द </strong>कहलाता है।</li>\n\t<li><strong>कुछ अन्य वाक्यांशों के लिए एक शब्द:-</strong>\n\t<ul>\n\t\t<li>जो क्षमा नहीं किया जा सके - अक्षम्य</li>\n\t\t<li>जिसको कहा ना जा सके - अकथनीय</li>\n\t\t<li>जिसकी गिनती न हो सके - अगण्य&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n42:Ta90,\n<p>सही उत्तर है - <strong>&quot;मनुष्य की&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य:- </strong>\n\n\t<ul>\n\t\t<li><strong>​</strong>काव्य का सम्बन्ध <u><strong>मनुष्य की</strong></u> हित चिन्ता से जुड़ा हुआ है।&nbsp;</li>\n\t</ul>\n\t</li>\n\t<li><strong>काव्य/कविता</strong> हमेशा से मानव जीवन के लिए अत्यधिक मह", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6264d05af72379daaaea73de", "qs_no": 15, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "&nbsp;निम्न में से कौन सा विलोम - युग्म सही नहीं है?&nbsp;", "options": [{"prompt": "1", "value": "अंत -&amp;nbsp;आदि"}, {"prompt": "2", "value": "अज्ञ - विज्ञ"}, {"prompt": "3", "value": "क्षत -&amp;nbsp;विक्षत&amp;nbsp; &amp;nbsp;"}, {"prompt": "4", "value": "अथ -&amp;nbsp;इति&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>सही उत्तर है -<strong> &quot;क्षत - विक्षत&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>क्षत - विक्षत </strong>सही<strong> विलोम-शब्द <span style=\"color: rgb(88, 89, 91);   \">युग्म</span></strong><span style=\"color: rgb(88, 89, 91);   \">&nbsp;</span>नहीं है l\n\n\t<ul>\n\t\t<li><strong>क्षत</strong> का अर्थ - क्षतिग्रस्त l</li>\n\t\t<li><strong>विक्षत का अर्थ</strong> - घायल, ज़ख्मी।</li>\n\t</ul>\n\t</li>\n\t<li><strong>यह दोनों एक दूसरे के पर्यायवाची हैं ना की विलोम l</strong></li>\n\t<li>इनका विलोम शब्द है - <strong>अक्षत </strong>l</li>\n\t<li><strong>अन्य विकल्प :-</strong>\n\t<ul>\n\t\t<li>अन्य शब्द युग्म सही विलोम शब्द होने के कारण गलत उत्तर है l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>ऐसे शब्द जो एक दूसरे का उल्टा अर्थ बताते हैं या विपरीतार्थक हो, <strong>विलोम शब्द </strong>कहलाते हैं l</li>\n\t<li><strong>कुछ अन्य विलोम शब्द:-&nbsp;</strong>\n\t<ul>\n\t\t<li>मूर्ख - बुद्धिमान</li>\n\t\t<li>&nbsp;विमुख - सम्मुख</li>\n\t\t<li>खगोल - भूगोल&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n31:Tc3c,\n<p>सही उत्तर है - <strong>&quot;4&quot; </strong>l वाक्य में कोई त्रुटि नहीं है l<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>सही वाक्य :-</strong><strong> </strong>\n\n\t<ul>\n\t\t<li>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6264ed57095ca8d0bfdc280a", "qs_no": 16, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>रिक्त स्थान को भरने के लिए सबसे उपयुक्त शब्द का चयन करें।</p>\n\n<p>दक्षिण का कोणार्क मंदिर, ______ का अद्द्भुत नमूना है।</p>\n", "options": [{"prompt": "1", "value": "मुगलकला"}, {"prompt": "2", "value": "हस्तकला"}, {"prompt": "3", "value": "वास्तुकला"}, {"prompt": "4", "value": "पाश्चात्य&amp;nbsp;कला&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;वास्तुकला&quot; l</strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>सही वाक्य</strong> इस प्रकार बनेगा:-\n\n\t<ul>\n\t\t<li>दक्षिण का कोणार्क मंदिर <u><strong>वास्तुकला</strong></u> का अद्भुत नमूना है l</li>\n\t</ul>\n\t</li>\n\t<li><strong>वास्तु कला </strong>-\n\t<ul>\n\t\t<li>वास्तु या भवन निर्माण की कला जिसके अंतर्गत चित्रण और तक्षण दोनों आते हैं; वास्तुशास्त्र; वास्तुशिल्प; स्थापत्यकला l​</li>\n\t</ul>\n\t</li>\n\t<li><strong>अन्य विकल्प -</strong>\n\t<ul>\n\t\t<li><strong>मुगलकला</strong> - मुगलों के काल की कला l</li>\n\t\t<li><strong>हस्तकला </strong>- ऐसे कलात्मक कार्य को कहते हैं जो उपयोगी होने के साथ-साथ सजाने के काम आता है तथा जिसे मुख्यत: हाथ से या सरल औजारों की सहायता से ही बनाया जाता है।</li>\n\t\t<li><strong>पाश्चात्य कला</strong> - पश्चिम देशों से आई हुई कला l</li>\n\t\t<li>यह सब कोणार्क मंदिर के संदर्भ में गलत उत्तर है क्योंकि इनमें से किसी का भी प्रयोग कोणार्क मंदिर को बनाने में नहीं किया गया है l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>अन्य विकल्पों का वाक्य प्रयोग:- </strong>\n\n\t<ul>\n\t\t<li>ताजमहल <strong>मुगलकला </strong>का अनमोल नगीना है l</li>\n\t\t<li>जोधपुर की <strong>हस्तकला </strong>वाली ओढनिया पूरे देश में मशहूर है l</li>\n\t\t<li>अंग्रेजों के साथ <strong>पाश्चात्य कला</strong> भारत में आई l</li>\n\t</ul>\n\t</li>\n</ul>\n\n40:Tc83,\n<p>सही उत्तर है - <strong>&quot;हर्षित&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&quot;हर्षित&quot; </strong>शब्द में<strong> सही वर्तनी </strong>का प्रयोग है l</li>\n\t<li><strong>हर्षित का अर्थ -</strong>\n\t<ul>\n\t\t<li>प्रसन्नमय, रोमांचित।</li>\n\t</ul>\n\t</li>\n\t<li><strong>वाक्य प्रयोग -</strong>\n\t<ul>\n\t\t<li>आत्मज्ञानी साधक को ऊंची या नीची किसी भी स्थिति में न <strong>हर्षित </strong>होना चाहिए, न कुपित ।</li>\n\t</ul>\n\t</li>\n\t<li>अन्य विकल्प गलत उत्तर है क्योंकि अन्य तीनों विकल्पों में <strong>&#39;हर्षित&#39;</strong> शब्द की गलत वर्तनी का प्र", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["रिक्त स्थानों की पूर्ति"], "concept": "रिक्त स्थानों की पूर्ति", "confidence": "high"}, {"qid": "6264e5d9b4080f0972aaf8d4", "qs_no": 17, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "सही वर्तनी वाले शब्द का चयन करें।", "options": [{"prompt": "1", "value": "वव्यावसायीक"}, {"prompt": "2", "value": "व्यवसाईक"}, {"prompt": "3", "value": "व्यावसायिक"}, {"prompt": "4", "value": "व्यवसयिक"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;व्यावसायिक&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>व्यावसायिक </strong>शब्द में<strong> सही वर्तनी</strong> का प्रयोग है l</li>\n\t<li><strong>व्यावसायिक </strong>का अर्थ -\n\t<ul>\n\t\t<li>व्यवसाय संबंधी।</li>\n\t</ul>\n\t</li>\n\t<li><strong>वाक्य प्रयोग </strong>-\n\t<ul>\n\t\t<li>मैं <u><strong>व्यावसायिक </strong></u>शोषण के मुद्दे पर काम करती हूँ, क्योंकि यह कर्मचारियों की मानसिक स्थिति के लिए सही नहीं है l</li>\n\t</ul>\n\t</li>\n\t<li>अन्य विकल्प गलत उत्तर है क्योंकि अन्य तीनों विकल्पों में<strong> &#39;व्यावसायिक&#39; </strong>शब्द की गलत वर्तनी का प्रयोग किया गया है l इनमें मात्राओं संबंधी और वर्ण संबंधी त्रुटियां है l&nbsp;</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>शब्द में प्रयुक्त ध्वनियों को जिस क्रम से उच्चरित किया जाता है, लिखने में भी उसी क्रम से विन्यस्त करने का नाम <strong>वर्तनी </strong>या वर्ण-विन्यास है।</li>\n\t<li><strong>कुछ गलत वर्तनी वाले शब्दों की सही वर्तनी इस प्रकार है :-</strong>\n\t<ul>\n\t\t<li>आतिसबाजी - आतिशबाजी l</li>\n\t\t<li>अत्याक्षरी - अंत्याक्षरी l</li>\n\t\t<li>उत्तरदाई - उत्तरदायी l&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n36:Tbd7,\n<p>सही उत्तर है -<strong> &quot;उत्सुक होना&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&#39;विषय को जानने की बेचैनी</strong>&#39; <strong>वाक्यांश </strong>के लिए एक शब्द है - <strong>उत्सुक होना l</strong></li>\n\t<li><strong>अन्य विकल्प :- </strong>\n\t<ul>\n\t\t<li>प्रयत्नशील होना - उद्योग में लगा हुआ।</li>\n\t\t<li>अविचल होना -&nbsp; जो विचलित न हो।&nbsp;</li>\n\t\t<li>सचेष्ट होना - चेष्टा युक्त l</li>\n\t</ul>\n\t</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["वर्तनी"], "concept": "वर्तनी", "confidence": "high"}, {"qid": "6264e4dff72379daaaecf5c7", "qs_no": 18, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए गए वाक्य में रेखांकित खंड को प्रतिस्थापित करने के लिए सबसे उपयुक्त विकल्प का चयन करें। यदि इसे प्रतिस्थापित करने की आवश्यकता नहीं है, तो विकल्प &#39;किसी बदलाव की आवश्यकता नहीं है&#39; का चयन करें।</p>\n\n<p>उस पर <u>कई घड़े</u> पानी पड़ गया।</p>\n", "options": [{"prompt": "1", "value": "क&amp;zwj;िसी बदलाव की आवश्यकता नहीं है&lt;span style=&quot;&quot;&gt;।&lt;/span&gt;"}, {"prompt": "2", "value": "घडी"}, {"prompt": "3", "value": "घड़े"}, {"prompt": "4", "value": "घड़ों&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>सही उत्तर है -<strong> &quot;घड़ों</strong><strong>&quot; l</strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>सही वाक्य:-</strong>\n\n\t<ul>\n\t\t<li>उस पर <u><strong>घड़ों</strong></u><strong> </strong>पानी पड़ गया।&nbsp;</li>\n\t</ul>\n\t</li>\n\t<li><strong>घड़ों पानी पड़ना</strong> - ये एक प्रकार का मुहावरा है<span style=\"color: rgb(33, 37, 41);\">।</span>&nbsp;</li>\n\t<li><strong>अर्थ</strong> -&nbsp;अत्यधिक लज्जित होना।</li>\n\t<li><strong>वाक्य प्रयो</strong>ग -&nbsp;राजेश अपने ही घर मे चोरी करते पकडे जाने पर उस पर <strong>घड़ों</strong> पानी पड गया ।</li>\n</ul>\n\n<p><b>अन्य&nbsp;</b>विकल्प असंगत हैं<span style=\"color: rgb(33, 37, 41);\">।</span>&nbsp;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"color: rgb(33, 37, 41); width: 330px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 224px; height: 31px;\">\n\t\t\t<p style=\"text-align: center;\"><span style=\"font-weight: bolder;\">मुहावरा परिभाषा</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 114px; height: 31px;\">\n\t\t\t<p style=\"text-align: center;\"><span style=\"font-weight: bolder;\">उदाहरण</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 224px; height: 111px;\">\n\t\t\t<p style=\"text-align: center;\">मुहावरा का शाब्दिक अर्थ &lsquo;अभ्यास&rsquo; है। मुहावरा शब्द अरबी भाषा का शब्द है। हिन्दी में ऐसे वाक्यांशों को मुहावरा कहा जाता है, जो अपने साधारण अर्थ को छोड़कर&nbsp; विशेष अर्थ को व्यक्त करते हैं।</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 114px; height: 111px;\">\n\t\t\t<p style=\"text-align: center;\">अंक भरना<span dir=\"RTL\">-</span>&nbsp;स्नेह से लिपटा लेना</p>\n\n\t\t\t<p style=\"text-align: center;\">वाक्य<span dir=\"RTL\">-</span>माँ ने स्नेह से अपने पुत्र को अंक में भर लिया।&nbsp;&nbsp;</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n33:T1168,\n<p>सही उत्तर है - <strong>&quot;प्रिय मित्र को कहानी की पुस्तक दी।&quot;</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>सही वाक्य:- </strong>\n\n\t<ul>\n\t\t<li><strong>​</strong>राहुल ने अपने <u><strong>प्रिय मित्र को कहानी की पुस्तक दी।</strong></u></li>\n\t</ul>\n\t</li>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["वाक्यगत अशुद्धियाँ"], "concept": "वाक्यगत अशुद्धियाँ", "confidence": "high"}, {"qid": "6264ce281bdaa50d5c531e5e", "qs_no": 19, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>रिक्त स्थान को भरने के लिए सबसे उपयुक्त शब्द का चयन कीजिए।</p>\n\n<p>वे ______ बार देख चुके हैं।</p>\n", "options": [{"prompt": "1", "value": "अनेकोन"}, {"prompt": "2", "value": "अनेक"}, {"prompt": "3", "value": "आनेकों"}, {"prompt": "4", "value": "अनेकों"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>सही उत्तर है -<strong> &quot;अनेक&quot;</strong> l<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>संपूर्ण वाक्य इस प्रकार बनेगा :- वे <u><strong>अनेक </strong></u>बार देख चुके हैं।&nbsp;</li>\n\t<li><strong>अनेक </strong>शब्द का अर्थ है -\n\t<ul>\n\t\t<li>एक से अधिक या बहुत सारे l</li>\n\t</ul>\n\t</li>\n\t<li><strong>&#39;अनेक&#39; </strong>एक ऐसा शब्द है जो <strong>एकवचन </strong>तथा <strong>बहुवचन </strong>में <strong>&#39;अनेक</strong>&#39; ही रहता है l</li>\n\t<li><strong>उदाहरण:-</strong>\n\t<ul>\n\t\t<li>मेरे पास <strong>अनेक रंगों </strong>के पेन है l</li>\n\t\t<li>इंद्रधनुष में <strong>अनेक रंग </strong>होते हैं l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong>अन्य विकल्प :-</strong><strong> </strong></p>\n\n<ul>\n\t<li><strong>अनेकोन, आनेकों, अनेकों</strong> - यह तीनों में विकल्प गलत उत्तर है, क्योंकि यह है अनेक शब्द के सही बहुवचन नहीं है l</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>शब्द के जिस रूप से एक ही वस्तु का बोध हो, उसे <strong>एकवचन </strong>कहते हैं।\n\n\t<ul>\n\t\t<li><strong>जैसे - </strong>लड़का, गाय, सिपाही, बच्चा, कपड़ा, माता, माला, पुस्तक, स्त्री, टोपी बंदर, मोर आदि।</li>\n\t</ul>\n\t</li>\n\t<li>शब्द के जिस रूप से अनेकता का बोध हो उसे <strong>बहुवचन </strong>कहते हैं।\n\t<ul>\n\t\t<li><strong>जैसे - </strong>लड़के, गायें, कपड़े, टोपियाँ, मालाएँ, माताएँ, पुस्तकें, वधुएँ, गुरुजन, रोटियाँ, स्त्रियाँ, लताएँ, बेटे आदि।</li>\n\t</ul>\n\t</li>\n</ul>\n\n2f:Tddb,\n<p>सही उत्तर है - <strong>&quot;किसी बदलाव की आवश्यकता नहीं है।&quot;</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>सही​ वाक्य :-</strong>\n\n\t<ul>\n\t\t<li>दक्षिण भारत के मंदिरों में<u> <strong>वास्तु कला के दर्शन होते हैं।</strong></u></li>\n\t</ul>\n\t</li>\n\t<li>प्रस्तुत वाक्य में लिंग संबंधी, वचन संबंधी और वर्तनी संबंधी <strong>कोई भी त्रुटि नहीं है l</strong></li>\n</ul>\n\n<p><strong>अन्य विकल्प :-</strong></p>\n\n<ul>\n\t<li>गलत उत्तर है क्योंक", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["रिक्त स्थानों की पूर्ति"], "concept": "रिक्त स्थानों की पूर्ति", "confidence": "high"}, {"qid": "6264e61d1d0458db4476f986", "qs_no": 20, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>दिए गये वाक्यांश के लिए एक शब्द दीजिये।&nbsp;</p>\n\n<p>विषय को जानने की बेचैनी।</p>\n", "options": [{"prompt": "1", "value": "प्रयत्नशील होना"}, {"prompt": "2", "value": "उत्सुक&amp;nbsp;&lt;span style=&quot;&quot;&gt;होना&lt;/span&gt;"}, {"prompt": "3", "value": "अविचल&amp;nbsp;&lt;span style=&quot;&quot;&gt;होना&lt;/span&gt;"}, {"prompt": "4", "value": "सचेष्ट&amp;nbsp;&lt;span style=&quot;&quot;&gt;होना&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>सही उत्तर है -<strong> &quot;उत्सुक होना&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&#39;विषय को जानने की बेचैनी</strong>&#39; <strong>वाक्यांश </strong>के लिए एक शब्द है - <strong>उत्सुक होना l</strong></li>\n\t<li><strong>अन्य विकल्प :- </strong>\n\t<ul>\n\t\t<li>प्रयत्नशील होना - उद्योग में लगा हुआ।</li>\n\t\t<li>अविचल होना -&nbsp; जो विचलित न हो।&nbsp;</li>\n\t\t<li>सचेष्ट होना - चेष्टा युक्त l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>जब किसी वाक्य में प्रयुक्त या स्वतन्त्र, किसी वाक्यांश के लिए किसी एक शब्द का प्रयोग किया जाता है, जो उस वाक्यांश के अर्थ को पूरी तरह सिद्ध करता हो तो उसे वाक्यांश के लिए एक शब्द कहते हैं, अर्थात अनेक शब्दों के लिए एक शब्द को प्रयुक्त करना ही<strong> वाक्यांश के लिए एक शब्द</strong> कहलाता है।</li>\n\t<li><strong>कुछ अन्य वाक्यांशों के लिए एक शब्द:-</strong>\n\t<ul>\n\t\t<li>जो क्षमा नहीं किया जा सके - अक्षम्य</li>\n\t\t<li>जिसको कहा ना जा सके - अकथनीय</li>\n\t\t<li>जिसकी गिनती न हो सके - अगण्य</li>\n\t</ul>\n\t</li>\n</ul>\n\n37:Tc08,\n<p>सही उत्तर है <strong>- &quot;मृणाल&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>&#39;कमल की दण्ड&#39; वाक्यांश</strong> के लिए एक शब्द है - <strong>मृणाल </strong>l&nbsp;</li>\n\t<li><strong>अन्य विकल्प :-</strong>\n\t<ul>\n\t\t<li>पराग - पौधे द्वारा संश्लेषित शर्करा युक्त तरल पदार्थ l</li>\n\t\t<li>पुरन्द्र -&nbsp; पुर, नगर या घर को तोड़ने वाला l</li>\n\t\t<li", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6264ef74f72379daaaee66c1", "qs_no": 21, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "गद्यांश के रिक्त स्थान (1) के लिए सर्वाधिक उपयुक्त शब्द होगा -", "options": [{"prompt": "1", "value": "राजाओं की"}, {"prompt": "2", "value": "प्राणियों&amp;nbsp;&lt;span style=&quot;&quot;&gt;की&lt;/span&gt;"}, {"prompt": "3", "value": "देवताओं&amp;nbsp;&lt;span style=&quot;&quot;&gt;की&lt;/span&gt;"}, {"prompt": "4", "value": "मनुष्य&amp;nbsp;&lt;span style=&quot;&quot;&gt;की&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;मनुष्य की&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य:- </strong>\n\n\t<ul>\n\t\t<li><strong>​</strong>काव्य का सम्बन्ध <u><strong>मनुष्य की</strong></u> हित चिन्ता से जुड़ा हुआ है।&nbsp;</li>\n\t</ul>\n\t</li>\n\t<li><strong>काव्य/कविता</strong> हमेशा से मानव जीवन के लिए अत्यधिक महत्वपूर्ण रही है l</li>\n\t<li><strong>अन्य विकल्प:-</strong>\n\t<ul>\n\t\t<li><strong>राजा, प्राणियों, देवता -</strong> तीनों गलत उत्तर है क्योंकि यहां पर मानव सभ्यता की बात की जा रही है l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>काव्य </strong>-\n\n\t<ul>\n\t\t<li>काव्य या कविता का शाब्दिक अर्थ है काव्यात्मक रचना या कवि की कृति, जो छन्दों की श्रृंखलाओं में विधिवत बांधी जाती है।</li>\n\t</ul>\n\t</li>\n\t<li>हित चिंतन<strong> </strong>का अर्थ है -\n\t<ul>\n\t\t<li>अच्छे-बुरे की चिंता, शुभचिंतक l</li>\n\t</ul>\n\t</li>\n</ul>\n\n43:Tb1e,\n<p>सही उत्तर है - <strong>&quot;प्रारंभिक&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span>&nbsp;</strong></span></strong></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य :-</strong>&nbsp;\n\n\t<ul>\n\t\t<li>सभ्यता के <u><strong>प्र", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["रिक्त स्थानों की पूर्ति"], "concept": "रिक्त स्थानों की पूर्ति", "confidence": "high"}, {"qid": "6264ef74f72379daaaee66c2", "qs_no": 22, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">गद्यांश के रिक्त स्थान (2) के लिए सर्वाधिक उपयुक्त&nbsp;शब्द होगा -</span>", "options": [{"prompt": "1", "value": "पुराने"}, {"prompt": "2", "value": "प्राचीन"}, {"prompt": "3", "value": "प्रारंभिक"}, {"prompt": "4", "value": "आदि"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;प्रारंभिक&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span>&nbsp;</strong></span></strong></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य :-</strong>&nbsp;\n\n\t<ul>\n\t\t<li>सभ्यता के <u><strong>प्रारंभिक</strong></u> युग में जब प्रकृति के रहस्य मनुष्य के&nbsp; लिए......... l</li>\n\t</ul>\n\t</li>\n\t<li><strong>प्रारंभिक </strong>का अर्थ है -\n\t<ul>\n\t\t<li>पहली या शुरुआत की l</li>\n\t</ul>\n\t</li>\n\t<li>लेखक बता रहे हैं कि जब से मानव सभ्यता का प्रारंभ हुआ है तब से प्रकृति के अनेक रहस्य उसकी चिंता का कारण थे l</li>\n</ul>\n\n<p><strong>अन्य विकल्प:-</strong></p>\n\n<ul>\n\t<li><strong>पुराने, प्राचीन -</strong> सभ्यता शब्द के साथ उचित नहीं है l यहां पर मनुष्य जीवन की शुरुआती कहानी बताई गई है l</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>प्रारंभिक</strong> <strong>के पर्यायवाची -</strong>\n\n\t<ul>\n\t\t<li>प्राथमिक, आदिम, बेसिक, आरंभिक, मौलिक, आदिकालीन, आद्य, मूल l</li>\n\t</ul>\n\t</li>\n\t<li><strong>प्रारंभिक का विलोम शब्द</strong> है - अंतिम l</li>\n</ul>\n\n44:Ta38,\n<p>सही उत्तर है - <strong>&quot;अज्ञात&quot; l</strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य :-</strong>&nbsp;\n\n\t<ul>\n\t\t<li>जब प्रकृति के रहस्य मनुष्य के लिए <u><strong>अज्ञात</strong></u> थे और वह अधिकांश में अपने जीवित रहने के ल", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["रिक्त स्थानों की पूर्ति"], "concept": "रिक्त स्थानों की पूर्ति", "confidence": "high"}, {"qid": "6264ef74f72379daaaee66c3", "qs_no": 23, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">गद्यांश के रिक्त स्थान (3) के लिए सर्वाधिक उपयुक्त&nbsp;शब्द होगा -</span>", "options": [{"prompt": "1", "value": "सहजात"}, {"prompt": "2", "value": "अज्ञात"}, {"prompt": "3", "value": "निष्णात"}, {"prompt": "4", "value": "ज्ञात"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;अज्ञात&quot; l</strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य :-</strong>&nbsp;\n\n\t<ul>\n\t\t<li>जब प्रकृति के रहस्य मनुष्य के लिए <u><strong>अज्ञात</strong></u> थे और वह अधिकांश में अपने जीवित रहने के लिए प्रकृति की.......... l</li>\n\t</ul>\n\t</li>\n\t<li><strong>अज्ञात </strong>-\n\t<ul>\n\t\t<li>का अर्थ है जिसे कोई ना जानता हो l</li>\n\t</ul>\n\t</li>\n\t<li>प्रकृति के रहस्य मनुष्य के लिए अज्ञात थे, है और शायद हमेशा रहेंगे l</li>\n</ul>\n\n<p><strong>अन्य विकल्प :-</strong><strong> </strong></p>\n\n<ul>\n\t<li><strong>ज्ञात, सहजात, निष्णात </strong>- अपने अर्थ के अनुसार, रहस्य शब्द के साथ उपयोग के लिए गलत है l</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>ज्ञात </strong>- जो जाना-समझा हो</li>\n\t<li><strong>सहजात </strong>-एक ही जाति के</li>\n\t<li><strong>निष्णात </strong>- अच्छा ज्ञान रखने वाला</li>\n</ul>\n\n45:Ta7a,\n<p>सही उत्तर है - <strong>&quot;कृपा&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य :-</strong>\n\n\t<ul>\n\t\t<li>प", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["रिक्त स्थानों की पूर्ति"], "concept": "रिक्त स्थानों की पूर्ति", "confidence": "high"}, {"qid": "6264ef74f72379daaaee66c4", "qs_no": 24, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">गद्यांश के रिक्त स्थान (4) के लिए सर्वाधिक उपयुक्त&nbsp;शब्द होगा -</span>", "options": [{"prompt": "1", "value": "माया"}, {"prompt": "2", "value": "दया"}, {"prompt": "3", "value": "ममता"}, {"prompt": "4", "value": "कृपा"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;कृपा&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य :-</strong>\n\n\t<ul>\n\t\t<li>प्रकृति की <u><strong>कृपा</strong></u> पर&nbsp;निर्भर था, तब उसने प्रकृति के अनेक उपादानों की....... l</li>\n\t</ul>\n\t</li>\n\t<li><strong>कृपा </strong>-\n\t<ul>\n\t\t<li>अनुग्रह, दया (जैसे - कृपा करके)।</li>\n\t</ul>\n\t</li>\n\t<li>प्रकृति की <strong>कृपा </strong>पर निर्भर था से आशय है - जब मनुष्य बहुत अधिक चीजें नहीं जानता था तब, वह प्रकृति के अनुसार ही चला करता था l</li>\n</ul>\n\n<p><strong>अन्य विकल्प :-</strong></p>\n\n<ul>\n\t<li><strong>माया, दया, ममता</strong> - अपने अर्थ के अनुसार दिए गए वाक्य के लिए सही शब्द नहीं है l</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>माया </strong>- सांसारिक मोह</li>\n\t<li><strong>दया </strong>- करुणा, रहम (जैसे - गरीबों पर दया करना)</li>\n\t<li><strong>ममता </strong>- मां का स्नेह&nbsp;</li>\n</ul>\n\n46:Tbc1,\n<p>सही उत्तर है - <strong>&quot;प्रार्थना&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य :-</strong>\n\n\t<ul>\n\t\t<li>तब उसने ", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["रिक्त स्थानों की पूर्ति"], "concept": "रिक्त स्थानों की पूर्ति", "confidence": "high"}, {"qid": "6264ef74f72379daaaee66c5", "qs_no": 25, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">गद्यांश के रिक्त स्थान (5) के लिए सर्वाधिक उपयुक्त&nbsp;शब्द होगा -</span>", "options": [{"prompt": "1", "value": "प्रशंसा"}, {"prompt": "2", "value": "चिंता"}, {"prompt": "3", "value": "खोज"}, {"prompt": "4", "value": "प्रार्थना"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>सही उत्तर है - <strong>&quot;प्रार्थना&quot; l</strong><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>संपूर्ण वाक्य :-</strong>\n\n\t<ul>\n\t\t<li>तब उसने प्रकृति के अनेक उपादानों की <u><strong>प्रार्थना</strong></u> प्रारंभ की।</li>\n\t</ul>\n\t</li>\n\t<li><strong>प्रार्थना </strong>-\n\t<ul>\n\t\t<li>निवेदन, भक्ति एवं श्रद्धापूर्वक ईश्वर, देवता आदि से माँगना, निवेदन करना।</li>\n\t</ul>\n\t</li>\n\t<li>धीरे-धीरे जब मनुष्य को ज्ञान प्राप्त होने लगा, तब वह अपने हित के लिए प्राकृतिक चीजों की पूजा-आराधना करने लगा l</li>\n\t<li>उसे लगा - प्रार्थना करने से उसकी सारी मुश्किल हल हो जाएंगी l</li>\n\t<li><strong>अन्य विकल्प:</strong>-\n\t<ul>\n\t\t<li><strong>प्रशंसा, चिंता, खोज </strong>- अपने अर्थ के अनुसार दिए गए वाक्य के लिए उचित शब्द नहीं है l</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>प्रशंसा </strong>- तारीफ़, बड़ाई l</li>\n\t<li><strong>चिंता </strong>- चिंतन करने का कार्य, ध्यान, स्मरण।</li>\n\t<li><strong>खोज </strong>- तलाश, अन्वेषण, शोध (जैसे -&nbsp; वैज्ञानिक खोज)।</li>\n</ul>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYST 192: SSC GD कांस्टेबल - हिंदी (Held On - 9 Nov, 2021 Shift 3)\",\"sections\":[{\"_id\":\"6391d10d3bde1f85141d4255\",\"qCount\":25,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":0.5,\"posMarks\":2,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isPartialMarking\":false,\"_id\":\"6264e757b4080f0972ab23d2\",\"en\":{\"value\":\"<p>दिए&nbsp; गए वाक्य का वह भाग ज्ञात करें जिसमें कोई त्रुटि है। यदि कोई त्रुटि नहीं है, तो &#39;कोई त्रुटि नहीं है&#39; चुनें।</p>\\n\\n<p>महात्मा गांधी के (1)/ सन्देशों से देश (2)/ सर्वाधिक प्रभावित हुआ (3)/ कोई त्रुटि नहीं है (4)</p>\\n\",\"options\":[{\"prompt\":\"1\",\"value\":\"4\"},{\"prompt\":\"2\",\"value\":\"3\"},{\"prompt\":\"3\",\"value\":\"1\"},{\"prompt\":\"4\",\"value\":\"2\\n<div>&nbsp;</div>\\n\"}],\"Range\":{\"start\":\"\",\"end\":\"\"}},\"hn\":{\"Range\":", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["रिक्त स्थानों की पूर्ति"], "concept": "रिक्त स्थानों की पूर्ति", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 25;
+const DURATION_SEC = 15 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
