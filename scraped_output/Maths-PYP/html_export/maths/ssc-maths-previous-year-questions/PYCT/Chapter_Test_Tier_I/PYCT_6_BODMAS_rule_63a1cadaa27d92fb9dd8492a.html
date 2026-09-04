@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 6: BODMAS rule</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 6: BODMAS rule</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-maths-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">8 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63a1cadaa27d92fb9dd8492a</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63a1cadaa27d92fb9dd8492a", "title": "PYCT 6: BODMAS rule", "series_slug": "ssc-maths-previous-year-questions", "duration_min": 8, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "628542a7f87f5ae63c94033e", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "5e0b5956c958b40d0792f6e0", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "The value of <span class=\"math-tex\">\\(\\frac{{7 + 8 \\times 8 \\div 8\\;of\\;8 + 8 \\div 8 \\times 4\\;of\\;4}}{{4 \\div 4\\;of\\;4 + 4 \\times 4 \\div 4 - 4 \\div 4\\;of\\;2}}\\)</span>&nbsp;is:", "options": [{"prompt": "1", "value": "7.8"}, {"prompt": "2", "value": "6.4"}, {"prompt": "3", "value": "8.7"}, {"prompt": "4", "value": "4.6"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span class=\"math-tex\">\\(\\frac{{7 + 8 \\times 8 \\div 8\\;of\\;8 + 8 \\div 8 \\times 4\\;of\\;4}}{{4 \\div 4\\;of\\;4 + 4 \\times 4 \\div 4 - 4 \\div 4\\;of\\;2}}\\)</span>  का मान है:", "options": [{"prompt": "1", "value": "7.8"}, {"prompt": "2", "value": "6.4"}, {"prompt": "3", "value": "8.7"}, {"prompt": "4", "value": "4.6"}], "range": {"start": "", "end": ""}}, "te": {"value": "<span class=\"math-tex\">\\(\\frac{{7 + 8 \\times 8 \\div 8\\;of\\;8 + 8 \\div 8 \\times 4\\;of\\;4}}{{4 \\div 4\\;of\\;4 + 4 \\times 4 \\div 4 - 4 \\div 4\\;of\\;2}}\\)</span> యొక్క విలువ కనుగొనండి?", "options": [{"prompt": "1", "value": "7.8"}, {"prompt": "2", "value": "6.4"}, {"prompt": "3", "value": "8.7"}, {"prompt": "4", "value": "4.6"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>নিচের কোন বিকল্প চিত্রটি প্রশ্ন চিত্রের সবথেকে কাছাকাছি?</p>\n\n<p>প্রশ্ন চিত্র:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ba9e020efe17719fcd2acb181a4b77a73dcccd9e5a6ceba9b3a256510ca02554.png\" style=\"width: 82px; height: 51px;\" /></p>\n\n<p>উত্তর চিত্র:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ea59b276789facc4a719083074d371c9fbbf85e9e1c34ea677b82e671ec5fc62.png\" style=\" width: 364px; height: 120px;\" /></p>\n", "options": [{"prompt": "1", "value": "B"}, {"prompt": "2", "value": "A"}, {"prompt": "3", "value": "C"}, {"prompt": "4", "value": "D"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><strong>Given:</strong></p>\n<p><span class=\"math-tex\">\\(\\frac{7 + 8 \\times 8 \\div 8\\;of\\;8 + 8 \\div 8 \\times 4\\;of\\;4}{4 \\div 4\\;of\\;4 + 4 \\times 4 \\div 4 - 4 \\div 4\\;of\\;2}\\)</span></p>\n<p><strong>Formula used:</strong></p>\n<p>VBODMAS Rule</p>\n<p><strong>Calculation:</strong></p>\n<p>Numerator = 7 + 8 × 8 ÷ (8 of 8) + 8 ÷ 8 × (4 of 4)</p>\n<p>⇒ Numerator = 7 + 8 × 8 ÷ 64 + 8 ÷ 8 × 16</p>\n<p>⇒ Numerator = 7 + 64 ÷ 64 + 1 × 16</p>\n<p>⇒ Numerator = 7 + 1 + 16 = 24</p>\n<p>Denominator = 4 ÷ (4 of 4) + 4 × 4 ÷ 4 - 4 ÷ (4 of 2)</p>\n<p>⇒ Denominator = 4 ÷ 16 + 16 ÷ 4 - 4 ÷ 8</p>\n<p>⇒ Denominator = 0.25 + 4 - 0.5 = 3.75</p>\n<p>Value = 24 ÷ 3.75</p>\n<p>⇒ Value = 6.4</p>\n<p><strong>∴ The correct answer is option (2).</strong></p>", "hn": "<p><strong>दिया गया है:</strong></p>\n<p><span class=\"math-tex\">\\(\\frac{7 + 8 \\times 8 \\div 8\\;of\\;8 + 8 \\div 8 \\times 4\\;of\\;4}{4 \\div 4\\;of\\;4 + 4 \\times 4 \\div 4 - 4 \\div 4\\;of\\;2}\\)</span></p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p>VBODMAS नियम</p>\n<p><strong>गणना:</strong></p>\n<p>अंश = 7 + 8 × 8 ÷ (8 of 8) + 8 ÷ 8 × (4 of 4)</p>\n<p>⇒ अंश = 7 + 8 × 8 ÷ 64 + 8 ÷ 8 × 16</p>\n<p>⇒ अंश = 7 + 64 ÷ 64 + 1 × 16</p>\n<p>⇒ अंश = 7 + 1 + 16 = 24</p>\n<p>हर = 4 ÷ (4 of 4) + 4 × 4 ÷ 4 - 4 ÷ (4 of 2)</p>\n<p>⇒ हर = 4 ÷ 16 + 16 ÷ 4 - 4 ÷ 8</p>\n<p>⇒ हर = 0.25 + 4 - 0.5 = 3.75</p>\n<p>मान = 24 ÷ 3.75</p>\n<p>⇒ मान = 6.4</p>\n<p><strong>∴ सही उत्तर विकल्प (2) है।</strong></p>", "te": "<p style=\"\"><span style=\"font-weight: 700;\">ఉపయోగించిన భావన:</span></p>\n\n<p style=\"\">ఇచ్చిన వ్యక్తీకరణను పరిష్కరించడానికి <span style=\"font-weight: 700;\">BODMAS</span> నియమాన్ని ఉపయోగించండి</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/794b82f66261e4bf4342339627e834691e44a8992ab0ac0e25aee27e0a51b068.png\" /></p>\n\n<p><strong>గణన:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow \\frac{{7 + 8 \\times 8 \\div 8\\;of\\;8 + 8 \\div 8 \\times 4\\;of\\;4}}{{4 \\div 4\\;of\\;4 + 4 \\times 4 \\div 4 - 4 \\div 4\\;of\\;2}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow \\frac{{7 + 8 \\times 8 \\div 64 + 8 \\div 8 \\times 16}}{{4 \\div 16 + 4 \\times 1 - 4 \\div 8}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow \\frac{{7 + 8 \\times \\frac{8}{{64}} + 1 \\times 16}}{{\\frac{4}{{16}} + 4 - \\frac{4}{8}}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow \\frac{{7 + 1 + 16}}{{\\frac{1}{4} + 4 - \\frac{1}{2}}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow \\frac{{24}}{{\\frac{{1 + 16 - 2}}{4}}}\\)</span></p>\n\n<p>⇒ (24 × 4)/15</p>\n⇒ 6.432:T452,<p><strong>Given:</strong></p>\n<p><span class=\"math-tex\">\\(\\left( {2\\frac{6}{7} \\text{ of } 4\\frac{1}{5} \\div \\frac{2}{3}} \\right) \\ti", "mr": "", "bn": "<p>এখানে অনুসৃত যুক্তিটি হল:-</p>\n\n<ul>\n\t<li>প্রশ্ন চিত্রের সবচেয়ে কাছেরটি হল D চিত্রের আয়না চিত্র।</li>\n</ul>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/9d4fc37cf0a79f646a3ef47de691028e004f7b94999b031b3112cf04249e843f.png\" style=\"width: 182px; height: 69px;\" /></p>\n\n<p>সুতরাং, <strong>\"বিকল্প 4\"</strong> সঠিক উত্তর।</p>\n", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Bodmas Rule"], "concept": "Bodmas Rule", "confidence": "high"}, {"qid": "5e0db35fd0b6b10d0622315e", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "The value of <span class=\"math-tex\">\\(\\left( {2\\frac{6}{7}of\\;4\\frac{1}{5} \\div \\frac{2}{3}} \\right) \\times 1\\frac{1}{9} \\div \\left( {\\frac{3}{4} \\times 2\\frac{2}{3}of\\frac{1}{2} \\div \\frac{1}{4}} \\right)\\)</span>&nbsp;is∶", "options": [{"prompt": "1", "value": "5"}, {"prompt": "2", "value": "1/8"}, {"prompt": "3", "value": "8"}, {"prompt": "4", "value": "1/5"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span class=\"math-tex\">\\(\\left( {2\\frac{6}{7}of\\;4\\frac{1}{5} \\div \\frac{2}{3}} \\right) \\times 1\\frac{1}{9} \\div \\left( {\\frac{3}{4} \\times 2\\frac{2}{3}of\\frac{1}{2} \\div \\frac{1}{4}} \\right)\\)</span> का मान है∶", "options": [{"prompt": "1", "value": "5"}, {"prompt": "2", "value": "1/8"}, {"prompt": "3", "value": "8"}, {"prompt": "4", "value": "1/5"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"hn": "<p><strong>दिया गया है:</strong></p>\n<p><span class=\"math-tex\">\\(\\left( {2\\frac{6}{7} \\text{ का } 4\\frac{1}{5} \\div \\frac{2}{3}} \\right) \\times 1\\frac{1}{9} \\div \\left( {\\frac{3}{4} \\times 2\\frac{2}{3} \\text{ का } \\frac{1}{2} \\div \\frac{1}{4}} \\right)\\)</span></p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p>BODMAS नियम</p>\n<p><strong>गणना:</strong></p>\n<p>⇒ <span class=\"math-tex\">\\(\\left( {\\frac{20}{7} \\times \\frac{21}{5} \\div \\frac{2}{3}} \\right) \\times \\frac{10}{9} \\div \\left( {\\frac{3}{4} \\times \\frac{8}{3} \\times \\frac{1}{2} \\div \\frac{1}{4}} \\right)\\)</span></p>\n<p>&r\nArr; <span class=\"math-tex\">\\(\\left( {12 \\div \\frac{2}{3}} \\right) \\times \\frac{10}{9} \\div \\left( {\\frac{3}{4} \\times \\frac{4}{3} \\div \\frac{1}{4}} \\right)\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\left( {12 \\times \\frac{3}{2}} \\right) \\times \\frac{10}{9} \\div \\left( {1 \\div \\frac{1}{4}} \\right)\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(18 \\times \\frac{10}{9} \\div 4\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(20 \\div 4 = 5\\)</span></p>\n<p><strong>∴ सही उत्तर विकल्प (1) है।</strong></p>34:T4b3,<p><strong>Given:</strong></p>\n<p><strong><span class=\"math-tex\">\\(3 ÷ 18 \\text{ of } ", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Bodmas Rule"], "concept": "Bodmas Rule", "confidence": "high"}, {"qid": "5fc7509f79331681801b16f2", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "The value of&nbsp;<span class=\"math-tex\">\\(0.\\overline {57} - 0.\\;4\\overline {32} + 0.\\;3\\bar 5\\)</span>&nbsp;is:", "options": [{"prompt": "1", "value": "&lt;p&gt;&lt;span class=&quot;math-tex&quot;&gt;\\(0.4\\;\\overline {98} \\)&lt;/span&gt;&lt;/p&gt;\n"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(0.\\;\\overline {498} \\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(0.4\\;\\overline {94} \\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(0.\\;\\overline {494} \\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": " <span class=\"math-tex\">\\(0.\\overline {57} - 0.\\;4\\overline {32} + 0.\\;3\\bar 5\\)</span> का मान है:", "options": [{"prompt": "1", "value": "<p><span class=\"math-tex\">\\(0.4\\;\\overline {98} \\)</span></p>\n"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(0.\\;\\overline {498} \\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(0.4\\;\\overline {94} \\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(0.\\;\\overline {494} \\)</span>"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<span class=\"math-tex\">\\(0.\\overline {57} - 0.\\;4\\overline {32} + 0.\\;3\\bar 5\\)</span> चे मूल्य काय आहे:", "options": [{"prompt": "1", "value": "<p><span class=\"math-tex\">\\(0.4\\;\\overline {98} \\)</span></p>\n"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(0.\\;\\overline {498} \\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(0.4\\;\\overline {94} \\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(0.\\;\\overline {494} \\)</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p><strong>Given:</strong></p>\n<p><span class=\"math-tex\">\\(0.\\overline {57} - 0.4\\overline {32} + 0.3\\bar 5\\)</span></p>\n<p><strong>Formula used:</strong></p>\n<p><span class=\"math-tex\">\\(0.\\overline{ab} = \\frac{ab}{99}\\)</span></p>\n<p><span class=\"math-tex\">\\(0.a\\overline{bc} = \\frac{abc - a}{990}\\)</span></p>\n<p><span class=\"math-tex\">\\(0.a\\overline{b} = \\frac{ab - a}{90}\\)</span></p>\n<p><strong>Calculation:</strong></p>\n<p><span class=\"math-tex\">\\(0.\\overline{57} = \\frac{57}{99} = \\frac{570}{990}\\)</span></p>\n<p><span class=\"math-tex\">\\(0.4\\overline{32} = \\frac{432 - 4}{990} = \\frac{428}{990}\\)</span></p>\n<p><span class=\"math-tex\">\\(0.3\\overline{5} = \\frac{35 - 3}{90} = \\frac{32}{90} = \\frac{352}{990}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{570}{990} - \\frac{428}{990} + \\frac{352}{990}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{570 - 428 + 352}{990}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{142 + 352}{990}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{494}{990}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\f\nrac{498 - 4}{990} = 0.4\\overline{98}\\)</span></p>\n<p><strong>∴ The correct answer is option (1).</strong></p", "hn": "<p><strong>दिया गया है:</strong></p>\n<p><span class=\"math-tex\">\\(0.\\overline {57} - 0.4\\overline {32} + 0.3\\bar 5\\)</span></p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p><span class=\"math-tex\">\\(0.\\overline{ab} = \\frac{ab}{99}\\)</span></p>\n<p><span class=\"math-tex\">\\(0.a\\overline{bc} = \\frac{abc - a}{990}\\)</span></p>\n<p><span class=\"math-tex\">\\(0.a\\overline{b} = \\frac{ab - a}{90}\\)</span></p>\n<p><strong>गणना:</strong></p>\n<p><span class=\"math-tex\">\\(0.\\overline{57} = \\frac{57}{99} = \\frac{570}{990}\\)</span></p>\n<p><span class=\"math-tex\">\\(0.4\\overline{32} = \\frac{432 - 4}{990} = \\frac{428}{990}\\)</span></p>\n<p><span class=\"math-tex\">\\(0.3\\overline{5} = \\frac{35 - 3}{90} = \\frac{32}{90} = \\frac{352}{990}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{570}{990} - \\frac{428}{990} + \\frac{352}{990}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{570 - 428 + 352}{990}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{142 + 352}{990}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{494}{990}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{498 - 4}{990} = 0.4\\overline{98}\\)</span></p>\n<p><strong>∴ सही उत्तर विकल्प (1) है।</strong></p>38:T727,\n<p><strong>दिलेल्या समिकरणा नुसार</strong></p>\n\n<p><strong><span class=\"math-", "te": "", "mr": "\n<p><strong>दिलेल्या समिकरणा नुसार</strong></p>\n\n<p><strong><span class=\"math-tex\">\\(0.\\overline {57} - 0.\\;4\\overline {32} + 0.\\;3\\bar 5\\)</span></strong></p>\n\n<p><strong>उपाय -</strong></p>\n\n<p><span class=\"math-tex\">\\(0.\\overline {57} - 0.\\;4\\overline {32} + 0.\\;3\\bar 5\\)</span></p>\n\n<p> </p>\n\n<p>⇒      0.5757575757575 .............</p>\n\n<p>      + 0.3555555555555 ..........</p>\n\n<p>       - 0.4323232323232 ..........</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d2b703046250d37fa9c73e00a19e92fa5a4ff01802556d17d3c4de125a76f2d.png\" /></p>\n\n<p>⇒     0.4989898989898 ....</p>\n\n<p><span class=\"math-tex\">\\(% MathType!MTEF!2!1!+- %", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Bodmas Rule"], "concept": "Bodmas Rule", "confidence": "high"}, {"qid": "5fc5dc35803d66f329eddfb0", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>The value of&nbsp;</p>\n\n<p>3&nbsp;&divide; 18 of 3&nbsp;&times; 6 + 21&nbsp;&times; 6&nbsp;&divide; 18 - 3&nbsp;&divide; 2 + 3 - 3&nbsp;&divide; 9 of 3&nbsp;&times; 9 is:</p>\n", "options": [{"prompt": "1", "value": "29/6"}, {"prompt": "2", "value": "41/9"}, {"prompt": "3", "value": "47/6"}, {"prompt": "4", "value": "35/9"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>3 ÷ 18 का 3 x 6 + 21 x 6 ÷ 18 - 3 ÷ 2 + 3 - 3 ÷ 9 का 3 x 9 का मान है:</p>\n", "options": [{"prompt": "1", "value": "29/6"}, {"prompt": "2", "value": "41/9"}, {"prompt": "3", "value": "47/6"}, {"prompt": "4", "value": "35/9"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>3 ÷ 18 এর 3 × 6 + 21 × 6 ÷ 18 - 3 ÷ 2 + 3 - 3 ÷ 9 এর 3 × 9 এর মান কত?</p>\n", "options": [{"prompt": "1", "value": "29/6"}, {"prompt": "2", "value": "41/9"}, {"prompt": "3", "value": "47/6"}, {"prompt": "4", "value": "35/9"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><strong>Given:</strong></p>\n<p><strong><span class=\"math-tex\">\\(3 ÷ 18 \\text{ of } 3 \\times 6 + 21 \\times 6 ÷ 18 - 3 ÷ 2 + 3 - 3 ÷ 9 \\text{ of } 3 \\times 9\\)</span></strong> = ?</p>\n<p><strong>Formula used:</strong></p>\n<p>BODMAS rule (Bracket, Of, Division, Multiplication, Addition, Subtraction)</p>\n<p><strong>Calculation:</strong></p>\n<p>? = 3 ÷ (18 × 3) × 6 + 21 × 6 ÷ 18 - 3 ÷ 2 + 3 - 3 ÷ (9 × 3) × 9</p>\n<p>⇒ ? = 3 ÷ 54 × 6 + 126 ÷ 18 - 1.5 + 3 - 3 ÷ 27 × 9</p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{3}{54} \\times 6 + 7 - 1.5 + 3 - \\frac{3}{27} \\times 9\\)</span></p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{1}{18} \\times 6 + 7 - \\frac{3}{2} + 3 - \\frac{1}{9} \\times 9\\)</span></p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{1}{3} + 7 - \\frac{3}{2} + 3 - 1\\)</span></p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{1}{3} - \\frac{3}{2} + 9\\)</span></p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{2 - 9 + 54}{6}\\)</span></p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{47}{6}\\)</span></p>\n<p><strong>∴ The correct answer is option (3).</strong></p>", "hn": "<p><strong>दिया गया है:</strong></p>\n<p><strong><span class=\"math-tex\">\\(3 ÷ 18 \\text{ of } 3 \\times 6 + 21 \\times 6 ÷ 18 - 3 ÷ 2 + 3 - 3 ÷ 9 \\text{ of } 3 \\times 9\\)</span></strong> = ?</p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p>BODMAS नियम (Bracket, Of, Division, Multiplication, Addition, Subtraction)</p>\n<p><strong>गणना:</strong></p>\n<p>? = 3 ÷ (18 x 3) x 6 + 21 x 6 ÷ 18 - 3 ÷ 2 + 3 - 3 ÷ (9 x 3) x 9</p>\n<p>⇒ ? = 3 ÷ 54 x 6 + 126 ÷ 18 - 1.5 + 3 - 3 ÷ 27 x 9</p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{3}{54} \\times 6 + 7 - 1.5 + 3 - \\frac{3}{27} \\times 9\\)</span></p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{1}{18} \\times 6 + 7 - \\frac{3}{2} + 3 - \\frac{1}{9} \\times 9\\)</span></p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{1}{3} + 7 - \\frac{3}{2} + 3 - 1\\)</span></p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{1}{3} - \\frac{3}{2} + 9\\)</span></p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{2 - 9 + 54}{6}\\)</span></p>\n<p>⇒ ? = <span class=\"math-tex\">\\(\\frac{47}{6}\\)</span></p>\n<p><strong>∴ सही उत्तर विकल्प (3) है।</strong></p>36:T4a5,<p><strong>Given:</strong></p>\n<p><span class=\"math-tex\">\\(0.\\overline {57} - 0.4\\over", "te": "", "mr": "", "bn": "<p>নীচের টেবিলে দেওয়া BODMAS নিয়ম অনুসরণ করুন:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/840413585cd64b32cb1c7ff463f50c2780348748794b791a7062f50f6d7866b2.png\" style=\"width: 440px; height: 247px;\" /></p>\n\n<p>প্রদত্ত রাশি হল:</p>\n\n<p>3 ÷ 18 এর 3 × 6 + 21 × 6 ÷ 18 - 3 ÷ 2 + 3 - 3 ÷ 9 এর 3 × 9</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒</span> 3 ÷ 54 × 6 + 21 × 6 × 1/18 - 3 × 1/2 + 3 - 3 ÷ 27 × 9</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒ 3 × 1/54 × 6 + 7 - 3/2 + 3 - 3 × 1/27 × 9</span></p>\n\n<p>⇒ 1/3 + 7 - 3/2 +3 - 1</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒</span> (2 + 42 - 9 + 18 - 6)/6</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒</span> (62 - 15)/6</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">⇒</span> 47/6</p>\n", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Bodmas Rule"], "concept": "Bodmas Rule", "confidence": "high"}, {"qid": "5c10efad1c3d854b1a16d4a2", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "If <span class=\"math-tex\">\\({\\rm{A}} = 3\\frac{1}{4} \\times 4\\frac{1}{4} \\div 34 - \\frac{{47}}{{32}} + \\frac{{47}}{{16}}\\)</span>&nbsp;and <span class=\"math-tex\">\\({\\rm{B}} = 2\\frac{1}{2} + 5\\frac{1}{2} \\div 55 - \\frac{{11}}{{10}}\\)</span>&nbsp;, then what is the value of A &ndash; B?", "options": [{"prompt": "1", "value": "5/8"}, {"prompt": "2", "value": "1"}, {"prompt": "3", "value": "0"}, {"prompt": "4", "value": "3/8"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि <span class=\"math-tex\">\\({\\rm{A}} = 3\\frac{1}{4} \\times 4\\frac{1}{4} \\div 34 - \\frac{{47}}{{32}} + \\frac{{47}}{{16}}\\)</span>&nbsp;और <span class=\"math-tex\">\\({\\rm{B}} = 2\\frac{1}{2} + 5\\frac{1}{2} \\div 55 - \\frac{{11}}{{10}}\\)</span>&nbsp;, तो A &ndash; B का मान क्या है?", "options": [{"prompt": "1", "value": "5/8"}, {"prompt": "2", "value": "1"}, {"prompt": "3", "value": "0"}, {"prompt": "4", "value": "3/8"}], "range": {"start": "", "end": ""}}, "bn": {"value": "যদি <span class=\"math-tex\">\\({\\rm{A}} = 3\\frac{1}{4} \\times 4\\frac{1}{4} \\div 34 - \\frac{{47}}{{32}} + \\frac{{47}}{{16}}\\)</span> এবং <span class=\"math-tex\">\\({\\rm{B}} = 2\\frac{1}{2} + 5\\frac{1}{2} \\div 55 - \\frac{{11}}{{10}}\\)</span> হয়, তাহলে A – B এর মান কত?", "options": [{"prompt": "1", "value": "5/8"}, {"prompt": "2", "value": "1"}, {"prompt": "3", "value": "0"}, {"prompt": "4", "value": "3/8"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><strong>Given:</strong></p>\n<p>A = <span class=\"math-tex\">\\(3\\frac{1}{4} \\times 4\\frac{1}{4} \\div 34 - \\frac{47}{32} + \\frac{47}{16}\\)</span></p>\n<p>B = <span class=\"math-tex\">\\(2\\frac{1}{2} + 5\\frac{1}{2} \\div 55 - \\frac{11}{10}\\)</span></p>\n<p><strong>Formula used:</strong></p>\n<p>BODMAS rule</p>\n<p><strong>Calculation:</strong></p>\n<p>A = <span class=\"math-tex\">\\(\\frac{13}{4} \\times \\frac{17}{4} \\times \\frac{1}{34} - \\frac{47}{32} + \\frac{94}{32}\\)</span></p>\n<p", "hn": "\n<p>BODMAS नियम लागू करना,</p>\n\n<p>यहाँ <span class=\"math-tex\">\\({\\rm{A}} = 3\\frac{1}{4} \\times 4\\frac{1}{4} \\div 34 - \\frac{{47}}{{32}} + \\frac{{47}}{{16}}\\)</span></p>\n\n<p>&rArr; <span class=\"math-tex\">\\({\\rm{A}} = \\frac{{13}}{4} \\times \\frac{{17}}{4} \\times \\frac{1}{{34}} - \\frac{{47}}{{32}} + \\frac{{47}}{{16}}\\)</span></p>\n\n<p>&rArr; <span class=\"math-tex\">\\({\\rm{A}} = \\frac{{13}}{{32}} - \\frac{{47}}{{32}} + \\frac{{47}}{{16}}\\)</span></p>\n\n<p>&rArr; <span class=\"math-tex\">\\({\\rm{A}} = \\frac{{47}}{{16}} - \\frac{{17{\\rm{\\;}}}}{{16}} = \\frac{{15}}{8}\\)</span></p>\n\n<p><span class=\"math-tex\">\\({\\rm{B}} = 2\\frac{1}{2} + 5\\frac{1}{2} \\div 55 - \\frac{{11}}{{10}}\\)</span></p>\n\n<p>&rArr; B = <span class=\"math-tex\">\\(\\frac{5}{2} + \\frac{{11}}{2} \\times \\frac{1}{{55}} - \\frac{{11}}{{10}}\\)</span></p>\n\n<p>&rArr; B = <span class=\"math-tex\">\\( \\frac{5}{2} + \\frac{1}{{10{\\rm{\\;}}}} - \\frac{{11}}{{10{\\rm{\\;}}}}\\)</span></p>\n\n<p>&rArr; <span class=\"math-tex\">\\(\\frac{5}{2} - \\frac{1}{{1{\\rm{\\;}}}} = \\frac{3}{2}\\)</span></p>\n= A - B = 15/8 - 3/2 = <strong>3/8</strong>\n30:T44b,<p>BODMAS নিয়ম প্রয়ো", "te": "", "mr": "", "bn": "<p>BODMAS নিয়ম প্রয়োগ করে পাই,</p>\n\n<p><span class=\"math-tex\">\\({\\rm{A}} = 3\\frac{1}{4} \\times 4\\frac{1}{4} \\div 34 - \\frac{{47}}{{32}} + \\frac{{47}}{{16}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\({\\rm{A}} = \\frac{{13}}{4} \\times \\frac{{17}}{4} \\times \\frac{1}{{34}} - \\frac{{47}}{{32}} + \\frac{{47}}{{16}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\({\\rm{A}} = \\frac{{13}}{{32}} - \\frac{{47}}{{32}} + \\frac{{47}}{{16}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\({\\rm{A}} = \\frac{{47}}{{16}} - \\frac{{17{\\rm{\\;}}}}{{16}} = \\frac{{15}}{8}\\)</span></p>\n\n<p><span class=\"math-tex\">\\({\\rm{B}} = 2\\frac{1}{2} + 5\\frac{1}{2} \\div 55 - \\frac{{11}}{{10}}\\)</span></p>\n\n<p>⇒ B = <span class=\"math-tex\">\\(\\frac{5}{2} + \\frac{{11}}{2} \\times \\frac{1}{{55}} - \\frac{{11}}{{10}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\( \\frac{5}{2} + \\frac{1}{{10{\\rm{\\;}}}} - \\frac{{11}}{{10{\\rm{\\;}}}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{5}{2} - \\frac{1}{{1{\\rm{\\;}}}} = \\frac{3}{2}\\)</span></p>\n∴ A – B = 15/8 – 3/2 = <strong>3/8</strong>31:T4b8,<p style=\"\"><span style=\"fon", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Bodmas Rule"], "concept": "Bodmas Rule", "confidence": "high"}, {"qid": "6376fafab800f2e871222f26", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>What is the positive value of the following expression?</p>\n\n<p><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span></p>\n", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(1 \\frac{5}{6}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(1 \\frac{1}{5}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(2 \\frac{4}{5}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(2 \\frac{3}{5}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">निम्नलिखित व्यंजक का धनात्मक मान क्या है?</font></font></p>\n\n<p><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span></p>\n", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(1 \\frac{5}{6}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(1 \\frac{1}{5}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(2 \\frac{4}{5}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(2 \\frac{3}{5}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>కింది సమాసం యొక్క ధనాత్మక విలువ ఏమిటి?</p>\n\n<p><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span></p>\n", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(1 \\frac{5}{6}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(1 \\frac{1}{5}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(2 \\frac{4}{5}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(2 \\frac{3}{5}\\)</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span></p>\n\n<p><strong>Concept Used:</strong></p>\n\n<p>BODMAS Rule</p>\n\n<p>B = Bracket, O = Of, D = Division, M =Multiplication, A = Addition, S = Subtraction</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>&rArr; Solving the given equation using BODMAS Rule</p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(-3) \\div(9 \\times 5 \\div 15)\\}]}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29+3 \\div(9 \\times \\frac{1}{3})\\}]}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29+3 \\div3\\}]}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29+1\\}]}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{30\\}]}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text {of }[25 \\times 4 \\div 120\\}]}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times \\frac{1}{30}\\}]}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }\\frac{5}{6}}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } \\frac{5}{3}}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\times \\frac{5}{3}}\\)</span>&nbsp;=&nbsp;<span class=\"math-tex\">\\(\\sqrt{36\\div 25}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\sqrt{\\frac{36}{25}}\\)</span>&nbsp;=&nbsp;<span class=\"math-tex\">\\(\\frac{6}{5}\\)</span>&nbsp;= 1<span class=\"math-tex\">\\(\\frac{1}{5}\\)</span></p>\n\n<p><strong>Therefore the value of&nbsp;the expression&nbsp;is&nbsp;<span class=\"math-tex\">\\(1 \\frac{1}{5}\\)</span>.</strong></p>", "hn": "\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया है:</font></font></strong></p>\n\n<p><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">प्रयुक्त अवधारणा:</font></font></strong></p>\n\n<p style=\" \">BODMAS&nbsp;<font style=\"vertical-align: inherit;\">नियम</font></p>\n\n<p style=\"margin-bottom: 10px;  \">B = कोष्ठक, O = का, D = भाग, M = गुणा, A = जोड़, S = घटाव</p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; BODMAS नियम का प्रयोग करके दिए गए समीकरण को हल करने पर&nbsp;</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(-3) \\div(9 \\times 5 \\div 15)\\}]}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29+3 \\div(9 \\times \\frac{1}{3})\\}]}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29+3 \\div3\\}]}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29+1\\}]}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{30\\}]}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text {of }[25 \\times 4 \\div 120\\}]}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times \\frac{1}{30}\\}]}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }\\frac{5}{6}}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } \\frac{5}{3}}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\times \\frac{5}{3}}\\)</span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;=&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{36\\div 25}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\sqrt{\\frac{36}{25}}\\)</span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;=&nbsp;</font></font><span class=\"math-tex\">\\(\\frac{6}{5}\\)</span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;= 1</font></font><span class=\"math-tex\">\\(\\frac{1}{5}\\)</span></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">इसलिए, </font></font><span style=\" \">व्यंजक का मान&nbsp;</span><span class=\"math-tex\">\\(1 \\frac{1}{5}\\)</span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;है</font></font>।</strong></p>\n\n46:T9bc,\n<p><strong>ఇవ్వబడినది:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span><", "te": "\n<p><strong>ఇవ్వబడినది:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span></p>\n\n<p><strong>ఉపయోగించిన కాన్సెప్ట్:</strong></p>\n\n<p>BODMAS నియమం</p>\n\n<p>B = బ్రాకెట్, O = ఆఫ్, D = భాగహారం, M = గుణకారం, A = కూడిక, S = తీసివేత</p>\n\n<p><strong>గణన:</strong></p>\n\n<p>⇒ BODMAS నియమాన్ని ఉపయోగించి ఇచ్చిన సమీకరణాన్ని సాధించగా,</p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(-3) \\div(9 \\times 5 \\div 15)\\}]}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29+3 \\div(9 \\times \\frac{1}{3})\\}]}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29+3 \\div3\\}]}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29+1\\}]}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{30\\}]}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text {of }[25 \\times 4 \\div 120\\}]}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times \\frac{1}{30}\\}]}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }\\frac{5}{6}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } \\frac{5}{3}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\times \\frac{5}{3}}\\)</span> = <span class=\"math-tex\">\\(\\sqrt{36\\div 25}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\sqrt{\\frac{36}{25}}\\)</span> = <span class=\"math-tex\">\\(\\frac{6}{5}\\)</span> = 1 <span class=\"math-tex\">\\(\\frac{1}{5}\\)</span></p>\n\n<p><strong>కాబట్టి సమాసం విలువ <span class=\"math-tex\">\\(1 \\frac{1}{5}\\)</span> .</strong></p>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 6: BODMAS rule\",\"sections\":[{\"_id\":\"628542a7f87f5ae63c94033e\",\"qCount\":10,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":0.5,\"posMarks\":2,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isP", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Bodmas Rule"], "concept": "Bodmas Rule", "confidence": "high"}, {"qid": "6376bfd9cd2462edfe8aa031", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Solve the following.</p>\n\n<p><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times \\overline{7-3})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div \\overline{15-7}+75 \\div(6+15 \\div 3+4)}\\)</span></p>\n", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{23}{27}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{9}{2}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{11}{18}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{15}{19}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">निम्नलिखित को हल कीजिए।</font></font></p>\n\n<p><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times \\overline{7-3})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div \\overline{15-7}+75 \\div(6+15 \\div 3+4)}\\)</span></p>\n", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{23}{27}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{9}{2}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{11}{18}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{15}{19}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வருவனவற்றைத் தீர்க்கவும்.</p>\n\n<p><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times \\overline{7-3})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div \\overline{15-7}+75 \\div(6+15 \\div 3+4)}\\)</span></p>\n", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{23}{27}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{9}{2}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{11}{18}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{15}{19}\\)</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><strong><span style=\"\">Given:</span></strong></p>\n\n<p><span style=\"\"><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times \\overline{7-3})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div \\overline{15-7}+75 \\div(6+15 \\div 3+4)}\\)</span></span></p>\n\n<p><strong>Concept Used:</strong></p>\n\n<p>Using the BODMAS principle,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/210d67c6396cc34571b2be015c6822ad138e5d7c725910bb047240de46880319.png\" style=\"\" /></p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>First, we have to solve Vinculum,&nbsp;</p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times \\overline{7-3})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div \\overline{15-7}+75 \\div(6+15 \\div 3+4)}\\)</span></p>\n\n<p><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times {4})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div 8+75 \\div(6+15 \\div 3+4)}\\)</span></p>\n\n<p>Now, we have to solve Brackets</p>\n\n<p><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(16)+\\left[\\frac{2}{11} \\times \\frac{55}{4}-{\\frac{10+6}{16}}\\right]}{32 \\div {8}+75 \\div(6+5+4)}\\)</span></p>\n\n<p><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(16)+\\left[\\frac{5}{2} -{\\frac{16}{16}}\\right]}{32 \\div {8}+75 \\div15}\\)</span></p>\n\n<p><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }16+(\\frac{5}{2} -1)}{32 \\div {8}+75 \\div15}\\)</span></p>\n\n<p><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }16+\\frac{3}{2} }{32 \\div {8}+75 \\div15}\\)</span></p>\n\n<p>Now, we have to solve Of</p>\n\n<p><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{1} \\times 2+\\frac{3}{2} }{32 \\div {8}+75 \\div15}\\)</span></p>\n\n<p>Now, We have to solve the Divide</p>\n\n<p><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\(\\frac{4+\\frac{3}{2}}{4+5}\\)</span></p>\n\n<p>Now, we have to solve the remaining parts</p>\n\n<p><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\(\\frac{\\frac{8+3}{2}}{9}\\)</span></p>\n\n<p><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\(\\frac{11}{18}\\)</span></p>\n\n<p><strong><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span>Hence, The value of the above equation is 11/18</strong></p>\n\n42:T1a45,\n<p>", "hn": "\n<p><strong><span style=\"\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया गया है:</font></font></span></strong></p>\n\n<p><span style=\"\"><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times \\overline{7-3})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div \\overline{15-7}+75 \\div(6+15 \\div 3+4)}\\)</span></span></p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">प्रयुक्त अवधारणा:</span></p>\n\n<p style=\"\">&nbsp;BODMAS नियम का प्रयोग करते हुए,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/210d67c6396cc34571b2be015c6822ad138e5d7c725910bb047240de46880319.png\" style=\"\" /></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">सबसे पहले, हमें </font></font><span style=\"\">रेखाकोष्ठक&nbsp;</span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">को हल करना होगा,&nbsp;</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times \\overline{7-3})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div \\overline{15-7}+75 \\div(6+15 \\div 3+4)}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><span style=\"\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></span></font><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times {4})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div 8+75 \\div(6+15 \\div 3+4)}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">अब, हमें कोष्ठकों को हल करना है</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><span style=\"\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></span></font><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(16)+\\left[\\frac{2}{11} \\times \\frac{55}{4}-{\\frac{10+6}{16}}\\right]}{32 \\div {8}+75 \\div(6+5+4)}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><span style=\"\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></span></font><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(16)+\\left[\\frac{5}{2} -{\\frac{16}{16}}\\right]}{32 \\div {8}+75 \\div15}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><span style=\"\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></span></font><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }16+(\\frac{5}{2} -1)}{32 \\div {8}+75 \\div15}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><span style=\"\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></span></font><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }16+\\frac{3}{2} }{32 \\div {8}+75 \\div15}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">अब, हमें का को हल करना है।</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><span style=\"\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></span></font><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{1} \\times 2+\\frac{3}{2} }{32 \\div {8}+75 \\div15}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">अब, हमें भाग&nbsp;को हल करना होगा।</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><span style=\"\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></span></font><span class=\"math-tex\">\\(\\frac{4+\\frac{3}{2}}{4+5}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">अब, हमें शेष भागों को हल करना है।</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><span style=\"\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></span></font><span class=\"math-tex\">\\(\\frac{\\frac{8+3}{2}}{9}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><span style=\"\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></span></font><span class=\"math-tex\">\\(\\frac{11}{18}\\)</span></p>\n\n<p><strong><span style=\"\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; अतः</font></font></span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">, उपरोक्त समीकरण का मान 11/18 है।</font></font></strong></p>\n\n43:Tf54,\n<p><strong>\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times {4})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div 8+75 \\div(6+15 \\div 3+4)}\\)>கொடுக்கப்பட்டது:</strong></p>\n\n<p>\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(16)+\\left[\\frac{2}{11} \\times \\frac{55}{4}-{\\frac{10+6}{16}}\\right]}{32 \\div {8}+75 \\div(6+5+4)}\\)><span class=\"mat", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "\n<p><strong>\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times {4})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div 8+75 \\div(6+15 \\div 3+4)}\\)>கொடுக்கப்பட்டது:</strong></p>\n\n<p>\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(16)+\\left[\\frac{2}{11} \\times \\frac{55}{4}-{\\frac{10+6}{16}}\\right]}{32 \\div {8}+75 \\div(6+5+4)}\\)><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times \\overline{7-3})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div \\overline{15-7}+75 \\div(6+15 \\div 3+4)}\\)</span></p>\n\n<p><strong>பயன்படுத்தப்படும் கருத்து:</strong></p>\n\n<p>BODMAS கொள்கையைப் பயன்படுத்தி,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/210d67c6396cc34571b2be015c6822ad138e5d7c725910bb047240de46880319.png\" style=\"\" /></p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p>முதலில், நாம் வின்குலத்தை தீர்க்க வேண்டும்,</p>\n\n<p><span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times \\overline{7-3})+\\left[\\frac{2}{11} \\div \\frac{4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div \\overline{15-7}+75 \\div(6+15 \\div 3+4)}\\)</span></p>\n\n<p>\\(\\frac{24 \\div \\frac{3}{8} \\text { of }(16)+\\left[\\frac{5}{2} -{\\frac{16}{16}}\\right]}{32 \\div {8}+75 \\div15}\\)>⇒ <span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{8} \\text { of }16+(\\frac{5}{2} -1)}{32 \\div {8}+75 \\div15}\\)>\\</span> (\\frac{24 \\div \\frac{3}{8} \\text { of }(8+2 \\times {4})+\\left[\\frac{2}{11} \\div \\frac{ 4}{55}-\\left\\{\\frac{5}{8}+\\frac{6}{16}\\right\\}\\right]}{32 \\div 8+75 \\div(6+15 \\div 3+4)}\\)</p>\n\n<p>இப்போது, ​​நாம் அடைப்புக்குறிகளை தீர்க்க வேண்டும்</p>\n\n<p>\\(\\frac{24 \\div \\frac{3}{8} \\text { of }16+\\frac{3}{2} }{32 \\div {8}+75 \\div15}\\)>⇒ <span class=\"math-tex\">\\(\\frac{24 \\div \\frac{3}{1} \\times 2+\\frac{3}{2} }{32 \\div {8}+75 \\div15}\\)>\\</span> (\\frac{24 \\div \\frac{3}{8} \\text { of }(16)+\\left[\\frac{2}{11} \\times \\frac{55}{4}-{ \\frac{10+6}{16}}\\right]}{32 \\div {8}+75 \\div(6+5+4)}\\)</p>\n\n<p>\\(\\frac{4+\\frac{3}{2}}{4+5}\\)>⇒ <span class=\"math-tex\">\\(\\frac{\\frac{8+3}{2}}{9}\\)>\\</span> (\\frac{24 \\div \\frac{3}{8} \\text { of }(16)+\\left[\\frac{5}{2} -{\\frac{16}{16}}\\ வலது]}{32 \\div {8}+75 \\div15}\\)</p>\n\n<p>\\(\\frac{11}{18}\\)>⇒<span class=\"math-tex\"><span style=\"\"> \\</span> (\\frac{24 \\div \\frac{3}{8} \\text { of }16+(\\frac{5}{2} -1)}{32 \\div {8}+75 \\div15} \\)</span></p>\n\n<p><span style=\"\">⇒</span> <span class=\"math-tex\"><span style=\"\">\\</span> (\\frac{24 \\div \\frac{3}{8} \\text { of }16+\\frac{3}{2} }{32 \\div {8}+75 \\div15}\\)</span></p>\n\n<p>இப்போது, ​​நாம் தீர்க்க வேண்டும்</p>\n\n<p><span style=\"\">⇒</span> <span class=\"math-tex\"><span style=\"\">\\</span> (\\frac{24 \\div \\frac{3}{1} \\times 2+\\frac{3}{2} }{32 \\div {8}+75 \\div15}\\)</span></p>\n\n<p>இப்போது நாம் பிளவைத் தீர்க்க வேண்டும்</p>\n\n<p><span style=\"\">⇒</span> <span class=\"math-tex\"><span style=\"\">\\</span> (\\frac{4+\\frac{3}{2}}{4+5}\\)</span></p>\n\n<p>இப்போது, ​​மீதமுள்ள பகுதிகளை நாம் தீர்க்க வேண்டும்</p>\n\n<p><span style=\"\">⇒</span> <span class=\"math-tex\"><span style=\"\">\\</span> (\\frac{\\frac{8+3}{2}}{9}\\)</span></p>\n\n<p><span style=\"\">⇒</span> <span class=\"math-tex\"><span style=\"\">\\</span> (\\frac{11}{18}\\)</span></p>\n\n<p><strong><span style=\"\">⇒</span> <span style=\"\">எனவே</span> , மேலே உள்ள சமன்பாட்டின் மதிப்பு 11/18 ஆகும்</strong></p>\n\n44:Tc34,\n<p><strong>Given:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\sqrt{36 \\div 15 \\text { of } 2 \\text { of }[25 \\times 4 \\div 4 \\text { of }\\{29-(8-11) \\div(9 \\times 5 \\div 5 \\text { of } 3)\\}]}\\)</span></p>\n\n<p><strong>Concept Used:</strong></p>\n\n<p>BODMAS Rule</p>\n\n<p>B = Bracket, O = Of, D = Division, M =Multiplication, A = Addition, S = Subtraction</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>&rArr; Solving the given equation using ", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Bodmas Rule"], "concept": "Bodmas Rule", "confidence": "high"}, {"qid": "6376574aa006b23600d6356d", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "The value of&nbsp;<span class=\"math-tex\">\\({\\frac{{{\\textstyle{5 \\over 2}} - {\\textstyle{3 \\over 7}} \\times 1{\\textstyle{4 \\over 5}} \\div 3{\\textstyle{6 \\over 7}}}}{{{\\textstyle{3 \\over 2}} + 1{\\textstyle{2 \\over 5}} \\div 3{\\textstyle{1 \\over 2}} \\times 1{\\textstyle{1 \\over 4}}}}}\\)</span>&nbsp;is:", "options": [{"prompt": "1", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;2&lt;/font&gt;&lt;/font&gt;&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{3}{{20}}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;1&lt;/font&gt;&lt;/font&gt;&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{2}{{20}}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;1&lt;/font&gt;&lt;/font&gt;&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{3}{{20}}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;1&lt;/font&gt;&lt;/font&gt;&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{7}{{20}}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;</font></font><span class=\"math-tex\">\\({\\frac{{{\\textstyle{5 \\over 2}} - {\\textstyle{3 \\over 7}} \\times 1{\\textstyle{4 \\over 5}} \\div 3{\\textstyle{6 \\over 7}}}}{{{\\textstyle{3 \\over 2}} + 1{\\textstyle{2 \\over 5}} \\div 3{\\textstyle{1 \\over 2}} \\times 1{\\textstyle{1 \\over 4}}}}}\\)</span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;का मान क्या है?</font></font>", "options": [{"prompt": "1", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;2&lt;/font&gt;&lt;/font&gt;&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{3}{{20}}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;1&lt;/font&gt;&lt;/font&gt;&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{2}{{20}}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;1&lt;/font&gt;&lt;/font&gt;&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{3}{{20}}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;1&lt;/font&gt;&lt;/font&gt;&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{7}{{20}}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"\"><span style=\"font-weight: 700;\">Given:</span></p>\n\n<p style=\"\"><span class=\"math-tex\">\\({\\frac{{{\\textstyle{5 \\over 2}} - {\\textstyle{3 \\over 7}} \\times 1{\\textstyle{4 \\over 5}} \\div 3{\\textstyle{6 \\over 7}}}}{{{\\textstyle{3 \\over 2}} + 1{\\textstyle{2 \\over 5}} \\div 3{\\textstyle{1 \\over 2}} \\times 1{\\textstyle{1 \\over 4}}}}}\\)</span></p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">Concept Used:</span></p>\n\n<p style=\"\">The concept of VBODMAS is used</p>\n\n<p style=\"\">1. V - Vinculum, 2. B- Bracket, O- Of, D- Divide, M- Multiply, A- Add, S- Subtract</p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">Calculations:</span></p>\n\n<p style=\"\">&rArr;&nbsp;<span class=\"math-tex\">\\({\\frac{{{\\textstyle{5 \\over 2}} - {\\textstyle{3 \\over 7}} \\times 1{\\textstyle{4 \\over 5}} \\div 3{\\textstyle{6 \\over 7}}}}{{{\\textstyle{3 \\over 2}} + 1{\\textstyle{2 \\over 5}} \\div 3{\\textstyle{1 \\over 2}} \\times 1{\\textstyle{1 \\over 4}}}}}\\)</span></p>\n\n<p style=\"\">Here First, we have to solve the fractions part</p>\n\n<p style=\"\"><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\({\\frac{{{\\textstyle{5 \\over 2}} - {\\textstyle{3 \\over 7}} \\times \\textstyle{9\\over5} \\div {\\textstyle{27 \\over 7}}}}{{{\\textstyle{3 \\over 2}} + {\\textstyle{7 \\over 5}} \\div {\\textstyle{7 \\over 2}} \\times {\\textstyle{5 \\over 4}}}}}\\)</span></p>\n\n<p style=\"\">Now, We have to solve the divide part</p>\n\n<p style=\"\"><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\({\\frac{{{\\textstyle{5 \\over 2}} - {\\textstyle{3 \\over 7}} \\times \\textstyle{9\\over5} \\times {\\textstyle{7 \\over 27}}}}{{{\\textstyle{3 \\over 2}} + {\\textstyle{7 \\over 5}} \\times {\\textstyle{2 \\over 7}} \\times {\\textstyle{5 \\over 4}}}}}\\)</span></p>\n\n<p style=\"\">Now, we have to solve multiply parts</p>\n\n<p style=\"\"><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\({\\frac{{{\\textstyle{5 \\over 2}} - {\\textstyle{1\\over 5}} }}{{{\\textstyle{3 \\over 2}} + {\\textstyle{1 \\over 2}}}}}\\)</span></p>\n\n<p style=\"\"><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\({\\frac{{{\\textstyle{25-2 \\over 10}} }}{{{\\textstyle{3+1 \\over 2}} }}}\\)</span></p>\n\n<p style=\"\"><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\({\\frac{{{\\textstyle{23 \\over 10}} }}{{{\\textstyle{4\\over 2}} }}}\\)</span></p>\n\n<p style=\"\"><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><span class=\"math-tex\">\\({{{\\textstyle{23 \\over 20}} }}=1\\frac{3}{20}\\)</span></p>\n\n<p style=\"\"><span style=\"\">&rArr;</span><span style=\"\">​&nbsp;</span><strong>Hence, The value of the above equation is 1<span class=\"math-tex\">\\(3\\over20\\)</span></strong></p>\n\n40:T1883,\n&l", "hn": "\n<p style=\"\"><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया गया है:</font></font></span></p>\n\n<p style=\"\"><span class=\"math-tex\">\\({\\frac{{{\\textstyle{5 \\over 2}} - {\\textstyle{3 \\over 7}} \\times 1{\\textstyle{4 \\over 5}} \\div 3{\\textstyle{6 \\over 7}}}}{{{\\textstyle{3 \\over 2}} + 1{\\textstyle{2 \\over 5}} \\div 3{\\textstyle{1 \\over 2}} \\times 1{\\textstyle{1 \\over 4}}}}}\\)</span></p>\n\n<p style=\"\"><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">प्रयुक्त अवधारणा:</font></font></span></p>\n\n<p style=\"\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">VBODMAS की अवधारणा का उपयोग किया जाता है।</font></font></p>\n\n<p style=\"\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">1. V - </font></font>रेखाकोष्ठक<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">, 2. B- कोष्ठक, O- का, D-भाग, M-गुना,&nbsp;A-जोड़, S-घटाव&nbsp;</font></font></p>\n\n<p style=\"\"><span style=\"font-weight: 700;\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></span></p>\n\n<p style=\"\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Bodmas Rule"], "concept": "Bodmas Rule", "confidence": "high"}, {"qid": "63762dc561b36edca0bd1ac0", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Simplify the following expression.</p>\n\n<p>72 &minus; 42 &divide; 6 of 7 &times; 4 of 3 &divide; 4 &times; 3 &minus; 5</p>\n", "options": [{"prompt": "1", "value": "32"}, {"prompt": "2", "value": "16"}, {"prompt": "3", "value": "58"}, {"prompt": "4", "value": "45"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्नलिखित व्यंजक को सरल कीजिए।</p>\n\n<p><span style=\"\">72 &minus; 42 &divide; 6 of 7 &times; 4 of 3 &divide; 4 &times; 3 &minus; 5</span></p>\n", "options": [{"prompt": "1", "value": "32"}, {"prompt": "2", "value": "16"}, {"prompt": "3", "value": "58"}, {"prompt": "4", "value": "45"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வரும் வெளிப்பாட்டை சுருக்கவும்.</p>\n\n<p>72 − 42 ÷ 6 இன் 7 × 4 இன் 3 ÷ 4 × 3 − 5</p>\n", "options": [{"prompt": "1", "value": "32"}, {"prompt": "2", "value": "16"}, {"prompt": "3", "value": "58"}, {"prompt": "4", "value": "45"}], "range": {"start": "", "end": ""}}, "as": {"value": "<p>নিম্নলিখিত এক্সপ্ৰেচনটো সৰল কৰক।</p>\n\n<p>72 − 42 ÷ 6 of 7 x 4 of 3 ÷ 4 x 3 − 5</p>\n", "options": [{"prompt": "1", "value": "32"}, {"prompt": "2", "value": "16"}, {"prompt": "3", "value": "58"}, {"prompt": "4", "value": "45"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><strong><span style=\"\">Given:</span></strong></p>\n\n<p><span style=\"\">72 &minus; 42 &divide; 6 of 7 &times; 4 of 3 &divide; 4 &times; 3 &minus; 5</span></p>\n\n<p><span style=\"\"><strong>Concept Used:</strong></span></p>\n\n<p>Follow the BODMAS rule according to the table given below:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/47485e25d1b30c57dc271863db8b99be0c8e209069b2596cc885911d898a8a78.png\" style=\"width: 350px; height: 196px;\" /></p>\n\n<p><span style=\"\"><strong>Calculations:</strong></span></p>\n\n<p><span style=\"\">&rArr; 72 &minus; 42 &divide; 6 of 7 &times; 4 of 3 &divide; 4 &times; 3 &minus; 5</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;72 &minus; 42 &divide; 42 &times; 12 &divide; 4 &times; 3 &minus; 5&nbsp;&nbsp;</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;72 &minus; 1 &times; 3 &times; 3 &minus; 5&nbsp; &nbsp;&nbsp;</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;72 &minus; 9 &minus; 5&nbsp; &nbsp;</span></p>\n\n<p style=\"\">&rArr;&nbsp;72 &minus; 14<span style=\"\">&nbsp;</span></p>\n\n<p style=\"\"><span style=\"\">&rArr;&nbsp;58</span></p>\n\n<p style=\"\"><span style=\"\"><strong>&rArr;&nbsp;</strong><strong>Hence, The value of above is 58.</strong></span></p>", "hn": "<p><strong>दिया है:</strong></p>\n\n<p><span style=\"\">72 &minus; 42 &divide; 6 of 7 &times; 4 of 3 &divide; 4 &times; 3 &minus; 5&nbsp;</span></p>\n\n<p><strong>प्रयुक्त अवधारणा:</strong></p>\n\n<p>नीचे दी गई तालिका के अनुसार बोडमास (BODMAS) नियम का पालन कीजिए:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/47485e25d1b30c57dc271863db8b99be0c8e209069b2596cc885911d898a8a78.png\" style=\" width: 350px; height: 196px;\" /></p>\n\n<p><strong>गणना:</strong></p>\n\n<p>&rArr; <span style=\"\">72 &minus; 42 &divide; 6 of 7 &times; 4 of 3 &divide; 4 &times; 3 &minus; 5</span></p>\n\n<p>&rArr; 72 &minus; 42 &divide; 42 &times; 12 &divide; 4 &times; 3 &minus; 5</p>\n\n<p>&rArr; 72 &minus; 1 &times; 3 &times; 3 &minus; 5&nbsp;</p>\n\n<p>&rArr; 72 &minus; 9 &minus; 5&nbsp;</p>\n\n<p>&rArr; 72 &minus; 14</p>\n\n<p>&rArr; 58</p>\n\n<p><strong>&rArr; अत:, उपरोक्त व्यंजक का मान 58 है।</strong></p>\n3d:T56e,<p><strong><span style=\"\">கொடுக்கப்பட்டது:</span></strong></p>\n\n<p><span style=\"\">72 − 42 ÷ 6 இன் 7 × 4 இன் 3 ÷ 4 × 3 − 5</span></p>\n\n<p", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "<p><strong><span style=\"\">கொடுக்கப்பட்டது:</span></strong></p>\n\n<p><span style=\"\">72 − 42 ÷ 6 இன் 7 × 4 இன் 3 ÷ 4 × 3 − 5</span></p>\n\n<p><span style=\"\"><strong>பயன்படுத்தப்படும் கருத்து:</strong></span></p>\n\n<p>கீழே கொடுக்கப்பட்டுள்ள அட்டவணையின்படி BODMAS விதியைப் பின்பற்றவும்:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/47485e25d1b30c57dc271863db8b99be0c8e209069b2596cc885911d898a8a78.png\" style=\"width: 350px; height: 196px;\" /></p>\n\n<p><span style=\"\"><strong>கணக்கீடுகள்:</strong></span></p>\n\n<p><span style=\"\">⇒ 72 − 42 ÷ 6 இன் 7 × 4 இன் 3 ÷ 4 × 3 − 5</span></p>\n\n<p><span style=\"\">⇒ 72 − 42 ÷ 42 × 12 ÷ 4 × 3 − 5</span></p>\n\n<p><span style=\"\">⇒ 72 - 1 × 3 × 3 - 5</span></p>\n\n<p><span style=\"\">⇒ 72 - 9 - 5</span></p>\n\n<p style=\"\">⇒ 72 - 14 <span style=\"\"> </span></p>\n\n<p style=\"\"><span style=\"\">⇒ 58</span></p>\n\n<p style=\"\"><span style=\"\"><strong>⇒</strong> <strong>எனவே, மேலே உள்ள மதிப்பு 58 ஆகும்.</strong></span></p>\n3e:T4a1,<p><strong><span style=\"\">দিয়া আছে:</span></strong></p>\n\n<p><span style=\"\">72 − 42 ÷ 6 of 7 x 4 of 3 ÷ 4 x 3 − 5</span></p>\n\n<p><span style=\"\"><strong>ব্যৱহৃত ধাৰণা:</strong></span></p>\n\n<p>তলত দিয়া তালিকা অনুসৰি BODMAS নিয়ম অনুসৰণ কৰক:</p>\n\n<p>", "or": "", "as": "<p><strong><span style=\"\">দিয়া আছে:</span></strong></p>\n\n<p><span style=\"\">72 − 42 ÷ 6 of 7 x 4 of 3 ÷ 4 x 3 − 5</span></p>\n\n<p><span style=\"\"><strong>ব্যৱহৃত ধাৰণা:</strong></span></p>\n\n<p>তলত দিয়া তালিকা অনুসৰি BODMAS নিয়ম অনুসৰণ কৰক:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/47485e25d1b30c57dc271863db8b99be0c8e209069b2596cc885911d898a8a78.png\" style=\"width: 350px; height: 196px;\" /></p>\n\n<p><span style=\"\"><strong>গণনা:</strong></span></p>\n\n<p><span style=\"\">⇒ 72 − 42 ÷ 6 of 7 x 4 of 3 ÷ 4 x 3 − 5</span></p>\n\n<p><span style=\"\">⇒ 72 − 42 ÷ 42 x 12 ÷ 4 x 3 − 5 </span></p>\n\n<p><span style=\"\">⇒ 72 − 1 x 3 x 3 − 5 </span></p>\n\n<p><span style=\"\">⇒ 72 − 9 − 5 </span></p>\n\n<p style=\"\">⇒ 72 − 14<span style=\"\"> </span></p>\n\n<p style=\"\"><span style=\"\">⇒ 58</span></p>\n\n<p style=\"\"><span style=\"\"><strong>⇒ </strong><strong>সেয়েহে, উপৰোক্তৰ মান 58।</strong></span></p>\n3f:Te99,\n<p style=\"\"><span style=\"font-weight: 700;\">Given:</span></p>\n\n<p style=\"\"><span c", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Bodmas Rule"], "concept": "Bodmas Rule", "confidence": "high"}, {"qid": "6376287fac760ed0d9c15fe6", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "The simplified value of (0.2)<sup>3</sup>&nbsp;&times; 400&nbsp;&divide; 2000 of (0.2)<sup>2</sup> is:&nbsp;", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{1}{25}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{3}{25}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{2}{25}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{1}{50}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": " (0.2)<sup>3</sup> x 400 ÷ 2000 of (0.2)<sup>2</sup> का सरलीकृत मान है:", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{25}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{25}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{2}{25}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{1}{50}\\)</span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "(0.2)<sup>3</sup> × 400 ÷ 2000 of (0.2)<sup>2</sup> এর সরলীকৃত মান নির্ণয় করুন: ", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{25}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{25}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{2}{25}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{1}{50}\\)</span>"}], "range": {"start": "", "end": ""}}, "ta": {"value": "சுருக்குக :<span style=\"\"> (0.2)</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">3</span><span style=\"\"> × 400 ÷ 2000 of (0.2)</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> </span>", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{25}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{25}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{2}{25}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{1}{50}\\)</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p><strong>Given:</strong></p>\n<p>(0.2)<sup>3</sup> × 400 ÷ 2000 of (0.2)<sup>2</sup></p>\n<p><strong>Formula used:</strong></p>\n<p>BODMAS Rule (Bracket, Of, Division, Multiplication, Addition, Subtraction)</p>\n<p><strong>Calculations:</strong></p>\n<p>(0.2)<sup>3</sup> × 400 ÷ 2000 of (0.2)<sup>2</sup></p>\n<p>⇒ 0.008 × 400 ÷ (2000 × 0.04)</p>\n<p>⇒ 0.008 × 400 ÷ 80</p>\n<p>⇒ 0.008 × 5</p>\n<p>⇒ 0.04</p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{4}{100}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{1}{25}\\)</span></p>\n<p><strong>∴ The correct answer is option (1).</strong></p>", "hn": "<p><strong>दिया गया है:</strong></p>\n<p>(0.2)<sup>3</sup> × 400 ÷ 2000 का (0.2)<sup>2</sup></p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p>BODMAS नियम (कोष्ठक (Bracket), का (Of), भाग (Division), गुणा (Multiplication), जोड़ (Addition), घटाव (Subtraction))</p>\n<p><strong>गणना:</strong></p>\n<p>(0.2)<sup>3</sup> × 400 ÷ 2000 का (0.2)<sup>2</sup></p>\n<p>⇒ 0.008 × 400 ÷ (2000 × 0.04)</p>\n<p>⇒ 0.008 × 400 ÷ 80</p>\n<p>⇒ 0.008 × 5</p>\n<p>⇒ 0.04</p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{4}{100}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{1}{25}\\)</span></p>\n<p><strong>∴ सही उत्तर विकल्प (1) है।</strong></p>", "te": "", "mr": "", "bn": "\n<p><strong>অনুসৃত ধারণা:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f8976f8e1c1d3a5aac29f20639884c3715ceed7a4c3a646aaf0b4514394f46af.png\" style=\"width: 300px; height: 157px;\" /></p>\n\n<p><strong><span style=\"\">সমাধান:</span></strong></p>\n\n<p><span style=\"\">(0.2)</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">3</span><span style=\"\"> × 400 ÷ 2000 of (0.2)</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> </span></p>\n\n<p><span style=\"\">⇒</span><span style=\"\"> (0.2)</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">3</span><span style=\"\"> × 400 ÷ 2000 x (0.2)</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> </span></p>\n\n<p><span style=\"\">⇒ <span class=\"math-tex\">\\(\\frac{8}{1000} \\times 400 \\div (2000 \\times \\frac{4}{100}) \\)</span></span></p>\n\n<p><span style=\"\">⇒ <span class=\"math-tex\">\\(\\frac{8}{1000} \\times 400 \\times \\frac{1}{80}\\)</span></span></p>\n\n<p><span style=\"\">⇒ <span class=\"math-tex\">\\(\\frac{1}{25}\\)</span></span></p>\n\n<p><strong>অতএব, সঠিক বিকল্প হল 1  </strong></p>\n\n3a:T560,<p style=\"\"><strong>பயன்படுத்தப்பட்ட கருத்து:</strong></", "ml": "", "gu": "", "kn": "", "ta": "<p style=\"\"><strong>பயன்படுத்தப்பட்ட கருத்து:</strong></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f8976f8e1c1d3a5aac29f20639884c3715ceed7a4c3a646aaf0b4514394f46af.png\" style=\"width: 300px; height: 157px;\" /></p>\n\n<p style=\"\"><strong>தீர்வு:</strong></p>\n\n<p style=\"\">(0.2)<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">3</span> × 400 ÷ 2000 of (0.2)<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Bodmas Rule"], "concept": "Bodmas Rule", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 8 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>

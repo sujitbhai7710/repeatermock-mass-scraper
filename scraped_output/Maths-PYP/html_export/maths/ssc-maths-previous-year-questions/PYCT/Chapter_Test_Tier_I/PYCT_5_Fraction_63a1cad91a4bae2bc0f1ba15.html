@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 5: Fraction</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 5: Fraction</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-maths-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">8 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63a1cad91a4bae2bc0f1ba15</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63a1cad91a4bae2bc0f1ba15", "title": "PYCT 5: Fraction", "series_slug": "ssc-maths-previous-year-questions", "duration_min": 8, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "628542a7f87f5ae63c94033e", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "5e0b5eaedadc8f0d05317776", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Let a, b and c be the fractions such that a &lt; b &lt; c. If c is divided by a, the result is 5/2, which exceeds b by 7/4, If <span class=\"math-tex\">\\(a + b + c = 1\\frac{{11}}{{12}},\\)</span>&nbsp;then (c &ndash; a) will be equal to:", "options": [{"prompt": "1", "value": "1/3"}, {"prompt": "2", "value": "1/6"}, {"prompt": "3", "value": "2/3"}, {"prompt": "4", "value": "1/2"}], "range": {"start": "", "end": ""}}, "hn": {"value": "माना a, b और c भिन्न हैं जिसमें कि a < b < c। यदि c को a से विभाजित किया जाता है, परिणाम 5/2 है, जो b से 7/4 अधिक है, यदि <span class=\"math-tex\">\\(a + b + c = 1\\frac{{11}}{{12}},\\)</span> तो (c - a) बराबर होगा:", "options": [{"prompt": "1", "value": "1/3"}, {"prompt": "2", "value": "1/6"}, {"prompt": "3", "value": "2/3"}, {"prompt": "4", "value": "1/2"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n<p>Fractions a, b, and c where a < b < c</p>\n<p><span class=\"math-tex\">\\(\\frac{c}{a} = \\frac{5}{2}\\)</span></p>\n<p><span class=\"math-tex\">\\(\\frac{c}{a} - b = \\frac{7}{4}\\)</span></p>\n<p><span class=\"math-tex\">\\(a + b + c = 1\\frac{11}{12} = \\frac{23}{12}\\)</span></p>\n<p><strong>Formula used:</strong></p>\n<p>Algebraic Substitution</p>\n<p><strong>Calculation:</strong></p>\n<p><span class=\"math-tex\">\\(\\frac{5}{2} - b = \\frac{7}{4}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(b = \\frac{5}{2} - \\frac{7}{4}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(b = \\frac{10 - 7}{4} = \\frac{3}{4}\\)</span></p>\n<p>Substitu", "hn": "\n<p><strong>Given:</strong></p>\n<p>भिन्न a, b, और c जहाँ a < b < c है</p>\n<p><span class=\"math-tex\">\\(\\frac{c}{a} = \\frac{5}{2}\\)</span></p>\n<p><span class=\"math-tex\">\\(\\frac{c}{a} - b = \\frac{7}{4}\\)</span></p>\n<p><span class=\"math-tex\">\\(a + b + c = 1\\frac{11}{12} = \\frac{23}{12}\\)</span></p>\n<p><strong>Formula used:</strong></p>\n<p>बीजगणितीय प्रतिस्थापन (Algebraic Substitution)</p>\n<p><strong>Calculation:</strong></p>\n<p><span class=\"math-tex\">\\(\\frac{5}{2} - b = \\frac{7}{4}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(b = \\frac{5}{2} - \\frac{7}{4}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(b = \\frac{10 - 7}{4} = \\frac{3}{4}\\)</span></p>\n<p>a + b + c = <span class=\"math-tex\">\\(\\frac{23}{12}\\)</span> में b और c = <span class=\"math-tex\">\\(\\frac{5a}{2}\\)</span> प्रतिस्थापित करने पर</p>\n<p>⇒ <span class=\"math-tex\">\\(a + \\frac{3}{4} + \\frac{5a}{2} = \\frac{23}{12}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{7a}{2} = \\frac{23}{12} - \\frac{3}{4}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{7a}{2} = \\frac{23 - 9}{12}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{7a}{2} = \\frac{14}{12} = \\frac{7}{6}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(a = \\frac{7}{6} \\times \\frac{2}{7} = \\frac{1}{3}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(c = \\frac{5}{2} \\times \\frac{1}{3} = \\frac{5}{6}\\)</span></p>\n<p>(c - a) के लिए गणना:</p>\n<p>⇒ <span class=\"math-tex\">\\(c - a = \\frac{5}{6} - \\frac{1}{3}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(c - a = \\frac{5 - 2}{6} = \\frac{3}{6} = \\frac{1}{2}\\)</span></p>\n<p><strong>∴ सही उत्तर विकल्प (4) है।</strong></p>\n34:T683,\n<p><strong>Given:</strong></p>\n<p>(√2 + √5 - √3) × k = -12</p>\n<p><strong>Formula used:</strong></p>\n<p>(a + b)(a - b) = a<sup>2<", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fractions"], "concept": "Fractions", "confidence": "high"}, {"qid": "5e0f50636847310d0c26f155", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "If (&radic;2 + &radic;5 - &radic;3) &times; k = - 12, then what will be the value of k?", "options": [{"prompt": "1", "value": "&amp;radic;2 + &amp;radic;5 + &amp;radic;3"}, {"prompt": "2", "value": "(&amp;radic;2 + &amp;radic;5 + &amp;radic;3)(2 - &amp;radic;5)"}, {"prompt": "3", "value": "(&amp;radic;2 + &amp;radic;5 + &amp;radic;3)(2 - &amp;radic;10)"}, {"prompt": "4", "value": "(&amp;radic;2 + &amp;radic;5 - &amp;radic;3)(2 + &amp;radic;5)"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि (√2 + √5 - √3) x k = - 12 है, तो k का मान क्या होगा?", "options": [{"prompt": "1", "value": "&radic;2 + &radic;5 + &radic;3"}, {"prompt": "2", "value": "(&radic;2 + &radic;5 + &radic;3)(2 - &radic;5)"}, {"prompt": "3", "value": "(&radic;2 + &radic;5 + &radic;3)(2 - &radic;10)"}, {"prompt": "4", "value": "(&radic;2 + &radic;5 - &radic;3)(2 + &radic;5)"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n<p>(√2 + √5 - √3) × k = -12</p>\n<p><strong>Formula used:</strong></p>\n<p>(a + b)(a - b) = a<sup>2</sup> - b<sup>2</sup></p>\n<p>(a + b)<sup>2</sup> = a<sup>2</sup> + b<sup>2</sup> + 2ab</p>\n<p><strong>Calculation:</strong></p>\n<p>(√2 + √5 - √3) × k = -12</p>\n<p>⇒ k = <span class=\"math-tex\">\\(\\dfrac{-12}{\\sqrt{2} + \\sqrt{5} - \\sqrt{3}}\\)</span></p>\n<p>⇒ k = <span class=\"math-tex\">\\(\\dfrac{-12 \\times (\\sqrt{2} + \\sqrt{5} + \\sqrt{3})}{(\\sqrt{2} + \\sqrt{5} - \\sqrt{3})(\\sqrt{2} + \\sqrt{5} + \\sqrt{3})}\\)</span></p>\n<p>⇒ k = <span class=\"math-tex\">\\(\\dfrac{-12 \\times (\\sqrt{2} + \\sqrt{5} +", "hn": "\n<p><strong>Given:</strong></p>\n<p>(√2 + √5 - √3) × k = -12</p>\n<p><strong>Formula used:</strong></p>\n<p>(a + b)(a - b) = a<sup>2</sup> - b<sup>2</sup></p>\n<p>(a + b)<sup>2</sup> = a<sup>2</sup> + b<sup>2</sup> + 2ab</p>\n<p><strong>Calculation:</strong></p>\n<p>(√2 + √5 - √3) × k = -12</p>\n<p>⇒ k = <span class=\"math-tex\">\\(\\dfrac{-12}{\\sqrt{2} + \\sqrt{5} - \\sqrt{3}}\\)</span></p>\n<p>⇒ k = <span class=\"math-tex\">\\(\\dfrac{-12 \\times (\\sqrt{2} + \\sqrt{5} + \\sqrt{3})}{(\\sqrt{2} + \\sqrt{5} - \\sqrt{3})(\\sqrt{2} + \\sqrt{5} + \\sqrt{3})}\\)</span></p>\n<p>⇒ k = <span class=\"math-tex\">\\(\\dfrac{-12 \\times (\\sqrt{2} + \\sqrt{5} + \\sqrt{3})}{(\\sqrt{2}", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fractions"], "concept": "Fractions", "confidence": "high"}, {"qid": "5fc74d40537aa6c68ba8419e", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "If&nbsp;<span class=\"math-tex\">\\(\\frac{1}{{x + \\frac{1}{{y + \\frac{2}{{z + \\frac{1}{4}}}}}}} = \\frac{{29}}{{79}}\\)</span>&nbsp;where x, y, and z are natural numbers, then the value of (2x + 3y - z) is:", "options": [{"prompt": "1", "value": "4"}, {"prompt": "2", "value": "0"}, {"prompt": "3", "value": "2"}, {"prompt": "4", "value": "1"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि <span class=\"math-tex\">\\(\\frac{1}{{x + \\frac{1}{{y + \\frac{2}{{z + \\frac{1}{4}}}}}}} = \\frac{{29}}{{79}}\\)</span>  जहां x, y, और z प्राकृतिक संख्याएं हैं, तो (2x + 3y - z) का मान है:", "options": [{"prompt": "1", "value": "4"}, {"prompt": "2", "value": "0"}, {"prompt": "3", "value": "2"}, {"prompt": "4", "value": "1"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><strong>Given:</strong></p>\n<p><span class=\"math-tex\">\\(\\frac{1}{x + \\frac{1}{y + \\frac{2}{z + \\frac{1}{4}}}} = \\frac{29}{79}\\)</span></p>\n<p><strong>Formula used:</strong></p>\n<p>Continued fraction expansion by reciprocal and division.</p>\n<p><strong>Calculations:</strong></p>\n<p>⇒ <span class=\"math-tex\">\\(x + \\frac{1}{y + \\frac{2}{z + \\frac{1}{4}}} = \\frac{79}{29}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{79}{29} = 2 + \\frac{21}{29}\\)</span></p>\n<p>⇒ x = 2</p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{1}{y + \\frac{2}{z + \\frac{1}{4}}} = \\frac{21}{29}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(y + \\frac{2}{z + \\frac{1}{4}} = \\frac{29}{21} = 1 + \\frac{8}{21}\\)</span></p>\n<p>⇒ y = 1</p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{2}{z + \\frac{1}{4}} = \\frac{8}{21}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{1}{z + \\frac{1}{4}} = \\frac{4}{21}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(z + \\frac{1}{4} = \\frac{21}{4} = 5 + \\frac{1}{4}\\)</span></p>\n<p>⇒ z = 5</p>\n<p>⇒ Value = 2x + 3y - z</p>\n<p>⇒ 2 × 2 + 3 × 1 - 5</p>\n<p>⇒ 4 + 3 - 5</p>\n<p>⇒ 2</p>\n<p><strong>∴ The correct answer is option (3).</strong></p>", "hn": "<p><strong>दिया गया है:</strong></p>\n<p><span class=\"math-tex\">\\(\\frac{1}{x + \\frac{1}{y + \\frac{2}{z + \\frac{1}{4}}}} = \\frac{29}{79}\\)</span></p>\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n<p>व्युत्क्रम और विभाजन द्वारा सतत भिन्न (सन्तत भिन्न) प्रसार।</p>\n<p><strong>गणना:</strong></p>\n<p>⇒ <span class=\"math-tex\">\\(x + \\frac{1}{y + \\frac{2}{z + \\frac{1}{4}}} = \\frac{79}{29}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{79}{29} = 2 + \\frac{21}{29}\\)</span></p>\n<p>⇒ x = 2</p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{1}{y + \\frac{2}{z + \\frac{1}", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fractions"], "concept": "Fractions", "confidence": "high"}, {"qid": "5fc74de1369b8c1ea9811ba4", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "The value of&nbsp;<span class=\"math-tex\">\\(3\\frac{1}{5} \\div 4\\frac{1}{2}\\;of\\;5\\frac{1}{3} + \\frac{1}{8} \\div \\frac{1}{2}of\\frac{1}{4} - \\frac{1}{4}\\left( {\\frac{1}{2} \\div \\frac{1}{8} \\times \\frac{1}{4}} \\right)\\)</span>&nbsp;is:", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{53}{60}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{3}{4}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{13}{15}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{7}{8}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span class=\"math-tex\">\\(3\\frac{1}{5} \\div 4\\frac{1}{2}\\;of\\;5\\frac{1}{3} + \\frac{1}{8} \\div \\frac{1}{2}of\\frac{1}{4} - \\frac{1}{4}\\left( {\\frac{1}{2} \\div \\frac{1}{8} \\times \\frac{1}{4}} \\right)\\)</span> का मान क्या है?", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{53}{60}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{4}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{13}{15}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{7}{8}\\)</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p><strong>Given:</strong></p>\n<p><span class=\"math-tex\">\\(3\\frac{1}{5} \\div 4\\frac{1}{2} \\text{ of } 5\\frac{1}{3} + \\frac{1}{8} \\div \\frac{1}{2} \\text{ of } \\frac{1}{4} - \\frac{1}{4} ( \\frac{1}{2} \\div \\frac{1}{8} \\times \\frac{1}{4} )\\)</span></p>\n<p><strong>Formula used:</strong></p>\n<p>BODMAS rule</p>\n<p><strong>Calculation:</strong></p>\n<p><span class=\"math-tex\">\\( \\frac{16}{5} \\div ( \\frac{9}{2} \\times \\frac{16}{3} ) + \\frac{1}{8} \\div ( \\frac{1}{2} \\times \\frac{1}{4} ) - \\frac{1}{4} ( \\frac{1}{2} \\times 8 \\times \\frac{1}{4} ) \\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\( \\frac{16}{5} \\div 24 + \\frac{1}{8} \\div \\frac{1}{8} - \\frac{1}{4} (1) \\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\( \\frac{2}{15} + 1 - \\frac{1}{4} \\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\( \\frac{2}{15} + \\frac{3}{4} \\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\( \\frac{8 + 45}{60} = \\frac{53}{60} \\)</span></p>\n<p><strong>∴ The correct answer is option (1).</strong></p>", "hn": "<p><strong>Given:</strong></p>\n<p><span class=\"math-tex\">\\(3\\frac{1}{5} \\div 4\\frac{1}{2} \\text{ का } 5\\frac{1}{3} + \\frac{1}{8} \\div \\frac{1}{2} \\text{ का } \\frac{1}{4} - \\frac{1}{4} ( \\frac{1}{2} \\div \\frac{1}{8} \\times \\frac{1}{4} )\\)</span></p>\n<p><strong>Formula used:</strong></p>\n<p>BODMAS नियम</p>\n<p><strong>Calculation:</strong></p>\n<p><span class=\"math-tex\">\\( \\frac{16}{5} \\div ( \\frac{9}{2} \\times \\frac{16}{3} ) + \\frac{1}{8} \\div ( \\frac{1}{2} \\times \\frac{1}{4} ) - \\frac{1}{4} ( \\frac{1}{2} \\times 8 \\times \\frac{1}{4} ) \\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\( \\frac{16}{5} \\div 24 + \\frac{1}{8} \\div \\frac{1}{8} - \\frac{1}{4} (1) \\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\( \\frac{2}{15} + 1 - \\frac{1}{4} \\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\( \\frac{2}{15} + \\frac{3}{4} \\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\( \\frac{8 + 45}{60} = \\frac{53}{60} \\)</span></p>\n<p><strong>∴ सही उत्तर विकल्प (1) है।</strong></p>", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fractions"], "concept": "Fractions", "confidence": "high"}, {"qid": "5fc74a8b8e7c885a20c175af", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Raju ate&nbsp;<span class=\"math-tex\">\\(\\frac{3}{8}\\)</span>&nbsp;part of a pizza and Adam ate&nbsp;<span class=\"math-tex\">\\(\\frac{3}{10}\\)</span>part of the remaining pizza. Then Renu ate&nbsp;<span class=\"math-tex\">\\(\\frac{4}{7}\\)</span>&nbsp;part of the pizza that was left. What fraction of the pizza is still left?", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{1}{8}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{3}{16}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{1}{4}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{5}{12}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "राजू ने पिज्ज़ा का <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> भाग खाया और एडम ने शेष पिज्ज़ा का <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> भाग खाया। फिर रेनू ने शेष पिज्ज़ा के <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> भाग को खाया। पिज्ज़ा का कितना भाग अभी भी शेष है?", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{8}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{16}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{1}{4}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{5}{12}\\)</span>"}], "range": {"start": "", "end": ""}}, "te": {"value": "రాజు <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> పిజ్జాలో కొంత భాగాన్ని తిన్నాడు మరియు ఆడమ్ మిగిలిన పిజ్జాలో <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> భాగం తిన్నాడు. అప్పుడు మిగిలి ఉన్న పిజ్జాలో <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> భాగాన్ని రేణు తిన్నది. పిజ్జాలో ఇంకా ఎంత భాగం మిగిలి ఉంది?", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{8}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{16}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{1}{4}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{5}{12}\\)</span>"}], "range": {"start": "", "end": ""}}, "mr": {"value": "राजूने पिझ्झाचा <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> भाग खाल्ला आणि बाकीचा पिझ्झाचा <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> भाग अदम<span class=\"math-tex\">\\(\\)</span>ने  खाल्ला. मग रेणू ने उरलेला पिझ्झाचा <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> भाग खाल्ला . पिझ्झाचा अजून किती भाग शिल्लक आहे?", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{8}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{16}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{1}{4}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{5}{12}\\)</span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "রাজু একটি পিজ্জার <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> অংশ খেয়েছে এবং অ্যাডাম বাকি পিজ্জার <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> অংশ খেয়েছে। তারপর রেণু পিজ্জার যে অংশটা রেখেছিল তার <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> অংশ খেয়ে ফেলল। পিজ্জার কোন ভগ্নাংশ এখনও অবশিষ্ট আছে?", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{8}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{16}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{1}{4}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{5}{12}\\)</span>"}], "range": {"start": "", "end": ""}}, "gu": {"value": "રાજુએ પિઝાનો <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> ભાગ ખાધો અને આદમે બાકીના પિઝાનો <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ખાધો. ત્યારપછી રેણુએ બચેલા પિઝાનો <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> ભાગ ખાધો. પિઝાનો કેટલો ભાગ હજુ બાકી છે?", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{8}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{16}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{1}{4}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{5}{12}\\)</span>"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ರಾಜು ಅವರು ಪಿಜ್ಜಾದ <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> ಭಾಗವನ್ನು ತಿಂದರು ಮತ್ತು ಆಡಮ್ ಅವರು ಉಳಿದ ಪಿಜ್ಜಾದ <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ಭಾಗವನ್ನು ತಿಂದರು. ನಂತರ ರೇಣು ಅವರು ಉಳಿದ ಪಿಜ್ಜಾದಲ್ಲಿ <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span>  ಭಾಗವನ್ನು ತಿಂದರು. ಪಿಜ್ಜಾದ ಯಾವ ಭಾಗವು ಇನ್ನೂ ಉಳಿದಿದೆ?", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{8}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{16}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{1}{4}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{5}{12}\\)</span>"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ராஜு பீட்சாவில்  <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> பகுதியையும், ஆடம் மீதமுள்ள பீட்சாவில் <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span>பகுதியையும் சாப்பிட்டார். பிறகு மீதி இருந்த பீட்சாவின் ஒரு பகுதியை <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> சாப்பிட்டாள் ரேணு. பீட்சாவின் எந்தப் பகுதி இன்னும் மீதம் உள்ளது?", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{8}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{16}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{1}{4}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{5}{12}\\)</span>"}], "range": {"start": "", "end": ""}}, "or": {"value": "ରାଜୁ ଏକ ପିଜାର  <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span>  ଅଂଶ ଖାଇଲା ଏବଂ ଆଦମ ଅବଶିଷ୍ଟ ପିଜାର <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span>  ଅଂଶ ଖାଇଲା | ତା’ପରେ ରେନୁ ଅବଶିଷ୍ଟ ପିଜାର  <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span>  ଅଂଶ ଖାଇଲେ | ପିଜାର କେତେ ଅଂଶ ବାକି ଅଛି?", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(\\frac{1}{8}\\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(\\frac{3}{16}\\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(\\frac{1}{4}\\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(\\frac{5}{12}\\)</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><strong>Given:</strong></p>\n<p>Pizza eaten by Raju = <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span></p>\n<p>Pizza eaten by Adam = <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> of remaining</p>\n<p>Pizza eaten by Renu = <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> of remaining</p>\n<p><strong>Formula used:</strong></p>\n<p>Remaining = Initial × (1 - eaten fraction)</p>\n<p><strong>Calculation:</strong></p>\n<p>Total pizza = 1</p>\n<p>⇒ Remaining after Raju = 1 - <span cla", "hn": "<p><strong>Given:</strong></p>\n<p>राजू द्वारा खाया गया पिज्जा = <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span></p>\n<p>एडम द्वारा खाया गया पिज्जा = शेष का <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span></p>\n<p>रेनू द्वारा खाया गया पिज्जा = शेष का <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span></p>\n<p><strong>Formula used:</strong></p>\n<p>शेष = प्रारंभिक × (1 - खाया गया भाग)</p>\n<p><strong>Calculation:</strong></p>\n<p>कुल पिज्जा = 1</p>\n<p>⇒ राजू के बाद शेष पिज्जा = 1 - <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> = <span class=\"math-tex\">\\(\\frac{5}{8}\\)</span></p>\n<p>⇒ एडम के बाद शेष पिज्जा = <span class=\"math-tex\">\\(\\frac{5}{8} \\times (1 - \\frac{3}{10})\\)</span> = <span class=\"math-tex\">\\(\\frac{5}{8} \\times \\frac{7}{10}\\)</span> = <span class=\"math-tex\">\\(\\frac{7}{16}\\)</span></p>\n<p>⇒ अभी भी बचा हुआ पिज्जा = <span class=\"math-tex\">\\(\\frac{7}{16} \\times (1 - \\frac{4}{7})\\)</span></p>\n<p>⇒ अभी भी बचा हुआ पिज्जा = <span class=\"math-tex\">\\(\\frac{7}{16} \\times \\frac{3}{7}\\)</span></p>\n<p>⇒ अभी भी बचा हुआ पिज्जा = <span class=\"math-tex\">\\(\\frac{3}{16}\\)</span></p>\n<p><strong>∴ सही उत्तर विकल्प (2) है।</strong></p>38:T967,\n<p><strong>ఇచ్చిన:</strong></p>\n\n<p>రాజు <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> పిజ్జాలో కొంత భాగాన్ని తిన్నాడు మరియు ఆడమ్ మిగిలిన పిజ్జాలో <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ​భాగం తిన్నాడు. అప్పుడు మిగిలి ఉన్న పిజ్జాలో <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> భాగాన్ని రేణు తిన్నది.</p>\n\n<p><strong>ఉపయోగించిన భావన:</strong></p>\n\n<p><span style=\"color: rgb", "te": "\n<p><strong>ఇచ్చిన:</strong></p>\n\n<p>రాజు <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> పిజ్జాలో కొంత భాగాన్ని తిన్నాడు మరియు ఆడమ్ మిగిలిన పిజ్జాలో <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ​భాగం తిన్నాడు. అప్పుడు మిగిలి ఉన్న పిజ్జాలో <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> భాగాన్ని రేణు తిన్నది.</p>\n\n<p><strong>ఉపయోగించిన భావన:</strong></p>\n\n<p><span style=\"color: rgb(0, 0, 0);  \">భిన్నాత్మక </span>వ్యవకలనం యొక్క భావన</p>\n\n<p><strong>లెక్కింపు:</strong></p>\n\n<p>మొత్తం పిజ్జా 1 భాగం అనుకుందాం</p>\n\n<p>రాజు <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> భాగాన్ని తిన్నాడు</p>\n\n<p>మిగిలిన (1 - 3/8) భాగం</p>\n\n<p>⇒ 5/8 భాగం</p>\n\n<p>ఆడమ్ మిగిలిన పిజ్జాలో <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> భాగాన్ని తిన్నాడు</p>\n\n<p>⇒ ఆడమ్ తిన్నాడు (5/8 × 3/10) = 15/80 = మొత్తం పిజ్జాలో 3/16 భాగం</p>\n\n<p>మొత్తం పిజ్జా తింటారు (3/8 + 3/16)</p>\n\n<p>⇒ 9/16 భాగం</p>\n\n<p>మిగిలిన పిజ్జా (1 - 9/16)</p>\n\n", "mr": "\n<p><strong>पुढे दिले आहे: </strong></p>\n\n<p>राजूने पिझ्झाचा <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span>  भाग खाल्ला आणि बाकीच्या पिझ्झाचा ​​<span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> भाग अदम<span class=\"math-tex\">\\(\\)</span>ने  खाल्ला.रेणू ने उरलेला पिझ्झाचा <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span>भाग खाल्ला .</p>\n\n<p><strong>वापरलेली संकल्पना:</strong></p>\n\n<p>अपूर्णांक वगळण्याची संकल्पना</p>\n\n<p><strong>आकडेमोड</strong><strong>:</strong></p>\n\n<p>चला, एकूण पिझ्झा 1 भाग आहे.</p>\n\n<p>राजूने पिझ्झाचा <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span>  भाग खाल्ला </p>\n\n<p>शिल्लक (1 - 3/8) भाग</p>\n\n<p>⇒ 5/8भाग</p>\n\n<p> बाकीच्या पिझ्झाचा <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> भाग अदम<span class=\"math-tex\">\\(\\)</span>ने  खाल्ला</p>\n\n<p>⇒ आदामाने एकूण ", "bn": "<p><strong>প্রদত্ত :</strong></p>\n\n<p>রাজু একটি পিজ্জার <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> অংশ খেয়েছে এবং অ্যাডাম বাকি পিজ্জার <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> অংশ খেয়েছে। তারপর রেণু পিজ্জার যে অংশটা রেখেছিল তার <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> অংশ খেয়ে ফেলল।</p>\n\n<p><strong>অনুসৃত ধারণা:</strong></p>\n\n<p>ভগ্নাংশের বিয়োগের ধারণা</p>\n\n<p><strong>গণনা:</strong></p>\n\n<p>ধরা যাক, মোট পিৎজা 1 অংশ</p>\n\n<p>রাজু <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> অংশ খেয়েছে</p>\n\n<p>অবশিষ্ট (1 - 3/8) অংশ</p>\n\n<p>⇒ 5/8 অংশ</p>\n\n<p>অ্যাডাম বাকি পিৎজার অংশ <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> খেয়েছে</p>\n\n<p>⇒ অ্যাডাম খেয়েছেন (5/8 × 3/10) = 15/80 = মোট পিজ্জার 3/16 অংশ</p>\n\n<p>মোট পিৎজা খাওয়া হয়েছে (3/8 + 3/16) অংশ</p>\n\n<p>⇒ 9/16 অংশ</p>\n\n<p>অব", "ml": "", "gu": "\n<p><strong>આપેલ:</strong></p>\n\n<p>રાજુએ પિઝાનો <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> ભાગ ખાધો અને આદમે બાકીના પિઝાનો <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ખાધો. ત્યારપછી રેણુએ બચેલા પિઝાનો <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> ભાગ ખાધો. </p>\n\n<p><strong>વપરાયેલ ખ્યાલ:</strong></p>\n\n<p>અપૂર્ણાંકની બાદબાકીનો ખ્યાલ</p>\n\n<p><strong>ગણતરી:</strong></p>\n\n<p>ધારો કે, કુલ પિઝા 1 ભાગમાં છે</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">રાજુએ </span><span class=\"math-tex\">\\(\\frac{3}{8}\\)</span><span style=\"color: rgb(33, 37, 41);\">  ભાગ ખાધો</span></p>\n\n<p>બાકીનો ભાગ (1 - 3/8)</p>\n\n<p>⇒ 5/8 ભાગ</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">આદમે બાકીના પિઝાનો </span><span class=\"math-tex\">\\(\\frac{3}{10}\\)</span><span style=\"color: rgb(33, 37, 41);\"> ખાધો</span></p>\n\n<p>⇒ આદમે ખાધું (5/8 × 3/10) = 15/80 = 3/16 કુલ પિઝનો ભાગ</p>\n\n<p>કુલ પિઝા ખાવામાં આવે છે (3/8 + 3/16) </p>\n\n<p>⇒ 9/16 ભાગ</p>\n\n<p>બાકીનો પીઝા (1 - 9/16)</p>\n\n<p>⇒ 7/16 <span style=\"color: rgb(33, 37, 41);\">ભાગ</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">ત્યારપછી રેણુએ પિઝાનો <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> ભાગ ખાધો. </p>\n\n<p>રેણુએ ખાધું (7/16 × 4/7) = 1/4 પીઝાનો ભાગ</p>\n\n<p>સાથે મળીને તેઓએ (3/8 + 3/16 + 1/4) ભાગ ખાધો</p>\n\n<p>⇒ 13/16 ભાગ</p>\n\n<p>પિઝાનો ભાગ જે હજુ બાકી છે (1 - 13/16)</p>\n\n<p>⇒ 3/16 <span style=\"color: rgb(33, 37, 41);\">ભાગ</span></p>\n\n<p><strong>∴ પિઝાનો 3/16 ભાગ હજુ બાકી છે.</strong></p>\n\n3c:Te69,\n<p><strong>ನೀಡಲಾಗಿದೆ:</strong></p>\n\n<p>ರಾಜು ಅವರು ಪಿಜ್ಜಾದ <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> ಭಾಗವನ್ನು ತಿಂದರು ಮತ್ತು ಆಡಮ್ ಅವರು ಉಳಿದ ಪಿಜ್ಜಾದ <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ಭಾಗವನ್ನು ತಿಂದರು. ನಂತರ ರೇಣು ಅವರು ಉಳಿದ ಪಿಜ್ಜಾದಲ್ಲಿ <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span>  ಭಾಗವನ್ನು ತಿಂದರು. </p>\n\n<div><strong><span style=\"\">ಬಳಸಿದ ಪರಿಕಲ್ಪನೆ:</span></strong></div>\n\n<div> </div>\n\n<div><span style=\"\">ಭಾಗಶಃ ವ್ಯವಕಲನದ ಪರಿಕಲ್ಪನೆ</span></div>\n\n<div> </div>\n\n<div><strong><span style=\"\">ಲೆಕ್ಕಾಚಾರ:</span></strong></div>\n\n<div> </div>\n\n<p><span style=\"\">ಒಟ್ಟು ಪಿಜ್ಜಾ 1 ಭಾಗವಾಗಿರಲಿ</span></p>\n\n<p><spa", "kn": "\n<p><strong>ನೀಡಲಾಗಿದೆ:</strong></p>\n\n<p>ರಾಜು ಅವರು ಪಿಜ್ಜಾದ <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> ಭಾಗವನ್ನು ತಿಂದರು ಮತ್ತು ಆಡಮ್ ಅವರು ಉಳಿದ ಪಿಜ್ಜಾದ <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ಭಾಗವನ್ನು ತಿಂದರು. ನಂತರ ರೇಣು ಅವರು ಉಳಿದ ಪಿಜ್ಜಾದಲ್ಲಿ <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span>  ಭಾಗವನ್ನು ತಿಂದರು. </p>\n\n<div><strong><span style=\"\">ಬಳಸಿದ ಪರಿಕಲ್ಪನೆ:</span></strong></div>\n\n<div> </div>\n\n<div><span style=\"\">ಭಾಗಶಃ ವ್ಯವಕಲನದ ಪರಿಕಲ್ಪನೆ</span></div>\n\n<div> </div>\n\n<div><strong><span style=\"\">ಲೆಕ್ಕಾಚಾರ:</span></strong></div>\n\n<div> </div>\n\n<p><span style=\"\">ಒಟ್ಟು ಪಿಜ್ಜಾ 1 ಭಾಗವಾಗಿರಲಿ</span></p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">ರಾಜು ಅವರು</span> <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> <span style=\"color: rgb(33, 37, 41);\">ಭಾಗವನ್ನು ತಿಂದರು </span></p>\n\n<p><span style=\"\">ಉಳಿದ</span> <span style=\"\">ಭಾಗ </span>(1 - 3/8) </p>\n\n<p>⇒ 5/8 <span style=\"color: rgb(33, 37, 41);\">ಭಾಗ</span></p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">ಆಡಮ್ ಅವರು ಉಳಿದ ಪಿಜ್ಜಾದ </span><span class=\"math-tex\">\\(\\frac{3}{10}\\)</span><span style=\"color: rgb(33, 37, 41);\"> ಭಾಗವನ್ನು ತಿಂದರು.</span></p>\n\n<p>⇒ <span style=\"\">ಆಡಮ್</span> ಅವರು (5/8 × 3/10) = 15/80 =<span style=\"color: rgb(33, 37, 41);\">ಉಳಿದ ಪಿಜ್ಜಾದ </span> 3/16 <span style=\"color: rgb(33, 37, 41);\">ಭಾಗವನ್ನು ತಿಂದರು.</span></p>\n\n<p><span style=\"\">ಒಟ್ಟು ಪಿಜ್ಜಾವನ್ನು ತಿನ್ನಲಾಗುತ್ತದೆ</span> (3/8 + 3/16) </p>\n\n<p>⇒ 9/16 <span style=\"color: rgb(33, 37, 41);\">ಭಾಗ</span></p>\n\n<p><span style=\"\">ಉಳಿದಿರುವ ಪಿಜ್ಜಾ </span>(1 - 9/16)</p>\n\n<p>⇒ 7/16 <span style=\"color: rgb(33, 37, 41);\">ಭಾಗ</span></p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">ರೇಣು ಅವರು ಉಳಿದ ಪಿಜ್ಜಾದಲ್ಲಿ </span><span class=\"math-tex\">\\(\\frac{4}{7}\\)</span><span style=\"color: rgb(33, 37, 41);\">  ಭಾಗವನ್ನು ತಿಂದರು. </span></p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">ರೇಣು ಅವರು</span> (7/16 × 4/7) = <span style=\"color: rgb(33, 37, 41);\">ಉಳಿದ ಪಿಜ್ಜಾದಲ್ಲಿ </span>1/4 <span style=\"color: rgb(33, 37, 41);\">ಭಾಗವನ್ನು ತಿಂದರು. </span></p>\n\n<p><span style=\"\">ಒಟ್ಟಿಗೆ ಅವರು </span>(3/8 + 3/16 + 1/4) <span style=\"\">ಭಾಗವನ್ನು </span><span style=\"color: rgb(33, 37, 41);\">ತಿಂದರು</span></p>\n\n<p>⇒ 13/16 <span style=\"color: rgb(33, 37, 41);\">ಭಾಗ</span></p>\n\n<p><span style=\"\">ಇನ್ನೂ ಉಳಿದಿರುವ ಪಿಜ್ಜಾದ ಭಾಗ</span> (1 - 13/16)</p>\n\n<p>⇒ 3/16 <span style=\"color: rgb(33, 37, 41);\">ಭಾಗ</span></p>\n\n<p><strong>∴ </strong><span style=\"font-weight: bolder;\">ಪಿಜ್ಜಾದ </span><strong>3/16 <span style=\"color: rgb(33, 37, 41);\">ಭಾಗ </span><span style=\"\">ಇನ್ನೂ ಉಳಿದಿದೆ</span>.</strong></p>\n\n3d:T97a,<p><strong>கொடுக்கப்பட்டது:</strong></p>\n\n<p>ராஜு <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ஒரு \\(\\frac{3}{10}\\)யும், ஆடம் மீதமுள்ள பீட்சாவில் ஒரு பகுதியையும் சாப்பிட்டார். பிறகு மீதி இருந்த பீட்சாவின் ஒரு பகுதியை <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> சாப்பிட்டாள் ரேணு.</p>\n\n<p><strong>பயன்படுத்தப்பட்ட கருத்து:</strong></p>\n\n<p>பகுதியளவு கழித்தல் கருத்து</p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p>மொத்த பீட்சா 1 பகுதி</p>\n\n<p>ராஜு <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> பகுதியை சாப்பிட்டார்</p>\n\n<p>மீதமுள்ள (1 - 3/8) பகுதி</p>\n\n<p>⇒ 5/8 பகுதி</p>\n\n<p>மீதமுள்ள பீட்சாவின் ஒரு <span class=\"math-tex\">பகுதியை</span> ஆடம் சாப்பிட்டார்</p>\n\n<p>⇒ ஆடம் சாப்பிட்டது (5/8 × 3/10) = 15/80 = மொத்த பீட்சாவில் 3/16 பங்கு</p>\n\n<p>மொத்த பீட்சா உண்ணப்படுகிறது (3/8 + 3/16)</p>\n\n<p>⇒ 9/16 பகுதி</p>\n\n<p>மீதமுள்ள பீட்சா (1 - 9/16)</p>\n\n<p>⇒ 7/16 பகுதி</p>\n\n<p>பிறகு ரேணு பீ", "ta": "<p><strong>கொடுக்கப்பட்டது:</strong></p>\n\n<p>ராஜு <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ஒரு \\(\\frac{3}{10}\\)யும், ஆடம் மீதமுள்ள பீட்சாவில் ஒரு பகுதியையும் சாப்பிட்டார். பிறகு மீதி இருந்த பீட்சாவின் ஒரு பகுதியை <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> சாப்பிட்டாள் ரேணு.</p>\n\n<p><strong>பயன்படுத்தப்பட்ட கருத்து:</strong></p>\n\n<p>பகுதியளவு கழித்தல் கருத்து</p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p>மொத்த பீட்சா 1 பகுதி</p>\n\n<p>ராஜு <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> பகுதியை சாப்பிட்டார்</p>\n\n<p>மீதமுள்ள (1 - 3/8) பகுதி</p>\n\n<p>⇒ 5/8 பகுதி</p>\n\n<p>மீதமுள்ள பீட்சாவின் ஒரு <span class=\"math-tex\">பகுதியை</span> ஆடம் சாப்பிட்டார்</p>\n\n<p>⇒ ஆடம் சாப்பிட்டது (5/8 × 3/10) = 15/80 = மொத்த பீட்சாவில் 3/16 பங்கு</p>\n\n<p>மொத்த பீட்சா உண்ணப்படுகிறது (3/8 + 3/16)</p>\n\n<p>⇒ 9/16 பகுதி</p>\n\n<p>மீதமுள்ள பீட்சா (1 - 9/16)</p>\n\n<p>⇒ 7/16 பகுதி</p>\n\n<p>பிறகு ரேணு பீட்சாவின் ஒரு பகுதியை <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> சாப்பிட்டார்</p>\n\n<p>ரேணு சாப்பிட்டார் (7/16 × 4/7) = பீட்சாவின் 1/4 பகுதி</p>\n\n<p>இருவரும் சேர்ந்து (3/8 + 3/16 + 1/4) பகுதியை சாப்பிட்டனர்</p>\n\n<p>⇒ 13/16 பகுதி</p>\n\n<p>பீட்சாவின் பகுதி இடதுபுறம் (1 - 13/16)</p>\n\n<p>⇒ 3/16 பகுதி</p>\n\n<p><strong>பீட்சாவின் ∴ 3/16 பகுதி இன்னும் மீதம் உள்ளது.</strong></p>\n3e:T879,\n<p><strong>ପ୍ରଦତ୍ତ:</strong></p>\n\n<p>ରାଜୁ ଏକ ପିଜାର <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> <span style=\"color: rgb(33, 37, 41);\">ଅଂଶ </span>ଖାଇଲା ଏବଂ ଆଦମ ଅବଶିଷ୍ଟ ପିଜାର <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> <span style=\"color: rgb(33, 37, 41);\">ଅଂଶ </span>ଖାଇଲା | ତା’ପରେ ରେନୁ ଅବଶିଷ୍ଟ ପିଜାର  <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> <span style=\"color: rgb(33, 37, 41);\">ଅଂଶ </span>ଖାଇଲେ |</p>\n\n<p><strong>ବ୍ୟବହୃତ ଧାରଣା:</strong></p>\n\n<p>ଭଗ୍ନାଂଶ ବିୟୋଗର ଧାରଣା </p>\n\n<p><strong>ଗଣନା:</strong></p>\n\n<p>ମନେକର, ସମୁଦାୟ ପିଜା ହେଉଛି 1 ଭାଗ |</p>\n\n<p>ରାଜୁ <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> ଅଂଶ ଖାଇଲେ </p>\n\n<p>ଅବଶିଷ୍ଟ (1 - 3/8) ଅଂଶ </p>\n\n<p>⇒ 5/8 ଭାଗ </p>\n\n<p>ଆଦମ ଅବଶିଷ୍ଟ ପିଜାର <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ଅଂଶ ଖାଇଲେ |</p>\n\n<p>⇒ ଆଦମ ଖାଇଲେ (5/8 x 3/10) = 15/80 = ସମୁଦାୟ ପିଜାର 3/16 ଅଂଶ </p>\n\n<p>ମୋଟ ପିଜା ଖିଆଯାଏ (3/8 + 3/16)</p>\n\n<p>⇒ 9/16 ଭାଗ </p>\n\n<p>ଅବଶିଷ୍ଟ ପିଜା (1 - 9/16)</p>\n\n<p>⇒ 7/16 ଭାଗ </p>\n\n<p>ତା’ପରେ ରେନୁ ପିଜାର <span ", "or": "\n<p><strong>ପ୍ରଦତ୍ତ:</strong></p>\n\n<p>ରାଜୁ ଏକ ପିଜାର <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> <span style=\"color: rgb(33, 37, 41);\">ଅଂଶ </span>ଖାଇଲା ଏବଂ ଆଦମ ଅବଶିଷ୍ଟ ପିଜାର <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> <span style=\"color: rgb(33, 37, 41);\">ଅଂଶ </span>ଖାଇଲା | ତା’ପରେ ରେନୁ ଅବଶିଷ୍ଟ ପିଜାର  <span class=\"math-tex\">\\(\\frac{4}{7}\\)</span> <span style=\"color: rgb(33, 37, 41);\">ଅଂଶ </span>ଖାଇଲେ |</p>\n\n<p><strong>ବ୍ୟବହୃତ ଧାରଣା:</strong></p>\n\n<p>ଭଗ୍ନାଂଶ ବିୟୋଗର ଧାରଣା </p>\n\n<p><strong>ଗଣନା:</strong></p>\n\n<p>ମନେକର, ସମୁଦାୟ ପିଜା ହେଉଛି 1 ଭାଗ |</p>\n\n<p>ରାଜୁ <span class=\"math-tex\">\\(\\frac{3}{8}\\)</span> ଅଂଶ ଖାଇଲେ </p>\n\n<p>ଅବଶିଷ୍ଟ (1 - 3/8) ଅଂଶ </p>\n\n<p>⇒ 5/8 ଭାଗ </p>\n\n<p>ଆଦମ ଅବଶିଷ୍ଟ ପିଜାର <span class=\"math-tex\">\\(\\frac{3}{10}\\)</span> ଅଂଶ ଖାଇଲେ |</p>\n\n<p>⇒ ଆଦମ ଖାଇଲେ (5/8 x 3/10) = 15/80 = ସମୁଦ", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fractions"], "concept": "Fractions", "confidence": "high"}, {"qid": "5c231387ae04c73782c3cc80", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "What is the value of (3.6 &times; 1.62 + 0.48 &times; 3.6) / (1.8 &times; 0.8 + 10.8 &times; 0.3 - 2.16)?", "options": [{"prompt": "1", "value": "2.4"}, {"prompt": "2", "value": "2"}, {"prompt": "3", "value": "4"}, {"prompt": "4", "value": "3"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>(3.6 &times; 1.62 + 0.48 &times; 3.6) / (1.8 &times; 0.8 + 10.8 &times; 0.3 - 2.16) का मान क्या है?</p>\n", "options": [{"prompt": "1", "value": "2.4"}, {"prompt": "2", "value": "2"}, {"prompt": "3", "value": "4"}, {"prompt": "4", "value": "3"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><strong>Given:</strong></p>\n<p><span class=\"math-tex\">\\(\\frac{3.6 \\times 1.62 + 0.48 \\times 3.6}{1.8 \\times 0.8 + 10.8 \\times 0.3 - 2.16}\\)</span> = ?</p>\n<p><strong>Formula used:</strong></p>\n<p>Distributive property: (a × b) + (a × c) = a × (b + c)</p>\n<p><strong>Calculation:</strong></p>\n<p><span class=\"math-tex\">\\(\\frac{3.6 \\times (1.62 + 0.48)}{1.44 + 3.24 - 2.16}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{3.6 \\times 2.1}{4.68 - 2.16}\\)</span></p>\n<p>⇒ <span class=\"math-tex\">\\(\\frac{7.56}{2.52}\\)</span></p>\n<p>⇒ 3</p>\n<p><strong>∴ The correct answer is option 4.</strong></p>", "hn": "<p>(3.6 &times; 1.62 + 0.48 &times; 3.6) / (1.8 &times; 0.8 + 10.8 &times; 0.3 - 2.16)</p>\n\n<p>&rArr; {3.6 &times; (1.62 + 0.48)} / {1.8 &times; (0.8 + 6 &times; 0.3 - 1.2)} [∵ 10.8 = 6 &times; 1.8 and 216 = 1.2 &times; 1.8]</p>\n\n<p>&rArr; (3.6 &times; 2.1) / (1.8 &times; 1.4)</p>\n\n<p>&rArr; (3.6/1.8) &times; (2.1/1.4) = 2 &times; (3/2) = 3</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fractions"], "concept": "Fractions", "confidence": "high"}, {"qid": "5c10edce62be4a0c866511d1", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "If <span class=\"math-tex\">\\({\\rm{A}} = {\\rm{}}\\frac{1}{{1{\\rm{\\;}} \\times {\\rm{\\;}}2}}{\\rm{}} + {\\rm{}}\\frac{1}{{1{\\rm{\\;}} \\times {\\rm{\\;}}4}}{\\rm{}} + {\\rm{}}\\frac{1}{{2{\\rm{\\;}} \\times {\\rm{\\;}}3}}{\\rm{}} + {\\rm{}}\\frac{1}{{4{\\rm{\\;}} \\times {\\rm{\\;}}7}}{\\rm{}} + {\\rm{}}\\frac{1}{{3{\\rm{\\;}} \\times {\\rm{\\;}}4}}{\\rm{}} + {\\rm{}}\\frac{1}{{7{\\rm{\\;}} \\times {\\rm{\\;}}10}} - - - \\)</span>&nbsp;upto 20 terms, then what is the value of A?", "options": [{"prompt": "1", "value": "379/308"}, {"prompt": "2", "value": "171/140"}, {"prompt": "3", "value": "379/310"}, {"prompt": "4", "value": "420/341"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि <span class=\"math-tex\">\\({\\rm{A}} = {\\rm{}}\\frac{1}{{1{\\rm{\\;}} \\times {\\rm{\\;}}2}}{\\rm{}} + {\\rm{}}\\frac{1}{{1{\\rm{\\;}} \\times {\\rm{\\;}}4}}{\\rm{}} + {\\rm{}}\\frac{1}{{2{\\rm{\\;}} \\times {\\rm{\\;}}3}}{\\rm{}} + {\\rm{}}\\frac{1}{{4{\\rm{\\;}} \\times {\\rm{\\;}}7}}{\\rm{}} + {\\rm{}}\\frac{1}{{3{\\rm{\\;}} \\times {\\rm{\\;}}4}}{\\rm{}} + {\\rm{}}\\frac{1}{{7{\\rm{\\;}} \\times {\\rm{\\;}}10}} - - - \\)</span>&nbsp;20 पद तक, A का मान क्या है?", "options": [{"prompt": "1", "value": "379/308"}, {"prompt": "2", "value": "171/140"}, {"prompt": "3", "value": "379/310"}, {"prompt": "4", "value": "420/341"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n<p>A = <span class=\"math-tex\">\\(\\frac{1}{1 \\times 2} + \\frac{1}{1 \\times 4} + \\frac{1}{2 \\times 3} + \\frac{1}{4 \\times 7} + \\frac{1}{3 \\times 4} + \\frac{1}{7 \\times 10} + \\dots\\)</span> up to 20 terms</p>\n<p><strong>Formula used:</strong></p>\n<p><span class=\"math-tex\">\\(\\frac{1}{n(n+k)} = \\frac{1}{k} \\times (\\frac{1}{n} - \\frac{1}{n+k})\\)</span></p>\n<p><strong>Calculations:</strong></p>\n<p>A = (<span class=\"math-tex\">\\(\\frac{1}{1 \\times 2} + \\frac{1}{2 \\times 3} + \\dots\\)</span> 10 terms) + (<span class=\"math-tex\">\\(\\frac{1}{1 \\times 4} + \\frac{1}{4 \\times 7} + \\dots\\)</span> 10 terms)</p>\n<p>⇒ A = (<span class=\"math-tex\">\\(\\frac{1}{1 \\times 2} + \\frac{1}{2 \\times 3} + \\dots + \\frac{1}{10 \\times 11}\\)</span>) + (<span class=\"math-tex\">\\(\\frac{1}{1 \\times 4} + \\frac{1}{4 \\times 7} + \\dots + \\frac{1}{28 \\times 31}\\)</span>)</p>\n<p>⇒ A = <span class=\"math-tex\">\\((1 - \\frac{1}{11}) + \\frac{1}{3} \\times (1 - \\frac{1}{31})\\)</span></p>\n<p>⇒ A = <span class=\"math-tex\">\\(\\frac{10}{11} + \\frac{1}{3} \\times \\frac{30}{31}\\)</span></p>\n<p>⇒ A = <span class=\"math-tex\">\\(\\frac{10}{11} + \\frac{10}{31}\\)</span></p>\n<p>⇒ A = <span class=\"math-tex\">\\(\\frac{310 + 110}{341}\\)</span></p>\n<p>⇒ A = <span class=\"math-tex\">\\(\\frac{420}{341}\\)</span></p>\n<p><strong>∴ The correct answer is option 4.</strong></p", "hn": "\n<p>माना, <span class=\"math-tex\">\\({\\rm{A}} = {\\rm{}}\\frac{1}{{1{\\rm{\\;}} \\times {\\rm{\\;}}2}}{\\rm{}} + {\\rm{}}\\frac{1}{{1{\\rm{\\;}} \\times {\\rm{\\;}}4}}{\\rm{}} + {\\rm{}}\\frac{1}{{2{\\rm{\\;}} \\times {\\rm{\\;}}3}}{\\rm{}} + {\\rm{}}\\frac{1}{{4{\\rm{\\;}} \\times {\\rm{\\;}}7}}{\\rm{}} + {\\rm{}}\\frac{1}{{3{\\rm{\\;}} \\times {\\rm{\\;}}4}}{\\rm{}} + {\\rm{}}\\frac{1}{{7{\\rm{\\;}} \\times {\\rm{\\;}}10}} - - - \\)</span>, 20 पद तक = P + Q</p>\n\n<p>&nbsp;जहां <span class=\"math-tex\">\\({\\rm{P}} = {\\rm{}}\\frac{1}{{1{\\rm{\\;}} \\times {\\rm{\\;}}2}}{\\rm{}} + {\\rm{}}\\frac{1}{{2{\\rm{\\;}} \\times {\\rm{\\;}}3}}{\\rm{}} + {\\rm{}} - - {\\rm{}} + {\\rm{}}\\frac{1}{{10{\\rm{\\;}} \\times {\\rm{\\;}}11}}\\)</span>&nbsp;</p>\n\n<p>और&nbsp;<span class=\"math-tex\">\\({\\rm{Q}} = {\\rm{}}\\frac{1}{{1{\\rm{\\;}} \\times {\\rm{\\;}}4}}{\\rm{}} + {\\rm{}}\\frac{1}{{4{\\rm{\\;}} \\times {\\rm{\\;}}7}}{\\rm{\\;}} + {\\rm{\\;}} - {\\rm{\\;}} - {\\rm{}} + {\\rm{\\;}}\\frac{1}{{28{\\rm{\\;}} \\times {\\rm{\\;}}31}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow {\\rm{P}} = {\\rm{}}\\frac{1}{{1{\\rm{\\;}} \\times {\\rm{\\;}}2}}{\\rm{}} + {\\rm{}}\\frac{1}{{2{\\rm{\\;}} \\times {\\rm{\\;}}3}}{\\rm{}} + {\\rm{}}\\frac{1}{{3{\\rm{\\;}} \\times {\\rm{\\;}}4}}{\\rm{}} + {\\rm{}} - - {\\rm{}} - {\\rm{}} + {\\rm{}}\\frac{1}{{10{\\rm{\\;}} \\times {\\rm{\\;}}11}}{\\rm{}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow P = {\\rm{}}\\frac{1}{1} - \\frac{1}{2}{\\rm{}} + {\\rm{}}\\frac{1}{2}{\\rm{}} - {\\rm{}}\\frac{1}{3}{\\rm{}} + {\\rm{}}\\frac{1}{3}{\\rm{}} - {\\rm{}}\\frac{1}{4}{\\rm{}} + {\\rm{}} - - {\\rm{}} + {\\rm{}}\\frac{1}{{10}}{\\rm{}} - {\\rm{}}\\frac{1}{{11}}{\\rm{}} \\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow P =  {\\rm{}}\\frac{1}{1}{\\rm{}} - \\frac{1}{{11}}{\\rm{}} = {\\rm{}}\\frac{{10}}{{11}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow {\\rm{Q}} = {\\rm{}}\\frac{1}{{1{\\rm{\\;}} \\times {\\rm{\\;}}4}}{\\rm{}} + {\\rm{}}\\frac{1}{{4{\\rm{\\;}} \\times {\\rm{\\;}}7}}{\\rm{}} + {\\rm{}}\\frac{1}{{7{\\rm{\\;}} \\times {\\rm{\\;}}10}}{\\rm{\\;}} + {\\rm{\\;}} - - - {\\rm{}} + {\\rm{}}\\frac{1}{{28{\\rm{\\;}} \\times {\\rm{\\;}}31}}{\\rm{}} = {\\rm{}}\\frac{1}{3}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow {\\rm{Q}} = {\\rm{}}(\\frac{{4{\\rm{\\;}} - {\\rm{\\;}}1}}{{1{\\rm{\\;}} \\times {\\rm{\\;}}4}}{\\rm{}} + {\\rm{}}\\frac{{7{\\rm{\\;}} - {\\rm{\\;}}4}}{{4{\\rm{\\;}} \\times {\\rm{\\;}}7}}{\\rm{}} + {\\rm{}}\\frac{{10{\\rm{\\;}} - {\\rm{\\;}}7}}{{7{\\rm{\\;}} \\times {\\rm{\\;}}10}}{\\rm{}} + {\\rm{}} - - - {\\rm{}} + {\\rm{}}\\frac{{31{\\rm{\\;}} - {\\rm{\\;}}28}}{{28{\\rm{\\;}} \\times {\\rm{\\;}}31}})\\)</span></p>\n\n<p><span class=\"math-tex\">\\( \\Rightarrow {\\rm{Q}} = {\\rm{}}\\frac{1}{{{\\rm{\\;}}3}}\\left( {{\\rm{\\;}}\\frac{1}{1}{\\rm{\\;}} - {\\rm{\\;}}\\frac{1}{4}{\\rm{}} + {\\rm{}}\\frac{1}{4}{\\rm{}} - {\\rm{}}\\frac{1}{7}{\\rm{}} + {\\rm{}}\\frac{1}{7}{\\rm{}} - \\frac{1}{{10}}{\\rm{}} + {\\rm{}} - - {\\rm{\\;}} + {\\rm{\\;}}\\frac{1}{{28}} - \\frac{1}{{31}}} \\right){\\rm{}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\Rightarrow Q = {\\rm{}}\\frac{1}{{{\\rm{\\;}}3}}\\left( {{\\rm{\\;}}\\frac{1}{1}{\\rm{}} - \\frac{1}{{31}}} \\right){\\rm{}} = {\\rm{}}\\frac{{10}}{{31}}\\)</span></p>\n\n<p>&rArr; P + Q = (10/11 + 10/31) = 420/341</p>\n<strong>&there4; A का मान = 420/341</strong>\n30:Tcc0,\n<span>The correct answer is", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fractions"], "concept": "Fractions", "confidence": "high"}, {"qid": "5c10ee23be7c730c96ccc6f6", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "If 56 &times; 75 &times; 60 &times; 84 &times; 210 = 2<sup>p </sup>&times; 3<sup>q</sup> &times; 5<sup>r</sup> &times; 7<sup>s</sup>, then what is the value of [(p + q) /s] + r?", "options": [{"prompt": "1", "value": "6"}, {"prompt": "2", "value": "8"}, {"prompt": "3", "value": "12"}, {"prompt": "4", "value": "10"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि 56 &times; 75 &times; 60 &times; 84 &times; 210 = 2<sup>p </sup>&times; 3<sup>q</sup> &times; 5<sup>r</sup> &times; 7<sup>s</sup>, तो [(p + q) /s] + r का मान क्या है?", "options": [{"prompt": "1", "value": "6"}, {"prompt": "2", "value": "8"}, {"prompt": "3", "value": "12"}, {"prompt": "4", "value": "10"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<span>The correct answer is <u><strong>8</strong></u></span>\n<div><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Key Points</u></span></strong></span></div>\n<ul>\n<li>To solve this problem, we need to perform the <strong>prime factorization</strong> of each individual number on the left side of the equation to determine the exponents <strong>p, q, r, and s</strong>.</li>\n<li>The prime factorization of each number is as follows:\n<br /><strong>56</strong> = 8 × 7 = 2<sup>3</sup> × 7<sup>1</sup>\n<br /><strong>75</strong> = 25 × 3 = 5<sup>2</sup> × 3<sup>1</sup>\n<br /><strong>60</strong> = 4 × 3 × 5 = 2<sup>2</sup> × 3<sup>1</sup> × 5<sup>1</sup>\n<br /><strong>84</strong> = 4 × 3 × 7 = 2<sup>2</sup> × 3<sup>1</sup> × 7<sup>1</sup>\n<br /><strong>210</strong> = 2 × 3 × 5 × 7 = 2<sup>1</sup> × 3<sup>1</sup> × 5<sup>1</sup> × 7<sup>1</sup></li>\n<li>According to the <strong>Product Rule of Exponents</strong> (a<sup>m</sup> × a<sup>n</sup> = a<sup>m+n</sup>), we sum the exponents for each prime base across all factors:\n<br />For base <strong>2</strong>: p = 3 + 2 + 2 + 1 = <strong>8</strong>\n<br />For base <strong>3</strong>: q = 1 + 1 + 1 + 1 = <strong>4</strong>\n<br />For base <strong>5</strong>: r = 2 + 1 + 1 = <strong>4</strong>\n<br />For base <strong>7</strong>: s = 1 + 1 + 1 = <strong>3</strong></li>\n<li>The equation is 2<sup>8</sup> × 3<sup>4</sup> × 5<sup>4</sup> × 7<sup>3</sup> = 2<sup>p</sup> × 3<sup>q</sup> × 5<sup>r</sup> × 7<sup>s</sup>. Comparing both sides, we get the values: <strong>p = 8, q = 4, r = 4, and s = 3</strong>.</li>\n<li>The final step is to calculate the value of the given expression <strong>[(p + q) / s] + r</strong>:\n<br />Value = [(8 + 4) ÷ 3] + 4\n<br />Value = [12 ÷ 3] + 4\n<br />Value = 4 + 4 = <strong>8</strong>.</li>\n<li>The result is <strong>8</strong>, which makes <strong>Option 2</strong> the correct choice.</li>\n</ul>\n<div><span style='display: flex;gap: 6px;align-items: center;'><img height='26px' src='https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png' width='26px' /><strong><span style='vertical-align: middle;font-size: 21px;'><u>Additional Information</u></span></strong></span></div>\n<ul>\n<li><strong>Prime Factorization</strong> is a method used to find which prime numbers multiply together to make the original number. It is an essential tool in <strong>Number Theory</strong> and simplifying complex radical expressions.</li>\n<li>The <strong>Fundamental Theorem of Arithmetic</strong> ensures that every composite number has a unique set of prime factors, which allows us to compare exponents when equations are expressed in prime base form.</li>\n<li>When performing these calculations, ensure that every factor is reduced to its <strong>prime base</strong> (e.g., 4 must be written as 2<sup>2</sup>, and 8 as 2<sup>3</sup>) before summing exponents.</li>\n</ul", "hn": "\n<p><strong>गणना:</strong></p>\n\n<p>अभाज्य गुणनखंड द्वारा</p>\n\n<p style=\"\">56 = 2<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">3&nbsp;</span>&times; 3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">0</span>&nbsp;&times; 5<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">0</span>&nbsp;&times; 7<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">1</span></p>\n\n<p style=\"\">75 = 2<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">0&nbsp;</span>&times; 3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">1</span>&nbsp;&times; 5<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>&nbsp;&times; 7<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">0</span></p>\n\n<p style=\"\">60 = 2<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;</span>&times; 3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">1</span>&nbsp;&times; 5<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">1</span>&nbsp;&times; 7<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">0</span></p>\n\n<p style=\"\">84 = 2<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;</span>&times; 3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">1</span>&nbsp;&times; 5<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">0</span>&nbsp;&times; 7<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">1</span></p>\n\n<p style=\"\">210 = 2<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">1&nbsp;</span>&times; 3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">1</span>&nbsp;&times; 5<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">1</span>&nbsp;&times; 7<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">1</span></p>\n\n<p style=\"\">&rArr; 56 &times; 75 &times; 60 &times; 84 &times; 210 = 2<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">8&nbsp;</span>&times; 3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">4</span>&nbsp;&times; 5<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">4</span>&nbsp;&times; 7<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">3</span></p>\n\n<p style=\"\">&rArr; p = 8, q = 4, r = 4, s = 3</p>\n<strong><span style=\"font-weight: 700; \">&there4; [(p + q) /s] + r = [(8 + 4) /3] + 4 = 8</span></strong>\n32:T647,\n<p><strong>Given:</strong></p>\n<p>F", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fractions"], "concept": "Fractions", "confidence": "high"}, {"qid": "6274f58fe6312945bedf0206", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>What is the simplified value of the following?</p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(40 \\over 7 \\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(5 \\over 56 \\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(7 \\over 40 \\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(51 \\over 56 \\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्नलिखित का सरलीकृत मान क्या है?</p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(40 \\over 7 \\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(5 \\over 56 \\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(7 \\over 40 \\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(51 \\over 56 \\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>కింది వాటి యొక్క సూక్ష్మీకరణ విలువ ఏమిటి?</p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(40 \\over 7 \\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(5 \\over 56 \\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(7 \\over 40 \\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(51 \\over 56 \\)</span>"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>खालील सरलीकृत मूल्य काय आहे?</p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(40 \\over 7 \\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(5 \\over 56 \\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(7 \\over 40 \\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(51 \\over 56 \\)</span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>নিম্নলিখিত সরলীকৃত মান কত?</p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(40 \\over 7 \\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(5 \\over 56 \\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(7 \\over 40 \\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(51 \\over 56 \\)</span>"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>નીચેનાનું સરળીકૃત મૂલ્ય શું છે?</p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(40 \\over 7 \\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(5 \\over 56 \\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(7 \\over 40 \\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(51 \\over 56 \\)</span>"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನವುಗಳ ಸರಳೀಕೃತ ಮೌಲ್ಯ ಏನು?</p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(40 \\over 7 \\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(5 \\over 56 \\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(7 \\over 40 \\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(51 \\over 56 \\)</span>"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வருவனவற்றின் மதிப்பு என்ன?</p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(40 \\over 7 \\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(5 \\over 56 \\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(7 \\over 40 \\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(51 \\over 56 \\)</span>"}], "range": {"start": "", "end": ""}}, "or": {"value": "<p>ନିମ୍ନଲିଖିତର ସରଳୀକୃତ ମୂଲ୍ୟ କ’ଣ?</p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n", "options": [{"prompt": "1", "value": "<span class=\"math-tex\">\\(40 \\over 7 \\)</span>"}, {"prompt": "2", "value": "<span class=\"math-tex\">\\(5 \\over 56 \\)</span>"}, {"prompt": "3", "value": "<span class=\"math-tex\">\\(7 \\over 40 \\)</span>"}, {"prompt": "4", "value": "<span class=\"math-tex\">\\(51 \\over 56 \\)</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Concept used:</strong></p>\n\n<p>B = Bar/Bracket</p>\n\n<p>O = Of</p>\n\n<p>D = Division</p>\n\n<p>M = Multiplication</p>\n\n<p>A = Addition</p>\n\n<p>S = Subtraction</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times 2 } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\frac{{9 \\div 9 + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - 1 \\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 5 - 1} \\right)}}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\frac{{1+ \\left[ {\\frac{1}{5} \\times \\frac{25}{{7}} - 1 \\}} \\right]}}{{4 + 36 \\div 9 }}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(1 -{2\\over 7}\\over 8\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(5\\over56\\)</span></p>\n\n<p><strong>The answer is&nbsp;<span class=\"math-tex\">\\(5\\over56\\)</span>.</strong></p>", "hn": "\n<p><strong>प्रयुक्त अवधारणा:</strong></p>\n\n<p>B = बार/कोष्ठक</p>\n\n<p>O = का</p>\n\n<p>D = भाग</p>\n\n<p>M = गुणा</p>\n\n<p>A = जोड़</p>\n\n<p>S = घटाव</p>\n\n<p><strong>गणना:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3", "te": "<p><strong>ఉపయోగించిన భావన:</strong></p>\n\n<p>B = బార్/బ్రాకెట్</p>\n\n<p>O = గుణకారం</p>\n\n<p>D = భాగాహారం</p>\n\n<p>M = గుణిజం</p>\n\n<p>A = కూడిక </p>\n\n<p>S = తీసివేత</p>\n\n<p><strong>లెక్కింపు:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times 2 } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div 9 + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - 1 \\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 5 - 1} \\right)}}\\)</span></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{1+ \\left[ {\\frac{1}{5} \\times \\frac{25}{{7}} - 1 \\}} \\right]}}{{4 + 36 \\div 9 }}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(1 -{2\\over 7}\\over 8\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(5\\over56\\)</span></p>\n\n<p><strong>సమాధానం <span class=\"math-tex\">\\(5\\over56\\)</span>.</strong></p>\n46:T5d6,<p><strong>वापरलेली संकल्पना:</strong></p>\n\n<p>B = शिरोरेघा/कंस</p>\n\n<p>O = चा/ची/चे /च्या</p>\n\n<p>D = भागाकार</p>\n\n<p>M = गुणाकार</p>\n\n<p>A =", "mr": "<p><strong>वापरलेली संकल्पना:</strong></p>\n\n<p>B = शिरोरेघा/कंस</p>\n\n<p>O = चा/ची/चे /च्या</p>\n\n<p>D = भागाकार</p>\n\n<p>M = गुणाकार</p>\n\n<p>A = बेरीज</p>\n\n<p>S = वजाबाकी</p>\n\n<p><strong>गणना:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times 2 } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{9 \\div 9 + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - 1 \\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 5 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{1+ \\left[ {\\frac{1}{5} \\times \\frac{25}{{7}} - 1 \\}} \\right]}}{{4 + 36 \\div 9 }}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(1 -{2\\over 7}\\over 8\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(5\\over56\\)</span></p>\n\n<p><strong>उत्तर <span class=\"math-tex\">\\(5\\over56\\)</span> आहे.</strong></p>\n47:T58b,<p><strong>অনুসৃত ধারণা:</strong></p>\n\n<p>B = বার/বন্ধনী</p>\n\n<p>O = এর</p>\n\n<p>D = ভাগ</p>\n\n<p>M = গুণ</p>\n\n<p>A = যোগ</p>\n\n<p>S = বিয়ো", "bn": "<p><strong>অনুসৃত ধারণা:</strong></p>\n\n<p>B = বার/বন্ধনী</p>\n\n<p>O = এর</p>\n\n<p>D = ভাগ</p>\n\n<p>M = গুণ</p>\n\n<p>A = যোগ</p>\n\n<p>S = বিয়োগ</p>\n\n<p><strong>গণনা:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times 2 } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{9 \\div 9 + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - 1 \\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 5 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{1+ \\left[ {\\frac{1}{5} \\times \\frac{25}{{7}} - 1 \n\\}} \\right]}}{{4 + 36 \\div 9 }}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(1 -{2\\over 7}\\over 8\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(5\\over56\\)</span></p>\n\n<p><strong>উত্তরটি হল <span class=\"math-tex\">\\(5\\over56\\)</span></strong></p>\n48:T600,\n<p><strong>ઉપયોગમાં લેવાયેલ ખ્યાલ:</strong></p>\n\n<p>B = Bar/Bracket (બાર/કૌંસ)</p>\n\n<p>O =", "ml": "", "gu": "\n<p><strong>ઉપયોગમાં લેવાયેલ ખ્યાલ:</strong></p>\n\n<p>B = Bar/Bracket (બાર/કૌંસ)</p>\n\n<p>O = Of (ના/ની/નું/નાં)</p>\n\n<p>D = Division (ભાગાકાર)</p>\n\n<p>M = Multiplication (ગુણાકાર)</p>\n\n<p>A = Addition (સરવાળો)</p>\n\n<p>S = Subtraction (બાદબાકી)</p>\n\n<p><strong>ગણતરી:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <", "kn": "<p><strong>ಬಳಸಿದ ಪರಿಕಲ್ಪನೆ:</strong></p>\n\n<p>B = ಬಾರ್/ಆವರಣ</p>\n\n<p>O = ನಲ್ಲಿ/ ರ</p>\n\n<p>D = ಭಾಗಾಕಾರ</p>\n\n<p>M = ಗುಣಾಕಾರ</p>\n\n<p>A = ಸಂಕಲನ</p>\n\n<p>S = ವ್ಯವಕಲನ</p>\n\n<p><strong>ಲೆಕ್ಕಾಚಾರ:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times 2 } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{9 \\div 9 + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - 1 \\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 5 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{1+ \\left[ {\\frac{1}{5} \\times \\frac{25}{{7}} - 1 \\}} \\right]}}{{4 + 36 \\div 9 }}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(1 -{2\\over 7}\\over 8\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(5\\over56\\)</span></p>\n\n<p><strong>ಉತ್ತರ</strong><strong> <span class=\"math-tex\">\\(5\\over56\\)</span></strong> <strong>ಆಗಿದೆ</strong><strong>.</strong></p>\n4a:T7bf,\n<p><strong>பயன்படுத்தப்பட்ட கருத்து:</strong></p>\n\n<p>B = பட்டை/அடைப்புக்குறி</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">O </span", "ta": "\n<p><strong>பயன்படுத்தப்பட்ட கருத்து:</strong></p>\n\n<p>B = பட்டை/அடைப்புக்குறி</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">O </span> = இன்</p>\n\n<p>D = வகுத்தல்</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">M</span>= பெருக்கல்</p>\n\n<p>A = கூட்டல்</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">S </span>= கழித்தல்</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">கணக்கீடு:</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ <span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times 2 } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ <span class=\"math-tex\">\\(\\frac{{9 \\div 9 + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - 1 \\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 5 - 1} \\right)}}\\)</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ <span class=\"math-tex\">\\(\\frac{{1+ \\left[ {\\frac{1}{5} \\times \\frac{25}{{7}} - 1 \\}} \\right]}}{{4 + 36 \\div 9 }}\\)</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ <span class=\"math-tex\">\\(1 -{2\\over 7}\\over 8\\)</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ <span class=\"math-tex\">\\(5\\over56\\)</span>.</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">பதில் <span class=\"math-tex\">\\(5\\over56\\)</span>.</span></p>\n\n4b:T5c8,<p><strong>ବ୍ୟବହୃତ ଧାରଣା:</strong></p>\n\n<p>B = ବାର୍/ବ୍ରାକେଟ୍</p>\n\n<p>O = ଅଫ୍</p>\n\n<p>D = ଡିଭିଜନ୍</p>\n\n<p>M = ମଲ୍ଟିପ୍ଲିକେସନ୍</p>\n\n<p>A = ଆଡିସନ୍</p>\n\n<p>S = ସବ୍‌ଟ୍ରାକ୍ସନ୍", "or": "<p><strong>ବ୍ୟବହୃତ ଧାରଣା:</strong></p>\n\n<p>B = ବାର୍/ବ୍ରାକେଟ୍</p>\n\n<p>O = ଅଫ୍</p>\n\n<p>D = ଡିଭିଜନ୍</p>\n\n<p>M = ମଲ୍ଟିପ୍ଲିକେସନ୍</p>\n\n<p>A = ଆଡିସନ୍</p>\n\n<p>S = ସବ୍‌ଟ୍ରାକ୍ସନ୍</p>\n\n<p><strong>ଗଣନା:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times \\overline {4 - 2} } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div \\overline {16 - 10} + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{9 \\div \\frac{3}{7}\\ \\text{of} \\ \\left( {9 + 6 \\times 2 } \\right) + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - \\left\\{ {\\frac{5}{8} + \\frac{6}{{16}}} \\right\\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 20 \\div 4 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{9 \\div 9 + \\left[ {\\frac{1}{5} \\div \\frac{7}{{25}} - 1 \\}} \\right]}}{{24 \\div 6 + 36 \\div \\left( {5 + 5 - 1} \\right)}}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(\\frac{{1+ \\left[ {\\frac{1}{5} \\times \\frac{25}{{7}} - 1 \\}} \\right]}}{{4 + 36 \\div 9 }}\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(1 -{2\\over 7}\\over 8\\)</span></p>\n\n<p>⇒ <span class=\"math-tex\">\\(5\\over56\\)</span></p>\n\n<p><strong>ଉତ୍ତର ହେଉଛି <span class=\"math-tex\">\\(5\\over56\\)</span>।</strong></p>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 5: Fraction\",\"sections\":[{\"_id\":\"628542a7f87f5ae63c94033e\",\"qCount\":10,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fractions"], "concept": "Fractions", "confidence": "high"}, {"qid": "62740c4f5a7c56ced25aae38", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">The value of&nbsp;<span class=\"math-tex\">\\(\\frac{46+\\frac{3}{4} \\ \\text{of}\\ 32-6}{37-\\frac{3}{4} \\ \\text{of}\\ (34+6)}\\)</span> is:</span>", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{54}{7}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{64}{7}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{34}{7}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{44}{7}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span style=\"\"><span class=\"math-tex\">\\(\\frac{46+\\frac{3}{4} \\ \\text{of}\\ 32-6}{37-\\frac{3}{4} \\ \\text{of}\\ (34+6)}\\)</span>&nbsp;का मान है:</span>", "options": [{"prompt": "1", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{54}{7}\\)&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{64}{7}\\)&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{34}{7}\\)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span class=&quot;math-tex&quot;&gt;\\(\\frac{44}{7}\\)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\frac{46+\\frac{3}{4} \\ \\text{of}\\ 32-6}{37-\\frac{3}{4} \\ \\text{of}\\ (34+6)}\\)</span></p>\n\n<p><strong>Concept used:</strong></p>\n\n<p><strong><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eafd54de9d9fc295c072d1fa0b8367ee3ed24189b7ad133a51c29266134693c4.png\" style=\"width: 440px; height: 247px;\" /></strong></p>\n\n<p><strong>Calculation:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p><strong><span class=\"math-tex\">\\(\\frac{46+\\frac{3}{4} \\ \\text{of}\\ 32-6}{37-\\frac{3}{4} \\ \\text{of}\\ (34+6)}\\)</span></strong></p>\n\n<p><strong>प्रयुक्त अवधारणा&nbsp;:</strong></p>\n\n<p><strong><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eafd54de9d9fc295c072d1fa0b8367ee3ed24189b7ad133a51c29266134693c4.png\" style=\"width: 440px; height: 247px;\" /></strong></p>\n\n<p><strong>गणना:</strong></p>\n\n<p><span class=\"math-tex\">\\(\\frac{46+\\frac{3}{4} \\ \\text{of}\\ 32-6}{37-\\frac{3}{4} \\ \\text{of}\\ (34+6)}\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(\\frac{46+\\frac{3}{4} \\ \\text{of}\\ 32-6}{37-\\frac{3}{4} \\ \\text{of}\\ 40}\\)</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;</span><span class=\"math-tex\">\\(\\frac{46+\\frac{3}{4} \\ \\times\\ 32-6}{37-\\frac{3}{4} \\ \\times\\ 40}\\)</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;</span><span class=\"math-tex\">\\(\\frac{46+24-6}{37-30}\\)</span></p>\n\n<p><span style=\"\">&rArr;&nbsp;</span><span class=\"math-tex\">\\(\\frac{64}{7}\\)</span></p>\n\n<p><strong>&there4; अभीष्ट उत्तर&nbsp;<span class=\"math-tex\">\\(\\frac{64}{7}\\)</span>&nbsp;है।&nbsp;</strong></p>\n\n43:T6e6,\n<p><strong>Concept used:</strong></p>\n\n<p>B", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fractions"], "concept": "Fractions", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 8 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
