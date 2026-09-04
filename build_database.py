@@ -98,7 +98,8 @@ def build_database(output_dir: str, db_dir: str, years_filter: list = None):
     NOTE: The ai_export/ and html_export/ folders contain ALL scraped tests (all years).
     The database/ folder is a FILTERED COPY for AI analysis — only 2021-2025 + specific sections.
     """
-    ai_files = sorted(glob.glob(os.path.join(output_dir, "ai_export", "**", "*.json"), recursive=True))
+    # Scan ALL ai_export directories (including job-specific ones like scraped_output/SSC-Steno-2026/ai_export/)
+    ai_files = sorted(glob.glob(os.path.join(output_dir, "**", "ai_export", "**", "*.json"), recursive=True))
     print(f"Found {len(ai_files)} AI JSON files to process")
     
     if years_filter is None:
@@ -243,7 +244,7 @@ def main():
     seen_qids_all = set()  # Track for cross-stats dedup
     
     # Re-scan to build cross stats (simpler than tracking during main loop)
-    all_ai_files = sorted(glob.glob(os.path.join(args.output_dir, "ai_export", "**", "*.json"), recursive=True))
+    all_ai_files = sorted(glob.glob(os.path.join(args.output_dir, "**", "ai_export", "**", "*.json"), recursive=True))
     for fpath in all_ai_files:
         try:
             with open(fpath) as f:
