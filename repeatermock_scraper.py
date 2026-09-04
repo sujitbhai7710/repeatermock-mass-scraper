@@ -510,7 +510,13 @@ class ProgressTracker:
 
 class Worker:
     """A single browser context that scrapes tests from a shared queue.
-    Handles its own cookie refresh on 401 + periodic refresh."""
+    Handles its own cookie refresh on 401 + periodic refresh.
+    Auto-stops after too many 429 rate limits (signals other workers to stop)."""
+
+    # Class-level flag — when any worker hits 10× 429s, all workers stop
+    _rate_limit_stop = False
+    _rate_limit_count = 0
+    _rate_limit_lock = None  # Will be set by run_scraper
 
     def __init__(self, worker_id: int, browser, progress: ProgressTracker, output_dir: str):
         self.worker_id = worker_id
@@ -580,7 +586,7 @@ class Worker:
         3. If proxy also 429: exponential backoff + jitter
         4. On 401: refresh cookies, retry
         """
-        MAX_RETRIES = 5
+        MAX_RETRIES = 3  # Reduced from 5 to fail faster (don't waste 32s on dead tests)
         base_delay = 2
         is_post = method.upper() == "POST"
         use_proxy = False
@@ -636,14 +642,32 @@ class Worker:
                     continue
                 else:
                     # POST request or proxy also 429: exponential backoff
-                    # CRITICAL: Do NOT refresh cookies on 429 — refreshing itself makes
-                    # a page.goto request which triggers MORE 429s (cascade effect)
-                    # Only wait longer, don't refresh cookies
+                    # Count 429s — if total across all workers exceeds 10, stop everything
+                    if Worker._rate_limit_lock:
+                        async with Worker._rate_limit_lock:
+                            Worker._rate_limit_count += 1
+                            if Worker._rate_limit_count >= 10 and not Worker._rate_limit_stop:
+                                Worker._rate_limit_stop = True
+                                print(f"\n  ⛔ [RATE LIMIT STOP] 10× 429 errors reached — stopping all workers!")
+                                print(f"     Triggering next GitHub Action run via Cloudflare Worker...")
+                                # Trigger next run via Cloudflare Worker
+                                try:
+                                    import urllib.request as ur
+                                    req = ur.Request(
+                                        "https://scraper-trigger.jumble-solver.workers.dev/trigger",
+                                        data=json.dumps({"max_tests": ""}).encode(),
+                                        headers={"Content-Type": "application/json"},
+                                        method="POST"
+                                    )
+                                    ur.urlopen(req, timeout=5)
+                                    print(f"     ✅ Triggered next run via Cloudflare Worker")
+                                except:
+                                    pass  # Non-fatal — the scheduled run will handle it
+                    # CRITICAL: Do NOT refresh cookies on 429
                     wait_sec = (retry_after and float(retry_after)) or (base_delay * (2 ** attempt))
-                    wait_sec += random.uniform(1, 3)  # More jitter
+                    wait_sec += random.uniform(1, 3)
                     print(f"  [worker {self.worker_id}] ⏳ 429, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
                     await asyncio.sleep(wait_sec)
-                    # Do NOT refresh cookies here — only on 401
                     continue
             
             if status == 401:
@@ -2354,12 +2378,21 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
         # first-pass tests are done, so they get retried (with fresh cookies)
         retry_queue: List[TestRef] = []
         retry_lock = asyncio.Lock()
+        
+        # Initialize rate-limit stop flag + lock for workers
+        Worker._rate_limit_stop = False
+        Worker._rate_limit_count = 0
+        Worker._rate_limit_lock = asyncio.Lock()
 
         async def worker_loop(worker_id: int):
             nonlocal completed, failed, runtime_exceeded
             w = Worker(worker_id, browser, progress, output_dir)
             await w.start()
             while True:
+                # Check rate-limit stop flag (set when 10× 429 errors occur)
+                if Worker._rate_limit_stop:
+                    print(f"\n  [worker {worker_id}] ⛔ Rate limit stop — exiting worker loop")
+                    break
                 # Check max runtime (stop at 5h30m = 330 min for GitHub Actions safety)
                 if max_runtime_min is not None:
                     elapsed_min = (time.time() - start_time) / 60
@@ -2406,6 +2439,15 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                             completed += 1
                             w.tests_done += 1
                         print(f"  [worker {worker_id}] ✅ saved HTML ({len(html):,}B) + AI JSON ({len(json.dumps(ai_export)):,}B): {test_ref.title[:50]}")
+                        # Auto-commit to git every 5 tests (prevents data loss on cancel)
+                        if w.tests_done % 5 == 0 and os.environ.get("GITHUB_ACTIONS"):
+                            import subprocess
+                            try:
+                                subprocess.run(["git", "add", output_dir + "/"], capture_output=True, timeout=10)
+                                subprocess.run(["git", "commit", "-m", f"auto-commit: {w.tests_done} tests scraped by worker {worker_id}"], capture_output=True, timeout=10)
+                                subprocess.run(["git", "push", "origin", "HEAD"], capture_output=True, timeout=15)
+                            except:
+                                pass  # Non-fatal — will commit at end anyway
                     else:
                         # Test failed — add to retry queue for later retry
                         async with retry_lock:
@@ -2425,7 +2467,7 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                 finally:
                     queue.task_done()
                 # Small delay to avoid rate-limiting (with jitter)
-                await asyncio.sleep(2.0 + random.uniform(0, 1.0))  # 2-3s delay to reduce 429s
+                await asyncio.sleep(3.0 + random.uniform(0, 2.0))  # 3-5s delay to reduce 429s
             await w.close()
             print(f"  [worker {worker_id}] done (scraped {w.tests_done} tests)")
 
@@ -2638,7 +2680,7 @@ def main():
         parser.error("Provide at least one --test-url, --series-url, or --series-list-file")
 
     # Clamp workers
-    workers = max(1, min(args.workers, 50))
+    workers = max(1, min(args.workers, 20))  # Max 20 workers (GitHub Actions limit)
 
     asyncio.run(run_scraper(
         test_urls=args.test_url,
