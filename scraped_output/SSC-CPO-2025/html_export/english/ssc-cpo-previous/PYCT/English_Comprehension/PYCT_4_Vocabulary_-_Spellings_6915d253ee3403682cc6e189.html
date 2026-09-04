@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 4: Vocabulary - Spellings</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 4: Vocabulary - Spellings</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-cpo-previous</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">25</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">15 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">25.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+1.0 / -0.25</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">6915d253ee3403682cc6e189</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "6915d253ee3403682cc6e189", "title": "PYCT 4: Vocabulary - Spellings", "series_slug": "ssc-cpo-previous", "duration_min": 15, "max_marks": 25.0, "languages": ["English"], "sections": [{"section_id": "6915cdba80e7dce1b661ccd8", "section_name": "Test", "q_count": 25, "max_marks": 25.0, "questions": [{"qid": "66a36ece756fb1bc63a12762", "qs_no": 1, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word.&nbsp;&nbsp;", "options": [{"prompt": "1", "value": "Cheerfull&amp;nbsp;"}, {"prompt": "2", "value": "Tsunami&amp;nbsp;"}, {"prompt": "3", "value": "Efficient&amp;nbsp;"}, {"prompt": "4", "value": "Responsibilities"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is <strong>Option 1)</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Cheerfull&quot;</strong> is incorrectly spelt. The correct spelling is <strong>&quot;Cheerful&quot;.</strong>\n\n\t<ul>\n\t\t<li><strong>Meaning:</strong> Happy and optimistic. (प्रसन्न)</li>\n\t\t<li><strong>Example:</strong> She has a <strong>cheerful</strong> smile that brightens everyone&#39;s day.</li>\n\t</ul>\n\t</li>\n\t<li>The correct word is <strong>&quot;Cheerful&quot;</strong> (प्रसन्न).\n\t<ul>\n\t\t<li><strong>Example:</strong> Despite the challenges, he remained <strong>cheerful</strong> throughout the journey.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct spelling for the given word is&nbsp;<strong>&#39;Cheerful&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Tsunami</strong> (सुनामी): A long high sea wave caused by an earthquake or other disturbance.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The coastal town was devastated by the<strong> tsunami.</strong></li>\n\t</ul>\n\t</li>\n\t<li><strong>Efficient</strong> (कुशल): Being effective without wasting time, effort, or expense.\n\t<ul>\n\t\t<li><strong>Example:</strong> She is very <strong>efficient</strong> in managing her time and resources.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Responsibilities</strong> (जिम्मेदारियों): Duties or tasks that you are required or expected to do.\n\t<ul>\n\t\t<li><strong>Example:</strong> He has many <strong>responsibilities</strong> at work and home.</li>\n\t</ul>\n\t</li>\n</ul>\n\n40:Ta4f,\n<p>The correct answer is <strong>Option 4)</stro", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "66a4d6f2cdad2064afe6eac2", "qs_no": 2, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word.", "options": [{"prompt": "1", "value": "Rhinoceros"}, {"prompt": "2", "value": "Bueraucracy"}, {"prompt": "3", "value": "Acquaintance"}, {"prompt": "4", "value": "Miscellaneous"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 2.</b></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Bueraucracy&quot;</strong> is incorrectly spelt. The correct spelling is <strong>&quot;Bureaucracy&quot;</strong> (नौकरशाही).\n\n\t<ul>\n\t\t<li><strong>Example: </strong>The <strong>bureaucracy</strong> in the government often slows down the implementation of new policies.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Bureaucracy&quot;</strong> refers to a system of government in which most of the important decisions are made by state officials rather than by elected representatives. (नौकरशाही)\n\t<ul>\n\t\t<li><strong>Example: </strong>The new law aims to reduce the <strong>bureaucracy</strong> that businesses face.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 2</strong>&nbsp;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Rhinoceros</strong> (गेंडा): A large, heavy animal with thick skin and one or two horns on its snout.\n\n\t<ul>\n\t\t<li><strong>Example: </strong>The rhinoceros is often hunted for its horn.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Acquaintance</strong> (परिचित): A person one knows slightly, but who is not a close friend.\n\t<ul>\n\t\t<li><strong>Example: </strong>I met an old acquaintance at the conference.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Miscellaneous</strong> (विविध): Consisting of various types or from different sources.\n\t<ul>\n\t\t<li><strong>Example: </strong>The box contained miscellaneous items, including books and toys.</li>\n\t</ul>\n\t</li>\n</ul>\n\n45:Ta42,\n<p>The correct answer is: <b>Option 2.<", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "65276ef7f34956f305e695d3", "qs_no": 3, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Four words have been underlined in the given sentence of which one word has a spelling error. Identify the incorrectly spelt word.</p>\n\n<p>The tiger<u> thrshed </u>(A) against his <u>chains</u> (B) in the cage at the <u>circus</u> (C) but nobody paid him any <u>heed</u> (D).&nbsp;</p>\n", "options": [{"prompt": "1", "value": "thrshed"}, {"prompt": "2", "value": "circus"}, {"prompt": "3", "value": "chains"}, {"prompt": "4", "value": "heed"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<div><span style=\"\">The correct answer is <strong>&#39;Option 1&#39; i.e. &#39;thrshed&#39;.</strong></span></div>\n\n<div><span style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><br />\n<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></div>\n\n<ul>\n\t<li><span style=\"\">The word &quot;<strong>thrshed</strong>&quot; is incorrectly spelled. </span></li>\n\t<li><span style=\"\">The correct spelling is <strong>&quot;thrashed,</strong>&quot; which means to beat or hit someone or something hard repeatedly.(<span style=\"\">पीटा).</span></span>\n\t<ul>\n\t\t<li><span style=\"\"><strong>Example:</strong> The wind thrashed the tree branches against the windows throughout the night.</span></li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"\">Therefore, the <strong>correct answer </strong>is- <strong>thrshed</strong>.</span></p>\n\n<div><span style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></div>\n\n<ul>\n\t<li><span style=\"\">&quot;<strong>Circus</strong>&quot; refers to a traveling company of acrobats, trained animals, and clowns that perform in a tent.(सर्कस).</span></li>\n\t<li><span style=\"\">&quot;<strong>Chains</strong>&quot; refer to a series of linked metal rings used for fastening or securing items, or as a restraint.(जंजीरें).</span></li>\n\t<li><span style=\"\">&quot;<strong>Heed</strong>&quot; means to pay attention to.(ध्यान देना).</span></li>\n</ul>\n\n33:Ta62,\nThe correct answer is <strong>Opt", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Spelling", "confidence": "high"}, {"qid": "66a4d7900f2f10a6e1eaadf3", "qs_no": 4, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the option that correctly rectifies the spelling error in the given sentence.</p>\n\n<p>The movie is just beggining.</p>\n", "options": [{"prompt": "1", "value": "Biginning"}, {"prompt": "2", "value": "Beginning"}, {"prompt": "3", "value": "Beginnig"}, {"prompt": "4", "value": "Begining"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 2.</b></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;beggining&quot;</strong> is a misspelling and does not have any meaning in English. (गलत वर्तनी)\n\n\t<ul>\n\t\t<li><strong>Example: </strong>The movie is just <strong>beggining</strong>. (Incorrect spelling)</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Beginning&quot;</strong> refers to the start or commencement of something. (शुरुआत)\n\t<ul>\n\t\t<li><strong>Example: </strong>The movie is just <strong>beginning.</strong> (Correct spelling)</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 2.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Option 1: Biginning</strong> (गलत वर्तनी): Incorrect spelling.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The event is biginning soon. (Incorrect spelling)</li>\n\t</ul>\n\t</li>\n\t<li><strong>Option 3: Beginnig</strong> (गलत वर्तनी): Incorrect spelling.\n\t<ul>\n\t\t<li><strong>Example: </strong>The class is beginnig now. (Incorrect spelling)</li>\n\t</ul>\n\t</li>\n\t<li><strong>Option 4: Begining</strong> (गलत वर्तनी): Incorrect spelling.\n\t<ul>\n\t\t<li><strong>Example:</strong> The show is begining. (Incorrect spelling)</li>\n\t</ul>\n\t</li>\n</ul>\n\n46:Tb6b,\n<p>The correct answer is: <b>Option 2.</b></p>\n\n&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Spelling", "confidence": "high"}, {"qid": "6528e0cf54e9835671aabf2d", "qs_no": 5, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>In the following sentence, four words are underlined, out of which one word is incorrectly spelt. Identify the INCORRECTLY spelt word.</p>\n\n<p>Traffic accidents are increasing steadily, and large cities are <u>plaged</u> by traffic <u>congestion</u>. Worst of all is the air pollution caused by internal <u>combustion</u> engine, <u>uninterruptedly</u>.&nbsp;</p>\n", "options": [{"prompt": "1", "value": "plaged&amp;nbsp;"}, {"prompt": "2", "value": "uninterruptedly&amp;nbsp;"}, {"prompt": "3", "value": "congestion&amp;nbsp;"}, {"prompt": "4", "value": "combustion"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is Option 1. i.e.&nbsp;<strong><span style=\"color: rgb(33, 37, 41);\">plaged.</span></strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The incorrect word is &quot;<strong>plaged</strong>.&quot; The correct spelling&nbsp;is &quot;<strong>plagued</strong>.&quot;</li>\n\t<li><strong>Plague", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "OWS", "confidence": "high"}, {"qid": "66a3812ec6431d36bdc69a97", "qs_no": 6, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Choose the INCORRECTLY spelt word in the given sentence.</p>\n\n<p>It may seem pretintious to say so but I cannot live without my essential articles.</p>\n", "options": [{"prompt": "1", "value": "essential"}, {"prompt": "2", "value": "cannot&amp;nbsp;"}, {"prompt": "3", "value": "articles"}, {"prompt": "4", "value": "pretintious"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>Option 4)</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;pretintious&quot;</strong> is incorrectly spelt and is not a valid English word. (गलत वर्तनी)\n\n\t<ul>\n\t\t<li><strong>Correct Word: Pretentious</strong> means attempting to impress by affecting greater importance or merit than is actually possessed. (दिखावटी)\n\n\t\t<ul>\n\t\t\t<li><strong>Example: </strong>His <strong>pretentious</strong> attitude made him unpopular among his peers.</li>\n\t\t</ul>\n\t\t</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 4</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Essential </strong>(आवश्यक): Absolutely necessary; extremely important.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> Water is <strong>essential</strong> for all forms of life.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Cannot </strong>(नहीं कर सकता): Unable to do something.\n\t<ul>\n\t\t<li><strong>Example: </strong>She <strong>cannot</strong> attend the meeting due to a prior commitment.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Articles</strong> (लेख): Items or objects, or pieces of writing.\n\t<ul>\n\t\t<li><strong>Example:</strong> The newspaper is full of interesting<strong> articles.</strong></li>\n\t</ul>\n\t</li>\n</ul>\n\n41:Tc60,\n<p>The correct answer is&nbsp;<b>Option 1)&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "652774594f235aafd0a29b0c", "qs_no": 7, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word.&nbsp;", "options": [{"prompt": "1", "value": "Click"}, {"prompt": "2", "value": "Caricature"}, {"prompt": "3", "value": "Cumbersome&amp;nbsp;"}, {"prompt": "4", "value": "Cumolative"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\nThe correct answer is <strong>Option 4 i.e. Cumolative.</strong><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>\n\n<ul>\n\t<li>The incorrectly spelt word is &quot;<strong>Cumolative</strong>.&quot;</li>\n\t<li>The correct spelling is &quot;<strong>Cumulative</strong>,&quot; which means increasing or increased in quantity, degree, or force by successive additions.&nbsp;\n\t<ul>\n\t\t<li><strong>Example:</strong> The cumulative effect of using energy-saving light bulbs is significant over time.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the <strong>correct answer </strong>is- <strong>Cumolative</strong></p>\n<strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></strong>\n\n<ul>\n\t<li><strong>Click</strong> - This word refers to a short, sharp sound as of a switch being operated or of two hard objects coming quickly into contact.&nbsp;\n\n\t<ul>\n\t\t<li><strong>Example</strong>: The door closed with a soft click.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Caricature</strong> - A caricature is a picture, description, or imitation of a person in which certain striking characteristics are exaggerated in order to create a comic or grotesque effect.\n\t<ul>\n\t\t<li><strong>Example</strong>: The political cartoonist drew a caricature of the president with exaggerated features.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Cumbersome</strong> - Something that is cumbersome is large or heavy and therefore difficult to carry or use; unwieldy.\n\t<ul>\n\t\t<li><strong>Example</strong>: The cumbersome package took up most of the trunk space in the car.</li>\n\t</ul>\n\t</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "655e1f1e3f4a0cf353dd3a01", "qs_no": 8, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<strong>Select the INCORRECTLY spelt word.&nbsp;&nbsp;</strong>", "options": [{"prompt": "1", "value": "Serene&amp;nbsp;"}, {"prompt": "2", "value": "Triumph&amp;nbsp;"}, {"prompt": "3", "value": "Comparsion&amp;nbsp;"}, {"prompt": "4", "value": "Unveil"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct asnwer is &#39;<strong><span style=\"\">Comparsion</span></strong>&#39;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Among the given options the incorrectly seplt word is", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "6527afde094657fb09988361", "qs_no": 9, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word.", "options": [{"prompt": "1", "value": "Puzzled"}, {"prompt": "2", "value": "Nasal"}, {"prompt": "3", "value": "Councel"}, {"prompt": "4", "value": "Embezzlement"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is Option 3 i.e. <span style=\"color: rgb(33, 37, 41);\"><strong>Councel</strong>.</span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Councel </strong>is Incorrect. The Correct spelling: <strong>Counsel</strong></li>\n\t<li><strong>Counsel </strong>(सलाह) - Advice given formally.\n\t<ul>\n\t\t<li><strong>Example</strong>: She sought counsel from her mentor before making a career choice.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is- <span style=\"font-weight: bolder;\">Councel.</span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Puzzled</strong> (हैरान) - Feeling confused because something is difficult to understand.&nbsp;</li>\n\t<li><strong>Nasal </strong>(नाक से सम्बंधित) - Relating to the nose.</li>\n\t<li><span style=\"font-family: var(--bs-body-font-family); font-size: var(--bs-body-font-size); font-weight: var(--bs-body-font-weight); text-align: var(--bs-body-text-align);\"><strong>Embezzlement </strong>(गबन) - Theft or misappropriation of funds placed in one&#39;s trust or belonging to one&#39;s employer.</span></li>\n</ul>\n\n35:Tf1c,\n<p>The correct answer is Option (", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "63762b90a006b23600d265f5", "qs_no": 10, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word.", "options": [{"prompt": "1", "value": "Pried"}, {"prompt": "2", "value": "Prophet"}, {"prompt": "3", "value": "Prodigy"}, {"prompt": "4", "value": "Proteg"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is&nbsp;<strong><span style=\"\">Proteg.</span></strong></p>\n\n<p><strong><span style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></strong></p>\n\n<ul>\n\t<li>The Incorrectly&nbsp;spelt word is&nbsp;<span style=\"font-weight: 700; \">Proteg.</span></li>\n\t<li><span style=\"font-weight: 700; \"><strong>This word doesn&#39;t make any</strong> sense.</span></li>\n\t<li>Thus the correct answer is<span style=\"font-weight: 700; \">&nbsp;Proteg.<span style=\"font-weight: 700; \">​</span></span></li>\n\t<li>The correct spelling is<strong><span style=\"font-weight: 700; \">&nbsp;</span>protege</strong>&nbsp;which means&nbsp;<strong>a person who is guided and supported by an older and more experienced or influential person.</strong></li>\n</ul>\n\n<p><span style=\"font-weight: 700; \"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></p>\n\n<ul>\n\t<li><span style=\"font-weight: 700; \">Pried</span>&nbsp;is the past tense of pry, which means&nbsp;<strong>to be too interested in the affairs of another.</strong></li>\n\t<li><strong><span style=\"\">Prophet&nbsp;</span></strong><span style=\"\">has a meaning, its means&nbsp;</span><strong>a person who is regarded as a divinely inspired teacher or preacher.</strong></li>\n\t<li><strong><span style=\"\">Prodigy&nbsp;</span></strong><span style=\"\">has a meaning, its means&nbsp;</span><strong>a young person with exceptional qualities or abilities.</strong></li>\n</ul>\n\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "6376fef1b800f2e871228a96", "qs_no": 11, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word.", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Conceive&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Appropriate&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Terminology&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Beleive&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p><span style=\"\">The correct answer is <strong>&quot;Beleive&quot;</strong></span><span style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>&nbsp;Here we will see the correct spelling of the incorrect one with its meaning:</span></p>\n\n<ul>\n\t<li><span style=\"\">Its<em><strong> &quot;Believe&quot;</strong></em> and <strong><em>&quot;Beleive&quot;.&nbsp;</em></strong></span></li>\n\t<li><span style=\"\"><strong>Believe -</strong>&nbsp;</span>to think that something is true, correct, or real\n\t<ul>\n\t\t<li><em><strong>Eg.&nbsp;</strong></em>Strangely, no one<em> believed</em> us when we told them we&#39;d been visited by a creature from Mars.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span>&nbsp;Here we will learn about the other given words:</p>\n\n<ul>\n\t<li><span style=\"\"><strong>Conceive -</strong>&nbsp;</span>to imagine something\n\n\t<ul>\n\t\t<li><span style=\"\"><em><strong>​Eg.</strong></em>&nbsp;I think my uncle still<em> conceives</em> of me as a four-year-old.</span></li>\n\t</ul>\n\t</li>\n\t<li><span style=\"\"><strong>​Appropriate -</strong>&nbsp;</span>suitable or right for a particular situation or occasion\n\t<ul>\n\t\t<li><span style=\"\"><strong><em>​Eg.</em></strong>&nbsp;Is this an <em>appropriate</em> occasion to discuss finance?</span><span style=\"\">​</span><span style=\"\">&nbsp;</span></li>\n\t</ul>\n\t</li>\n\t<li><span style=\"\"><strong>​Terminology -</strong>&nbsp;</span>special words or expressions used in relation to a particular subject or activity\n\t<ul>\n\t\t<li><span style=\"\"><em><strong>​Eg.&nbsp;</strong></em>Linguists do regret the lack of training that pupils have in such basic grammatical <em>terminology</em> and analysis.</span></li>\n\t</ul>\n\t</li>\n</ul>\n\n32:Ta6d,\n&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "66a36bb0fde6243a3b1d0b8b", "qs_no": 12, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word.&nbsp;", "options": [{"prompt": "1", "value": "Disseminate&amp;nbsp;"}, {"prompt": "2", "value": "Enterpreneur&amp;nbsp;"}, {"prompt": "3", "value": "Dilemma&amp;nbsp;"}, {"prompt": "4", "value": "Accommodate"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is <strong>Option 2)</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Enterpreneur&quot;</strong> is incorrectly spelt. The correct spelling is &quot;<strong><em>Entrepreneur</em></strong>&quot;.\n\n\t<ul>\n\t\t<li><strong>Example: </strong>He is a successful <em><strong>entrepreneur</strong></em> who started his own tech company.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Entrepreneur</strong> (उद्यमी): A person who sets up a business or businesses, taking on financial risks in the hope of profit.\n\t<ul>\n\t\t<li><strong>Example: </strong>The<em><strong> entrepreneur</strong></em> launched a new startup focused on renewable energy.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is <strong>Option 2)</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Disseminate</strong> (प्रसारित करना): Spread or disperse something, especially information, widely.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The organization aims to <strong>disseminate</strong> information about the importance of mental health.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Dilemma</strong> (दुविधा): A situation in which a difficult choice has to be made between two or more alternatives, especially equally undesirable ones.\n\t<ul>\n\t\t<li><strong>Example:</strong> She faced a moral <strong>dilemma</strong> about whether to tell the truth or keep the secret.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Accommodate</strong> (समायोजित करना): Provide lodging or sufficient space for.\n\t<ul>\n\t\t<li><strong>Example:</strong> The hotel can <strong>accommodate</strong> up to 500 guests.</li>\n\t</ul>\n\t</li>\n</ul>\n\n3e:Tc28,\n<p>The correct answer is <strong>Option 1)</st", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "66a41128bd43ca6e442b7a94", "qs_no": 13, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word.", "options": [{"prompt": "1", "value": "Dictionary"}, {"prompt": "2", "value": "Reference"}, {"prompt": "3", "value": "Infurmary"}, {"prompt": "4", "value": "Ordinary"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 3</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Infurmary&quot;</strong> is incorrectly spelt. The correct spelling is <strong>&quot;Infirmary&quot;</strong>. (अस्पताल)\n\n\t<ul>\n\t\t<li><strong>Example: </strong>The school <strong>infirmary</strong> is well-equipped to handle minor injuries and illnesses.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Infirmary&quot; </strong>refers to <strong>a place in a large institution for the care of those who are ill. </strong>(अस्पताल)\n\t<ul>\n\t\t<li><strong>Example: </strong>The old soldiers were taken to the infirmary for medical treatment.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 3</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Dictionary</strong> (<span style=\"color: rgb(33, 37, 41);\">शब्दकोश</span>): A reference book on words, usually alphabetically arranged, containing their meanings and usage.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> She consulted the <strong>dictionary </strong>to find the meaning of the new word.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Reference</strong> (<span style=\"color: rgb(33, 37, 41);\">संदर्भ</span>): The action of mentioning or alluding to something.\n\t<ul>\n\t\t<li><strong>Example: </strong>He made a <strong>reference</strong> to the previous meeting in his report.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Ordinary</strong> (<span style=\"color: rgb(33, 37, 41);\">साधारण</span>): With no special or distinctive features; normal.\n\t<ul>\n\t\t<li><strong>Example:</strong> She led an <strong>ordinary</strong> life, but she was happy and content.</li>\n\t</ul>\n\t</li>\n</ul>\n\n43:Te76,\n<p>The correct answer is: <b>Option 4)</", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "6527b08cfabf04648bd2dc62", "qs_no": 14, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the correct spelling for the INCORRECTLY spelt word in the given sentence.</strong></p>\n\n<p>The Eustachian tube and vestubular complex in the middle and inner ear, respectively, have an important role to play.</p>\n", "options": [{"prompt": "1", "value": "vestibular"}, {"prompt": "2", "value": "midle"}, {"prompt": "3", "value": "respictevely"}, {"prompt": "4", "value": "importent"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is Option (1) i.e. <span style=\"color: rgb(33, 37, 41);\"><strong>vestibular</strong>.</span></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>&quot;<span style=\"font-weight: bolder;\">vestubular</span>&quot; in the <strong>given sentence</strong> is <strong>Incorrect</strong>. The correctly spelled&nbsp;is &quot;<strong>vestibular</strong>,&quot;</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\"><strong>Vestibular</strong>: (वेस्टिबुलर) - Relating to a vestibule, especially that of the inner ear, or more generally to the sense of balance.</span>\n\t<ul style=\"margin-left: 40px;\">\n\t\t<li><span style=\"color: rgb(33, 37, 41);\"><strong>Example</strong>: The doctor checked her vestibular function to diagnose her dizziness.</span></li>\n\t</ul>\n\t</li>\n\t<li>The <strong>rest of the words</strong>&nbsp;in the <strong>given sentence</strong> are spelled correctly.</li>\n</ul>\n\n<p>Therefore, the correct answer is- <span style=\"font-weight: bolder;\">vestibular.</span></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Middle</strong>: (मध्य) - Equally distant from the extremes; the central area.</li>\n\t<li><strong>Respectively</strong>: (क्रमशः) - Separately or individually and in the order already mentioned.</li>\n\t<li><strong>Important</strong>: (महत्वपूर्ण) - Of great significance or value.</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/9074044cf96dc1d09ca89eac99180c3d7440ade1b364d09d47931959bf693cc8.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Confusion Points</u></span></strong></span></p>\n\n<p>This type of question is a little confusing. (Read the direction very carefully)</p>\n\n<ul>\n\t<li><strong>Direction:</strong> <strong>Select the<u> Correct spelling</u> for the INCORRECTLY spelt word in the given sentence.</strong></li>\n\t<li>At first we have to find out the incorrect spelling <strong>from the Sentence</strong>.</li>\n\t<li>Then we have to find out the<strong> correct spelling</strong> of that incorrect spelling from the options.</li>\n\t<li>The other options may or may not be correct. It does not affect the correct answer. Because only one spelling in the SENTENCE is incorrect. We have to find out the correct spelling of that incorrect spelling from the options.</li>\n</ul>\n\n36:T831,\n<p>The correct answer is Option 1. i.e.&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Spelling", "confidence": "high"}, {"qid": "63762ceaef1d39331c576ed6", "qs_no": 15, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word.&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Measure&amp;nbsp;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Subscrieb&amp;nbsp;&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Rectify&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Branding&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><span style=\"\">The correct answer is&nbsp;<strong>Subscrieb</strong>.</span><span style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></p>\n\n<ul>\n\t<li>The correct spelling of &#39;<span style=\"\"><strong>Subscrieb</strong>&#39; according to the English dictionary is &#39;<strong>Subscribe</strong>&#39;.</span></li>\n\t<li><span style=\"\">The word<strong> &#39;subscribe</strong>&#39; means </span><span style=\"color: rgb(33, 37, 41);   font-variant-ligatures: no-common-ligatures;\">to agree with or support an opinion, theory, etc. or</span>&nbsp;to pay for a newspaper or magazine to be sent to you regularly. (अभिदान करना,समर्थन करना,हस्ताक्षर करना)\n\t<ul>\n\t\t<li><strong style=\"font-family: var(--bs-body-font-family); font-size: var(--bs-body-font-size); text-align: var(--bs-body-text-align);\">Example</strong><span style=\"font-family: var(--bs-body-font-family); font-size: var(--bs-body-font-size); font-weight: var(--bs-body-font-weight); text-align: var(--bs-body-text-align);\">:&nbsp;I </span><strong style=\"font-family: var(--bs-body-font-family); font-size: var(--bs-body-font-size); text-align: var(--bs-body-text-align);\">subscribe </strong><span style=\"font-family: var(--bs-body-font-family); font-size: var(--bs-body-font-size); font-weight: var(--bs-body-font-weight); text-align: var(--bs-body-text-align);\">to the idea that voting is my civic duty.</span></li>\n\t</ul>\n\t</li>\n\t<li>Hence, option 2 is correct.<span style=\"\"><span style=\"\">​<span style=\"\">​</span></span></span></li>\n</ul>\n\n<p><span style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></p>\n\n<ul>\n\t<li>​​Let&#39;s understand the meaning of other options.\n\t<ul>\n\t\t<li><strong>Measure</strong>-&nbsp;to find the size, weight, quantity, etc. of somebody/something in standard units by using an instrument.</li>\n\t\t<li><strong>Rectify</strong>-&nbsp;to correct something that is wrong.</li>\n\t\t<li><strong>Branding</strong>-&nbsp;&nbsp;the process of creating a distinct identity for a business in the mind of your target audience and consumers.</li>\n\t</ul>\n\t</li>\n</ul>\n\n31:Tca9,\n<p><span style=\"\">The correct answer is &", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "669fe4507bf20fedff82b9c8", "qs_no": 16, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the misspelt word.", "options": [{"prompt": "1", "value": "immense"}, {"prompt": "2", "value": "incence"}, {"prompt": "3", "value": "enhance"}, {"prompt": "4", "value": "elegance"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is <strong>Option 2)</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;incence&quot;</strong> is misspelt. The correct spelling is <strong>&quot;incense&quot;</strong>. (<strong>अगरबत्ती)</strong>\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The room was filled with the soothing aroma of burning<strong> incense.</strong></li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Incense&quot;</strong> refers to a substance that is burned for the sweet smell it produces. (<strong>अगरबत्ती)</strong>\n\t<ul>\n\t\t<li><strong>Example:</strong> She lit an incense stick to create a calming atmosphere in the room.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is <strong>&#39;incense.&#39;</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Immense</strong> (<span style=\"color: rgb(33, 37, 41);\">विशाल</span>): Extremely large or great.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The<strong> immense</strong> size of the mountain left us in awe.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Enhance</strong> (<span style=\"color: rgb(33, 37, 41);\">बढ़ाना</span>): To improve the quality, value, or extent of something.\n\t<ul>\n\t\t<li><strong>Example:</strong> The new software will <strong>enhance</strong> the performance of the computer.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Elegance</strong> (<span style=\"color: rgb(33, 37, 41);\">सौंदर्य</span>): The quality of being graceful and stylish.\n\t<ul>\n\t\t<li><strong>Example:</strong> She carried herself with <strong>elegance</strong> and poise.</li>\n\t</ul>\n\t</li>\n</ul>\n\n3d:Tc15,\n<p>The correct answer is <strong>Option 2)<", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Spelling", "confidence": "high"}, {"qid": "655e1b55f5f053a763fa37fb", "qs_no": 17, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<strong>Select the INCORRECTLY spelt word.&nbsp;&nbsp;</strong>", "options": [{"prompt": "1", "value": "Adjacent"}, {"prompt": "2", "value": "Accomplish&amp;nbsp;"}, {"prompt": "3", "value": "Agregate&amp;nbsp;"}, {"prompt": "4", "value": "Allure"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is &#39;<strong>Agregate</strong>&#39;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The incorrectly spelled word is: Agregate.</li>\n\t<li><strong>Agregate</strong> (Incorrectly spelled, the correct spelling is &quot;<strong>Aggregate</strong>.&quot;)</li>\n\t<li>Meanings of the words:\n\t<ul>\n\t\t<li><strong>Adjacent</strong> (पास) - next to or adjoining something else.</li>\n\t\t<li><strong>Accomplish</strong> (पूरा करना) - achieve or complete successfully.</li>\n\t\t<li><strong>Aggregate</strong> (समूह) - a whole formed by combining several separate elements; the total of something.\n\t\t<ul>\n\t\t\t<li><em><u><strong>Example sentence using &quot;aggregate&quot;:</strong></u> The aggregate income of the company increased significantly over the past year.</em></li>\n\t\t</ul>\n\t\t</li>\n\t\t<li><strong>Allure</strong> (आकर्षण) - the quality of being powerfully and mysteriously attractive or fascinating.&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n3b:T647,\n<p>The correct asnwer is ", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "66a411d2a780bc320b0fb9df", "qs_no": 18, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the sentence that has the correct use of words and spellings from the options given below.", "options": [{"prompt": "1", "value": "The scientiest meticulously analysed the complex data, uncovering ground-breaking insights that would revolutionice the field."}, {"prompt": "2", "value": "The scientist meticulusly analysed the complex data, uncovering ground-breaking insights that would revaulutionise the field."}, {"prompt": "3", "value": "The scientist meticulously anelysed the complex data, uncovering ground-breaking insights that would revolutionise the feild."}, {"prompt": "4", "value": "The scientist meticulously analysed the complex data, uncovering ground-breaking insights that would revolutionise the field."}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 4)</b></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;meticulously&quot;</strong> means showing great attention to detail; very careful and precise. (सावधानीपूर्वक)\n\n\t<ul>\n\t\t<li><strong>Example: </strong>She <strong>meticulously </strong>planned every aspect of the event to ensure it would be a success.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Analysed&quot;</strong> refers to examining methodically and in detail the constitution or structure of something, typically for purposes of explanation and interpretation. (विश्लेषण किया)\n\t<ul>\n\t\t<li><strong>Example: </strong>The researchers analysed the data from the experiment to draw meaningful conclusions.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is: The scientist meticulously analysed the complex data, uncovering ground-breaking insights that would revolutionise the field.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Option 1</strong>: The word &quot;scientiest&quot; is incorrectly spelled; it should be &quot;scientist&quot;. The word &quot;revolutionice&quot; is incorrectly spelled; it should be &quot;revolutionise&quot;. (वैज्ञानिक)\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The scientist meticulously analysed the complex data, uncovering ground-breaking insights that would revolutionise the field.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Option 2</strong>: The word &quot;meticulusly&quot; is incorrectly spelled; it should be &quot;meticulously&quot;. The word &quot;revaulutionise&quot; is incorrectly spelled; it should be &quot;revolutionise&quot;. (सावधानीपूर्वक)\n\t<ul>\n\t\t<li><strong>Example:</strong> The scientist meticulously analysed the complex data, uncovering ground-breaking insights that would revolutionise the field.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Option 3</strong>: The word &quot;anelysed&quot; is incorrectly spelled; it should be &quot;analysed&quot;. The word &quot;feild&quot; is incorrectly spelled; it should be &quot;field&quot;. (विश्लेषण)\n\t<ul>\n\t\t<li><strong>Example:</strong> The scientist meticulously analysed the complex data, uncovering ground-breaking insights that would revolutionise the field.</li>\n\t</ul>\n\t</li>\n</ul>\n\n44:Tb6b,\n<p>The correct answer is: <b>Option 2.</b></p>\n\n<p><span style=&qu", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Spelling", "confidence": "high"}, {"qid": "66a3813df08c9cd68fb71eca", "qs_no": 19, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word.", "options": [{"prompt": "1", "value": "Programe"}, {"prompt": "2", "value": "Unexpected"}, {"prompt": "3", "value": "Pilgrimage"}, {"prompt": "4", "value": "Campaign"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is&nbsp;<b>Option 1)</b></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Programe&quot;</strong> is incorrectly spelt. The correct spelling is<strong> &quot;Program&quot;</strong>. (कार्यक्रम)\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The new software<strong> program</strong> will be launched next month.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Program&quot;</strong> refers to a planned series of events, activities, or procedures. (कार्यक्रम)\n\t<ul>\n\t\t<li><strong>Example:</strong> The school has a special <strong>program </strong>for gifted students.</li>\n\t</ul>\n\t</li>\n\t<li>Hence, we can infer that the correct spelling is <strong>&quot;Program&quot;</strong>.</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Unexpected</strong> (<span style=\"color: rgb(33, 37, 41);\">अप्रत्याशित</span>): Something that was not anticipated or predicted.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The sudden rain was completely <strong>unexpected.</strong></li>\n\t</ul>\n\t</li>\n\t<li><strong>Pilgrimage</strong> (<span style=\"color: rgb(33, 37, 41);\">तीर्थयात्रा</span>): A journey to a sacred place for religious reasons.\n\t<ul>\n\t\t<li><strong>Example:</strong> Every year, thousands of people undertake the <strong>pilgrimage </strong>to Mecca.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Campaign</strong> (<span style=\"color: rgb(33, 37, 41);\">अभियान</span>): An organized effort to achieve a particular goal, typically a political or social one.\n\t<ul>\n\t\t<li><strong>Example:</strong> The <strong>campaign</strong> to save the environment has gained a lot of support.</li>\n\t</ul>\n\t</li>\n</ul>\n\n42:Tc52,\n<p>The correct answer is: <b>Option 3</b>.</p>\n\n<p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "6375ff3981a2c42d756a843c", "qs_no": 20, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the INCORRECTLY spelt word", "options": [{"prompt": "1", "value": "Knowing"}, {"prompt": "2", "value": "Cooking"}, {"prompt": "3", "value": "Liveing"}, {"prompt": "4", "value": "Loving"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p dir=\"ltr\" style=\"line-height:1.38;margin-top:0pt;margin-bottom:0pt;\"><span id=\"docs-internal-guid-12590d1e-7fff-394c-2311-aeab779ba1da\"><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">The correct answer is </span><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">Liveing</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">.</span></span></p>\n\n<p dir=\"ltr\" style=\"line-height:1.38;margin-top:0pt;margin-bottom:0pt;\"><span><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></p>\n\n<ul dir=\"ltr\">\n\t<li style=\"line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;\"><span id=\"docs-internal-guid-12590d1e-7fff-394c-2311-aeab779ba1da\"><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">The correct spelling of the word </span><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">&#39;liveing&#39;</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"> is </span><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">&#39;living&#39;</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">.</span></span></li>\n\t<li style=\"line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;\"><span id=\"docs-internal-guid-12590d1e-7fff-394c-2311-aeab779ba1da\"><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">The word </span><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">&#39;living&#39;</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"> means an </span><span style=\"  background-color: transparent; font-style: italic; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">income sufficient to live on or the means of earning it</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">.</span></span>\n\t<ul>\n\t\t<li style=\"line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;\"><em><span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"><span id=\"docs-internal-guid-12590d1e-7fff-394c-2311-aeab779ba1da\"><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">Example</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">: She was struggling to make a </span><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">living</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"> as a dancer.</span></span></span></span></em></li>\n\t</ul>\n\t</li>\n\t<li style=\"line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;\"><span id=\"docs-internal-guid-12590d1e-7fff-394c-2311-aeab779ba1da\"><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">Therefore, the incorrectly spelt word is &#39;</span><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">Liveing</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">.</span></span></li>\n</ul>\n\n<p dir=\"ltr\" style=\"line-height:1.38;margin-top:0pt;margin-bottom:0pt;\"><span><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></p>\n\n<ul dir=\"ltr\">\n\t<li style=\"line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;\"><span id=\"docs-internal-guid-12590d1e-7fff-394c-2311-aeab779ba1da\"><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">Let&#39;s see meaning of other words given in the option-&nbsp;</span></span>\n\n\t<ul>\n\t\t<li style=\"line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;\"><span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"><span id=\"docs-internal-guid-12590d1e-7fff-394c-2311-aeab779ba1da\"><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">Knowing</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">- Showing or suggesting that one has knowledge or awareness that is secret or known to only a few people.</span></span></span></span></li>\n\t\t<li style=\"line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;\"><span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"><span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"><span id=\"docs-internal-guid-12590d1e-7fff-394c-2311-aeab779ba1da\"><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">Cooking</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">- The practice or skill of preparing food by combining, mixing, and heating ingredients.</span></span></span></span></span></span></li>\n\t\t<li style=\"line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;\"><span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"><span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"><span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"><span id=\"docs-internal-guid-12590d1e-7fff-394c-2311-aeab779ba1da\"><span style=\"  background-color: transparent; font-weight: 700; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">Loving</span><span style=\"  background-color: transparent; font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">- Feeling or showing love or great care</span></span></span></span></span></span></span></span></li>\n\t</ul>\n\t</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Vocabulary", "confidence": "high"}, {"qid": "66a36c3f510509d68073bedf", "qs_no": 21, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Identify the INCORRECTLY spelt word in the given sentence and select the option that rectifies the spelling error.</p>\n\n<p>Many promote bamboo planting for erosion prevention and to riverse the effects of global warming.&nbsp;&nbsp;</p>\n", "options": [{"prompt": "1", "value": "Reverse&amp;nbsp;"}, {"prompt": "2", "value": "Bambboo&amp;nbsp;"}, {"prompt": "3", "value": "Efeccts&amp;nbsp;"}, {"prompt": "4", "value": "Prevension"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is <strong>Option 1)</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;riverse&quot;</strong> is incorrectly spelled and should be <strong>&quot;reverse&quot;.</strong> (रिवर्स)\n\n\t<ul>\n\t\t<li><strong>Example:</strong> They aimed to<strong> reverse </strong>the negative impact of pollution.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Reverse&quot;</strong> means to change something to its opposite state or position. (उलटना)\n\t<ul>\n\t\t<li><strong>Example:</strong> Scientists are working hard to<strong> reverse </strong>the effects of climate change.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct spelling is <strong>&#39;Reverse.&#39;</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Bambboo</strong> (<span style=\"color: rgb(33, 37, 41);\">बांस</span>): The correct spelling is <strong>&quot;Bamboo&quot;</strong>.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> Many promote<strong> bamboo</strong> planting for erosion prevention.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Efeccts</strong> (<span style=\"color: rgb(33, 37, 41);\">प्रभाव</span>): The correct spelling is &quot;<strong>Effects&quot;</strong>.\n\t<ul>\n\t\t<li><strong>Example:</strong> We need to study the<strong> effects</strong> of global warming.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Prevension</strong> (<span style=\"color: rgb(33, 37, 41);\">रोकथाम</span>): The correct spelling is <strong>&quot;Prevention&quot;</strong>.\n\t<ul>\n\t\t<li><strong>Example:</strong> <strong>Prevention </strong>is better than cure.</li>\n\t</ul>\n\t</li>\n</ul>\n\n3f:Tbb3,\n<p>The correct answer is <strong&g", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Spelling", "confidence": "high"}, {"qid": "652a4c1d38707346bfcf2b1c", "qs_no": 22, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the sentence that has a spelling error.</strong></p>\n\n<p>A - One has to understand the rudimentery fact that intelligence and intellect are at two opposite poles.</p>\n\n<p>B - An intellectual person may have all the knowledge of the world but won&rsquo;t know how to give it a shape.</p>\n\n<p>C - Knowledge will plague the individual if he does not have the intelligence to express it.</p>\n\n<p>D - Without basic intelligence, an individual is trapped within himself manifesting conflicts and ignorance in the external world.&nbsp;</p>\n", "options": [{"prompt": "1", "value": "Without basic intelligence, an individual is trapped within himself, manifesting conflicts and ignorance in the external world.&amp;nbsp;"}, {"prompt": "2", "value": "An intellectual person may have all the knowledge of the world but won&amp;rsquo;t know how to give it a shape."}, {"prompt": "3", "value": "Knowledge will plague the individual if he does not have the intelligence to express it.&amp;nbsp;"}, {"prompt": "4", "value": "One has to understand the rudimentery fact that intelligence and intellect are at two opposite poles.&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&#39;One has to understand the rudimentery fact that intelligence and intellect are at two opposite poles.&#39;</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The sentence that has a spelling error is:", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Antonym", "confidence": "high"}, {"qid": "6528e3c1597b9f28e9b3a96e", "qs_no": 23, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>In the following sentence, four words are underlined, out of which one word is incorrectly spelt. Identify the INCORRECTLY spelt word.</p>\n\n<p>The <u>ruins</u> of many structures that still stand tall in their <u>granduer</u> are <u>testimony</u> to the fact that Mewar was not only the land of the <u>courageous</u> .</p>\n", "options": [{"prompt": "1", "value": "testimony&amp;nbsp;"}, {"prompt": "2", "value": "courageous&amp;nbsp;"}, {"prompt": "3", "value": "granduer&amp;nbsp;"}, {"prompt": "4", "value": "ruins"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is &#39;Option 3&#39; i.e. <strong>&#39;<span style=\"color: rgb(33, 37, 41);\">granduer</span>&#39;</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The correct spelling of the incorrect word is <strong>&quot;grandeur&quot;.</strong></li>\n\t<li><strong>Grandeur (भव्यता)</strong> - The quality or state of being grand or magnificent.\n\t<ul>\n\t\t<li><strong>Example</strong>: The grandeur of the ancient palace amazed the tourists.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is- <strong><span style=\"color: rgb(33, 37, 41);\">granduer.</span></strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>The other underlined words are correct in spelling.\n\t<ul>\n\t\t<li><strong>Testimony (गवाही)</strong> - Evidence or proof provided by the existence or appearance of something.</li>\n\t\t<li><strong>Courageous (साहसी)</strong> - Not deterred by danger or pain; brave.</li>\n\t\t<li><strong>Ruins (खंडहर) </strong>- The remains of a building, city, etc., that has been destroyed or that is in disrepair or a state of decay.</li>\n\t</ul>\n\t</li>\n</ul>\n\n38:T514,<p>The correct answer is&l", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "OWS", "confidence": "high"}, {"qid": "652a4bca411d123b83d1319c", "qs_no": 24, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the most appropriate option that can substitute the underlined word which has been incorrectly spelt.</strong></p>\n\n<p>They have begun to study in <u>sepparate </u>rooms.&nbsp;&nbsp;</p>\n", "options": [{"prompt": "1", "value": "saperate&amp;nbsp;"}, {"prompt": "2", "value": "separate&amp;nbsp;"}, {"prompt": "3", "value": "seprate&amp;nbsp;"}, {"prompt": "4", "value": "saparate&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>The correct answer is<strong> &#39;separate&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "OWS", "confidence": "high"}, {"qid": "66a68b889252a831c03fbc52", "qs_no": 25, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the option that rectifies the spelling error in the given sentence.</p>\n\n<p>She is going to resiev a package in the mail today.</p>\n", "options": [{"prompt": "1", "value": "reseive"}, {"prompt": "2", "value": "receive"}, {"prompt": "3", "value": "resieve"}, {"prompt": "4", "value": "recieive"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 2.</b></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;resiev&quot;</strong> is incorrectly spelled and does not hold any meaning in English. (त्रुटिपूर्ण शब्द)</li>\n\t<li>The correct spelling is<strong> &quot;Receive&quot;</strong> means to be given, presented with, or paid something. (प्राप्त करना)\n\t<ul>\n\t\t<li><strong>Example: </strong>She is going to <strong>receive</strong> a package in the mail today.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 2.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>reseive</strong> (<span style=\"color: rgb(33, 37, 41);\">त्रुटिपूर्ण शब्द</span>): This is an incorrect spelling and does not hold any meaning.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> Incorrect: She is going to reseive a package in the mail today.</li>\n\t</ul>\n\t</li>\n\t<li><strong>resieve</strong> (<span style=\"color: rgb(33, 37, 41);\">त्रुटिपूर्ण शब्द</span>): This is an incorrect spelling and does not hold any meaning.\n\t<ul>\n\t\t<li><strong>Example:</strong> Incorrect: She is going to resieve a package in the mail today.</li>\n\t</ul>\n\t</li>\n\t<li><strong>recieive</strong> (<span style=\"color: rgb(33, 37, 41);\">त्रुटिपूर्ण शब्द</span>): This is an incorrect spelling and does not hold any meaning.\n\t<ul>\n\t\t<li><strong>Example:</strong> Incorrect: She is going to recieive a package in the mail today.</li>\n\t</ul>\n\t</li>\n</ul>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 4: Vocabulary - Spellings\",\"sections\":[{\"_id\":\"6915cdba80e7dce1b661ccd8\",\"qCount\":25,\"title\":\"", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Spelling", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 25;
+const DURATION_SEC = 15 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
