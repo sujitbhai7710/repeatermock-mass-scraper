@@ -586,7 +586,51 @@ class ProgressTracker:
         total_scraped = sum(len(v.get("scraped", {})) for v in self.data.values())
         total_failed = sum(len(v.get("failed", {})) if isinstance(v.get("failed"), dict) else len(v.get("failed", [])) for v in self.data.values())
         total_pro = sum(len(v.get("pro", {})) for v in self.data.values())
-        return {"scraped": total_scraped, "failed": total_failed, "pro": total_pro}
+        total_discovered = sum(v.get("discovered_count", 0) for v in self.data.values() if isinstance(v, dict))
+        # "Remaining" = discovered - (scraped + pro + failed_unique)
+        # Note: this counts tests that have been discovered but not yet attempted
+        total_remaining = max(0, total_discovered - total_scraped - total_pro - total_failed)
+        return {
+            "scraped": total_scraped,
+            "failed": total_failed,
+            "pro": total_pro,
+            "discovered": total_discovered,
+            "remaining": total_remaining,
+        }
+
+    def get_discovered_count(self, series_slug: str) -> int:
+        """Get total discovered count for a series."""
+        series_data = self.data.get(series_slug, {})
+        if not isinstance(series_data, dict):
+            return 0
+        return series_data.get("discovered_count", 0)
+
+    def get_remaining_count(self, series_slug: str) -> int:
+        """Get count of tests discovered but not yet attempted (scraped + pro + failed)."""
+        series_data = self.data.get(series_slug, {})
+        if not isinstance(series_data, dict):
+            return 0
+        discovered = series_data.get("discovered_count", 0)
+        if not discovered:
+            return 0
+        scraped = len(series_data.get("scraped", {}))
+        pro = len(series_data.get("pro", {}))
+        failed_field = series_data.get("failed", {})
+        failed = len(failed_field) if isinstance(failed_field, dict) else len(failed_field)
+        return max(0, discovered - scraped - pro - failed)
+
+    async def mark_discovered(self, series_slug: str, test_count: int):
+        """Record the total number of tests discovered for a series.
+        Called after discovery phase completes, before resume filter.
+        This lets us compute 'remaining to try' = discovered - (scraped + pro + failed).
+        """
+        async with self._lock:
+            if series_slug not in self.data:
+                self.data[series_slug] = {"scraped": {}, "failed": {}, "pro": {}}
+            self.data[series_slug]["discovered_count"] = test_count
+            self.data[series_slug]["discovered_updated_at"] = datetime.now(timezone.utc).isoformat()
+            # Don't update last_updated here — that's for actual scrape activity
+            self._save()
 
 
 # =============================================================================
@@ -2757,6 +2801,19 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
 
         await discovery_worker.close()
 
+        # Record total discovered count per series (for "remaining to try" calculation in dashboard)
+        # This happens BEFORE resume filter so we capture the FULL discovered universe
+        # Count tests per series (O(n) — single pass)
+        from collections import Counter as _Counter
+        discovered_per_series = _Counter(t.series_slug for t in all_test_refs)
+        for series_slug, count in discovered_per_series.items():
+            await progress.mark_discovered(series_slug, count)
+        print(f"\n  Discovery complete: {len(all_test_refs)} tests across {len(discovered_per_series)} series")
+        for series_slug, count in discovered_per_series.most_common():
+            already = progress.get_discovered_count(series_slug)
+            remaining_before = progress.get_remaining_count(series_slug)
+            print(f"    {series_slug:30s}: {count} discovered (was {already}, remaining before this run: {remaining_before})")
+
         # Filter out already-scraped tests (if resume=True)
         MAX_FAILURE_ATTEMPTS = 5  # Bug #3 fix: don't retry tests that failed 5+ times
         if resume:
@@ -3093,7 +3150,12 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
     print(f"   Output: {output_dir}")
     stats = progress.stats()
     pro_stats = pro_tracker.stats()
-    print(f"   Total in progress.json: {stats['scraped']} scraped, {stats['failed']} failed, {stats['pro']} PRO")
+    print(f"   Total in progress.json:")
+    print(f"     ✅ Scraped:    {stats['scraped']}")
+    print(f"     💰 PRO:        {stats['pro']}")
+    print(f"     ⚠️ Failed:     {stats['failed']}")
+    print(f"     📋 Discovered: {stats.get('discovered', 0)}")
+    print(f"     ⏳ Remaining:  {stats.get('remaining', 0)} (not yet attempted)")
     print(f"   PRO tests recorded (402): {pro_stats['pro_tests']} in pro.json")
     print(f"   Images downloaded: {img_stats['images_downloaded']} | Image failures: {img_stats['image_failures']}")
     if runtime_exceeded:
