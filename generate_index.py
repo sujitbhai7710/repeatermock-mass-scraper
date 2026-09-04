@@ -56,7 +56,7 @@ def build_index(output_dir: str) -> dict:
     
     Also tracks questions by normalized text (for fuzzy matching across IDs).
     """
-    ai_files = sorted(glob.glob(os.path.join(output_dir, "ai_export", "**", "*.json"), recursive=True))
+    ai_files = sorted(glob.glob(os.path.join(output_dir, "**", "ai_export", "**", "*.json"), recursive=True))
     print(f"Found {len(ai_files)} AI JSON files")
     
     # Primary index: by question ID
