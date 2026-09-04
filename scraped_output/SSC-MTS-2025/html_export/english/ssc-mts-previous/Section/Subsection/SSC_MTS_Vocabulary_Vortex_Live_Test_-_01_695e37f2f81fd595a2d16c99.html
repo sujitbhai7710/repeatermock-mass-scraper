@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSC MTS: Vocabulary Vortex Live Test - 01</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">SSC MTS: Vocabulary Vortex Live Test - 01</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-mts-previous</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">20</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">20 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">60.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+3.0 / -1.0</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">695e37f2f81fd595a2d16c99</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "695e37f2f81fd595a2d16c99", "title": "SSC MTS: Vocabulary Vortex Live Test - 01", "series_slug": "ssc-mts-previous", "duration_min": 20, "max_marks": 60.0, "languages": ["English"], "sections": [{"section_id": "6627af703a3761b9704e77fc", "section_name": "Test", "q_count": 20, "max_marks": 60.0, "questions": [{"qid": "695ba4d05ae4eb379f04c1b2", "qs_no": 1, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate synonym of the given word:</p>\n\n<p>FUTILITARIAN</p>\n", "options": [{"prompt": "1", "value": "Pragmatic"}, {"prompt": "2", "value": "Hopeless"}, {"prompt": "3", "value": "Useful"}, {"prompt": "4", "value": "Cynical"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 2 (Hopeless)</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Futilitarian&quot;</strong> refers to someone who believes that human striving is futile and meaningless. It conveys a sense of hopelessness and the idea that efforts or actions are pointless. (निराशावादी और व्यर्थ मानने वाला व्यक्ति)\n\n\t<ul>\n\t\t<li><strong>Example:</strong> John&rsquo;s futilitarian outlook made him believe that his efforts to improve the world would never amount to anything.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Hopeless&quot;</strong> means having no hope; feeling despair or having no chance of success. (निराशाजनक)\n\t<ul>\n\t\t<li><strong>Example:</strong> She felt hopeless after failing the test despite her hard work.</li>\n\t</ul>\n\t</li>\n\t<li>Thus, the synonym of <strong>Futilitarian</strong> is <strong>Hopeless</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 2 (Hopeless)</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Pragmatic</strong> (<span style=\"color: rgb(33, 37, 41);\">व्यावहारिक</span>): Dealing with things sensibly and realistically in a way that is based on practical considerations rather than theoretical ideas.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> She took a pragmatic approach to solving the issue, focusing on what could be achieved immediately.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Useful</strong> (<span style=\"color: rgb(33, 37, 41);\">उपयोगी</span>): Able to be used for a practical purpose or in several ways.\n\t<ul>\n\t\t<li><strong>Example:</strong> This tool is very useful for fixing small household items.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Cynical</strong> (<span style=\"color: rgb(33, 37, 41);\">निंदक</span>): Believing that people are motivated purely by self-interest; distrustful of human sincerity or integrity.\n\t<ul>\n\t\t<li><strong>Example:</strong> His cynical attitude made it hard for him to trust anyone&rsquo;s intentions.</li>\n\t</ul>\n\t</li>\n</ul>\n\n37:Ta9c,\n<p>The correct answer is: <b>Option 1 (Origins)</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "695bad2e7caa168bccf1475d", "qs_no": 2, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate antonym of the given word:</p>\n\n<p>GIMCRACK</p>\n", "options": [{"prompt": "1", "value": "Flimsy"}, {"prompt": "2", "value": "Premium"}, {"prompt": "3", "value": "Gaudy"}, {"prompt": "4", "value": "Crackled"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is: <b>Premium</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n    <li>The word <strong>\"Gimcrack\"</strong> means something that is cheap and flimsy, often showy but lacking in quality or substance. (बेकार, सस्ता और दिखावटी)\n    <ul>\n        <li><strong>Example:</strong> The store was full of gimcrack decorations that broke easily.</li>\n    </ul>\n    </li>\n\n    <li><strong>\"Premium\"</strong> refers to something that is high in quality and value, often luxurious and well-made. (उत्तम गुणवत्ता वाला)\n    <ul>\n        <li><strong>Example:</strong> He bought a premium leather wallet that would last for years.</li>\n    </ul>\n    </li>\n\n    <li>Hence, we can infer that the opposite of <strong>'Gimcrack'</strong> is <strong>'Premium'</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Premium</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n    <li><strong>Flimsy</strong> (<span style=\"color: rgb(33, 37, 41);\">कमजोर</span>): Something that is weak, poorly made, or lacking in strength.\n    <ul>\n        <li><strong>Example:</strong> The flimsy chair broke as soon as I sat on it.</li>\n    </ul>\n    </li>\n\n    <li><strong>Gaudy</strong> (<span style=\"color: rgb(33, 37, 41);\">भड़कीला</span>): Something that is overly showy or flashy, often in bad taste.\n    <ul>\n        <li><strong>Example:</strong> The room was decorated with gaudy wallpaper and bright lights.</li>\n    </ul>\n    </li>\n\n    <li><strong>Crackled</strong> (<span style=\"color: rgb(33, 37, 41);\">दरारें पड़ना</span>): To make a series of small, sharp noises, or to have small cracks appear on a surface.\n    <ul>\n        <li><strong>Example:</strong> The fireplace crackled as the wood burned.</li>\n    </ul>\n    </li>\n</ul>\n3e:Tc22,\n<p>The correct answer is: <b>Clarify</b>.</p>\n\n<p><span style=\"displa", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Antonym", "confidence": "high"}, {"qid": "695ba50b6567a7072ed12d00", "qs_no": 3, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate synonym of the given word:</p>\n\n<p>INCUNABULA</p>\n", "options": [{"prompt": "1", "value": "Origins"}, {"prompt": "2", "value": "Ending"}, {"prompt": "3", "value": "Incubation"}, {"prompt": "4", "value": "Artifacts"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 1 (Origins)</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\n    <li>The word <strong>\"Incunabula\"</strong> refers to early printed books, especially those printed before 1501. It can also refer to the earliest stages or origins of something. (प्रारंभिक किताबें या उत्पत्ति)</li>\n\n    <ul>\n\n        <li><strong>Example:</strong> The library has a rare collection of incunabula from the 15th century.</li>\n\n    </ul>\n\n    <li><strong>Origins</strong> refers to the beginning, starting point, or source of something. (मूल)</li>\n\n    <ul>\n\n        <li><strong>Example:</strong> The origins of this ancient civilization can be traced back to Mesopotamia.</li>\n\n    </ul>\n\n    <li>Hence, the word \"Origins\" aligns closely with the meaning of \"Incunabula\" in the context of beginnings or early stages.</li>\n\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 1 (Origins)</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\n    <li><strong>Option 2: Ending</strong> (<span style=\"color: rgb(33, 37, 41);\">अंत</span>): The final part of something, or the conclusion.</li>\n\n    <ul>\n\n        <li><strong>Example:</strong> The ending of the book was both surprising and satisfying.</li>\n\n    </ul>\n\n    <li><strong>Option 3: Incubation</strong> (<span style=\"color: rgb(33, 37, 41);\">अंडे सेने की प्रक्रिया</span>): The process of maintaining conditions favorable for hatching eggs or growing microorganisms.</li>\n\n    <ul>\n\n        <li><strong>Example:</strong> The scientist monitored the incubation period of the bacteria carefully.</li>\n\n    </ul>\n\n    <li><strong>Option 4: Artifacts</strong> (<span style=\"color: rgb(33, 37, 41);\">कलाकृतियाँ</span>): Objects made by humans, typically of historical or cultural significance.</li>\n\n    <ul>\n\n        <li><strong>Example:</strong> The museum displayed ancient artifacts from the Indus Valley Civilization.</li>\n\n    </ul>\n\n</ul>\n38:Ta41,\n<p>The correct answer is: <b>Gloomy</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "69493d2ceec9ea1423aa5610", "qs_no": 4, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<title></title>\n<p><strong>Directions:</strong> Match List I with List II and select the correct answer using the code given below the lists.</p>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<th>List I (Word/Expression)</th>\n\t\t\t<th>List II (Meaning)</th>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>A. Antediluvian</td>\n\t\t\t<td>1. <span style=\"color: rgb(33, 37, 41);\">Deserving or causing public disgrace or shame</span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>B. Offhand</td>\n\t\t\t<td>2. <span style=\"color: rgb(33, 37, 41);\">Very old or outdated</span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>C. Debonair</td>\n\t\t\t<td>3. <span style=\"color: rgb(33, 37, 41);\">Casual, without preparation or thought</span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>D. Ignominious</td>\n\t\t\t<td>4. <span style=\"color: rgb(33, 37, 41);\">Suave, charming, and confident</span></td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p>&nbsp;</p>\n", "options": [{"prompt": "1", "value": "A-4, B-3, C-2, D-1&amp;nbsp;"}, {"prompt": "2", "value": "A-2, B-1, C-4, D-3&amp;nbsp;"}, {"prompt": "3", "value": "A-3, B-4, C-1, D-2&amp;nbsp;"}, {"prompt": "4", "value": "A-2, B-3, C-4, D-1"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 4</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>Antediluvian</strong> means something that is very old or outdated (बहुत पुराना या पुरातन).\n\n\t<ul>\n\t\t<li><strong>Example:</strong> Her grandmother&rsquo;s antediluvian ideas about women&rsquo;s roles seemed out of place in today&rsquo;s world.</li>\n\t</ul>\n\t</li>\n\t<li>The word <strong>Offhand</strong> refers to something casual, done without preparation or thought (अनौपचारिक या बिना तैयारी के).\n\t<ul>\n\t\t<li><strong>Example:</strong> He made an offhand remark about the event without knowing the full details.<", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Match the Following"], "concept": "Match the Following", "confidence": "high"}, {"qid": "695bad6973106d15e6270db3", "qs_no": 5, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate antonym of the given word:</p>\n\n<p>JARGOGLE</p>\n", "options": [{"prompt": "1", "value": "Clarify"}, {"prompt": "2", "value": "Muddle"}, {"prompt": "3", "value": "Jiggle"}, {"prompt": "4", "value": "Gargle"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is: <b>Clarify</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Jargogle&quot;</strong> means to confuse or muddle something, often by over-complicating it. (उलझाना)\n\n\t<ul>\n\t\t<li><strong>Example: </strong>His overly technical explanation only served to jargogle the audience.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Clarify&quot;</strong> refers to making something clear or easy to understand, removing any confusion or ambiguity. (स्पष्ट करना)\n\t<ul>\n\t\t<li><strong>Example: </strong>She clarified her point by providing a simple example.</li>\n\t</ul>\n\t</li>\n\t<li>Hence, the antonym of <strong>&quot;Jargogle&quot;</strong> is <strong>&quot;Clarify&quot;</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Clarify</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Muddle</strong> (<span style=\"color: rgb(33, 37, 41);\">गड़बड़ करना</span>): To mix up or confuse something.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> He muddled the instructions, leaving everyone unsure of what to do.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Jiggle</strong> (<span style=\"color: rgb(33, 37, 41);\">हल्के से हिलाना</span>): To move or shake slightly.\n\t<ul>\n\t\t<li><strong>Example:</strong> She jiggled the handle to fix the stuck door.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Gargle</strong> (<span style=\"color: rgb(33, 37, 41);\">गले में गरारे करना</span>): To wash or rinse the throat with liquid while making a gurgling sound.\n\t<ul>\n\t\t<li><strong>Example:</strong> He gargled with saltwater to soothe his sore throat.</li>\n\t</ul>\n\t</li>\n</ul>\n\n3f:Tb00,\n<p>The correct answer is: <b>Flexibility</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-i", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Antonym", "confidence": "high"}, {"qid": "695bb01d5105a3f85d0f61c8", "qs_no": 6, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Choose the correct one-word substitute for:</p>\n\n<p>&lsquo;An extreme or irrational fear of failure or defeat&rsquo;.</p>\n", "options": [{"prompt": "1", "value": "Acrophobia"}, {"prompt": "2", "value": "Kakorrhaphiophobia"}, {"prompt": "3", "value": "Glossophobia"}, {"prompt": "4", "value": "Claustrophobia"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is: <b>Kakorrhaphiophobia</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n    <li>The word <strong>\"Kakorrhaphiophobia\"</strong> refers to an extreme or irrational fear of failure or defeat. (असफलता या हार का अत्यधिक या तर्कहीन डर)\n\n    <ul>\n        <li><strong>Example:</strong> Due to his kakorrhaphiophobia, he avoided taking any risks, even if they had potential rewards.</li>\n    </ul>\n    </li>\n    <li><strong>\"Acrophobia\"</strong> refers to an intense fear of heights. (ऊंचाई का डर)\n\n    <ul>\n        <li><strong>Example:</strong> She couldn’t climb the tower because of her acrophobia.</li>\n    </ul>\n    </li>\n    <li><strong>\"Glossophobia\"</strong> refers to the fear of public speaking. (सार्वजनिक रूप से बोलने का डर)\n\n    <ul>\n        <li><strong>Example:</strong> His glossophobia prevented him from presenting his ideas in the meeting.</li>\n    </ul>\n    </li>\n    <li><strong>\"Claustrophobia\"</strong> refers to the fear of confined or crowded spaces. (बंद या भीड़भाड़ वाली जगहों का डर)\n\n    <ul>\n        <li><strong>Example:</strong> She avoided elevators due to her claustrophobia.</li>\n    </ul>\n    </li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Kakorrhaphiophobia</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n    <li><strong>Acrophobia</strong> (<span style=\"color: rgb(33, 37, 41);\">ऊंचाई का डर</span>): A fear of heights.\n\n    <ul>\n        <li><strong>Example:</strong> He couldn’t enjoy the scenic view from the hilltop due to his acrophobia.</li>\n    </ul>\n    </li>\n    <li><strong>Glossophobia</strong> (<span style=\"color: rgb(33, 37, 41);\">सार्वजनिक रूप से बोलने का डर</span>): A fear of public speaking.\n\n    <ul>\n        <li><strong>Example:</strong> Her glossophobia made her anxious before every presentation.</li>\n    </ul>\n    </li>\n    <li><strong>Claustrophobia</strong> (<span style=\"color: rgb(33, 37, 41);\">बंद जगहों का डर</span>): A fear of enclosed spaces.\n\n    <ul>\n        <li><strong>Example:</strong> His claustrophobia forced him to take the stairs instead of the elevator.</li>\n    </ul>\n    </li>\n</ul>\n44:T98c,\n<p>The correct answer is: <b>Uxorious</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "69493888bf4b72f94b7edc4f", "qs_no": 7, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<title></title>\n<p><strong>Directions:</strong> Match List I with List II and select the correct answer using the code given below the lists.</p>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<th>List I (Word/Expression)</th>\n\t\t\t<th>List II (Meaning)</th>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>A. Vacuous</td>\n\t\t\t<td>1. Dishonest or lying</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>B. Unctuous</td>\n\t\t\t<td>2. Lacking ideas or intelligence; empty-headed</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>C. Mendacious</td>\n\t\t\t<td>3. Oily, excessively flattering or ingratiating</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>D. Lascivious</td>\n\t\t\t<td>4. Driven by lust; sexually overt or lewd</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p>&nbsp;</p>\n", "options": [{"prompt": "1", "value": "A-2, B-1, C-3, D-4"}, {"prompt": "2", "value": "A-2, B-3, C-1, D-4"}, {"prompt": "3", "value": "A-3, B-2, C-4, D-1"}, {"prompt": "4", "value": "A-1, B-4, C-2, D-3"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 2</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Vacuous&quot;</strong> means lacking ideas or intelligence; empty-headed. (बुद्धिहीन, खाली)\n\n\t<ul>\n\t\t<li><strong>Example:</strong> His speech was vacuous and failed to address the actual issues.</li>\n\t</ul>\n\t</li>\n\t<li>The word <strong>&quot;Unctuous&quot;</strong> refers to someone who is oily, excessively flattering, or ingratiating. (चापलूस, चिकना)\n\t<ul>\n\t\t<li><strong>Example:</strong> The unctuous salesperson kept complimenting me to persuade me to buy the product.</li>\n\t</ul>\n\t</li>\n\t<li>The word <strong>&quot;Mendacious&quot;</strong> means dishonest or lying. (झूठा, कपटी)\n\t<ul>\n\t\t<li><strong>Example:</strong> The witness was found to be mendacious and unreliable in court.</li>\n\t</ul>\n\t</li>\n\t<li>The word <strong>&quot;Lascivious&quot;</strong> means driven by lust; sexually overt or lewd. (कामुक, अश्लील)\n\t<ul>\n\t\t<li><strong>Example:</strong> His lascivious remarks made everyone in the room uncomfortable.</li>\n\t</ul>\n\t</li>\n\t<li>Hence, the correct match is A-2, B-3, C-1, D-4.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 2</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p data-end=\"137\" data-start=\"53\"><strong data-end=\"67\" data-start=\"53\">A. Vacuous</strong> &ndash; Means lacking ideas or intelligence; empty-headed.<br data-end=\"123\" data-start=\"120\" />\n<strong data-end=\"133\" data-start=\"123\">Match:</strong> 2</p>\n\n<p data-end=\"245\" data-start=\"139\"><strong data-end=\"154\" data-start=\"139\">B. Unctuous</strong> &ndash; Refers to being oily in manner, excessively flattering or ingratiating.<br data-end=\"231\" data-start=\"228\" />\n<strong data-end=\"241\" data-start=\"231\">Match:</strong> 3</p>\n\n<p data-end=\"309\" data-start=\"247\"><strong data-end=\"264\" data-start=\"247\">C. Mendacious</strong> &ndash; Means dishonest or lying.<br data-end=\"295\" data-start=\"292\" />\n<strong data-end=\"305\" data-start=\"295\">Match:</strong> 1</p>\n\n<p data-end=\"387\" data-start=\"311\"><strong data-end=\"328\" data-start=\"311\">D. Lascivious</strong> &ndash; Driven by lust; sexually overt or lewd.<br data-end=\"373\" data-start=\"370\" />\n<strong data-end=\"383\" data-start=\"373\">Match:</strong> 4</p>\n\n<p data-end=\"429\" data-start=\"389\">✅ <strong data-end=\"408\" data-start=\"391\">Correct code:</strong> A-2, B-3, C-1, D-4</p>\n\n32:T125f,\n<p>The correct answer is: <b>Option 1</b>.</p>\n\n<", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Match the Following"], "concept": "Match the Following", "confidence": "high"}, {"qid": "695ba56dc41e2d2aabec4567", "qs_no": 8, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate synonym of the given word:</p>\n\n<p>LUGUBRIOUS</p>\n", "options": [{"prompt": "1", "value": "Lucid"}, {"prompt": "2", "value": "Salubrious"}, {"prompt": "3", "value": "Gloomy"}, {"prompt": "4", "value": "Euphoric"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is: <b>Gloomy</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\n    <li>The word <strong>\"lugubrious\"</strong> means looking or sounding sad and dismal; often used to describe someone or something that is mournful. (विषादपूर्ण / उदास)\n\n    <ul>\n\n        <li><strong>Example: </strong>After hearing the bad news, he walked around with a lugubrious expression.</li>\n\n    </ul>\n\n    </li>\n\n    <li><strong>\"Gloomy\" </strong>refers to being dark, sad, or causing feelings of depression or pessimism; it is often used to describe an atmosphere, weather, or someone's mood. (उदास / अंधकारमय)\n\n    <ul>\n\n        <li><strong>Example: </strong>Her gloomy mood was reflected in the dark, overcast weather outside.</li>\n\n    </ul>\n\n    </li>\n\n    <li>Hence, we can conclude that the synonym of <strong>'lugubrious' </strong>is <strong>'gloomy'</strong>.</li>\n\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Gloomy</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\n    <li><strong>Lucid </strong>(<span style=\"color: rgb(33, 37, 41);\">स्पष्ट</span>): Something that is easy to understand or expressed clearly.\n\n    <ul>\n\n        <li><strong>Example:</strong> The professor gave a lucid explanation of the complex topic.</li>\n\n    </ul>\n\n    </li>\n\n    <li><strong>Salubrious </strong>(<span style=\"color: rgb(33, 37, 41);\">स्वास्थ्यप्रद</span>): Something that is health-giving or pleasant.\n\n    <ul>\n\n        <li><strong>Example: </strong>The salubrious climate of the hill station attracted many tourists.</li>\n\n    </ul>\n\n    </li>\n\n    <li><strong>Euphoric</strong> (<span style=\"color: rgb(33, 37, 41);\">आनंदमय</span>): Feeling intense excitement or happiness.\n\n    <ul>\n\n        <li><strong>Example:</strong> She was euphoric after winning the championship match.</li>\n\n    </ul>\n\n    </li>\n\n</ul>\n39:T9ba,\n<p>The correct answer is: <b>Option 2</b> i.e. <b>Nest</b>.</p>\n\n<p><span style=\"display: f", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "695bada9c0f474a8a0bb208e", "qs_no": 9, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate antonym of the given word:</p>\n\n<p>MUMPSIMUS</p>\n", "options": [{"prompt": "1", "value": "Persistence"}, {"prompt": "2", "value": "Ignorance"}, {"prompt": "3", "value": "Flexibility"}, {"prompt": "4", "value": "Illness"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is: <b>Flexibility</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n    <li>The word <strong>\"mumpsimus\"</strong> refers to a person who stubbornly sticks to their own incorrect beliefs or practices, even after being shown that they are wrong. (अपने गलत विश्वासों या प्रथाओं पर अड़े रहने वाला व्यक्ति) \n    <ul>\n        <li><strong>Example: </strong>Despite being corrected multiple times, he stuck to his mumpsimus ways and continued mispronouncing the word.</li>\n    </ul>\n    </li>\n\n    <li><strong>\"Flexibility\"</strong> refers to the ability to adapt to changes or modify one's approach when faced with new circumstances or information. It is the opposite of stubbornness or rigidity. (लचीलापन) \n    <ul>\n        <li><strong>Example: </strong>Her flexibility in handling the unexpected changes in the project schedule impressed the team.</li>\n    </ul>\n    </li>\n\n    <li>Hence, we can infer that the antonym of <strong>'mumpsimus'</strong> is <strong>'flexibility'</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Flexibility</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n    <li><strong>Persistence </strong>(<span style=\"color: rgb(33, 37, 41);\">दृढ़ता</span>): The quality of continuing to do something despite difficulties or opposition. \n    <ul>\n        <li><strong>Example:</strong> His persistence in pursuing his dreams eventually led to success.</li>\n    </ul>\n    </li>\n\n    <li><strong>Ignorance </strong>(<span style=\"color: rgb(33, 37, 41);\">अज्ञानता</span>): Lack of knowledge or awareness about something. \n    <ul>\n        <li><strong>Example: </strong>The ignorance about basic health measures led to the spread of disease.</li>\n    </ul>\n    </li>\n\n    <li><strong>Illness </strong>(<span style=\"color: rgb(33, 37, 41);\">बीमारी</span>): A state of poor health or sickness. \n    <ul>\n        <li><strong>Example:</strong> She missed school due to a prolonged illness.</li>\n    </ul>\n    </li>\n</ul>\n40:Ta90,\n<p>The correct answer is: <b>Revealing</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"h", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Antonym", "confidence": "high"}, {"qid": "695ba5a7d6e0889cb12fcb80", "qs_no": 10, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate synonym of the given word:</p>\n\n<p>NIDIFICE</p>\n", "options": [{"prompt": "1", "value": "Edifice"}, {"prompt": "2", "value": "Nest"}, {"prompt": "3", "value": "Fortress"}, {"prompt": "4", "value": "Ornament"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 2</b> i.e. <b>Nest</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n    <li>The word <strong>\"Nidifice\"</strong> refers to a nest, especially one built by a bird to house its eggs and young ones. (घोंसला)</li>\n    <ul>\n        <li><strong>Example: </strong>We discovered a beautifully crafted nidifice in the tree outside our window.</li>\n    </ul>\n    <li><strong>\"Nest\"</strong> is the synonym of nidifice and it means a structure or shelter built by birds or other animals for laying eggs and raising their offspring. (घोंसला)</li>\n    <ul>\n        <li><strong>Example: </strong>The robin built its nest in the corner of the garden, carefully lining it with soft grass.</li>\n    </ul>\n    <li>Hence, the synonym of <strong>\"Nidifice\"</strong> is <strong>\"Nest\"</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 2</strong> i.e. <strong>Nest</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n    <li><strong>Edifice</strong> (<span style=\"color: rgb(33, 37, 41);\">भवन</span>): A large, imposing building or structure.\n    <ul>\n        <li><strong>Example:</strong> The ancient edifice stood tall despite centuries of wear and tear.</li>\n    </ul>\n    </li>\n    <li><strong>Fortress</strong> (<span style=\"color: rgb(33, 37, 41);\">किला</span>): A military stronghold, especially a strongly fortified town.\n    <ul>\n        <li><strong>Example:</strong> The fortress was built to withstand attacks from invaders.</li>\n    </ul>\n    </li>\n    <li><strong>Ornament</strong> (<span style=\"color: rgb(33, 37, 41);\">आभूषण</span>): A decorative item used to beautify something.\n    <ul>\n        <li><strong>Example:</strong> She hung ornaments on the Christmas tree to make it look festive.</li>\n    </ul>\n    </li>\n</ul>\n3a:T9ff,\n<p>The correct answer is: <b>Faith</b", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "695bade61392b1d34c671520", "qs_no": 11, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate antonym of the given word:</p>\n\n<p>OBFUSCATORY</p>\n", "options": [{"prompt": "1", "value": "Revealing"}, {"prompt": "2", "value": "Complicated"}, {"prompt": "3", "value": "Obscure"}, {"prompt": "4", "value": "Hidden"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is: <b>Revealing</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\n    <li>The word <strong>\"Obfuscatory\"</strong> refers to something that is deliberately made unclear or confusing, often with the intent to mislead or prevent understanding. (जटिल या भ्रमित करने वाला)\n\n    <ul>\n\n        <li><strong>Example:</strong> The politician's obfuscatory speech left the audience struggling to understand his stance on the issue.</li>\n\n    </ul>\n    </li>\n\n    <li><strong>\"Revealing\"</strong> means making something clear, transparent, or easy to understand; it is the opposite of obfuscating or hiding. (स्पष्ट या उजागर करने वाला)\n\n    <ul>\n\n        <li><strong>Example:</strong> Her revealing explanation helped the team understand the project's goals better.</li>\n    </ul>\n    </li>\n\n    <li>Hence, we can infer that the opposite of <strong>'Obfuscatory'</strong> is <strong>'Revealing'</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Revealing</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\n    <li><strong>Complicated</strong> (<span style=\"color: rgb(33, 37, 41);\">जटिल</span>): Something that is difficult to understand or deal with due to its complexity.\n\n    <ul>\n\n        <li><strong>Example:</strong> The instructions for the machine were so complicated that no one could figure them out.</li>\n    </ul>\n    </li>\n\n    <li><strong>Obscure</strong> (<span style=\"color: rgb(33, 37, 41);\">अस्पष्ट</span>): Something that is unclear, hidden, or not well-known.\n\n    <ul>\n\n        <li><strong>Example:</strong> The meaning of the ancient text remains obscure to scholars.</li>\n    </ul>\n    </li>\n\n    <li><strong>Hidden</strong> (<span style=\"color: rgb(33, 37, 41);\">छिपा हुआ</span>): Something that is concealed or not visible.\n\n    <ul>\n\n        <li><strong>Example:</strong> The hidden treasure was discovered after years of searching.</li>\n    </ul>\n    </li>\n\n</ul>\n41:T971,\n<p>The correct answer is: <b>Option 2 (Guess)</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items:", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Antonym", "confidence": "high"}, {"qid": "695ba5f442ff383b12e1e7de", "qs_no": 12, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate synonym of the given word:</p>\n\n<p>PISTOLOGY</p>\n", "options": [{"prompt": "1", "value": "Weaponry"}, {"prompt": "2", "value": "Philosophy"}, {"prompt": "3", "value": "Anatomy"}, {"prompt": "4", "value": "Faith"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is: <b>Faith</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n    <li>The word <strong>\"Pistology\"</strong> refers to the study of faith or belief, especially in religious contexts. (विश्वास या आस्था का अध्ययन)</li>\n    <ul>\n        <li><strong>Example:</strong> Pistology explores the foundations of spiritual belief systems and their impact on human behavior.</li>\n    </ul>\n    <li><strong>\"Faith\"</strong> means complete trust or confidence in someone or something, often in the context of religious beliefs. (विश्वास/आस्था)</li>\n    <ul>\n        <li><strong>Example:</strong> She has deep faith in her ability to overcome challenges.</li>\n    </ul>\n    <li>Hence, we can infer that the synonym of <strong>\"Pistology\"</strong> is <strong>\"Faith\"</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Faith</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n    <li><strong>Weaponry</strong> (<span style=\"color: rgb(33, 37, 41);\">हथियार</span>): The tools, equipment, or devices used in combat or defense.\n    <ul>\n        <li><strong>Example:</strong> The museum displayed ancient weaponry from different civilizations.</li>\n    </ul>\n    </li>\n    <li><strong>Philosophy</strong> (<span style=\"color: rgb(33, 37, 41);\">दर्शनशास्त्र</span>): The study of fundamental questions about existence, knowledge, values, and reason.\n    <ul>\n        <li><strong>Example:</strong> She majored in philosophy to explore the meaning of life.</li>\n    </ul>\n    </li>\n    <li><strong>Anatomy</strong> (<span style=\"color: rgb(33, 37, 41);\">शरीर रचना</span>): The study of the structure of living organisms.\n    <ul>\n        <li><strong>Example:</strong> Medical students study anatomy to understand the human body.</li>\n    </ul>\n    </li>\n</ul>\n3b:Tb36,\n<p>The correct answer is: <b>Tasty</b>.</p>\n\n<p><span style=\"display: f", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "69493ccb9821a60d04aac40f", "qs_no": 13, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<title></title>\n<p><strong>Directions:</strong> Match List I with List II and select the correct answer using the code given below the lists.</p>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<th>List I (Word/Expression)</th>\n\t\t\t<th>List II (Meaning)</th>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>A. Staid</td>\n\t\t\t<td>1.&nbsp;<span style=\"color: rgb(33", "options": [{"prompt": "1", "value": "A-2, B-1, C-4, D-3&amp;nbsp;"}, {"prompt": "2", "value": "A-3, B-4, C-1, D-2&amp;nbsp;"}, {"prompt": "3", "value": "A-1, B-2, C-3, D-4&amp;nbsp;"}, {"prompt": "4", "value": "A-4, B-3, C-2, D-1&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 4</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Staid&quot;</strong> means serious, unadventurous, and conventional. (गंभीर, पारंपरिक)\n\n\t<ul>\n\t\t<li><strong>Example: </strong>He was known for his staid personality, always following the rules and avoiding risks.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Yoke&quot;</strong> refers to joining together, often in a restrictive or burdensome manner. (बंधन, जोड़ना)\n\t<ul>\n\t\t<li><strong>Example: </strong>The workers felt yoked by the company&#39;s strict policies and long working hours.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Inanity&quot;</strong> means lack of sense, significance, or ideas; silliness. (मूर्खता, व्यर्थता)\n\t<ul>\n\t\t<li><strong>Example: </strong>The conversation was filled with inanity, providing no meaningful insights.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Churlish&quot;</strong> means rude, ill-mannered, or surly. (असभ्य, रूखा)\n\t<ul>\n\t\t<li><strong>Example: </strong>His churlish behavior towards the waiter embarrassed everyone at the table.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 4</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p data-end=\"117\" data-start=\"38\"><strong data-end=\"50\" data-start=\"38\">A. Staid</strong> &ndash; Means serious, unadventurous, and conventional.<br data-end=\"103\" data-start=\"100\" />\n<strong data-end=\"113\" data-start=\"103\">Match:</strong> 4</p>\n\n<p data-end=\"253\" data-start=\"119\"><strong data-end=\"130\" data-start=\"119\">B. Yoke</strong> &ndash; As a verb or noun, it means to join together, often in a restrictive way (like putting a yoke on oxen).<br data-end=\"239\" data-start=\"236\" />\n<strong data-end=\"249\" data-start=\"239\">Match:</strong> 3</p>\n\n<p data-end=\"348\" data-start=\"255\"><strong data-end=\"269\" data-start=\"255\">C. Inanity</strong> &ndash; Refers to lack of sense, significance, or ideas; silliness.<br data-end=\"334\" data-start=\"331\" />\n<strong data-end=\"344\" data-start=\"334\">Match:</strong> 2</p>\n\n<p data-end=\"420\" data-start=\"350\"><strong data-end=\"365\" data-start=\"350\">D. Churlish</strong> &ndash; Means rude, ill-mannered, or surly.<br data-end=\"406\" data-start=\"403\" />\n<strong data-end=\"416\" data-start=\"406\">Match:</strong> 1</p>\n\n<p data-end=\"462\" data-start=\"422\">✅ <strong data-end=\"441\" data-start=\"424\">Correct code:</strong> A-4, B-3, C-2, D-1</p>\n\n35:T1159,\n<p>The correct answer is: <b>Option 4</b>.</p>\n\n<p>&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Match the Following"], "concept": "Match the Following", "confidence": "high"}, {"qid": "695bae286567a7072ed1cd7a", "qs_no": 14, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate antonym of the given word:</p>\n\n<p>RATIOCINATE</p>\n", "options": [{"prompt": "1", "value": "Contemplate"}, {"prompt": "2", "value": "Guess"}, {"prompt": "3", "value": "Calculate"}, {"prompt": "4", "value": "Rationalize"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 2 (Guess)</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n    <li>The word <strong>\"Ratiocinate\"</strong> means to think logically and form judgments through reasoning. (तर्क करना)</li>\n    <ul>\n        <li><strong>Example:</strong> The detective had to ratiocinate carefully to solve the case.</li>\n    </ul>\n    <li><strong>\"Guess\"</strong> refers to forming an opinion or conclusion without sufficient evidence or logical reasoning. (अनुमान लगाना)</li>\n    <ul>\n        <li><strong>Example:</strong> Without any clues, she could only guess the answer to the riddle.</li>\n    </ul>\n    <li>Since \"Ratiocinate\" involves reasoning and logic, its opposite is", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Antonym", "confidence": "high"}, {"qid": "695ba6433f88787634edbc88", "qs_no": 15, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate synonym of the given word:</p>\n\n<p>SAPID</p>\n", "options": [{"prompt": "1", "value": "Rapid"}, {"prompt": "2", "value": "Insipid"}, {"prompt": "3", "value": "Tasty"}, {"prompt": "4", "value": "Foolish"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is: <b>Tasty</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Sapid&quot;</strong> means something that is flavorful, pleasant to taste, or tasty. (स्वादिष्ट)\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The chef prepared a sapid dish that delighted everyone at the dinner table.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Tasty&quot; </strong>refers to food or drink that has a pleasant flavor. It is synonymous with sapid and conveys the same meaning. (स्वादिष्ट)\n\t<ul>\n\t\t<li><strong>Example:</strong> The cake was so tasty that everyone asked for a second slice.</li>\n\t</ul>\n\t</li>\n\t<li>Hence, we can infer that the synonym of <strong>&#39;Sapid&#39; </strong>is <strong>&#39;Tasty&#39;</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Tasty</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Rapid </strong>(तेज़): Something that happens quickly or in a short time.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The rapid growth of technology has changed the way we live.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Insipid </strong>(नीरस): Lacking flavor, dull, or boring.\n\t<ul>\n\t\t<li><strong>Example:</strong> The soup was insipid and needed more spices.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Foolish</strong> (मूर्खतापूर्ण): Lacking good sense or judgment.\n\t<ul>\n\t\t<li><strong>Example:</strong> It was foolish of him to invest all his money without proper research.</li>\n\t</ul>\n\t</li>\n</ul>\n\n3c:Tc85,\n<p>The correct answer is: <b>Wish</b>.</p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "695bae5c76338f74f7e1cf0e", "qs_no": 16, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate antonym of the given word:</p>\n\n<p>TERGIVERSATE</p>\n", "options": [{"prompt": "1", "value": "Equivocate"}, {"prompt": "2", "value": "Vacillate"}, {"prompt": "3", "value": "Confront"}, {"prompt": "4", "value": "Translate"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 3</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Tergiversate&quot;</strong> means to evade or avoid a straightforward action or statement; to be deliberately ambiguous or indecisive. It implies a lack of commitment or an attempt to mislead. (टालमटोल करना)\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The politician was accused of tergiversating when asked directly about his plans for reform.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Confront&quot;</strong> means to face or deal with a difficult situation or person directly and assertively. It is the opposite of avoiding or evading. (सामना करना)\n\t<ul>\n\t\t<li><strong>Example:</strong> She decided to confront her fears and speak in public for the first time.</li>\n\t</ul>\n\t</li>\n\t<li>Hence, we can infer that the opposite of <strong>&#39;Tergiversate&#39; </strong>is <strong>&#39;Confront&#39;</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 3</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Equivocate </strong>(<span style=\"color: rgb(33, 37, 41);\">गोलमोल बात करना</span>): To use ambiguous language to conceal the truth or avoid committing oneself.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> When asked about the budget cuts, the manager equivocated to avoid backlash.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Vacillate </strong>(<span style=\"color: rgb(33, 37, 41);\">दुविधा में होना</span>): To waver between different opinions or actions; to be indecisive.\n\t<ul>\n\t\t<li><strong>Example:</strong> She vacillated for weeks before deciding to take the job offer abroad.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Translate </strong>(<span style=\"color: rgb(33, 37, 41);\">अनुवाद करना</span>): To express the meaning of words or text in another language.\n\t<ul>\n\t\t<li><strong>Example:</strong> He translated the book from French to English.</li>\n\t</ul>\n\t</li>\n</ul>\n\n43:Tbfc,\n<p>The correct answer is: <b>Kakorrhaphiophobia</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;alig", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Antonym", "confidence": "high"}, {"qid": "695bb0628c6f43f965feedae", "qs_no": 17, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Choose the correct one-word substitute for:</p>\n\n<p>&lsquo;A man who is excessively fond of or submissive to his wife&rsquo;.</p>\n", "options": [{"prompt": "1", "value": "Henpecked"}, {"prompt": "2", "value": "Philogynist"}, {"prompt": "3", "value": "Uxorious"}, {"prompt": "4", "value": "Monogamist"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is: <b>Uxorious</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n    <li>The word <strong>\"Uxorious\"</strong> refers to a man who is excessively fond of or submissive to his wife. (पत्नी के प्रति अत्यधिक समर्पित)</li>\n    <ul>\n        <li><strong>Example:</strong> His friends often joked about how uxorious he was because he never disagreed with his wife's decisions.</li>\n    </ul>\n    <li>The meaning in Hindi is <strong>पत्नी के प्रति अत्यधिक समर्पित</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Uxorious</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n    <li><strong>Henpecked</strong> (<span style=\"color: rgb(33, 37, 41);\">पत्नी के दबाव में रहने वाला</span>): Refers to a man who is dominated or controlled by his wife.\n    <ul>\n        <li><strong>Example:</strong> He was often teased for being henpecked as he followed every instruction given by his wife.</li>\n    </ul>\n    </li>\n\n    <li><strong>Philogynist</strong> (<span style=\"color: rgb(33, 37, 41);\">स्त्री प्रेमी</span>): Refers to a person who loves or admires women in general.\n    <ul>\n        <li><strong>Example:</strong> His philogynist nature made him an advocate for women's rights.</li>\n    </ul>\n    </li>\n\n    <li><strong>Monogamist</strong> (<span style=\"color: rgb(33, 37, 41);\">एक पत्नी वाला</span>): Refers to a person who practices or advocates being married to only one person at a time.\n    <ul>\n        <li><strong>Example:</strong> He believed in the principles of monogamy and was a committed monogamist.</li>\n    </ul>\n    </li>\n</ul>\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"SSC MTS: Vocabulary Vortex Live Test - 01\",\"sections\":[{\"_id\":\"6627af703a3761b9704e77fc\",\"qCount\":20,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":fals", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "695ba67b3acf20fdeeeeb2d5", "qs_no": 18, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate synonym of the given word:</p>\n\n<p>VELLEITY</p>\n", "options": [{"prompt": "1", "value": "Wish"}, {"prompt": "2", "value": "Velocity"}, {"prompt": "3", "value": "Determination"}, {"prompt": "4", "value": "Truth"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is: <b>Wish</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Velleity&quot;</strong> refers to a slight or weak wish or inclination without any accompanying effort or determination to attain it. (इच्छा या रुचि जो कमजोर हो और जिसमें इसे प्राप्त करने का प्रयास न हो।)\n\n\t<ul>\n\t\t<li><strong>Example: </strong>He expressed a velleity to travel abroad someday, but he never seriously pursued the idea.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Wish&quot;</strong> represents a desire or hope for something to happen or be achieved. (इच्छा)\n\t<ul>\n\t\t<li><strong>Example: </strong>She wished for a peaceful life away from the chaos of the city.</li>\n\t</ul>\n\t</li>\n\t<li>Hence, the synonym of <strong>&#39;Velleity&#39;</strong> is <strong>&#39;Wish&#39;</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Wish</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Velocity</strong> (<span style=\"color: rgb(33, 37, 41);\">गति</span>): The speed of something in a given direction.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> The car&#39;s velocity increased as it moved downhill.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Determination</strong> (<span style=\"color: rgb(33, 37, 41);\">दृढ़ता</span>): Firmness of purpose or resolve.\n\t<ul>\n\t\t<li><strong>Example:</strong> Her determination to succeed was evident in her hard work.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Truth</strong> (<span style=\"color: rgb(33, 37, 41);\">सत्य</span>): The quality or state of being true or factual.\n\t<ul>\n\t\t<li><strong>Example:</strong> He always speaks the truth, no matter the consequences.</li>\n\t</ul>\n\t</li>\n</ul>\n\n3d:T9ff,\n<p>The correct answer is: <b>Premium</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"h", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "69493c714981d87c8ebda9ee", "qs_no": 19, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<title></title>\n<p><strong>Directions:</strong> Match List I with List II and select the correct answer using the code given below the lists.</p>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<th>List I (Word/Expression)</th>\n\t\t\t<th>List II (Meaning)</th>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>A. Quotidian</td>\n\t\t\t<td>1.&nbsp;<span style=\"color: rgb(33, 37, 41);\">Offense or resentment</span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>B. Maudlin</td>\n\t\t\t<td>2.&nbsp;<span style=\"color: rgb(33, 37, 41);\">​</span><span style=\"color: rgb(33, 37, 41);\">Daily or ordinary</span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>C. Umbrage</td>\n\t\t\t<td>3.&nbsp;<span style=\"color: rgb(33, 37, 41);\">Excessively sentimental</span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>D. Hubris</td>\n\t\t\t<td>4.&nbsp;<span style=\"color: rgb(33, 37, 41);\">Exce\nssive pride or self-confidence</span></td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p>&nbsp;</p>\n3", "options": [{"prompt": "1", "value": "A-4, B-3, C-2, D-1&amp;nbsp;"}, {"prompt": "2", "value": "A-2, B-3, C-1, D-4&amp;nbsp;"}, {"prompt": "3", "value": "A-2, B-1, C-4, D-3&amp;nbsp;"}, {"prompt": "4", "value": "A-3, B-4, C-1, D-2&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 2</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Quotidian&quot;</strong> means something that happens daily or is ordinary. (प्रतिदिन या साधारण)\n\n\t<ul>\n\t\t<li><strong>Example:</strong> Commuting to work has become a part of his quotidian routine.</li>\n\t</ul>\n\t</li>\n\t<li>The word <strong>&quot;Maudlin&quot;</strong> refers to someone who is excessively sentimental, often in a self-pitying way. (अत्यधिक भावुक)\n\t<ul>\n\t\t<li><strong>Example:</strong> After a few drinks, he became maudlin and started reminiscing about his childhood.</li>\n\t</ul>\n\t</li>\n\t<li>The word <strong>&quot;Umbrage&quot;</strong> signifies offense or resentment. (अपमान या आक्रोश)\n\t<ul>\n\t\t<li><strong>Example:</strong> She took umbrage at his rude remarks during the meeting.</li>\n\t</ul>\n\t</li>\n\t<li>The word <strong>&quot;Hubris&quot;</strong> means excessive pride or self-confidence. (अहंकार या अत्यधिक आत्मविश्वास)\n\t<ul>\n\t\t<li><strong>Example:</strong> His hubris led to his downfall as he underestimated his opponent.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 2</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p data-end=\"112\" data-start=\"38\"><strong data-end=\"54\" data-start=\"38\">A. Quotidian</strong> &ndash; Means daily, ordinary, or commonplace.<br data-end=\"98\" data-start=\"95\" />\n<strong data-end=\"108\" data-start=\"98\">Match:</strong> 2</p>\n\n<p data-end=\"212\" data-start=\"114\"><strong data-end=\"128\" data-start=\"114\">B. Maudlin</strong> &ndash; Refers to being excessively sentimental, often in a tearful way.<br data-end=\"198\" data-start=\"195\" />\n<strong data-end=\"208\" data-start=\"198\">Match:</strong> 3</p>\n\n<p data-end=\"288\" data-start=\"214\"><strong data-end=\"228\" data-start=\"214\">C. Umbrage</strong> &ndash; Means offense, resentment, or annoyance.<br data-end=\"274\" data-start=\"271\" />\n<strong data-end=\"284\" data-start=\"274\">Match:</strong> 1</p>\n\n<p data-end=\"395\" data-start=\"290\"><strong data-end=\"303\" data-start=\"290\">D. Hubris</strong> &ndash; Refers to excessive pride or self-confidence, often leading to downfall.<br data-end=\"381\" data-start=\"378\" />\n<strong data-end=\"391\" data-start=\"381\">Match:</strong> 4</p>\n\n<p data-end=\"437\" data-start=\"397\">✅ <strong data-end=\"416\" data-start=\"399\">Correct code:</strong> A-2, B-3, C-1, D-4</p>\n\n34:T104f,\n<p>The correct answer is: <b>Option 4</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Match the Following"], "concept": "Match the Following", "confidence": "high"}, {"qid": "69493c0cc8aa2fc43566fef7", "qs_no": 20, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<title></title>\n<p><strong>Directions:</strong> Match List I with List II and select the correct answer using the code given below the lists.</p>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<th>List I (Word/Expression)</th>\n\t\t\t<th>List II (Meaning)</th>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>A. Patronizing</td>\n\t\t\t<td>1. Generous or kind in a condescending way</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>B. Aboveboard</td>\n\t\t\t<td>2. Honest, open, and straightforward</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>C. Boor</td>\n\t\t\t<td>3. A rude or ill-mannered person</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>D. Sylleptic</td>\n\t\t\t<td>4. A figure of speech where one word governs two or more others in different senses</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p>&nbsp;</p>\n", "options": [{"prompt": "1", "value": "A-1, B-2, C-3, D-4"}, {"prompt": "2", "value": "A-2, B-1, C-4, D-3"}, {"prompt": "3", "value": "A-3, B-4, C-2, D-1"}, {"prompt": "4", "value": "A-1, B-3, C-4, D-2"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 1</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;Patronizing&quot;</strong> means being generous or kind in a condescending way. (संरक्षक बनकर दयालु होना लेकिन अहंकारपूर्ण तरीके से)\n\n\t<ul>\n\t\t<li><strong>Example:</strong> Her tone was patronizing when she said, &quot;Oh, you&#39;re trying your best, aren&#39;t you?&quot;</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Aboveboard&quot;</strong> refers to being honest, open, and straightforward. (स्पष्ट और ईमानदार)\n\t<ul>\n\t\t<li><strong>Example:</strong> His business dealings were completely aboveboard, leaving no room for doubt.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Boor&quot;</strong> defines a rude or ill-mannered person. (असभ्य या बुरा व्यवहार करने वाला व्यक्ति)\n\t<ul>\n\t\t<li><strong>Example:</strong> Despite his wealth, he behaved like a boor at the party.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Sylleptic&quot;</strong> is a figure of speech where one word governs two or more others in different senses. (एक शब्द जो विभिन्न अर्थों के साथ दो या अधिक अन्य शब्दों को नियंत्रित करता है)\n\t<ul>\n\t\t<li><strong>Example:</strong> In the sentence &quot;She took her hat and her leave,&quot; the word &quot;took&quot; governs both &quot;hat&quot; (physical object) and &quot;leave&quot; (abstract action).</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 1</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p data-end=\"179\" data-start=\"38\"><strong data-end=\"56\" data-start=\"38\">A. Patronizing</strong> &ndash; Acting in a way that shows apparent kindness but with a sense of superiority; condescending generosity.<br data-end=\"165\" data-start=\"162\" />\n<strong data-end=\"175\" data-start=\"165\">Match:</strong> 1</p>\n\n<p data-end=\"258\" data-start=\"181\"><strong data-end=\"198\" data-start=\"181\">B. Aboveboard</strong> &ndash; Means honest, open, and straightforward.<br data-end=\"244\" data-start=\"241\" />\n<strong data-end=\"254\" data-start=\"244\">Match:</strong> 2</p>\n\n<p data-end=\"334\" data-start=\"260\"><strong data-end=\"271\" data-start=\"260\">C. Boor</strong> &ndash; A rude, ill-mannered, or uncultured person.<br data-end=\"320\" data-start=\"317\" />\n<strong data-end=\"330\" data-start=\"320\">Match:</strong> 3</p>\n\n<p data-end=\"453\" data-start=\"336\"><strong data-end=\"352\" data-start=\"336\">D. Sylleptic</strong> &ndash; A figure of speech where one word governs two or more others in different senses.<br data-end=\"439\" data-start=\"436\" />\n<strong data-end=\"449\" data-start=\"439\">Match:</strong> 4</p>\n\n<p data-end=\"495\" data-start=\"455\">✅ <strong data-end=\"474\" data-start=\"457\">Correct code:</strong> A-1, B-2, C-3, D-4</p>\n\n33:T104f,\n<p>The correct answer is: <b>Option 2</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Match the Following"], "concept": "Match the Following", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 20;
+const DURATION_SEC = 20 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
