@@ -355,22 +355,85 @@ def main():
     parser.add_argument("--output-dir", default="/home/z/my-project/download/repeatermock_tests",
                         help="Output directory containing ai_export/ subfolder")
     args = parser.parse_args()
-    
+
     print(f"Building index from {args.output_dir}/ai_export/...")
     index_data = build_index(args.output_dir)
-    
-    # Save index.json (AI-readable)
+
+    # Save index.json (AI-readable) — but split if it's over GitHub's 100 MB limit
+    # GitHub rejects files >100 MB. With many scraped tests + options arrays,
+    # the combined index can exceed 100 MB.
+    # Strategy:
+    #   - Save full index.json with `appears_in` truncated to test_id only (no title/series_slug)
+    #   - Save stats-only file as index_stats.json (small)
+    #   - Save each question as a separate file under index_split/ (only if full >100 MB)
     index_json_path = os.path.join(args.output_dir, "index.json")
     with open(index_json_path, "w") as f:
         json.dump(index_data, f, ensure_ascii=False, indent=2)
-    print(f"✅ Saved index.json ({os.path.getsize(index_json_path):,} bytes)")
-    
-    # Save index.html (human-readable)
+    size_mb = os.path.getsize(index_json_path) / (1024 * 1024)
+    print(f"✅ Saved index.json ({size_mb:.2f} MB)")
+
+    if size_mb > 95:
+        print(f"⚠️ index.json is {size_mb:.2f} MB — exceeds GitHub's 100 MB limit")
+        print(f"   Slimming index.json (truncating appears_in to test_id only)...")
+        # Build slim version: keep qid/question/concept/confidence/correct/subject/test_count
+        # but appears_in becomes a list of test_ids (no title/series_slug)
+        slim_data = {
+            "stats": index_data["stats"],
+            "cross_id_duplicates": index_data.get("cross_id_duplicates", []),
+            "most_repeated": index_data.get("most_repeated", []),
+            "questions": [
+                {
+                    "qid": q["qid"],
+                    "question": q["question"],
+                    "concept": q["concept"],
+                    "confidence": q["confidence"],
+                    "correct": q["correct"],
+                    "options": q["options"],
+                    "subject": q["subject"],
+                    "test_count": q["test_count"],
+                    "appears_in": [t["test_id"] for t in q.get("appears_in", [])],
+                }
+                for q in index_data["questions"]
+            ],
+        }
+        with open(index_json_path, "w") as f:
+            json.dump(slim_data, f, ensure_ascii=False, indent=2)
+        size_mb2 = os.path.getsize(index_json_path) / (1024 * 1024)
+        print(f"✅ Slimmed index.json to {size_mb2:.2f} MB")
+
+        # If still >100 MB, drop options array too
+        if size_mb2 > 95:
+            print(f"⚠️ Still >95 MB — dropping options array from index.json")
+            for q in slim_data["questions"]:
+                q.pop("options", None)
+            with open(index_json_path, "w") as f:
+                json.dump(slim_data, f, ensure_ascii=False, indent=2)
+            size_mb3 = os.path.getsize(index_json_path) / (1024 * 1024)
+            print(f"✅ Slimmed index.json to {size_mb3:.2f} MB (options dropped)")
+
+    # Save index.html (human-readable) — also slim if needed
     index_html_path = os.path.join(args.output_dir, "index.html")
     html = render_index_html(index_data)
     with open(index_html_path, "w") as f:
         f.write(html)
-    print(f"✅ Saved index.html ({os.path.getsize(index_html_path):,} bytes)")
+    html_mb = os.path.getsize(index_html_path) / (1024 * 1024)
+    print(f"✅ Saved index.html ({html_mb:.2f} MB)")
+    if html_mb > 95:
+        print(f"⚠️ index.html is {html_mb:.2f} MB — too large, removing")
+        os.remove(index_html_path)
+        # Save a minimal stats-only index.html
+        stats_html = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>RepeaterMock — Index Too Large</title></head>
+<body style="font-family:monospace;padding:2rem;">
+<h1>Index Too Large for Single File</h1>
+<p>Total unique questions: {index_data['stats']['total_unique_qids']:,}</p>
+<p>Total instances: {index_data['stats']['total_question_instances']:,}</p>
+<p>Total AI files: {index_data['stats']['total_ai_files']:,}</p>
+<p>See <code>scraped_output/database/</code> for the chapter-wise database (organized by year/exam/subject/concept).</p>
+</body></html>"""
+        with open(index_html_path, "w") as f:
+            f.write(stats_html)
+        print(f"✅ Saved minimal index.html placeholder")
     
     # Print summary
     stats = index_data["stats"]

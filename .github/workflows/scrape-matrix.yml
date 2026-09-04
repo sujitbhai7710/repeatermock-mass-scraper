@@ -332,19 +332,42 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Remove per-job ai_export/html_export dirs (already merged to top-level)
-          # to avoid bloat in the repo. Keep per-job progress.json + PRO_TESTS.json for traceability.
+
+          # Remove per-job ai_export/html_export/index/database dirs (already merged to top-level)
+          # to avoid bloat in the repo. Keep per-job progress.json + PRO_TESTS.json + PRO_LINKS.txt for traceability.
           for dir in scraped_output/*/; do
             job=$(basename "$dir")
             if [ "$job" = "ai_export" ] || [ "$job" = "html_export" ] || [ "$job" = "database" ]; then
               continue
             fi
-            rm -rf "$dir/ai_export" "$dir/html_export" 2>/dev/null || true
+            rm -rf "$dir/ai_export" "$dir/html_export" "$dir/database" "$dir/index.json" "$dir/index.html" 2>/dev/null || true
           done
+
+          # Defensive: scan for any files >50 MB and warn (GitHub rejects files >100 MB)
+          echo "=== Checking for large files (>50 MB) ==="
+          LARGE_FILES=$(find scraped_output/ -type f -size +50M 2>/dev/null)
+          if [ -n "$LARGE_FILES" ]; then
+            echo "⚠️ Large files detected (will not be committed):"
+            echo "$LARGE_FILES"
+            # Remove them — they can't be committed to GitHub anyway
+            find scraped_output/ -type f -size +50M -delete 2>/dev/null || true
+          fi
+
+          # Stage and commit
           git add scraped_output/ -f
           git commit -m "merge: combined index + database + PRO_LINKS $(date -u '+%Y-%m-%d %H:%M UTC')" || echo "Nothing to commit"
-          git pull --rebase origin main || true
-          git push origin HEAD
+
+          # Pull-rebase-push with retries (per-job scrapes may still be pushing in parallel)
+          for i in 1 2 3; do
+            if git pull --rebase origin main; then
+              if git push origin HEAD; then
+                echo "✅ Push succeeded on attempt $i"
+                break
+              fi
+            fi
+            echo "⚠️ Push/pull attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
 
       - name: Trigger next matrix run via Cloudflare Worker
         if: success()
