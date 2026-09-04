@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RepeaterMock — Combined Question Index</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f3f4f6; color: #1f2937; line-height: 1.6; }
+.header { background: #fff; padding: 24px; border-bottom: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.header h1 { font-size: 24px; color: #1fbad6; margin-bottom: 8px; }
+.header p { color: #4b5563; font-size: 14px; }
+.stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.stat-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 16px; min-width: 140px; }
+.stat-value { font-size: 24px; font-weight: 700; color: #1f2937; }
+.stat-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+.container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+.toolbar { background: #fff; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 10; }
+.search-box { flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 14px; }
+.filter-select { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; background: #fff; cursor: pointer; }
+.results-count { font-size: 13px; color: #6b7280; white-space: nowrap; }
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+th { background: #1fbad6; color: #fff; padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; user-select: none; }
+th:hover { background: #1999b3; }
+td { padding: 12px; border-bottom: 1px solid #f3f4f6; font-size: 13px; vertical-align: top; }
+tr:hover { background: #f9fafb; }
+.qid { font-family: monospace; font-size: 11px; color: #6b7280; }
+.question-text { max-width: 400px; overflow: hidden; text-overflow: ellipsis; }
+.concept-badge { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block; }
+.concept-badge.unidentified { background: #fef3c7; color: #92400e; }
+.conf-high { color: #10b981; font-size: 11px; }
+.conf-unidentified { color: #f59e0b; font-size: 11px; }
+.test-count { font-weight: 700; color: #1fbad6; font-size: 16px; text-align: center; }
+.test-count.high { color: #ef4444; }
+.subject-badge { background: #f3f4f6; color: #4b5563; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.expand-btn { background: #f3f4f6; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+.expand-btn:hover { background: #e5e7eb; }
+.test-list { display: none; margin-top: 8px; padding: 8px; background: #f9fafb; border-radius: 4px; font-size: 12px; }
+.test-list.open { display: block; }
+.test-list div { margin-bottom: 4px; }
+.footer { text-align: center; padding: 24px; color: #6b7280; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📊 Combined Question Index</h1>
+  <p>All questions across all scraped tests — with cross-test deduplication by question ID</p>
+  <div class="stats">
+    <div class="stat-card"><div class="stat-value">10</div><div class="stat-label">Unique Questions</div></div>
+    <div class="stat-card"><div class="stat-value">10</div><div class="stat-label">Total Instances</div></div>
+    <div class="stat-card"><div class="stat-value">1</div><div class="stat-label">Tests Scraped</div></div>
+    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">In Multiple Tests</div></div>
+    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Cross-ID Duplicates</div></div>
+  </div>
+</div>
+<div class="container">
+  <div class="toolbar">
+    <input type="text" class="search-box" id="search" placeholder="🔍 Search questions, concepts, IDs..." oninput="filterTable()">
+    <select class="filter-select" id="subjectFilter" onchange="filterTable()">
+      <option value="">All Subjects</option>
+      <option value="general">General</option>
+    </select>
+    <select class="filter-select" id="sortBy" onchange="sortTable()">
+      <option value="test_count">Sort: Most Repeated</option>
+      <option value="question">Sort: Question Text</option>
+      <option value="concept">Sort: Concept</option>
+      <option value="qid">Sort: Question ID</option>
+    </select>
+    <span class="results-count" id="resultsCount"></span>
+  </div>
+  <table id="questionsTable">
+    <thead>
+      <tr>
+        <th style="width:40px;">#</th>
+        <th style="width:50px;">Count</th>
+        <th style="width:120px;">Question ID</th>
+        <th>Question</th>
+        <th style="width:140px;">Concept</th>
+        <th style="width:80px;">Confidence</th>
+        <th style="width:80px;">Subject</th>
+        <th style="width:60px;">Correct</th>
+        <th style="width:80px;">Tests</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+<div class="footer">
+  Generated at 2026-09-04T02:08:37.202225+00:00<br>
+  RepeaterMock Mass Scraper — Combined Question Index
+</div>
+<script>
+const ALL_QUESTIONS = [{"qid": "64cb8e9ea1c41f623ba5324f", "question": "Select the option that represents the correct order of the given words as they would appear in an English dictionary.\n\n1. Significant\n\n2. Sinful\n\n3. Signed\n\n4. Singing\n\n5. Simplify", "concept": "Alphabet/Word Test", "confidence": "high", "correct": "1", "options": [{"label": "1", "text": "3, 1, 5, 2, 4"}, {"label": "2", "text": "3, 5, 1, 2, 4"}, {"label": "3", "text": "3, 2, 1, 5, 4"}, {"label": "4", "text": "3, 1, 2, 5, 4"}], "subject": "general", "appears_in": [{"test_id": "68d6b47bde45ef54f76d9314", "title": "CT 01: Alphabet or Word Test - Dictionary Order", "series_slug": "ssc-cpo-previous", "subject": "general"}], "test_count": 1}, {"qid": "63ac699a7db770941cac6fb9", "question": "After arranging the given words according to dictionary order, which word will come at ‘Third’ position?\n\n1. Overwork\n\n2. Overwrought\n\n3. Overwhelming\n\n4. Overweight\n\n5. Overweening", "concept": "Alphabet/Word Test", "confidence": "high", "correct": "1", "options": [{"label": "1", "text": "Overwhelming"}, {"label": "2", "text": "Overwrought"}, {"label": "3", "text": "Overweight"}, {"label": "4", "text": "Overweening"}], "subject": "general", "appears_in": [{"test_id": "68d6b47bde45ef54f76d9314", "title": "CT 01: Alphabet or Word Test - Dictionary Order", "series_slug": "ssc-cpo-previous", "subject": "general"}], "test_count": 1}, {"qid": "64cb5db73fcde9924192c13f", "question": "Which option represents the correct order of the given words as they would appear in an English dictionary?\n\n1. Highway\n\n2. History\n\n3. Hired\n\n4. Hierarchy\n\n5. Hibiscus", "concept": "Alphabet/Word Test", "confidence": "high", "correct": "3", "options": [{"label": "1", "text": "5, 4, 3, 1, 2"}, {"label": "2", "text": "5, 4, 3, 2, 1"}, {"label": "3", "text": "5, 4, 1, 3, 2"}, {"label": "4", "text": "5, 4, 2, 1, 3"}], "subject": "general", "appears_in": [{"test_id": "68d6b47bde45ef54f76d9314", "title": "CT 01: Alphabet or Word Test - Dictionary Order", "series_slug": "ssc-cpo-previous", "subject": "general"}], "test_count": 1}, {"qid": "64cb5b0642cdd27e7bef7794", "question": "Which option represents the correct order of the given words as they would appear in an English dictionary?\n\n1. Elite\n\n2. Elude\n\n3. Elaborate\n\n4. Elapsed\n\n5. Elongate", "concept": "Alphabet/Word Test", "confidence": "high", "correct": "1", "options": [{"label": "1", "text": "3, 4, 1, 5, 2"}, {"label": "2", "text": "3, 5, 1, 4, 2"}, {"label": "3", "text": "4, 3, 5, 1, 2"}, {"label": "4", "text": "3, 5, 2, 4, 1"}], "subject": "general", "appears_in": [{"test_id": "68d6b47bde45ef54f76d9314", "title": "CT 01: Alphabet or Word Test - Dictionary Order", "series_slug": "ssc-cpo-previous", "subject": "general"}], "test_count": 1}, {"qid": "64cb63d1e0d2234004ddda57", "question": "Select the option that represents the correct order of the given words as they would appear in an English dictionary.\n\n1. Banished\n\n2. Bandage\n\n3. Bannister\n\n4. Bankrupt\n\n5. Bandwagon\n\n6. Banquet", "concept": "Alphabet/Word Test", "confidence": "high", "correct": "3", "options": [{"label": "1", "text": "2, 5, 1, 3, 4, 6"}, {"label": "2", "text": "5, 2, 1, 4, 3, 6"}, {"label": "3", "text": "2, 5, 1, 4, 3, 6"}, {"label": "4", "text": "2, 5, 4, 1, 3, 6"}], "subject": "general", "appears_in": [{"test_id": "68d6b47bde45ef54f76d9314", "title": "CT 01: Alphabet or Word Test - Dictionary Order", "series_slug": "ssc-cpo-previous", "subject": "general"}], "test_count": 1}, {"qid": "64cb75afe0b5b68d7d5379d4", "question": "Select the option that represents the correct order of the given words as they would appear in an English dictionary.\n\n1. Appear\n\n2. Approach\n\n3. Approximate\n\n4. Apparition\n\n5. Apparel", "concept": "Alphabet/Word Test", "confidence": "high", "correct": "3", "options": [{"label": "1", "text": "4,5,1,2,3"}, {"label": "2", "text": "4,1,5,2,3"}, {"label": "3", "text": "5,4,1,2,3"}, {"label": "4", "text": "5,1,4,2,3"}], "subject": "general", "appears_in": [{"test_id": "68d6b47bde45ef54f76d9314", "title": "CT 01: Alphabet or Word Test - Dictionary Order", "series_slug": "ssc-cpo-previous", "subject": "general"}], "test_count": 1}, {"qid": "63a450417dd530265ace2198", "question": "After arranging the given words according to dictionary order, which word will come at 'Third' position?\n\n1. Series\n\n2. Serious\n\n3. Serein\n\n4. Serial\n\n5. Serried", "concept": "Alphabet/Word Test", "confidence": "high", "correct": "1", "options": [{"label": "1", "text": "Series"}, {"label": "2", "text": "Serein"}, {"label": "3", "text": "Serial"}, {"label": "4", "text": "Serious"}], "subject": "general", "appears_in": [{"test_id": "68d6b47bde45ef54f76d9314", "title": "CT 01: Alphabet or Word Test - Dictionary Order", "series_slug": "ssc-cpo-previous", "subject": "general"}], "test_count": 1}, {"qid": "64cb526ef34fb32646cdbe87", "question": "Which option represents the correct order of the given words as they would appear in an English dictionary?\n\n1.Greed\n\n2.Green\n\n3.Grown\n\n4.Grip\n\n5.Granite", "concept": "Alphabet/Word Test", "confidence": "high", "correct": "3", "options": [{"label": "1", "text": "5, 2, 1, 4, 3"}, {"label": "2", "text": "5, 4, 1, 2, 3"}, {"label": "3", "text": "5, 1, 2, 4, 3"}, {"label": "4", "text": "5, 1, 4, 3, 2"}], "subject": "general", "appears_in": [{"test_id": "68d6b47bde45ef54f76d9314", "title": "CT 01: Alphabet or Word Test - Dictionary Order", "series_slug": "ssc-cpo-previous", "subject": "general"}], "test_count": 1}, {"qid": "63a2ba692ff684023eab6bb5", "question": "Select the option that represents the correct order of the given words as they would appear in an English dictionary.\n\n1- Laudanum\n\n2- Lattice\n\n3- Laudation\n\n4- Latterly\n\n5- Laudable", "concept": "Alphabet/Word Test", "confidence": "high", "correct": "4", "options": [{"label": "1", "text": "2, 4, 5, 3, 1"}, {"label": "2", "text": "2, 4, 1, 5, 3"}, {"label": "3", "text": "4, 2, 3, 1, 5"}, {"label": "4", "text": "4, 2, 5, 1, 3"}], "subject": "general", "appears_in": [{"test_id": "68d6b47bde45ef54f76d9314", "title": "CT 01: Alphabet or Word Test - Dictionary Order", "series_slug": "ssc-cpo-previous", "subject": "general"}], "test_count": 1}, {"qid": "63a7ea0b7e2020ce498b9118", "question": "Select the option that represents the correct order of the given words as they would appear in an English dictionary.\n\n1- Thresh\n\n2- Threadbare\n\n3- Thrice\n\n4- Threw\n\n5- Threat", "concept": "Alphabet/Word Test", "confidence": "high", "correct": "2", "options": [{"label": "1", "text": "2, 4, 5, 1, 3"}, {"label": "2", "text": "2, 5, 1, 4, 3"}, {"label": "3", "text": "2, 5, 4, 1, 3"}, {"label": "4", "text": "2, 1, 5, 4, 3"}], "subject": "general", "appears_in": [{"test_id": "68d6b47bde45ef54f76d9314", "title": "CT 01: Alphabet or Word Test - Dictionary Order", "series_slug": "ssc-cpo-previous", "subject": "general"}], "test_count": 1}];
+let currentSort = 'test_count';
+
+function renderTable(questions) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  questions.forEach((q, i) => {
+    const tr = document.createElement('tr');
+    const conceptClass = q.confidence === 'unidentified' ? 'concept-badge unidentified' : 'concept-badge';
+    const countClass = q.test_count > 3 ? 'test-count high' : 'test-count';
+    const testsList = q.appears_in.map(t => `<div>• ${t.title} <span style="color:#9ca3af;">(${t.series_slug})</span></div>`).join('');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td class="${countClass}">${q.test_count}</td>
+      <td class="qid">${q.qid}</td>
+      <td class="question-text">${escapeHtml(q.question).slice(0, 200)}${q.question.length > 200 ? '...' : ''}</td>
+      <td><span class="${conceptClass}">${q.concept}</span></td>
+      <td class="conf-${q.confidence}">${q.confidence}</td>
+      <td><span class="subject-badge">${q.subject}</span></td>
+      <td><strong>${q.correct || '—'}</strong></td>
+      <td>
+        ${q.test_count > 1 ? `<button class="expand-btn" onclick="toggleTests('${q.qid}', this)">▼ Show ${q.test_count} tests</button><div class="test-list" id="tests-${q.qid}">${testsList}</div>` : `<span style="color:#9ca3af;font-size:11px;">1 test</span>`}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('resultsCount').textContent = `${questions.length} of ${ALL_QUESTIONS.length} questions`;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+
+function toggleTests(qid, btn) {
+  const el = document.getElementById('tests-' + qid);
+  if (el.classList.contains('open')) {
+    el.classList.remove('open');
+    btn.textContent = '▼ Show tests';
+  } else {
+    el.classList.add('open');
+    btn.textContent = '▲ Hide tests';
+  }
+}
+
+function filterTable() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const subject = document.getElementById('subjectFilter').value;
+  const filtered = ALL_QUESTIONS.filter(q => {
+    if (subject && q.subject !== subject) return false;
+    if (search) {
+      const text = (q.question + ' ' + q.concept + ' ' + q.qid + ' ' + q.subject).toLowerCase();
+      if (!text.includes(search)) return false;
+    }
+    return true;
+  });
+  sortAndRender(filtered);
+}
+
+function sortTable() {
+  currentSort = document.getElementById('sortBy').value;
+  filterTable();
+}
+
+function sortAndRender(questions) {
+  const sorted = [...questions].sort((a, b) => {
+    if (currentSort === 'test_count') return b.test_count - a.test_count;
+    if (currentSort === 'question') return (a.question || '').localeCompare(b.question || '');
+    if (currentSort === 'concept') return (a.concept || '').localeCompare(b.concept || '');
+    if (currentSort === 'qid') return (a.qid || '').localeCompare(b.qid || '');
+    return 0;
+  });
+  renderTable(sorted);
+}
+
+// Initial render
+sortAndRender(ALL_QUESTIONS);
+</script>
+</body>
+</html>
