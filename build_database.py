@@ -89,16 +89,19 @@ def sanitize(s: str, max_len: int = 60) -> str:
 
 def build_database(output_dir: str, db_dir: str, years_filter: list = None):
     """Scan all AI JSON exports and build a chapter-wise database.
-    
+
     Database filtering rules (per user requirement):
     - Year filter: only 2021-2025 (not before 2021)
     - Section filter: only specific sections per series (see SERIES_SECTION_FILTERS)
     - Subject filter: all subjects
-    
+
     NOTE: The ai_export/ and html_export/ folders contain ALL scraped tests (all years).
     The database/ folder is a FILTERED COPY for AI analysis — only 2021-2025 + specific sections.
+
+    Reads from BOTH top-level `ai_export/` (post-merge) AND per-job dirs (pre-merge fallback)
+    so database_index.json is never 0 even if merge hasn't flattened the structure yet.
     """
-    # Scan ALL ai_export directories (including job-specific ones like scraped_output/SSC-Steno-2026/ai_export/)
+    # Scan ALL ai_export directories (top-level + per-job subdirs)
     ai_files = sorted(glob.glob(os.path.join(output_dir, "**", "ai_export", "**", "*.json"), recursive=True))
     print(f"Found {len(ai_files)} AI JSON files to process")
     

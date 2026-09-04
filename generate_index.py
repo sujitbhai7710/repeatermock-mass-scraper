@@ -35,7 +35,7 @@ def normalize_question(text: str) -> str:
 
 def build_index(output_dir: str) -> dict:
     """Scan all AI JSON files and build a combined question index.
-    
+
     Index structure:
     {
       "question_id": {
@@ -53,8 +53,11 @@ def build_index(output_dir: str) -> dict:
         "test_count": 5
       }
     }
-    
+
     Also tracks questions by normalized text (for fuzzy matching across IDs).
+
+    Reads from BOTH top-level `ai_export/` (post-merge) AND per-job dirs (pre-merge fallback)
+    so index is never empty even if merge hasn't flattened the structure yet.
     """
     ai_files = sorted(glob.glob(os.path.join(output_dir, "**", "ai_export", "**", "*.json"), recursive=True))
     print(f"Found {len(ai_files)} AI JSON files")

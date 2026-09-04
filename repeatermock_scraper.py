@@ -105,6 +105,11 @@ def _next_proxy():
 # Cookie refresh interval (15 minutes)
 COOKIE_REFRESH_INTERVAL_SEC = 15 * 60
 
+# Per-worker 429 rate limit threshold
+# After 5× 429 errors, ONLY that worker stops — others continue independently.
+# This is intentionally per-worker (not global) so one bad IP doesn't kill the whole matrix.
+WORKER_429_LIMIT = 5
+
 # Language code -> human name
 LANG_NAMES = {
     'en': 'English', 'hn': 'Hindi', 'te': 'Telugu', 'mr': 'Marathi',
@@ -461,31 +466,57 @@ class ProgressTracker:
 
     def is_scraped(self, series_slug: str, test_id: str) -> bool:
         series_data = self.data.get(series_slug, {})
-        return test_id in series_data.get("scraped", [])
+        return test_id in series_data.get("scraped", {})
 
     def is_failed(self, series_slug: str, test_id: str) -> bool:
         series_data = self.data.get(series_slug, {})
-        return test_id in series_data.get("failed", [])
+        return any(t.get("test_id") == test_id for t in series_data.get("failed", []))
+
+    def is_pro(self, series_slug: str, test_id: str) -> bool:
+        """Check if test was previously marked as PRO (402). Used to skip on resume."""
+        series_data = self.data.get(series_slug, {})
+        return test_id in series_data.get("pro", {})
 
     async def mark_scraped(self, series_slug: str, test_id: str, filepath: str):
         async with self._lock:
             if series_slug not in self.data:
-                self.data[series_slug] = {"scraped": {}, "failed": []}
+                self.data[series_slug] = {"scraped": {}, "failed": [], "pro": {}}
             self.data[series_slug].setdefault("scraped", {})[test_id] = {
                 "filepath": filepath,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
             # Remove from failed if it was there
-            if test_id in self.data[series_slug].get("failed", []):
-                self.data[series_slug]["failed"].remove(test_id)
+            self.data[series_slug]["failed"] = [
+                t for t in self.data[series_slug].get("failed", [])
+                if t.get("test_id") != test_id
+            ]
             self.data[series_slug]["last_updated"] = datetime.now(timezone.utc).isoformat()
             self._save()
 
     async def mark_failed(self, series_slug: str, test_id: str, reason: str):
         async with self._lock:
             if series_slug not in self.data:
-                self.data[series_slug] = {"scraped": {}, "failed": []}
+                self.data[series_slug] = {"scraped": {}, "failed": [], "pro": {}}
             self.data[series_slug].setdefault("failed", []).append({"test_id": test_id, "reason": reason})
+            self.data[series_slug]["last_updated"] = datetime.now(timezone.utc).isoformat()
+            self._save()
+
+    async def mark_pro(self, series_slug: str, test_id: str, title: str = ""):
+        """Record a PRO test (402) in progress.json under 'pro' key.
+        PRO tests are tracked separately so resume can skip them.
+        They are ALSO saved in PRO_TESTS.json (pretty format)."""
+        async with self._lock:
+            if series_slug not in self.data:
+                self.data[series_slug] = {"scraped": {}, "failed": [], "pro": {}}
+            self.data[series_slug].setdefault("pro", {})[test_id] = {
+                "title": title,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+            # Remove from failed if it was there (it shouldn't be — PRO is its own category)
+            self.data[series_slug]["failed"] = [
+                t for t in self.data[series_slug].get("failed", [])
+                if t.get("test_id") != test_id
+            ]
             self.data[series_slug]["last_updated"] = datetime.now(timezone.utc).isoformat()
             self._save()
 
@@ -501,32 +532,119 @@ class ProgressTracker:
     def stats(self) -> Dict[str, int]:
         total_scraped = sum(len(v.get("scraped", {})) for v in self.data.values())
         total_failed = sum(len(v.get("failed", [])) for v in self.data.values())
-        return {"scraped": total_scraped, "failed": total_failed}
+        total_pro = sum(len(v.get("pro", {})) for v in self.data.values())
+        return {"scraped": total_scraped, "failed": total_failed, "pro": total_pro}
 
 
 # =============================================================================
 # BROWSER WORKER  (one per parallel slot — own context + cookie jar)
 # =============================================================================
 
+class WorkerRateLimitStop(Exception):
+    """Raised when a worker hits its per-worker 429 limit (5× by default).
+    Stops ONLY this worker — others continue. Caught in worker_loop()."""
+    pass
+
+
+class PROTracker:
+    """Tracks PRO tests (402 Payment Required) in a pretty, human-readable JSON file.
+    Also writes a plain-text URL list for easy browser copy-paste.
+
+    Files written:
+      - <output_dir>/PRO_TESTS.json  (pretty JSON with metadata)
+      - <output_dir>/PRO_LINKS.txt  (plain URLs, one per line)
+    """
+
+    def __init__(self, output_dir: str):
+        self.output_dir = output_dir
+        self.pro_path = os.path.join(output_dir, "PRO_TESTS.json")
+        self.links_path = os.path.join(output_dir, "PRO_LINKS.txt")
+        self.tests: List[Dict[str, Any]] = []
+        self._lock = asyncio.Lock()
+        self._load()
+
+    def _load(self):
+        if os.path.exists(self.pro_path):
+            try:
+                with open(self.pro_path) as f:
+                    data = json.load(f)
+                self.tests = data.get("pro_tests", [])
+                print(f"  [pro] loaded {len(self.tests)} existing PRO tests from {self.pro_path}")
+            except Exception as e:
+                print(f"  [pro] WARNING: couldn't load {self.pro_path}: {e}")
+
+    async def mark_pro(self, test_ref: TestRef):
+        """Record a PRO test (402 from /start API). Skips if already recorded."""
+        async with self._lock:
+            # Skip if already recorded (dedup by test_id)
+            if any(t.get("test_id") == test_ref.test_id for t in self.tests):
+                return
+            entry = {
+                "test_id": test_ref.test_id,
+                "title": test_ref.title,
+                "series_slug": test_ref.series_slug,
+                "series_name": test_ref.series_name,
+                "section": test_ref.section_name,
+                "subsection": test_ref.sub_section_name,
+                "attempt_url": f"{WEB_BASE}/tb/test-series/{test_ref.series_slug}/test/{test_ref.test_id}/attempt?lang=en",
+                "analysis_url": f"{WEB_BASE}/tb/test-series/{test_ref.series_slug}/test/{test_ref.test_id}/analysis",
+                "solution_url": f"{WEB_BASE}/tb/test-series/{test_ref.series_slug}/test/{test_ref.test_id}/solution",
+                "first_seen": datetime.now(timezone.utc).isoformat(),
+            }
+            self.tests.append(entry)
+            self._save()
+
+    def _save(self):
+        # Pretty JSON file (human-readable, with metadata)
+        data = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "total_pro_tests": len(self.tests),
+            "description": "These tests returned 402 Payment Required when attempted with free (guest) cookies. They require a RepeaterMock PRO subscription. Open the URLs below in a browser where you're logged in with a PRO account to access them.",
+            "how_to_use": [
+                "1. Log in to repeatermock.com with a PRO subscription account",
+                "2. Copy any URL from pro_tests[].attempt_url below",
+                "3. Paste it in your browser's address bar",
+                "4. Or use the plain-text list in PRO_LINKS.txt for bulk copy-paste",
+            ],
+            "pro_tests": self.tests,
+        }
+        tmp_path = self.pro_path + ".tmp"
+        with open(tmp_path, "w") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        os.rename(tmp_path, self.pro_path)
+
+        # Plain-text URL list (one URL per line, easy copy-paste)
+        with open(self.links_path, "w") as f:
+            f.write(f"# PRO Test Links — Total: {len(self.tests)}\n")
+            f.write(f"# These tests require a RepeaterMock PRO subscription.\n")
+            f.write(f"# Open any URL in a browser where you're logged in with PRO.\n\n")
+            for t in self.tests:
+                f.write(f"{t['attempt_url']}\n")
+
+    def stats(self) -> Dict[str, int]:
+        return {"pro_tests": len(self.tests)}
+
+
 class Worker:
     """A single browser context that scrapes tests from a shared queue.
     Handles its own cookie refresh on 401 + periodic refresh.
-    Auto-stops after too many 429 rate limits (signals other workers to stop)."""
+    Per-worker 429 breaker: stops ONLY this worker after WORKER_429_LIMIT (5) 429s."""
 
-    # Class-level flag — when any worker hits 10× 429s, all workers stop
-    _rate_limit_stop = False
-    _rate_limit_count = 0
-    _rate_limit_lock = None  # Will be set by run_scraper
+    # Per-worker 429 counter (instance attribute, not class-level)
+    # Each worker tracks its OWN 429 count independently
 
-    def __init__(self, worker_id: int, browser, progress: ProgressTracker, output_dir: str):
+    def __init__(self, worker_id: int, browser, progress: ProgressTracker, output_dir: str,
+                 pro_tracker: Optional[PROTracker] = None):
         self.worker_id = worker_id
         self.browser = browser
         self.progress = progress
         self.output_dir = output_dir
+        self.pro_tracker = pro_tracker
         self.context = None
         self.page = None
         self.last_refresh = 0
         self.tests_done = 0
+        self.worker_429_count = 0  # Per-worker 429 counter (resets only on worker restart)
 
     async def start(self):
         self.context = await self.browser.new_context(
@@ -573,13 +691,12 @@ class Worker:
 
     async def api_call(self, method: str, path: str, body: str = "{}") -> Tuple[int, Optional[dict]]:
         """Make an API call with smart rate-limit handling.
-        
-        CRITICAL: POST /start and POST /submit MUST use direct calls with cookies.
-        The proxy can't forward browser cookies, so attempts created via proxy
-        can't be submitted (returns 404). Therefore:
-        - POST requests: ALWAYS direct with cookies, on 429 use exponential backoff
-        - GET requests (discovery): can use proxy on 429 (no cookies needed)
-        
+
+        PER-WORKER 429 BREAKER:
+        - After WORKER_429_LIMIT (5) cumulative 429s on THIS worker, raise WorkerRateLimitStop
+        - Only THIS worker stops — others continue independently
+        - Other workers will hit their own breaker if they're rate-limited too
+
         Strategy:
         1. For POST: direct with cookies, on 429 exponential backoff (never proxy)
         2. For GET: direct first, on 429 switch to proxy (different IP)
@@ -635,38 +752,22 @@ class Worker:
             retry_after = result.get("retryAfter", "")
             
             if status == 429:
+                # Per-worker 429 counter (increment on EVERY 429 this worker sees)
+                self.worker_429_count += 1
+                if self.worker_429_count >= WORKER_429_LIMIT:
+                    print(f"  [worker {self.worker_id}] ⛔ {WORKER_429_LIMIT}× 429 errors — stopping THIS worker only (others continue)")
+                    raise WorkerRateLimitStop()
                 if not use_proxy and not is_post:
                     # GET request: switch to proxy (different IP)
-                    print(f"  [worker {self.worker_id}] 🔄 429 direct, switching to proxy (attempt {attempt+1}/{MAX_RETRIES})")
+                    print(f"  [worker {self.worker_id}] 🔄 429 direct, switching to proxy (count={self.worker_429_count}/{WORKER_429_LIMIT})")
                     use_proxy = True
                     continue
                 else:
                     # POST request or proxy also 429: exponential backoff
-                    # Count 429s — if total across all workers exceeds 10, stop everything
-                    if Worker._rate_limit_lock:
-                        async with Worker._rate_limit_lock:
-                            Worker._rate_limit_count += 1
-                            if Worker._rate_limit_count >= 10 and not Worker._rate_limit_stop:
-                                Worker._rate_limit_stop = True
-                                print(f"\n  ⛔ [RATE LIMIT STOP] 10× 429 errors reached — stopping all workers!")
-                                print(f"     Triggering next GitHub Action run via Cloudflare Worker...")
-                                # Trigger next run via Cloudflare Worker
-                                try:
-                                    import urllib.request as ur
-                                    req = ur.Request(
-                                        "https://scraper-trigger.jumble-solver.workers.dev/trigger",
-                                        data=json.dumps({"max_tests": ""}).encode(),
-                                        headers={"Content-Type": "application/json"},
-                                        method="POST"
-                                    )
-                                    ur.urlopen(req, timeout=5)
-                                    print(f"     ✅ Triggered next run via Cloudflare Worker")
-                                except:
-                                    pass  # Non-fatal — the scheduled run will handle it
                     # CRITICAL: Do NOT refresh cookies on 429
                     wait_sec = (retry_after and float(retry_after)) or (base_delay * (2 ** attempt))
                     wait_sec += random.uniform(1, 3)
-                    print(f"  [worker {self.worker_id}] ⏳ 429, waiting {wait_sec:.1f}s (attempt {attempt+1}/{MAX_RETRIES})")
+                    print(f"  [worker {self.worker_id}] ⏳ 429, waiting {wait_sec:.1f}s (count={self.worker_429_count}/{WORKER_429_LIMIT}, attempt {attempt+1}/{MAX_RETRIES})")
                     await asyncio.sleep(wait_sec)
                     continue
             
@@ -848,8 +949,9 @@ async def discover_series_tests(worker: Worker, series_slug: str) -> Tuple[str, 
             tid = t.get("id", "")
             if not tid or tid in seen_ids:
                 continue
-            if not t.get("isFree", False):
-                continue
+            # IMPORTANT: do NOT pre-filter by isFree — that flag is unreliable.
+            # Some PRO tests have isFree=true, some free tests have isFree=false.
+            # Instead, attempt every test; if /start returns 402, mark as PRO.
             all_tests.append(TestRef(
                 test_id=tid,
                 title=t.get("title", tid),
@@ -866,9 +968,9 @@ async def discover_series_tests(worker: Worker, series_slug: str) -> Tuple[str, 
             ))
             seen_ids.add(tid)
         if (i+1) % 20 == 0 or i == len(section_counts) - 1:
-            print(f"  [discover] {i+1}/{len(section_counts)} subsections probed, {len(all_tests)} free tests")
+            print(f"  [discover] {i+1}/{len(section_counts)} subsections probed, {len(all_tests)} tests queued (incl. potential PRO)")
 
-    print(f"  [discover] total free tests: {len(all_tests)}")
+    print(f"  [discover] total tests queued: {len(all_tests)} (PRO tests will be filtered at /start API call)")
     return series_id, series_name, all_tests
 
 
@@ -2284,6 +2386,7 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
 
     os.makedirs(output_dir, exist_ok=True)
     progress = ProgressTracker(output_dir)
+    pro_tracker = PROTracker(output_dir)
 
     # Phase 1: Discover all tests
     print("\n=== Phase 1: Discovering tests ===")
@@ -2293,7 +2396,7 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
             args=["--no-sandbox", "--disable-blink-features=AutomationControlled", "--disable-dev-shm-usage"]
         )
         # Use a single discovery worker
-        discovery_worker = Worker(0, browser, progress, output_dir)
+        discovery_worker = Worker(0, browser, progress, output_dir, pro_tracker)
         await discovery_worker.start()
 
         all_test_refs: List[TestRef] = []
@@ -2341,11 +2444,14 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
             all_test_refs = [tr for tr in all_test_refs if not progress.is_scraped(tr.series_slug, tr.test_id)]
             print(f"\n  Resume: filtered out {before - len(all_test_refs)} already-scraped tests, {len(all_test_refs)} remaining")
         else:
-            # Even without --resume, skip already-scraped (safety)
+            # Even without --resume, skip already-scraped + already-known-PRO (safety)
             before = len(all_test_refs)
-            all_test_refs = [tr for tr in all_test_refs if not progress.is_scraped(tr.series_slug, tr.test_id)]
-            if before - len(all_test_refs) > 0:
-                print(f"\n  Skipping {before - len(all_test_refs)} already-scraped tests (use --resume to continue)")
+            all_test_refs = [tr for tr in all_test_refs
+                             if not progress.is_scraped(tr.series_slug, tr.test_id)
+                             and not progress.is_pro(tr.series_slug, tr.test_id)]
+            skipped = before - len(all_test_refs)
+            if skipped > 0:
+                print(f"\n  Skipping {skipped} already-processed tests (scraped or known PRO)")
 
         # Apply stop_after limit
         if stop_after is not None and stop_after > 0:
@@ -2374,25 +2480,16 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
         start_time = time.time()
         runtime_exceeded = False
 
-        # Retry queue: tests that failed will be re-added to the main queue after all
+        # Track retry queue: tests that failed will be re-added to the main queue after all
         # first-pass tests are done, so they get retried (with fresh cookies)
         retry_queue: List[TestRef] = []
         retry_lock = asyncio.Lock()
-        
-        # Initialize rate-limit stop flag + lock for workers
-        Worker._rate_limit_stop = False
-        Worker._rate_limit_count = 0
-        Worker._rate_limit_lock = asyncio.Lock()
 
         async def worker_loop(worker_id: int):
             nonlocal completed, failed, runtime_exceeded
-            w = Worker(worker_id, browser, progress, output_dir)
+            w = Worker(worker_id, browser, progress, output_dir, pro_tracker)
             await w.start()
             while True:
-                # Check rate-limit stop flag (set when 10× 429 errors occur)
-                if Worker._rate_limit_stop:
-                    print(f"\n  [worker {worker_id}] ⛔ Rate limit stop — exiting worker loop")
-                    break
                 # Check max runtime (stop at 5h30m = 330 min for GitHub Actions safety)
                 if max_runtime_min is not None:
                     elapsed_min = (time.time() - start_time) / 60
@@ -2409,8 +2506,11 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                     print(f"\n  [worker {worker_id}] [{completed + failed + 1}/{total}] {test_ref.title[:50]}... (id={test_ref.test_id})")
                     test_data = await w.scrape_test(test_ref)
                     if test_data == "PRO":
-                        # PRO test (402) — record in progress as "pro" (not "failed")
-                        await progress.mark_failed(test_ref.series_slug, test_ref.test_id, "PRO (402 Payment Required)")
+                        # PRO test (402) — record in BOTH:
+                        # 1. PRO_TESTS.json + PRO_LINKS.txt (pretty JSON, full URLs)
+                        # 2. progress.json under 'pro' key (so resume can skip)
+                        await pro_tracker.mark_pro(test_ref)
+                        await progress.mark_pro(test_ref.series_slug, test_ref.test_id, test_ref.title)
                         async with completion_lock:
                             failed += 1
                         print(f"  [worker {worker_id}] 💰 PRO test recorded: {test_ref.test_id}")
@@ -2456,6 +2556,10 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                         async with completion_lock:
                             failed += 1
                         print(f"  [worker {worker_id}] ⚠️ failed (added to retry queue): {test_ref.test_id}")
+                except WorkerRateLimitStop:
+                    # PER-WORKER 429 BREAKER: only this worker stops, others continue
+                    print(f"  [worker {worker_id}] ⛔ stopped (5× 429 errors). Other workers continue independently.")
+                    break
                 except Exception as e:
                     # Exception — add to retry queue for later retry
                     async with retry_lock:
@@ -2529,7 +2633,7 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
             async def retry_worker_loop(worker_id: int):
                 nonlocal retry_completed, retry_failed, runtime_exceeded
                 # Reuse the same worker ID for logging
-                w = Worker(worker_id, browser, progress, output_dir)
+                w = Worker(worker_id, browser, progress, output_dir, pro_tracker)
                 await w.start()
                 while True:
                     if max_runtime_min is not None:
@@ -2544,7 +2648,14 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                     try:
                         print(f"\n  [retry-{worker_id}] [{retry_completed + retry_failed + 1}/{len(retry_queue_unique)}] {test_ref.title[:50]}... (id={test_ref.test_id})")
                         test_data = await w.scrape_test(test_ref)
-                        if test_data:
+                        if test_data == "PRO":
+                            # PRO test (402) — record in PRO_TESTS.json + progress.json
+                            await pro_tracker.mark_pro(test_ref)
+                            await progress.mark_pro(test_ref.series_slug, test_ref.test_id, test_ref.title)
+                            async with retry_completion_lock:
+                                retry_failed += 1
+                            print(f"  [retry-{worker_id}] 💰 PRO test recorded: {test_ref.test_id}")
+                        elif test_data:
                             test_ref.title = test_data.title
                             html_path = build_html_output_path(output_dir, test_ref)
                             html = render_test_html(test_data)
@@ -2568,6 +2679,9 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                                 retry_failed += 1
                             await progress.mark_failed(test_ref.series_slug, test_ref.test_id, "retry failed")
                             print(f"  [retry-{worker_id}] ❌ retry failed: {test_ref.test_id}")
+                    except WorkerRateLimitStop:
+                        print(f"  [retry-{worker_id}] ⛔ stopped (5× 429 errors)")
+                        break
                     except Exception as e:
                         async with retry_completion_lock:
                             retry_failed += 1
@@ -2588,39 +2702,9 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
 
         await browser.close()
 
-    # Generate combined question index (index.html + index.json)
-    # This shows all questions across all tests, with cross-test deduplication
-    print(f"\n=== Generating combined question index ===")
-    try:
-        import subprocess
-        result = subprocess.run(
-            ["python3", os.path.join(os.path.dirname(__file__), "generate_index.py"),
-             "--output-dir", output_dir],
-            capture_output=True, text=True, timeout=120
-        )
-        if result.returncode == 0:
-            print(result.stdout[-500:])
-        else:
-            print(f"  ⚠️ Index generation failed: {result.stderr[:300]}")
-    except Exception as e:
-        print(f"  ⚠️ Index generation skipped: {e}")
-
-    # Generate chapter-wise database (by year/exam/subject/concept)
-    # This is a separate copy organized for AI analysis
-    print(f"\n=== Generating chapter-wise database ===")
-    try:
-        import subprocess
-        result = subprocess.run(
-            ["python3", os.path.join(os.path.dirname(__file__), "build_database.py"),
-             "--output-dir", output_dir],
-            capture_output=True, text=True, timeout=120
-        )
-        if result.returncode == 0:
-            print(result.stdout[-500:])
-        else:
-            print(f"  ⚠️ Database generation failed: {result.stderr[:300]}")
-    except Exception as e:
-        print(f"  ⚠️ Database generation skipped: {e}")
+    # NOTE: index + database generation is now done by the workflow MERGE job
+    # (after all per-job commits are pulled). This avoids the "database_index.json = 0"
+    # bug where the merge job ran build_database before per-job commits were visible.
 
     # Summary
     elapsed_min = (time.time() - start_time) / 60 if 'start_time' in dir() else 0
@@ -2632,7 +2716,9 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
     print(f"   Failed this run: {failed}")
     print(f"   Output: {output_dir}")
     stats = progress.stats()
-    print(f"   Total in progress.json: {stats['scraped']} scraped, {stats['failed']} failed")
+    pro_stats = pro_tracker.stats()
+    print(f"   Total in progress.json: {stats['scraped']} scraped, {stats['failed']} failed, {stats['pro']} PRO")
+    print(f"   PRO tests recorded (402): {pro_stats['pro_tests']} in PRO_TESTS.json + PRO_LINKS.txt")
     if runtime_exceeded:
         remaining = total - completed - failed
         print(f"   Remaining to scrape: {remaining} (re-run with --resume to continue)")
