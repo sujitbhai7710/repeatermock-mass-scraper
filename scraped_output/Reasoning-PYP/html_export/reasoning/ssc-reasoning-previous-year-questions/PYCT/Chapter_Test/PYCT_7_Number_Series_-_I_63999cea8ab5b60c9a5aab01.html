@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 7: Number Series - I</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 7: Number Series - I</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-reasoning-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">7 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63999cea8ab5b60c9a5aab01</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63999cea8ab5b60c9a5aab01", "title": "PYCT 7: Number Series - I", "series_slug": "ssc-reasoning-previous-year-questions", "duration_min": 7, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "629729060c26b2547f86ffca", "section_name": "Chapter Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "62666161652d97448961b092", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the number from among the given options that can replace the question mark (?) in the following series.</p>\n\n<p>23, 36, 51, 68, ?</p>\n", "options": [{"prompt": "1", "value": "92"}, {"prompt": "2", "value": "73"}, {"prompt": "3", "value": "87"}, {"prompt": "4", "value": "78"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए विकल्पों में से उस संख्या का चयन कीजिए जो निम्नलिखित श्रृंखला में प्रश्नवाचक चिह्न (?) को प्रतिस्थापित कर सके।</p>\n\n<p>23, 36, 51, 68, ?</p>\n", "options": [{"prompt": "1", "value": "92"}, {"prompt": "2", "value": "73"}, {"prompt": "3", "value": "87"}, {"prompt": "4", "value": "78"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>క్రింది శ్రేణిలో ప్రశ్నార్థక చిహ్నం (?) స్థానంలో ఉండే సంఖ్యను ఇచ్చిన ఎంపికల నుండి ఎంచుకోండి.</p>\n\n<p>23, 36, 51, 68, ?</p>\n", "options": [{"prompt": "1", "value": "92"}, {"prompt": "2", "value": "73"}, {"prompt": "3", "value": "87"}, {"prompt": "4", "value": "78"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>दिलेल्या पर्यायांपैकी एक संख्या निवडा जी खालील मालिकेतील प्रश्नचिन्ह (?) बदलू शकेल.</p>\n\n<p>23, 36, 51, 68, ?</p>\n", "options": [{"prompt": "1", "value": "92"}, {"prompt": "2", "value": "73"}, {"prompt": "3", "value": "87"}, {"prompt": "4", "value": "78"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>প্রদত্ত বিকল্পগুলির মধ্যে থেকে সংখ্যাটি নির্বাচন করুন যা নিম্নলিখিত ক্রমের প্রশ্ন চিহ্নকে (?) প্রতিস্থাপন করতে পারে।</p>\n\n<p>23, 36, 51, 68,?</p>\n", "options": [{"prompt": "1", "value": "92"}, {"prompt": "2", "value": "73"}, {"prompt": "3", "value": "87"}, {"prompt": "4", "value": "78"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>આપેલ વિકલ્પોમાંથી એવી સંખ્યા પસંદ કરો જે નીચેની શ્રેણીમાં પ્રશ્નાર્થ ચિહ્ન (?)ને બદલી શકે.</p>\n\n<p>23, 36, 51, 68, ?</p>\n", "options": [{"prompt": "1", "value": "92"}, {"prompt": "2", "value": "73"}, {"prompt": "3", "value": "87"}, {"prompt": "4", "value": "78"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಸರಣಿಯಲ್ಲಿ ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಯನ್ನು (?) ಬದಲಾಯಿಸಬಹುದಾದ ಸಂಖ್ಯೆಯನ್ನು ನೀಡಿರುವ ಆಯ್ಕೆಗಳಿಂದ  ಆಯ್ಕೆಮಾಡಿ.</p>\n\n<p>23, 36, 51, 68, ?</p>\n", "options": [{"prompt": "1", "value": "92"}, {"prompt": "2", "value": "73"}, {"prompt": "3", "value": "87"}, {"prompt": "4", "value": "78"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வரும் தொடரில் கேள்விக்குறியை (?) மாற்றக்கூடிய கொடுக்கப்பட்ட விருப்பங்களில் இருந்து எண்ணைத் தேர்ந்தெடுக்கவும்.</p><p> 23, 36, 51, 68, ?</p>", "options": [{"prompt": "1", "value": "92"}, {"prompt": "2", "value": "73"}, {"prompt": "3", "value": "87"}, {"prompt": "4", "value": "78"}], "range": {"start": "", "end": ""}}, "or": {"value": "<p>ପ୍ରଦତ୍ତ ବିକଳ୍ପଗୁଡ଼ିକ ମଧ୍ୟରୁ ସଂଖ୍ୟା ଚୟନ କରନ୍ତୁ ଯାହା ନିମ୍ନ କ୍ରମରେ ପ୍ରଶ୍ନ ଚିହ୍ନ (?) କୁ ବଦଳାଇପାରେ |</p><p> 23, 36, 51, 68 ,?</p>", "options": [{"prompt": "1", "value": "92"}, {"prompt": "2", "value": "73"}, {"prompt": "3", "value": "87"}, {"prompt": "4", "value": "78"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>The logic followed here is:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4422470fe854162f7690be6d764d183023dd664012d2a4475dae8431e2144f1c.png\" style=\"width: 231px; height: 122px;\" /></p>\n\n<p>Hence, &#39;<strong>87</strong>&#39; is the correct answer.</p>\n", "hn": "<p>यहाँ अनुसरण किया गया तर्क है:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4422470fe854162f7690be6d764d183023dd664012d2a4475dae8431e2144f1c.png\" style=\" width: 231px; height: 122px;\" /></p>\n\n<p>अत:, सही उत्तर <span style=\"\"><strong>&#39;87&#39;</strong>&nbsp;</span>है।</p>\n", "te": "<p>ఇక్కడ అనుసరించబడిన తర్కం:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4422470fe854162f7690be6d764d183023dd664012d2a4475dae8431e2144f1c.png\" style=\"width: 231px; height: 122px;\" /></p>\n\n<p>కాబట్టి, '<strong>87</strong>' సరైన సమాధానం.</p>\n", "mr": "<p>येथे अनुसरण केलेला तर्क असा आहे:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4422470fe854162f7690be6d764d183023dd664012d2a4475dae8431e2144f1c.png\" style=\"width: 231px; height: 122px;\" /></p>\n\n<p>म्हणून, '<strong>87</strong>' हे योग्य उत्तर आहे.</p>\n", "bn": "<p>এখানে অনুসৃত যুক্তিটি হল:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4422470fe854162f7690be6d764d183023dd664012d2a4475dae8431e2144f1c.png\" style=\"width: 231px; height: 122px;\" /></p>\n\n<p>সুতরাং, <span style=\"color: rgb(33, 37, 41);\">সঠিক উত্তরটি হল </span>'<strong>87</strong>' </p>\n", "ml": "", "gu": "<p>અહીં અનુસરવામાં આવતો તર્ક નીચે મુજબ છે.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4422470fe854162f7690be6d764d183023dd664012d2a4475dae8431e2144f1c.png\" style=\"width: 231px; height: 122px;\" /></p>\n\n<p>તેથી, '<strong>87</strong>' સાચો જવાબ છે.</p>\n", "kn": "<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ತರ್ಕ ಹೀಗಿದೆ:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4422470fe854162f7690be6d764d183023dd664012d2a4475dae8431e2144f1c.png\" style=\"width: 231px; height: 122px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ<strong> '87'.</strong></p>\n", "ta": "<p>இங்கே பின்பற்றப்படும் தர்க்கம்: </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4422470fe854162f7690be6d764d183023dd664012d2a4475dae8431e2144f1c.png\" style=\"width: 231px; height: 122px;\" /></p><p> எனவே, ' <strong>87</strong> ' என்பது சரியான விடை.</p>", "or": "<p>ଏଠାରେ ଅନୁସରଣ କରାଯାଉଥିବା ତର୍କ ହେଉଛି: </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4422470fe854162f7690be6d764d183023dd664012d2a4475dae8431e2144f1c.png\" style=\"width: 231px; height: 122px;\" /></p><p> ତେଣୁ, ' <strong>87</strong> ' ହେଉଛି ସଠିକ୍ ଉତ୍ତର |</p>", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Series"], "concept": "Series", "confidence": "high"}, {"qid": "6274128132b227724a2779a1", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the number from among the given options that can replace the question mark (?) in the following series.</p>\n\n<p>61, 70, 95, ?, 225, 346</p>\n", "options": [{"prompt": "1", "value": "136"}, {"prompt": "2", "value": "144"}, {"prompt": "3", "value": "182"}, {"prompt": "4", "value": "132"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p style=\"\">दिए गए विकल्पों में से उस&nbsp;संख्या का चयन कीजिए, जो निम्नलिखित <span style=\"display: none;\">&nbsp;</span>शृंखला <span style=\"display: none;\">&nbsp;</span>में प्रश्न&nbsp;चिन्ह (?) को प्रतिस्थापित कर सकती है।</p>\n\n<p style=\"\">61, 70, 95, ?, 225, 346</p>\n", "options": [{"prompt": "1", "value": "136"}, {"prompt": "2", "value": "144"}, {"prompt": "3", "value": "182"}, {"prompt": "4", "value": "132"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>కింది శ్రేణిలో ప్రశ్న గుర్తు (?)ని భర్తీ చేయగల ఇవ్వబడిన ఎంపికల నుండి సంఖ్యను ఎంచుకోండి.</p>\n\n<p>61, 70, 95, ?, 225, 346</p>\n", "options": [{"prompt": "1", "value": "136"}, {"prompt": "2", "value": "144"}, {"prompt": "3", "value": "182"}, {"prompt": "4", "value": "132"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>दिलेल्या पर्यायांपैकी एक संख्या निवडा जी खालील मालिकेतील प्रश्नचिन्ह (?) बदलू शकेल.</p>\n\n<p>61, 70, 95, ?, 225, 346</p>\n", "options": [{"prompt": "1", "value": "136"}, {"prompt": "2", "value": "144"}, {"prompt": "3", "value": "182"}, {"prompt": "4", "value": "132"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>প্রদত্ত বিকল্পগুলির মধ্যে থেকে সেই সংখ্যাটি নির্বাচন করুন যা নিম্নলিখিত ক্রমের প্রশ্ন চিহ্ন (?) প্রতিস্থাপন করতে পারে।</p>\n\n<p>61, 70, 95,?, 225, 346</p>\n", "options": [{"prompt": "1", "value": "136"}, {"prompt": "2", "value": "144"}, {"prompt": "3", "value": "182"}, {"prompt": "4", "value": "132"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>નીચે આપેલી શ્રેણીમાં પ્રશ્નાર્થ (?) ને બદલે કઈ સંખ્યા મૂકી શકાય તે પૈકીનો વિકલ્પ પસંદ કરો.</p>\n\n<p>61, 70, 95, ?, 225, 346</p>\n", "options": [{"prompt": "1", "value": "136"}, {"prompt": "2", "value": "144"}, {"prompt": "3", "value": "182"}, {"prompt": "4", "value": "132"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಸರಣಿಯಲ್ಲಿ ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆ (?) ಯನ್ನು ಬದಲಿಸಬಹುದಾದ ಸಂಖ್ಯೆಯನ್ನು ನೀಡಲಾದ ಆಯ್ಕೆಗಳಿಂದ ಆರಿಸಿ.</p>\n\n<p>61, 70, 95, ?, 225, 346</p>\n", "options": [{"prompt": "1", "value": "136"}, {"prompt": "2", "value": "144"}, {"prompt": "3", "value": "182"}, {"prompt": "4", "value": "132"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>கொடுக்கப்பட்ட விருப்பங்களில் இருந்து, பின்வரும் தொடரில் கேள்விக்குறியை (?) மாற்றக்கூடிய எண்ணைத் தேர்ந்தெடுக்கவும்.</p>\n\n<p>61, 70, 95, ?, 225, 346</p>\n", "options": [{"prompt": "1", "value": "136"}, {"prompt": "2", "value": "144"}, {"prompt": "3", "value": "182"}, {"prompt": "4", "value": "132"}], "range": {"start": "", "end": ""}}, "pa": {"value": "<p>ਦਿੱਤੇ ਗਏ ਵਿਕਲਪਾਂ ਵਿੱਚੋਂ ਉਹ ਨੰਬਰ ਚੁਣੋ ਜੋ ਹੇਠਾਂ ਦਿੱਤੀ ਲੜੀ ਵਿੱਚ ਪ੍ਰਸ਼ਨ ਚਿੰਨ੍ਹ (?) ਨੂੰ ਬਦਲ ਸਕਦਾ ਹੈ।</p><p> 61, 70, 95,?, 225, 346</p>", "options": [{"prompt": "1", "value": "136"}, {"prompt": "2", "value": "144"}, {"prompt": "3", "value": "182"}, {"prompt": "4", "value": "132"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>The logic is:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7758f8ec24acca78620a29e51e82d89d7969b07b681a6ee62594980b766e151e.png\" style=\"width: 272px; height: 134px;\" /></p>\n\n<p>Hence, &lsquo;<strong>144</strong>&rsquo; is the correct answer.</p>\n", "hn": "<p style=\"\">तर्क इस प्रकार&nbsp;है:</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7758f8ec24acca78620a29e51e82d89d7969b07b681a6ee62594980b766e151e.png\" style=\" width: 272px; height: 134px;\" /></p>\n\n<p style=\"\">अत:,&nbsp;<span style=\"\">सही उत्तर</span><strong> </strong>&#39;<strong>144</strong>&#39;&nbsp;है।</p>\n", "te": "<p>తర్కం ఏమిటంటే:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7758f8ec24acca78620a29e51e82d89d7969b07b681a6ee62594980b766e151e.png\" style=\" width: 272px; height: 134px;\" /></p>\n\n<p>కాబట్టి, <strong>‘144’ </strong>సరైన సమాధానం.</p>\n", "mr": "<p>तर्क असा आहे:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7758f8ec24acca78620a29e51e82d89d7969b07b681a6ee62594980b766e151e.png\" style=\"width: 272px; height: 134px;\" /></p>\n\n<p>म्हणून, योग्य उत्तर '<u><strong>144</strong></u>' आहे.</p>\n", "bn": "<p>যুক্তিটি হল:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7758f8ec24acca78620a29e51e82d89d7969b07b681a6ee62594980b766e151e.png\" style=\"width: 272px; height: 134px;\" /></p>\n\n<p>সুতরাং, '<strong>144</strong>' সঠিক উত্তর।</p>\n", "ml": "", "gu": "<p>તર્ક નીચે મુજબ છે:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7758f8ec24acca78620a29e51e82d89d7969b07b681a6ee62594980b766e151e.png\" style=\"width: 272px; height: 134px;\" /></p>\n\n<p>તેથી, ‘<strong>144</strong>’ સાચો જવાબ છે.</p>\n", "kn": "<p>ತರ್ಕವೆಂದರೆ:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7758f8ec24acca78620a29e51e82d89d7969b07b681a6ee62594980b766e151e.png\" style=\"width: 272px; height: 134px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ‘<strong>144</strong>’ ಸರಿಯಾದ ಉತ್ತರವಾಗಿದೆ.</p>\n", "ta": "<p>தர்க்கம்:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7758f8ec24acca78620a29e51e82d89d7969b07b681a6ee62594980b766e151e.png\" style=\"width: 272px; height: 134px;\" /></p>\n\n<p>ஆகவே, '<strong>144</strong>' என்பது சரியான பதில்.</p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>ਤਰਕ ਹੈ: </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7758f8ec24acca78620a29e51e82d89d7969b07b681a6ee62594980b766e151e.png\" style=\"width: 272px; height: 134px;\" /></p><p> ਇਸ ਲਈ, ' <strong>144</strong> ' ਸਹੀ ਉੱਤਰ ਹੈ।</p>", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Series"], "concept": "Series", "confidence": "high"}, {"qid": "62188234f9344aaa492a4940", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Which number will replace the question mark (?) in the following number series?</p>\n\n<p>17, 20, 30, 45, 71, 106, ?</p>\n", "options": [{"prompt": "1", "value": "143"}, {"prompt": "2", "value": "171"}, {"prompt": "3", "value": "167"}, {"prompt": "4", "value": "156"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्नलिखित संख्या श्रंखला में कौन-सी संख्या प्रश्नवाचक चिन्ह (?) का स्थान लेगी?</p>\n\n<p>17, 20, 30, 45, 71, 106, ?</p>\n", "options": [{"prompt": "1", "value": "143"}, {"prompt": "2", "value": "171"}, {"prompt": "3", "value": "167"}, {"prompt": "4", "value": "156"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>క్రింది సంఖ్యల శ్రేణిలో ప్రశ్నార్థక చిహ్నం (?) స్థానంలో ఏ సంఖ్య రావాలి?</p>\n\n<p>17, 20, 30, 45, 71, 106, ?</p>\n", "options": [{"prompt": "1", "value": "143"}, {"prompt": "2", "value": "171"}, {"prompt": "3", "value": "167"}, {"prompt": "4", "value": "156"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>खालील संख्या मालिकेत प्रश्नचिन्हाच्या (?) जागी कोणती संख्या येईल?</p>\n\n<p>17, 20, 30, 45, 71, 106, ?</p>\n", "options": [{"prompt": "1", "value": "143"}, {"prompt": "2", "value": "171"}, {"prompt": "3", "value": "167"}, {"prompt": "4", "value": "156"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>নিম্নলিখিত সংখ্যা সিরিজে প্রশ্ন চিহ্ন (?) এর পরিবর্তে কোন সংখ্যা আসবে?</p>\n\n<p>17, 20, 30, 45, 71, 106, ?</p>\n", "options": [{"prompt": "1", "value": "143"}, {"prompt": "2", "value": "171"}, {"prompt": "3", "value": "167"}, {"prompt": "4", "value": "156"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>નીચેની સંખ્યા શ્રેણીમાં પ્રશ્નાર્થ ચિહ્ન (?)ને કઈ સંખ્યા બદલશે?</p>\n\n<p>17, 20, 30, 45, 71, 106, ?</p>\n", "options": [{"prompt": "1", "value": "143"}, {"prompt": "2", "value": "171"}, {"prompt": "3", "value": "167"}, {"prompt": "4", "value": "156"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಸಂಖ್ಯೆಯ ಸರಣಿಯಲ್ಲಿ ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಯನ್ನು (?) ಯಾವ ಸಂಖ್ಯೆ ಬದಲಾಯಿಸುತ್ತದೆ?</p>\n\n<p>17, 20, 30, 45, 71, 106, ?</p>\n", "options": [{"prompt": "1", "value": "143"}, {"prompt": "2", "value": "171"}, {"prompt": "3", "value": "167"}, {"prompt": "4", "value": "156"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வரும் எண் வரிசையில் எந்த எண் கேள்விக்குறியை (?) மாற்றும்?</p><p> 17, 20, 30, 45, 71, 106, ?</p>", "options": [{"prompt": "1", "value": "143"}, {"prompt": "2", "value": "171"}, {"prompt": "3", "value": "167"}, {"prompt": "4", "value": "156"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The logic followed here is :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b5634ef0033ffe58dea0bced0ec308b7a3fbe527d4fc3fb9480a2006004752f.png\" style=\"width: 327px; height: 168px;\" /></p>\n\n<p>&nbsp;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n\n<p>17 + (2<sup>2</sup>&nbsp; - 1 ) = 17 + 3 = 20</p>\n\n<p>20 + (3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><sp", "hn": "\n<p>यहाँ तर्क दिया गया है: -</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b5634ef0033ffe58dea0bced0ec308b7a3fbe527d4fc3fb9480a2006004752f.png\" style=\" width: 327px; height: 168px;\" /></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span>&nbsp;</p>\n\n<p style=\"\">17 + (2<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>&nbsp; - 1 ) = 17 + 3 = 20</p>\n\n<p style=\"\">20 + (3<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span>&nbsp;+ 1) = 20 + 10 = 30</p>\n\n<p style=\"\">30 + (4<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span>&nbsp;- 1) = 30 + 15 = 45</p>\n\n<p style=\"\">45 +&nbsp;(5<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span>&nbsp;+&nbsp;1) = 45 + 26 = 71&nbsp;</p>\n\n<p style=\"\">71 +&nbsp;(6<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span>&nbsp;- 1) = 71 + 35 = 106</p>\n\n<p style=\"\">106 +&nbsp;(7<span style=\"line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span>&nbsp;+&nbsp;1) = 106 + 50 = 156</p>\n\n<p style=\"\">&nbsp;</p>\n\n<p>अत: सही उत्तर <strong>&quot; <span style=\"\">156&quot; है।</span></strong></p>\n\n32:T6d1,\n<p>ఇక్కడ అనుసరించబడిన తర్కం :-</p>\n\n<p><img alt=\"", "te": "\n<p>ఇక్కడ అనుసరించబడిన తర్కం :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b5634ef0033ffe58dea0bced0ec308b7a3fbe527d4fc3fb9480a2006004752f.png\" style=\"width: 327px; height: 168px;\" /></p>\n\n<p> </p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>ప్రత్యామ్నాయ పద్ధతి</u></span></strong></span></p>\n\n<p>17 + (2<sup>2</sup>  - 1 ) = 17 + 3 = 20</p>\n\n<p>20 + (3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 20 + 10 = 30</span></p>\n\n<p><span style=\"\">30 + (4</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> - 1) = 30 + 15 = 45</span></p>\n\n<p><span style=\"\">45 + (5</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 45 + 26 = 71 </span></p>\n\n<p><span style=\"\">71 + (6</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> - 1) = 71 + 35 = 106</span></p>\n\n<p><span style=\"\">106 + (7</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 106 + 50 = 156</span></p>\n\n<p> </p>\n\n<p>కాబట్టి, సరైన సమాధానం <strong>\"<span style=\"\">156\".</span></strong></p>\n\n33:T6f8,\n<p>येथे वापरलेले तर्कशास्त्र खालीलप्रमाणे आहे :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb", "mr": "\n<p>येथे वापरलेले तर्कशास्त्र खालीलप्रमाणे आहे :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b5634ef0033ffe58dea0bced0ec308b7a3fbe527d4fc3fb9480a2006004752f.png\" style=\"width: 327px; height: 168px;\" /></p>\n\n<p> </p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>वैकल्पिक पद्धत</u></span></strong></span></p>\n\n<p>17 + (2<sup>2</sup>  - 1 ) = 17 + 3 = 20</p>\n\n<p>20 + (3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 20 + 10 = 30</span></p>\n\n<p><span style=\"\">30 + (4</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> - 1) = 30 + 15 = 45</span></p>\n\n<p><span style=\"\">45 + (5</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 45 + 26 = 71 </span></p>\n\n<p><span style=\"\">71 + (6</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> - 1) = 71 + 35 = 106</span></p>\n\n<p><span style=\"\">106 + (7</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 106 + 50 = 156</span></p>\n\n<p> </p>\n\n<p>म्हणून, योग्य उत्तर <strong>\"<span style=\"\">156\"</span></strong> आहे.</p>\n\n34:T6c4,\n<p>এখানে ব্যবহৃত লজিক হলো :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b5634ef0033ffe58dea0bced0ec308b7a3fbe527d4", "bn": "\n<p>এখানে ব্যবহৃত লজিক হলো :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b5634ef0033ffe58dea0bced0ec308b7a3fbe527d4fc3fb9480a2006004752f.png\" style=\"width: 327px; height: 168px;\" /></p>\n\n<p> </p>\n\n<p><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" style=\"color: rgb(33, 37, 41);\" width=\"26px\" /> <span style=\"font-size:20px;\"><span style=\"font-weight: bolder;\"><span style=\"vertical-align: middle; \"><u>Alternate Method</u></span></span></span></p>\n\n<p>17 + (2<sup>2</sup> - 1 ) = 17 + 3 = 20</p>\n\n<p>20 + (3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 20 + 10 = 30</span></p>\n\n<p><span style=\"\">30 + (4</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> - 1) = 30 + 15 = 45</span></p>\n\n<p><span style=\"\">45 + (5</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 45 + 26 = 71 </span></p>\n\n<p><span style=\"\">71 + (6</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> - 1) = 71 + 35 = 106</span></p>\n\n<p><span style=\"\">106 + (7</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 106 + 50 = 156</span></p>\n\n<p> </p>\n\n<p>অতএব, সঠিক উত্তর হলো <strong>\"<span style=\"\">156\".</span></strong></p>\n\n35:T762,\n<p>અહીં અનુસરવામાં આવેલ તર્ક નીચે મુજબ છે:-</p>\n\n<p><img al", "ml": "", "gu": "\n<p>અહીં અનુસરવામાં આવેલ તર્ક નીચે મુજબ છે:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b5634ef0033ffe58dea0bced0ec308b7a3fbe527d4fc3fb9480a2006004752f.png\" style=\"width: 327px; height: 168px;\" /></p>\n\n<p> </p>\n\n<p><span style=\"font-size:20px;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" style=\"color: rgb(33, 37, 41);\" width=\"26px\" /><span style=\"font-weight: bolder;\"><span style=\"vertical-align: middle; \"><u>Alternate Method</u></span></span></span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">17 + (2<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>  - 1 ) = 17 + 3 = 20</p>\n\n<p style=\"c", "kn": "\n<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ತರ್ಕ ಹೀಗಿದೆ :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b5634ef0033ffe58dea0bced0ec308b7a3fbe527d4fc3fb9480a2006004752f.png\" style=\"width: 327px; height: 168px;\" /></p>\n\n<p> </p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>ಪರ್ಯಾಯ ವಿಧಾನ</u></span></strong></span></p>\n\n<p>17 + (2<sup>2</sup>  - 1 ) = 17 + 3 = 20</p>\n\n<p>20 + (3<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 20 + 10 = 30</span></p>\n\n<p><span style=\"\">30 + (4</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> - 1) = 30 + 15 = 45</span></p>\n\n<p><span style=\"\">45 + (5</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 45 + 26 = 71 </span></p>\n\n<p><span style=\"\">71 + (6</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> - 1) = 71 + 35 = 106</span></p>\n\n<p><span style=\"\">106 + (7</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span><span style=\"\"> + 1) = 106 + 50 = 156</span></p>\n\n<p> </p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ <strong>\"<span style=\"\">156\".</span></strong></p>\n\n37:T6b7,\n<p>இங்கே பின்பற்றப்படும் தர்க்கம்:- </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b563", "ta": "\n<p>இங்கே பின்பற்றப்படும் தர்க்கம்:- </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b5634ef0033ffe58dea0bced0ec308b7a3fbe527d4fc3fb9480a2006004752f.png\" style=\"width: 327px; height: 168px;\" /></p><p></p><p> <span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /> <strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>மாற்று முறை</u></span></strong></span></p><p> 17 + (2 <sup>2</sup> - 1 ) = 17 + 3 = 20</p><p> 20 + (3 <span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span> <span style=\"\">+ 1) = 20 + 10 = 30</span></p><p> <span style=\"\">30 + (4</span> <span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span> <span style=\"\">- 1) = 30 + 15 = 45</span></p><p> <span style=\"\">45 + (5</span> <span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span> <span style=\"\">+ 1) = 45 + 26 = 71</span></p><p> <span style=\"\">71 + (6</span> <span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span> <span style=\"\">- 1) = 71 + 35 = 106</span></p><p> <span style=\"\">106 + (7</span> <span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">2</span> <span style=\"\">+ 1) = 106 + 50 = 156</span></p><p></p><p> எனவே, சரியான பதில் <strong>\" <span style=\"\">156\".</span></strong></p>\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 7: Number Series - I\",\"sections\":[{\"_id\":\"629729060c26b254", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Series"], "concept": "Series", "confidence": "high"}, {"qid": "6274929e292c4dfc2e6ee8cc", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the number from among the given options that can replace the question mark (?) in the following series.&nbsp;</p>\n\n<p>115, 178, 241, 304, ?</p>\n", "options": [{"prompt": "1", "value": "337"}, {"prompt": "2", "value": "370"}, {"prompt": "3", "value": "367"}, {"prompt": "4", "value": "348"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए विकल्पों में से उस संख्या का चयन कीजिए जो निम्नलिखित श्रृंखला में प्रश्नवाचक चिन्ह (?) को प्रतिस्थापित कर सकती है।</p>\n\n<p>115, 178, 241, 304, ?</p>\n", "options": [{"prompt": "1", "value": "337"}, {"prompt": "2", "value": "370"}, {"prompt": "3", "value": "367"}, {"prompt": "4", "value": "348"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வரும் எண்வரிசையில் கேள்விக்குறிக்கு (?) பதிலாக வரக்கூடிய எண்ணை கொடுக்கப்பட்ட விருப்பங்களில் இருந்து தேர்ந்தெடுக்கவும்.</p>\n\n<p><span style=\"\">115, 178, 241, 304, ?</span></p>\n", "options": [{"prompt": "1", "value": "337"}, {"prompt": "2", "value": "370"}, {"prompt": "3", "value": "367"}, {"prompt": "4", "value": "348"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>The pattern followed here is:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f24e5f50a21e8a24793c70fd60a33c039f53d52d82834e800becc51c8f297b84.png\" /></p>\n\n<p>Hence, the correct answer is&nbsp;&quot;367&quot;.</p>\n", "hn": "<p><span style=\"\">यहाँ निम्न स्वरुप का अनुसरण किया गया है:</span></p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f24e5f50a21e8a24793c70fd60a33c039f53d52d82834e800becc51c8f297b84.png\" /></p>\n\n<p>अत: सही उत्तर <strong>&quot;367&quot;</strong> है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "<p>இங்கே பின்பற்றப்படும் முறை:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f24e5f50a21e8a24793c70fd60a33c039f53d52d82834e800becc51c8f297b84.png\" style=\"\" /></p>\n\n<p>எனவே, சரியான பதில் \"367\".</p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Series"], "concept": "Series", "confidence": "high"}, {"qid": "6216292a58bc2cd0e114aa6f", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Which number will replace the question mark (?) in the following number series?&nbsp;</p>\n\n<p>6, 15, 42, ?, 366, 1095</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "126"}, {"prompt": "3", "value": "129"}, {"prompt": "4", "value": "125"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्नलिखित संख्या श्रृंखला&nbsp;में कौन-सी संख्या प्रश्नवाचक चिन्ह (?) का स्थान लेगी?</p>\n\n<p>6, 15, 42, ?, 366, 1095</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "126"}, {"prompt": "3", "value": "129"}, {"prompt": "4", "value": "125"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>కింది సంఖ్యల శ్రేణిలో ప్రశ్న గుర్తు (?)ని ఏ సంఖ్య భర్తీ చేస్తుంది?</p>\n\n<p>6, 15, 42, ?, 366, 1095</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "126"}, {"prompt": "3", "value": "129"}, {"prompt": "4", "value": "125"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>खालील संख्यामालिकेत प्रश्नचिन्हाच्या जागी (?) काय येईल? </p>\n\n<p>6, 15, 42, ?, 366, 1095</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "126"}, {"prompt": "3", "value": "129"}, {"prompt": "4", "value": "125"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>নিম্নলিখিত সংখ্যা ক্রমের প্রশ্ন চিহ্ন (?) প্রতিস্থাপনকারী সংখ্যা চয়ন করুন?</p>\n\n<p>6, 15, 42,?, 366, 1095</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "126"}, {"prompt": "3", "value": "129"}, {"prompt": "4", "value": "125"}], "range": {"start": "", "end": ""}}, "ml": {"value": "<p style=\"\">ഇനിപ്പറയുന്ന സംഖ്യാ ശ്രേണിയിലെ ചോദ്യചിഹ്നത്തിന് (?) പകരം വെയ്ക്കാവുന്ന സംഖ്യ ഏതാണ്?</p>\n\n<p style=\"\">6, 15, 42, ?, 366, 1095</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "126"}, {"prompt": "3", "value": "129"}, {"prompt": "4", "value": "125"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>નીચેની સંખ્યા શ્રેણીમાં પ્રશ્નાર્થ ચિહ્ન (?)ને કઈ સંખ્યા બદલશે?</p>\n\n<p>6, 15, 42, ?, 366, 1095</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "126"}, {"prompt": "3", "value": "129"}, {"prompt": "4", "value": "125"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಸಂಖ್ಯೆಯ ಸರಣಿಯಲ್ಲಿ ಯಾವ ಸಂಖ್ಯೆಯು ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಯನ್ನು (?) ಬದಲಾಯಿಸುತ್ತದೆ?</p>\n\n<p>6, 15, 42, ?, 366, 1095</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "126"}, {"prompt": "3", "value": "129"}, {"prompt": "4", "value": "125"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வரும் எண் வரிசையில் எந்த எண் கேள்விக்குறியை (?) மாற்றும்?</p>\n\n<p>6, 15, 42, ?, 366, 1095</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "126"}, {"prompt": "3", "value": "129"}, {"prompt": "4", "value": "125"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>The logic followed here is:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/10077117c6b4c678dde587594b4aab3a3fe1bafdccd780b0cc4b4cff2329f222.png\" style=\"height: 124px; width: 287px;\" /></p>\n\n<p>Hence, the correct answer is <strong>&quot;123&quot;.</strong></p>\n\n<p><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></strong></p>\n\n<p>The logic followed here is:</p>\n\n<p>6&nbsp;&times; 3 - 3 = 15</p>\n\n<p>15 &times; 3 - 3 = 42</p>\n\n<p><strong>42&nbsp;&times; 3 - 3 = 123</strong></p>\n\n<p>123&nbsp;&times; 3 - 3 = 366</p>\n\n<p>366&nbsp;&times; 3 - 3 = 1095</p>\n\n<p>Hence, the correct answer is &quot;123&quot;.</p>\n", "hn": "<p>यहाँ अनुसरण किया गया तर्क है:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/10077117c6b4c678dde587594b4aab3a3fe1bafdccd780b0cc4b4cff2329f222.png\" style=\"height: 124px; width: 287px;\" /></p>\n\n<p>अत: सही उत्तर <strong>&quot;123&quot; </strong>है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n\n<p>यहाँ अनुसरण किया गया तर्क है:</p>\n\n<p style=\"\">6&nbsp;&times; 3 - 3 = 15</p>\n\n<p style=\"\">15&nbsp;&times; 3 - 3 = 42</p>\n\n<p style=\"\"><strong>42&nbsp;&times; 3 - 3 = 123</strong></p>\n\n<p style=\"\">123&nbsp;&times; 3 - 3 = 366</p>\n\n<p style=\"\">366&nbsp;&times; 3 - 3 = 1095</p>\n\n<p>अत: सही उत्तर &quot;123&quot; है।</p>\n30:T971,\n<p>The logic followed here is :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0b5634ef0", "te": "<p>ఇక్కడ అనుసరించిన తర్కం:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/10077117c6b4c678dde587594b4aab3a3fe1bafdccd780b0cc4b4cff2329f222.png\" style=\"height: 124px; width: 287px;\" /></p>\n\n<p>కాబట్టి, సరైన సమాధానం <strong>\"123\".</strong></p>\n\n<p><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /> <strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>ప్రత్యామ్నాయ పద్ధతి</u></span></strong></span></strong></p>\n\n<p>ఇక్కడ అనుసరించిన తర్కం:</p>\n\n<p>6 × 3 - 3 = 15</p>\n\n<p>15 × 3 - 3 = 42</p>\n\n<p><strong>42 × 3 - 3 = 123</strong></p>\n\n<p>123 × 3 - 3 = 366</p>\n\n<p>366 × 3 - 3 = 1095</p>\n\n<p>కాబట్టి, సరైన సమాధానం \"123\".</p>\n", "mr": "<p>येथे अनुसरण केलेला तर्क असा आहे:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/10077117c6b4c678dde587594b4aab3a3fe1bafdccd780b0cc4b4cff2329f222.png\" style=\"height: 124px; width: 287px;\" /></p>\n\n<p>म्हणून, योग्य उत्तर <strong>\"123\" </strong><span style=\"\">आहे.</span></p>\n", "bn": "<p>এখানে অনুসৃত যুক্তি হল:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/10077117c6b4c678dde587594b4aab3a3fe1bafdccd780b0cc4b4cff2329f222.png\" style=\"height: 124px; width: 287px;\" /></p>\n\n<p>সুতরাং, সঠিক উত্তর হল <strong>\"123\"</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span> </p>\n\n<p style=\"\">এখানে অনুসৃত যুক্তিটি হল:</p>\n\n<p style=\"\">6 × 3 - 3 = 15</p>\n\n<p style=\"\">15 × 3 - 3 = 42</p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">42 × 3 - 3 = 123</span></p>\n\n<p style=\"\">123 × 3 - 3 = 366</p>\n\n<p style=\"\">366 × 3 - 3 = 1095</p>\n\n<p style=\"\">সুতরাং, সঠিক উত্তর \"123\"</p>\n", "ml": "<p style=\"\">ഇവിടെ പിന്തുടരുന്ന യുക്തി ഇതാണ്:</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/10077117c6b4c678dde587594b4aab3a3fe1bafdccd780b0cc4b4cff2329f222.png\" style=\"height: 124px; width: 287px;\" /></p>\n\n<p style=\"\">അതിനാൽ, ശരിയായ ഉത്തരം <span style=\"font-weight: 700;\">\"123\" </span>ആണ്.</p>\n", "gu": "<p>અહીં અનુસરવામાં આવેલ તર્ક નીચે મુજબ છે:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/10077117c6b4c678dde587594b4aab3a3fe1bafdccd780b0cc4b4cff2329f222.png\" style=\"height: 124px; width: 287px;\" /></p>\n\n<p>તેથી, સાચો જવાબ <strong>\"123\" છે.</strong></p>\n\n<p><span style=\"font-size:20px;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" style=\"color: rgb(33, 37, 41); font-weight: 700;\" width=\"26px\" /><span style=\"font-weight: bolder;\"><span style=\"vertical-align: middle; \"><u>Alternate Method</u></span></span></span></p>\n\n<p>અહીં અનુસરવામાં આવેલ તર્ક નીચે મુજબ છે:</p>\n\n<p>6 x 3 - 3 = 15</p>\n\n<p>15 x 3 - 3 = 42</p>\n\n<p><strong>42 x 3 - 3 = 123</strong></p>\n\n<p>123 x 3 - 3 = 366</p>\n\n<p>366 x 3 - 3 = 1095</p>\n\n<p>તેથી, સાચો જવાબ \"123\" છે.</p>\n", "kn": "<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ತರ್ಕ ಹೀಗಿದೆ:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/10077117c6b4c678dde587594b4aab3a3fe1bafdccd780b0cc4b4cff2329f222.png\" style=\"height: 124px; width: 287px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ <strong>\"123\" ಆಗಿದೆ.</strong></p>\n", "ta": "<p>இங்கே பின்பற்றப்படும் தர்க்கம்:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/10077117c6b4c678dde587594b4aab3a3fe1bafdccd780b0cc4b4cff2329f222.png\" style=\"height: 124px; width: 287px;\" /></p>\n\n<p>எனவே, சரியான பதில் <strong>\"123\".</strong></p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Series"], "concept": "Series", "confidence": "high"}, {"qid": "627491d801d91c23bad28c37", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the number from among the given options that can replace the question mark (?) in the following series.</p>\n\n<p>30, ?, 83, 118, 160, 210</p>\n", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "54"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "42"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए विकल्पों में से उस संख्या का चयन कीजिए, जो निम्नलिखित श्रेणी में प्रश्नवाचक चिन्ह (?) को प्रतिस्थापित कर सकती है।</p>\n\n<p>30, ?, 83, 118, 160, 210</p>\n", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "54"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "42"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>కింది శ్రేణిలో ప్రశ్న గుర్తు (?)ని భర్తీ చేయగల సంఖ్యను ఇవ్వబడిన ఎంపికల నుండి ఎంచుకోండి.</p>\n\n<p>30, ?, 83, 118, 160, 210</p>\n", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "54"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "42"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>दिलेल्या पर्यायांमधून अशी संख्या निवडा जी खालील श्रेणीतील प्रश्नचिन्हाची (?) जागा घेऊ शकेल.</p>\n\n<p>30, ?, 83, 118, 160, 210</p>\n", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "54"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "42"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>প্রদত্ত বিকল্পগুলির মধ্যে থেকে সংখ্যাটি নির্ণয় করুন যা নিম্নলিখিত সারণির প্রশ্ন চিহ্ন (?) প্রতিস্থাপন করতে পারে।</p>\n\n<p>30,?, 83, 118, 160, 210</p>\n", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "54"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "42"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>આપેલ વિકલ્પોમાંથી તે સંખ્યા પસંદ કરો જે નીચેની શ્રેણીમાં પ્રશ્નાર્થ ચિહ્ન (?) ને બદલી શકે છે.</p>\n\n<p>30, ?, 83, 118, 160, 210</p>\n", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "54"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "42"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಸರಣಿಯಲ್ಲಿ ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಯನ್ನು (?) ಬದಲಾಯಿಸಬಹುದಾದ ಸಂಖ್ಯೆಯನ್ನು ನೀಡಿರುವ ಆಯ್ಕೆಗಳಿಂದ ಆರಿಸಿ.</p>\n\n<p>30, ?, 83, 118, 160, 210</p>\n", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "54"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "42"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>கொடுக்கப்பட்ட விருப்பங்களிலிருந்து கேள்விக்குறியை (?) மாற்றக்கூடிய எண்ணைத் தேர்ந்தெடுக்கவும்.</p>\n\n<p>30, ?, 83, 118, 160, 210</p>\n", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "54"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "42"}], "range": {"start": "", "end": ""}}, "pa": {"value": "<p>ਦਿੱਤੇ ਗਏ ਵਿਕਲਪਾਂ ਵਿੱਚੋਂ ਉਹ ਸੰਖਿਆ ਚੁਣੋ ਜੋ ਹੇਠ ਲਿਖੀ ਲੜੀ ਵਿੱਚ ਪ੍ਰਸ਼ਨ ਚਿੰਨ੍ਹ (?) ਦੀ ਥਾਂ ਲੈ ਸਕਦੀ ਹੈ।</p>\n\n<p>30, ?, 83, 118, 160, 210</p>\n", "options": [{"prompt": "1", "value": "62"}, {"prompt": "2", "value": "54"}, {"prompt": "3", "value": "60"}, {"prompt": "4", "value": "42"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>The pattern followed here is:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f8e86431e2a834e3e81caed17406786e30b3f594b9b38d17317d46cf83b7f89c.png\" /></p>\n\n<p>Hence, the correct answer is&nbsp;&quot;54&quot;</p>\n", "hn": "<p><span style=\"\">यहाँ अनुसरित पैटर्न निम्न है:</span></p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f8e86431e2a834e3e81caed17406786e30b3f594b9b38d17317d46cf83b7f89c.png\" /></p>\n\n<p>अत: सही उत्तर <strong>&quot;54&quot;</strong> है</p>\n", "te": "<p>ఇక్కడ అనుసరించిన నమూనా:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f8e86431e2a834e3e81caed17406786e30b3f594b9b38d17317d46cf83b7f89c.png\" /></p>\n\n<p>కాబట్టి, సరైన సమాధానం \"54\"</p>\n", "mr": "<p>येथे अनुसरण केलेला नमुना आहे:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f8e86431e2a834e3e81caed17406786e30b3f594b9b38d17317d46cf83b7f89c.png\" /></p>\n\n<p>म्हणून, योग्य उत्तर \"54\" आहे.</p>\n", "bn": "<p>এখানে অনুসৃত ধাঁচটি হল:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f8e86431e2a834e3e81caed17406786e30b3f594b9b38d17317d46cf83b7f89c.png\" /></p>\n\n<p>সুতরাং, সঠিক উত্তরটি হল \"54\"</p>\n", "ml": "", "gu": "<p>અહીં અનુસરવામાં આવેલી પદ્ધતિ આ પ્રમાણે છે:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f8e86431e2a834e3e81caed17406786e30b3f594b9b38d17317d46cf83b7f89c.png\" /></p>\n\n<p>આથી, સાચો જવાબ \"54\" છે.</p>\n", "kn": "<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ಮಾದರಿಯು ಹೀಗಿದೆ:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f8e86431e2a834e3e81caed17406786e30b3f594b9b38d17317d46cf83b7f89c.png\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ \"54\"</p>\n", "ta": "<p>இங்கு பின்பற்றப்படும் முறை:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f8e86431e2a834e3e81caed17406786e30b3f594b9b38d17317d46cf83b7f89c.png\" /></p>\n\n<p>எனவே, சரியான பதில் \"54\"</p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>ਇੱਥੇ ਅਪਣਾਇਆ ਗਿਆ ਪੈਟਰਨ ਹੈ:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/f8e86431e2a834e3e81caed17406786e30b3f594b9b38d17317d46cf83b7f89c.png\" /></p>\n\n<p>ਇਸ ਲਈ, ਸਹੀ ਉੱਤਰ \"54\" ਹੈ।</p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Series"], "concept": "Series", "confidence": "high"}, {"qid": "624826d7e390de0a98cb1af1", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the number from among the given options that can replace the question mark (?) in the following series.</p>\n\n<p>31, 32, 36, 63, 79, 204, ?&nbsp;</p>\n", "options": [{"prompt": "1", "value": "220"}, {"prompt": "2", "value": "202"}, {"prompt": "3", "value": "204"}, {"prompt": "4", "value": "240"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए विकल्पों में से उस&nbsp;संख्या का चयन कीजिए जो निम्नलिखित श्रृंखला में प्रश्न&nbsp;चिन्ह (?) को प्रतिस्थापित कर सकती है।</p>\n\n<p>31, 32, 36, 63, 79, 204, ?&nbsp;</p>\n", "options": [{"prompt": "1", "value": "220"}, {"prompt": "2", "value": "202"}, {"prompt": "3", "value": "204"}, {"prompt": "4", "value": "240"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>కింది సిరీస్‌లో ప్రశ్న గుర్తు (?)ని భర్తీ చేయగల ఇవ్వబడిన ఎంపికల నుండి సంఖ్యను ఎంచుకోండి.</p>\n\n<p>31, 32, 36, 63, 79, 204, ?</p>\n", "options": [{"prompt": "1", "value": "220"}, {"prompt": "2", "value": "202"}, {"prompt": "3", "value": "204"}, {"prompt": "4", "value": "240"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>दिलेल्या पर्यायांपैकी एक अशी संख्या निवडा जी खालील मालिकेतील प्रश्नचिन्ह (?) बदलू शकेल.</p>\n\n<p>31, 32, 36, 63, 79, 204, ? </p>\n", "options": [{"prompt": "1", "value": "220"}, {"prompt": "2", "value": "202"}, {"prompt": "3", "value": "204"}, {"prompt": "4", "value": "240"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>প্রদত্ত বিকল্পগুলির মধ্যে থেকে সংখ্যাটি নির্বাচন করুন যা নিম্নলিখিত ক্রমের প্রশ্ন চিহ্নকে (?) প্রতিস্থাপন করতে পারে।</p>\n\n<p>31, 32, 36, 63, 79, 204,?</p>\n", "options": [{"prompt": "1", "value": "220"}, {"prompt": "2", "value": "202"}, {"prompt": "3", "value": "204"}, {"prompt": "4", "value": "240"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>આપેલ વિકલ્પોમાંથી એવી સંખ્યા પસંદ કરો જે નીચેની શ્રેણીમાં પ્રશ્નાર્થ  ચિહ્ન (?)ને બદલી શકે.</p>\n\n<p>31, 32, 36, 63, 79, 204, ?</p>\n", "options": [{"prompt": "1", "value": "220"}, {"prompt": "2", "value": "202"}, {"prompt": "3", "value": "204"}, {"prompt": "4", "value": "240"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಸರಣಿಯಲ್ಲಿ ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಯನ್ನು (?) ಬದಲಾಯಿಸಬಹುದಾದ ಸಂಖ್ಯೆಯನ್ನು ನೀಡಿರುವ ಆಯ್ಕೆಗಳಿಂದ  ಆಯ್ಕೆಮಾಡಿ.</p>\n\n<p>31, 32, 36, 63, 79, 204, ?</p>\n", "options": [{"prompt": "1", "value": "220"}, {"prompt": "2", "value": "202"}, {"prompt": "3", "value": "204"}, {"prompt": "4", "value": "240"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வரும் தொடரில் கேள்விக்குறியை (?) மாற்றக்கூடிய கொடுக்கப்பட்ட விருப்பங்களில் உள்ள எண்ணைத் தேர்ந்தெடுக்கவும்.</p>\n\n<p>31, 32, 36, 63, 79, 204, ?</p>\n", "options": [{"prompt": "1", "value": "220"}, {"prompt": "2", "value": "202"}, {"prompt": "3", "value": "204"}, {"prompt": "4", "value": "240"}], "range": {"start": "", "end": ""}}, "or": {"value": "<p>ପ୍ରଦତ୍ତ ବିକଳ୍ପଗୁଡ଼ିକ ମଧ୍ୟରୁ ସେହି ସଂଖ୍ୟା ଚୟନ କରନ୍ତୁ ଯାହା ନିମ୍ନ କ୍ରମରେ ପ୍ରଶ୍ନ ଚିହ୍ନ (?) କୁ ବଦଳାଇପାରେ । </p>\n\n<p>31, 32, 36, 63, 79, 204 ,?</p>\n", "options": [{"prompt": "1", "value": "220"}, {"prompt": "2", "value": "202"}, {"prompt": "3", "value": "204"}, {"prompt": "4", "value": "240"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p>The logic followed here is :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fd3214936055ad093f934162583febf2057e9af0382e7088456a562d3cb910c5.png\" style=\"width: 321px; height: 93px;\" /></p>\n\n<p>Hence, the correct answer is <strong>&quot;240&quot;.</strong></p>\n", "hn": "<p>यहाँ अनुसरित तर्क इस प्रकार है :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fd3214936055ad093f934162583febf2057e9af0382e7088456a562d3cb910c5.png\" style=\" width: 321px; height: 93px;\" /></p>\n\n<p>अतः, सही उत्तर <strong>&quot;240&quot; </strong>है।<strong>&nbsp;</strong><span style=\"\">&nbsp;</span></p>\n", "te": "<p>ఇక్కడ అనుసరించిన తర్కం:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fd3214936055ad093f934162583febf2057e9af0382e7088456a562d3cb910c5.png\" style=\"width: 321px; height: 93px;\" /></p>\n\n<p>కాబట్టి, సరైన సమాధానం <strong>\"240\".</strong></p>\n", "mr": "<p>येथे अनुसरण केलेला तर्क आहे:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fd3214936055ad093f934162583febf2057e9af0382e7088456a562d3cb910c5.png\" style=\"width: 321px; height: 93px;\" /></p>\n\n<p>म्हणून, <strong>\"240\"</strong> हे बरोबर उत्तर आहे.</p>\n", "bn": "<p>এখানে অনুসৃত যুক্তি হল:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fd3214936055ad093f934162583febf2057e9af0382e7088456a562d3cb910c5.png\" style=\"width: 321px; height: 93px;\" /></p>\n\n<p>অতএব, সঠিক উত্তর হল <strong>\"240\"</strong></p>\n", "ml": "", "gu": "<p>અહીં અનુસરવામાં આવેલ તર્ક નીચે મુજબ છે:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fd3214936055ad093f934162583febf2057e9af0382e7088456a562d3cb910c5.png\" style=\"width: 321px; height: 93px;\" /></p>\n\n<p>તેથી, સાચો જવાબ <strong>\"240\"</strong> છે.</p>\n", "kn": "<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ತರ್ಕ ಹೀಗಿದೆ:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fd3214936055ad093f934162583febf2057e9af0382e7088456a562d3cb910c5.png\" style=\"width: 321px; height: 93px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ <strong>\"240\" </strong>ಆಗಿದೆ.</p>\n", "ta": "<p>இங்கே பின்பற்றப்படும் தர்க்கம்:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fd3214936055ad093f934162583febf2057e9af0382e7088456a562d3cb910c5.png\" style=\"width: 321px; height: 93px;\" /></p>\n\n<p>எனவே, சரியான பதில் <strong>\"240\".</strong></p>\n", "or": "<p>ଏଠାରେ ଅନୁସରଣ କରାଯାଉଥିବା ତର୍କ ହେଉଛି : -</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fd3214936055ad093f934162583febf2057e9af0382e7088456a562d3cb910c5.png\" style=\"width: 321px; height: 93px;\" /></p>\n\n<p>ତେଣୁ, ସଠିକ୍ ଉତ୍ତର ହେଉଛି <strong>\"240\" । </strong></p>\n", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Series"], "concept": "Series", "confidence": "high"}, {"qid": "620235fcd06159c12e2c0e96", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Which of the following numbers will replace the question mark (?) in the given series?</p>\n\n<p>50, 86, ?, 127, 136, 140, 141</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "99"}, {"prompt": "3", "value": "111"}, {"prompt": "4", "value": "103"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्नलिखित में से कौन सी संख्या दी गई श्रृंखला में प्रश्न चिह्न (?) <span style=\"\">को प्रतिस्थापित करेगी</span>?</p>\n\n<p>50, 86, ?, 127, 136, 140, 141</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "99"}, {"prompt": "3", "value": "111"}, {"prompt": "4", "value": "103"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>ఇచ్చిన శ్రేణిలోని ప్రశ్న గుర్తు (?)ని కింది సంఖ్యలలో ఏది భర్తీ చేస్తుంది?</p>\n\n<p>50, 86, ?, 127, 136, 140, 141</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "99"}, {"prompt": "3", "value": "111"}, {"prompt": "4", "value": "103"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>दिलेल्या मालिकेतील प्रश्नचिन्हाच्या (?) च्या जागी खालीलपैकी कोणती संख्या येईल?</p>\n\n<p>50, 86, ?, 127, 136, 140, 141</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "99"}, {"prompt": "3", "value": "111"}, {"prompt": "4", "value": "103"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>নীচের কোন সংখ্যাটি প্রদত্ত সারির প্রশ্ন চিহ্নকে (?) প্রতিস্থাপিত করবে?</p>\n\n<p>50, 86,?, 127, 136, 140, 141</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "99"}, {"prompt": "3", "value": "111"}, {"prompt": "4", "value": "103"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>આપેલ શ્રેણીમાં નીચેનામાંથી કઈ સંખ્યા પ્રશ્નાર્થ ચિહ્ન (?)ને બદલશે?</p>\n\n<p>50, 86,?, 127, 136, 140, 141</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "99"}, {"prompt": "3", "value": "111"}, {"prompt": "4", "value": "103"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಯಾವ ಸಂಖ್ಯೆಯು ನೀಡಲಾದ ಸರಣಿಯಲ್ಲಿ ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಯನ್ನು (?) ಬದಲಾಯಿಸುತ್ತದೆ?</p>\n\n<p>50, 86, ?, 127, 136, 140, 141</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "99"}, {"prompt": "3", "value": "111"}, {"prompt": "4", "value": "103"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வருவனவற்றுள் கொடுக்கப்பட்டுள்ள தொடரில் உள்ள கேள்விக்குறியை (?) மாற்றும் எண் எது?</p>\n\n<p>50, 86, ?, 127, 136, 140, 141</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "99"}, {"prompt": "3", "value": "111"}, {"prompt": "4", "value": "103"}], "range": {"start": "", "end": ""}}, "pa": {"value": "<p>ਹੇਠ ਲਿਖੀਆਂ ਵਿੱਚੋਂ ਕਿਹੜੀਆਂ ਸੰਖਿਆਵਾਂ ਦਿੱਤੀ ਗਈ ਲੜੀ ਵਿੱਚ ਪ੍ਰਸ਼ਨ ਚਿੰਨ੍ਹ (?) ਦੀ ਥਾਂ ਲਵੇਗੀ?</p>\n\n<p>50, 86,?, 127, 136, 140, 141</p>\n", "options": [{"prompt": "1", "value": "123"}, {"prompt": "2", "value": "99"}, {"prompt": "3", "value": "111"}, {"prompt": "4", "value": "103"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>The logic followed&nbsp;here is :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3f68708b300c9cc511d08da6ea991113dd0cca2acb452cf87d8432fc939f4c35.png\" style=\"width: 324px; height: 99px;\" /></p>\n\n<p>Hence, the correct answer is <strong>&quot;<span style=\"\">111&quot;.</span></strong></p>\n", "hn": "<p>यहाँ अनुसरित तर्क इस प्रकार है :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3f68708b300c9cc511d08da6ea991113dd0cca2acb452cf87d8432fc939f4c35.png\" style=\" width: 324px; height: 99px;\" /></p>\n\n<p>अतः, सही उत्तर <strong>&quot;</strong><span style=\"\"><strong>111&quot; </strong>हैं।&nbsp;</span></p>\n", "te": "<p>ఇక్కడ అనుసరించిన లాజిక్:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3f68708b300c9cc511d08da6ea991113dd0cca2acb452cf87d8432fc939f4c35.png\" style=\"width: 324px; height: 99px;\" /></p>\n\n<p>కాబట్టి, సరైన సమాధానం <strong>\" <span style=\"\">111\".</span></strong></p>\n", "mr": "<p>येथे अनुसरण केलेला तर्क आहे :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3f68708b300c9cc511d08da6ea991113dd0cca2acb452cf87d8432fc939f4c35.png\" style=\"width: 324px; height: 99px;\" /></p>\n\n<p>म्हणून, योग्य उत्तर  <strong>\"<span style=\"\">111\"</span></strong> हे आहे.</p>\n", "bn": "<p>এখানে অনুসৃত যুক্তি হল:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3f68708b300c9cc511d08da6ea991113dd0cca2acb452cf87d8432fc939f4c35.png\" style=\"width: 324px; height: 99px;\" /></p>\n\n<p>অতএব, সঠিক উত্তর হল <strong>\" <span style=\"\">111\"</span></strong></p>\n", "ml": "", "gu": "<p>અહીં અનુસરવામાં આવેલ તર્ક નીચે મુજબ છે:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3f68708b300c9cc511d08da6ea991113dd0cca2acb452cf87d8432fc939f4c35.png\" style=\"width: 324px; height: 99px;\" /></p>\n\n<p>તેથી, સાચો જવાબ <strong>\" <span style=\"\">111\"</span></strong> છે.</p>\n", "kn": "<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ತರ್ಕ ಹೀಗಿದೆ:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3f68708b300c9cc511d08da6ea991113dd0cca2acb452cf87d8432fc939f4c35.png\" style=\"width: 324px; height: 99px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ <strong>\"<span style=\"\">111\".</span></strong></p>\n", "ta": "<p>இதில் பின்பற்றப்படும் தர்க்கம்:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3f68708b300c9cc511d08da6ea991113dd0cca2acb452cf87d8432fc939f4c35.png\" style=\"width: 324px; height: 99px;\" /></p>\n\n<p>எனவே, சரியான விடை <strong>\"<span style=\"\">111\".</span></strong></p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>ਇੱਥੇ ਅਪਣਾਇਆ ਗਿਆ ਤਰਕ ਹੈ:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3f68708b300c9cc511d08da6ea991113dd0cca2acb452cf87d8432fc939f4c35.png\" style=\" width: 324px; height: 99px;\" /></p>\n\n<p> </p>\n\n<p>ਇਸ ਲਈ, ਸਹੀ ਉੱਤਰ ਹੈ \"111\".</p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Series"], "concept": "Series", "confidence": "high"}, {"qid": "60473a2d2e028bbfe9c2c55c", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Identify the number that does NOT belong to the following series.</p>\n\n<p>1, 4, 9, 15, 25, 36</p>\n", "options": [{"prompt": "1", "value": "4"}, {"prompt": "2", "value": "9"}, {"prompt": "3", "value": "15"}, {"prompt": "4", "value": "25"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>उस संख्या की पहचान कीजिए जो निम्नलिखित श्रृंखला से संबंधित नहीं है।</p>\n\n<p>1, 4, 9, 15, 25, 36</p>\n", "options": [{"prompt": "1", "value": "4"}, {"prompt": "2", "value": "9"}, {"prompt": "3", "value": "15"}, {"prompt": "4", "value": "25"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>खालील मालिकेशी संबंधित नसलेली संख्या ओळखा.</p>\n\n<p>1, 4, 9, 15, 25, 36</p>\n", "options": [{"prompt": "1", "value": "4"}, {"prompt": "2", "value": "9"}, {"prompt": "3", "value": "15"}, {"prompt": "4", "value": "25"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வரும் தொடரில் இல்லாத எண்ணைக் கண்டறியவும்.</p><p> 1, 4, 9, 15, 25, 36</p>", "options": [{"prompt": "1", "value": "4"}, {"prompt": "2", "value": "9"}, {"prompt": "3", "value": "15"}, {"prompt": "4", "value": "25"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>Given,</p>\n\n<p>1, 4, 9, 15, 25, 36</p>\n\n<p>The pattern followed here is,&nbsp;</p>\n\n<p>1<sup>2</sup>&nbsp;= 1<sup>&nbsp; &nbsp;</sup></p>\n\n<p>2<sup>2</sup>&nbsp;= 4</p>\n\n<p>3<sup>2</sup>&nbsp;= 9</p>\n\n<p>4<sup>2&nbsp;&nbsp;</sup>= 16&nbsp;&ne; 15</p>\n\n<p>5<sup>2&nbsp;</sup>= 25</p>\n\n<p>6<sup>2</sup>&nbsp;= 36</p>\n\n<p>Clearly,&nbsp;<strong>15</strong>&nbsp;is not a perfect square of 4.</p>\n\n<p>Hence,&nbsp;<strong>15&nbsp;</strong>does not belong to this series.</p>\n", "hn": "<p>दिया गया है,</p>\n\n<p>1, 4, 9, 15, 25, 36</p>\n\n<p>यहाँ अनुसरित स्वरूप इस प्रकार है:</p>\n\n<p>1<sup>2</sup>&nbsp;= 1<sup>&nbsp; &nbsp;</sup></p>\n\n<p>2<sup>2</sup>&nbsp;= 4</p>\n\n<p>3<sup>2</sup>&nbsp;= 9</p>\n\n<p>4<sup>2&nbsp;</sup>&nbsp;= 16&nbsp;&ne; 15</p>\n\n<p>5<sup>2&nbsp;</sup>= 25</p>\n\n<p>6<sup>2</sup>&nbsp;= 36</p>\n\n<p>स्पष्ट रूप से&nbsp;<strong>15,&nbsp;</strong>4 का पूर्ण वर्ग नहीं है।</p>\n\n<p>अत:,&nbsp;<strong>15</strong>&nbsp;इस श्रृंखला से संबंधित नहीं है।</p>\n", "te": "", "mr": "<p>दिलेल्याप्रमाणे,</p>\n\n<p>1, 4, 9, 15, 25, 36</p>\n\n<p>येथे अनुसरण केलेला नमुना आहे,</p>\n\n<p>1<sup>2</sup> = 1<sup>   </sup></p>\n\n<p>2<sup>2</sup> = 4</p>\n\n<p>3<sup>2</sup> = 9</p>\n\n<p>4<sup>2  </sup>= 16 ≠ 15</p>\n\n<p>5<sup>2 </sup>= 25</p>\n\n<p>6<sup>2</sup> = 36</p>\n\n<p>स्पष्टपणे, <strong>15</strong> हा 4 चा परिपूर्ण वर्ग नाही.</p>\n\n<p>म्हणून, <strong>15</strong> या मालिकेशी संबंधित नाहीत.</p>\n", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "<p>கொடுக்கப்பட்ட,</p><p> 1, 4, 9, 15, 25, 36</p><p> இங்கு பின்பற்றப்படும் முறை,</p><p> 1 <sup>2</sup> = 1<sup>   </sup></p><p>2 <sup>2</sup> = 4</p><p> 3 <sup>2</sup> = 9</p><p> 4 <sup>2</sup> = 16 ≠ 15</p><p> 5 <sup>2</sup> = 25</p><p> 6 <sup>2</sup> = 36</p><p> தெளிவாக, <strong>15</strong> என்பது 4 இன் சரியான சதுரம் அல்ல.</p><p> எனவே, <strong>15</strong> இந்தத் தொடரைச் சேர்ந்தது அல்ல.</p>", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Series"], "concept": "Series", "confidence": "high"}, {"qid": "614066e063414ec8d2403dbd", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the number from among the given options that can replace the question mark (?) in the following series.</p>\n\n<p>18, 29, 42, 59, 78, 101, ?</p>\n", "options": [{"prompt": "1", "value": "121"}, {"prompt": "2", "value": "125"}, {"prompt": "3", "value": "137"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए विकल्पों में से वह संख्या का चयन कीजिए&nbsp;जो निम्नलिखित श्रृंखला में प्रश्नवाचक चिन्ह (?) को प्रतिस्थापित कर सकता हो।</p>\n\n<p>18, 29, 42, 59, 78, 101, ?</p>\n", "options": [{"prompt": "1", "value": "121"}, {"prompt": "2", "value": "125"}, {"prompt": "3", "value": "137"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>దిగువ శ్రేణిలో ప్రశ్న గుర్తు (?) స్థానంలో వచ్చే సంఖ్యను ఇచ్చిన ఎంపికల నుండి ఎంచుకోండి.</p>\n\n<p>18, 29, 42, 59, 78, 101, ?</p>\n", "options": [{"prompt": "1", "value": "121"}, {"prompt": "2", "value": "125"}, {"prompt": "3", "value": "137"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>दिलेल्या पर्यायांपैकी ती संख्या निवडा जी खालील मालिकेतील प्रश्नचिन्ह (?) बदलू शकते.</p>\n\n<p>18, 29, 42, 59, 78, 101, ?</p>\n", "options": [{"prompt": "1", "value": "121"}, {"prompt": "2", "value": "125"}, {"prompt": "3", "value": "137"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>প্রদত্ত বিকল্পগুলির মধ্যে থেকে সেই সংখ্যাটি চয়ন করুন যা নিম্নলিখিত ক্রমে প্রশ্ন চিহ্ন (?) প্রতিস্থাপন করতে পারে।</p>\n\n<p>18, 29, 42, 59, 78, 101, ?</p>\n", "options": [{"prompt": "1", "value": "121"}, {"prompt": "2", "value": "125"}, {"prompt": "3", "value": "137"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>આપેલી શ્રેણીમાં પ્રશ્નાર્થ ચિહ્ન (?) ને બદલી શકે તેવો વિકલ્પોમાંથી એક નંબર પસંદ કરો.</p>\n\n<p>18, 29, 42, 59, 78, 101, ?</p>\n", "options": [{"prompt": "1", "value": "121"}, {"prompt": "2", "value": "125"}, {"prompt": "3", "value": "137"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಸರಣಿಯಲ್ಲಿ ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಯನ್ನು (?) ಬದಲಾಯಿಸಬಹುದಾದ ಸಂಖ್ಯೆಯನ್ನು ನೀಡಿರುವ ಆಯ್ಕೆಗಳಿಂದ ಆರಿಸಿ.</p>\n\n<p>18, 29, 42, 59, 78, 101, ?</p>\n", "options": [{"prompt": "1", "value": "121"}, {"prompt": "2", "value": "125"}, {"prompt": "3", "value": "137"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>கீழ்க்கண்ட தொடரில் வினா குறியீடு (?) உள்ள இடத்தில் வரும் எண்ணை கொடுக்கப்பட்ட விருப்பங்களிலிருந்து தேர்வு செய்க.</p>\n\n<p>18, 29, 42, 59, 78, 101, ?</p>\n", "options": [{"prompt": "1", "value": "121"}, {"prompt": "2", "value": "125"}, {"prompt": "3", "value": "137"}, {"prompt": "4", "value": "130"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p style=\"\">The logic is shown below &ndash;</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/61bc43fe531afd6634c300fab26d720f131570f7b97a8e1f5b8e91436debbad9.png\" style=\"width: 450px; height: 88px;\" /></p>\n\n<p style=\"\">Here 11, 13, 17, 19, 23 and 29 are&nbsp;prime numbers.</p>\n\n<p>Hence, <span style=\"font-weight: 700;\">&ldquo;130&rdquo;&nbsp;</span>is the correct answer.</p>\n", "hn": "<p style=\"\">यहाँ अनुसरित तर्क नीचे दर्शाया गया है&nbsp;&ndash;</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/61bc43fe531afd6634c300fab26d720f131570f7b97a8e1f5b8e91436debbad9.png\" style=\"width: 450px; height: 88px;\" /></p>\n\n<p>यहाँ 11, 13, 17, 19, 23 और 29 अभाज्य संख्याएँ हैं।</p>\n\n<p>अत:,&nbsp;<strong>&ldquo;130&rdquo;</strong> सही उत्तर है।&nbsp;</p>\n", "te": "<p style=\"\">లాజిక్ క్రింద చూపబడింది -</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/61bc43fe531afd6634c300fab26d720f131570f7b97a8e1f5b8e91436debbad9.png\" style=\"width: 450px; height: 88px;\" /></p>\n\n<p style=\"\">ఇక్కడ 11, 13, 17, 19, 23 మరియు 29 ప్రధాన సంఖ్యలు.</p>\n\n<p>కాబట్టి, <span style=\"font-weight: 700;\">“130” </span>సరైన సమాధానం.</p>\n", "mr": "<p style=\"\">तर्क खाली दर्शविला आहे -</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/61bc43fe531afd6634c300fab26d720f131570f7b97a8e1f5b8e91436debbad9.png\" style=\"width: 450px; height: 88px;\" /></p>\n\n<p style=\"\">येथे 11, 13, 17, 19, 23 आणि 29 या मूळ संख्या आहेत.</p>\n\n<p>म्हणून, <span style=\"font-weight: 700;\">“130” </span>हे योग्य उत्तर आहे.</p>\n", "bn": "<p style=\"\">যুক্তি নিচে দেখানো হলো -</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/61bc43fe531afd6634c300fab26d720f131570f7b97a8e1f5b8e91436debbad9.png\" style=\"width: 450px; height: 88px;\" /></p>\n\n<p style=\"\">এখানে 11, 13, 17, 19, 23 এবং 29 হলো মৌলিক সংখ্যা।</p>\n\n<p>সুতরাং, <span style=\"font-weight: 700;\">“130” </span>হল সঠিক উত্তর।</p>\n", "ml": "", "gu": "<p style=\"\">તર્ક નીચે મુજબ દર્શાવેલ છે -</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/61bc43fe531afd6634c300fab26d720f131570f7b97a8e1f5b8e91436debbad9.png\" style=\"width: 450px; height: 88px;\" /></p>\n\n<p style=\"\">અહીં 11, 13, 17, 19, 23 અને 29 અવિભાજ્ય સંખ્યાઓ છે.</p>\n\n<p>આથી, <span style=\"font-weight: 700;\">“130” </span>સાચો જવાબ છે.</p>\n", "kn": "<p style=\"\">ತರ್ಕವನ್ನು ಕೆಳಗೆ ತೋರಿಸಲಾಗಿದೆ -</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/61bc43fe531afd6634c300fab26d720f131570f7b97a8e1f5b8e91436debbad9.png\" style=\"width: 450px; height: 88px;\" /></p>\n\n<p style=\"\">ಇಲ್ಲಿ 11, 13, 17, 19, 23 ಮತ್ತು 29 ಅವಿಭಾಜ್ಯ ಸಂಖ್ಯೆಗಳಾಗಿವೆ.</p>\n\n<p>ಆದ್ದರಿಂದ, <span style=\"font-weight: 700;\">“130” </span>ಸರಿಯಾದ ಉತ್ತರವಾಗಿದೆ.</p>\n", "ta": "<p style=\"\">தர்க்கம் கீழே காட்டப்பட்டுள்ளது -</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/61bc43fe531afd6634c300fab26d720f131570f7b97a8e1f5b8e91436debbad9.png\" style=\"width: 450px; height: 88px;\" /></p>\n\n<p style=\"\">இங்கே 11, 13, 17, 19, 23 மற்றும் 29 ஆகியவை பகா எண்கள்.</p>\n\n<p>ஆகவே, <span style=\"font-weight: 700;\">“130” </span>சரியான பதில்.</p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Series"], "concept": "Series", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 7 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>

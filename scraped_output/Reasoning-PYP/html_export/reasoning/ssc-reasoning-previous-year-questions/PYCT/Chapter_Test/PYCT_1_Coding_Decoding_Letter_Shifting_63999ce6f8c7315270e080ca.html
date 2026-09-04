@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 1: Coding Decoding (Letter Shifting)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 1: Coding Decoding (Letter Shifting)</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-reasoning-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">8 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63999ce6f8c7315270e080ca</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63999ce6f8c7315270e080ca", "title": "PYCT 1: Coding Decoding (Letter Shifting)", "series_slug": "ssc-reasoning-previous-year-questions", "duration_min": 8, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "628542a7f87f5ae63c94033e", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "5a68791857f9ac3518573f48", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In a certain code language, &quot;ROUND&quot; is written as &quot;TQWPF&quot; How is &quot;ROBIN&quot; written in that code language?</p>\n", "options": [{"prompt": "1", "value": "TQDKP"}, {"prompt": "2", "value": "TQEKP"}, {"prompt": "3", "value": "TREKQ"}, {"prompt": "4", "value": "TQEPQ"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>एक निश्चित कूट भाषा में, &quot;ROUND&quot; को &quot;TQWPF&quot; लिखा जाता है। उस कूट भाषा में &quot;ROBIN&quot; कैसे लिखा जाएगा?</p>\n", "options": [{"prompt": "1", "value": "TQDKP"}, {"prompt": "2", "value": "TQEKP"}, {"prompt": "3", "value": "TREKQ"}, {"prompt": "4", "value": "TQEPQ"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>ఒక నిర్దిష్ట కోడ్ భాషలో, \"ROUND\" ను \"TQWPF\" గా వ్రాస్తారు. ఆ కోడ్ భాషలో \"ROBIN\" ను ఎలా వ్రాయవచ్చు?</p>\n", "options": [{"prompt": "1", "value": "TQDKP"}, {"prompt": "2", "value": "TQEKP"}, {"prompt": "3", "value": "TREKQ"}, {"prompt": "4", "value": "TQEPQ"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>एका विशिष्ट सांकेतिक भाषेत, \"ROUND\" हे \"TQWPF\" असे लिहिले जाते. तर त्याच सांकेतिक भाषेत \"ROBIN\" हे कसे लिहिले जाईल?</p>\n", "options": [{"prompt": "1", "value": "TQDKP"}, {"prompt": "2", "value": "TQEKP"}, {"prompt": "3", "value": "TREKQ"}, {"prompt": "4", "value": "TQEPQ"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>একটি নির্দিষ্ট সাঙ্কেতিক ভাষায়, \"ROUND\" কে \"TQWPF\" লেখা হয়। ঐ সাঙ্কেতিক ভাষায় \"ROBIN\" কীভাবে লেখা হবে?</p>\n", "options": [{"prompt": "1", "value": "TQDKP"}, {"prompt": "2", "value": "TQEKP"}, {"prompt": "3", "value": "TREKQ"}, {"prompt": "4", "value": "TQEPQ"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>કોઈ કોડ ભાષામાં, \"ROUND\"ને \"TQWPF\" તરીકે લખવામાં આવે છે \"ROBIN\" તે કોડ ભાષામાં કેવી રીતે લખાય છે?</p>\n", "options": [{"prompt": "1", "value": "TQDKP"}, {"prompt": "2", "value": "TQEKP"}, {"prompt": "3", "value": "TREKQ"}, {"prompt": "4", "value": "TQEPQ"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಒಂದು ನಿರ್ದಿಷ್ಟ ಕೋಡ್ ಭಾಷೆಯಲ್ಲಿ, \"ROUND\" ಅನ್ನು \"TQWPF\" ಎಂದು ಬರೆಯಲಾಗುತ್ತದೆ. ಅದೇ ಕೋಡ್ ಭಾಷೆಯಲ್ಲಿ \"ROBIN\" ಅನ್ನು ಹೇಗೆ ಬರೆಯಲಾಗುತ್ತದೆ?</p>\n", "options": [{"prompt": "1", "value": "TQDKP"}, {"prompt": "2", "value": "TQEKP"}, {"prompt": "3", "value": "TREKQ"}, {"prompt": "4", "value": "TQEPQ"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>ஒரு குறிப்பிட்ட குறியீட்டு மொழியில், \"ROUND\" என்பது \"TQWPF\" என்று எழுதப்படுகிறது. அந்த குறியீட்டு மொழியில் \"ROBIN\" எப்படி எழுதப்படும்?</p>\n", "options": [{"prompt": "1", "value": "TQDKP"}, {"prompt": "2", "value": "TQEKP"}, {"prompt": "3", "value": "TREKQ"}, {"prompt": "4", "value": "TQEPQ"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>Consider the position of letters in the English Alphabet A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>\n\n<p>ROUND can be written as</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/873e2ccd380d720693a0a92ae93c92eb2ead2ce8cf69109d71746e0d3765f215.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>Similarly, ROBIN can be written as</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/90aa0dc887ff5e1821d320742c170a92a2a6942a7e327a7cae021b0adbc2fb4c.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>Therefore, TQDKP is the correct answer.</p>\n", "hn": "<p>अंग्रेजी वर्णमाला में अक्षरों के स्थान पर ध्यान दें A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>\n\n<p>ROUND को लिखा जा सकता है</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/873e2ccd380d720693a0a92ae93c92eb2ead2ce8cf69109d71746e0d3765f215.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>इसी प्रकार, ROBIN को लिखा जा सकता है</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/90aa0dc887ff5e1821d320742c170a92a2a6942a7e327a7cae021b0adbc2fb4c.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>इसलिए, TQDKP सही उत्तर है।</p>\n", "te": "<p>ఆంగ్ల అక్షరమాలలోని అక్షరాల స్థానాన్ని పరిగణించండి A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>\n\n<p>ROUND ను ఇలా వ్రాయవచ్చు</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/873e2ccd380d720693a0a92ae93c92eb2ead2ce8cf69109d71746e0d3765f215.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>అదేవిధంగా, ROBIN ను ఇలా వ్రాయవచ్చు</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/90aa0dc887ff5e1821d320742c170a92a2a6942a7e327a7cae021b0adbc2fb4c.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>కాబట్టి, TQDKP సరైన సమాధానం.</p>\n", "mr": "<p>इंग्रजी वर्णमाला A B C D E F G H I J K L M N O P Q R S T U V W X Y Z मधील अक्षरांची स्थिती विचारात घ्या.</p>\n\n<p>ROUND असे लिहिले जाते:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/873e2ccd380d720693a0a92ae93c92eb2ead2ce8cf69109d71746e0d3765f215.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>त्याचप्रमाणे, ROBIN असे लिहिले जाते:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/90aa0dc887ff5e1821d320742c170a92a2a6942a7e327a7cae021b0adbc2fb4c.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>म्हणून, TQDKP हे योग्य उत्तर आहे.</p>\n", "bn": "<p>ইংরেজি বর্ণমালায় অক্ষরগুলির অবস্থান বিবেচনা করুন A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>\n\n<p>ROUND কে লেখা যেতে পারে</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/873e2ccd380d720693a0a92ae93c92eb2ead2ce8cf69109d71746e0d3765f215.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>একইভাবে, ROBIN কে লেখা যেতে পারে</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/90aa0dc887ff5e1821d320742c170a92a2a6942a7e327a7cae021b0adbc2fb4c.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>সুতরাং, TQDKP সঠিক উত্তর।</p>\n", "ml": "", "gu": "<p>અંગ્રેજી મૂળાક્ષરો <span style=\"color: rgb(33, 37, 41);\">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</span>માં અક્ષરોની સ્થિતિ ધ્યાનમાં લઈશું.</p>\n\n<p>ROUNDને નીચે મુજબ લખી શકાય છે</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/873e2ccd380d720693a0a92ae93c92eb2ead2ce8cf69109d71746e0d3765f215.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>તેવી જ રીતે, ROBINને નીચે મુજબ લખી શકાય છે.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/90aa0dc887ff5e1821d320742c170a92a2a6942a7e327a7cae021b0adbc2fb4c.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>તેથી, TQDKP સાચો જવાબ છે.</p>\n", "kn": "<p>ಇಂಗ್ಲಿಷ್ ವರ್ಣಮಾಲೆಯಲ್ಲಿ ಅಕ್ಷರಗಳ ಸ್ಥಾನವನ್ನು ಪರಿಗಣಿಸಿ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>\n\n<p>ROUND ಅನ್ನು ಹೀಗೆ ಬರೆಯಬಹುದು</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/873e2ccd380d720693a0a92ae93c92eb2ead2ce8cf69109d71746e0d3765f215.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>ಅದೇ ರೀತಿ, ROBIN ಅನ್ನು ಹೀಗೆ ಬರೆಯಬಹುದು</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/90aa0dc887ff5e1821d320742c170a92a2a6942a7e327a7cae021b0adbc2fb4c.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>ಆದ್ದರಿಂದ, TQDKP ಸರಿಯಾದ ಉತ್ತರವಾಗಿದೆ.</p>\n", "ta": "<p>ஆங்கில எழுத்துக்களின் நிலையை கவனியுங்கள் A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>\n\n<p>ROUND ஐ இப்படி எழுதலாம்</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/873e2ccd380d720693a0a92ae93c92eb2ead2ce8cf69109d71746e0d3765f215.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>அதேபோல், ROBIN ஐ இப்படி எழுதலாம்</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/90aa0dc887ff5e1821d320742c170a92a2a6942a7e327a7cae021b0adbc2fb4c.png\" style=\"height:204px; width:250px\" /></p>\n\n<p>எனவே, TQDKP என்பது சரியான பதில்.</p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Coding and Decoding By Letter Shifting"], "concept": "Coding-Decoding", "confidence": "high"}, {"qid": "5b2ccde9c6208c30c4a18602", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In a certain code language, &quot;BANGED&quot; is written as &quot;JJKQCC&quot; and &quot;TILTS&quot; is written as &quot;XXOKU&quot;. How is &quot;STRAY&quot; written in that code language?", "options": [{"prompt": "1", "value": "ZBSUT"}, {"prompt": "2", "value": "XZQSR"}, {"prompt": "3", "value": "EFUUS"}, {"prompt": "4", "value": "DEUVT"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक विशिष्ट कूट भाषा में, &quot;BANGED&quot; को &quot;JJKQCC&quot; लिखा जाता है तथा &quot;TILTS&quot; को &quot;XXOKU&quot; लिखा जाता है। इस कूट भाषा में &quot;STRAY&quot; को किस प्रकार लिखा जायेगा?​", "options": [{"prompt": "1", "value": "ZBSUT"}, {"prompt": "2", "value": "XZQSR"}, {"prompt": "3", "value": "EFUUS"}, {"prompt": "4", "value": "DEUVT"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p>According to the given information:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4a2f3271ac55665faa715935db84941b07e1b98a5b505c8ad4200b6df022bf12.png\" style=\"height:121px; width:144px\" />and<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/d95c824882c8e91265d83442dadb1976bc63b3c15d997bb9722dfa4cb76f7f32.png\" style=\"height:122px; width:114px\" /></p>\n\n<p>Similarly,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/90032661965704fc6fc636422e886e96f139aad52ee56523b49b75775e131d56.png\" style=\"height:122px; width:116px\" /></p>\nHence, STRAY can be written as DEUVT.", "hn": "<p>दी गई जानकारी के अनुसार,&nbsp;</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4a2f3271ac55665faa715935db84941b07e1b98a5b505c8ad4200b6df022bf12.png\" style=\"height:121px; width:144px\" />और<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/d95c824882c8e91265d83442dadb1976bc63b3c15d997bb9722dfa4cb76f7f32.png\" style=\"height:122px; width:114px\" /></p>\n\n<p>इसी प्रकार,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/90032661965704fc6fc636422e886e96f139aad52ee56523b49b75775e131d56.png\" style=\"height:122px; width:116px\" /></p>\nअत:, STRAY को DEUVT&nbsp;​लिखा जायेगाI", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Coding and Decoding By Letter Shifting"], "concept": "Coding-Decoding", "confidence": "high"}, {"qid": "5b2cd3c6ee85fb0c26d8534c", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In a certain code language, &quot;BLAMED&quot; is written as &quot;DOEGHP&quot; and &quot;DISECT&quot; is written as &quot;VLGWFH&quot;. How is &quot;POLARY&quot; written in that code language?", "options": [{"prompt": "1", "value": "QPMBSZ"}, {"prompt": "2", "value": "ORSBUD"}, {"prompt": "3", "value": "DBVSRO"}, {"prompt": "4", "value": "KNOCQZ"}], "range": {"start": "", "end": ""}}, "hn": {"value": "किसी एक निश्चित कूट भाषा में, &quot;BLAMED&quot; को &quot;DOEGHP&quot; और &quot;DISECT&quot; को &quot;VLGWFH&quot; लिखा जाता है। इस कूट भाषा में &quot;POLARY&quot; को किस तरह लिखा जाएगा?", "options": [{"prompt": "1", "value": "QPMBSZ"}, {"prompt": "2", "value": "ORSBUD"}, {"prompt": "3", "value": "DBVSRO"}, {"prompt": "4", "value": "KNOCQZ"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/cb5651bd30471d2af4e88328ffd0e714727edba0452943de0a957f21a721168c.png\" style=\"height:134px; width:167px\" /></p>\n\n<p>and&nbsp;</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/427aedf18ca00e5492de690fdd23f0545584dec96cf035e5cd5886121c49443d.png\" style=\"height:138px; width:176px\" /></p>\n\n<p>Similarly,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f4acc957b58890063078fee7ea46444d3b9a9e0b6293cfde8a3a6fbb380d051c.png\" style=\"height:133px; width:182px\" /></p>\n\n<p>Hence, POLARY will be coded as ORSBUD.</p>\n", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/cb5651bd30471d2af4e88328ffd0e714727edba0452943de0a957f21a721168c.png\" style=\"height:134px; width:167px\" /></p>\n\n<p>और</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/427aedf18ca00e5492de690fdd23f0545584dec96cf035e5cd5886121c49443d.png\" style=\"height:138px; width:176px\" /></p>\n\n<p>इसी प्रकार,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f4acc957b58890063078fee7ea46444d3b9a9e0b6293cfde8a3a6fbb380d051c.png\" style=\"height:133px; width:182px\" /></p>\n\n<p>इसलिए, POLARY का कूट ORSBUD होगा।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Coding and Decoding By Letter Shifting"], "concept": "Coding-Decoding", "confidence": "high"}, {"qid": "5b2272f0c5261740905584c0", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In a certain code language, &quot;CAGES&quot; is written as &quot;NADYB&quot; and &quot;SILVER&quot; is written as &quot;LZRIGR&quot;. How is &quot;WATER&quot; written in that code language?", "options": [{"prompt": "1", "value": "MAQYV"}, {"prompt": "2", "value": "SGWEB"}, {"prompt": "3", "value": "QCPVR"}, {"prompt": "4", "value": "VYQAM"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक विशिष्ट कूट भाषा में, &quot;CAGES&quot; को &quot;NADYB&quot; के रूप में लिखा गया है और &quot;SILVER&quot; को &quot;LZRIGR&quot; के रूप में लिखा गया है। तो उस कूट भाषा में &quot;WATER&quot; को कैसे लिखा गया है?", "options": [{"prompt": "1", "value": "MAQYV"}, {"prompt": "2", "value": "SGWEB"}, {"prompt": "3", "value": "QCPVR"}, {"prompt": "4", "value": "VYQAM"}], "range": {"start": "", "end": ""}}, "te": {"value": "ఒక నిర్దిష్ట కోడ్ భాషలో, \"CAGES\" ను \"NADYB\" గా మరియు \"SILVER\" ను \"LZRIGR\" గా వ్రాస్తారు. ఆ కోడ్ భాషలో \"WATER\" ను ఎలా వ్రాయవచ్చు?", "options": [{"prompt": "1", "value": "MAQYV"}, {"prompt": "2", "value": "SGWEB"}, {"prompt": "3", "value": "QCPVR"}, {"prompt": "4", "value": "VYQAM"}], "range": {"start": "", "end": ""}}, "mr": {"value": "एका विशिष्ट सांकेतिक भाषेत, \"CAGES\" ला \"NADYB\" आणि \"SILVER\" ला \"LZRIGR\" असे लिहिले जाते. तर \"WATER\" ला त्या सांकेतिक भाषेत कसे लिहाल?", "options": [{"prompt": "1", "value": "MAQYV"}, {"prompt": "2", "value": "SGWEB"}, {"prompt": "3", "value": "QCPVR"}, {"prompt": "4", "value": "VYQAM"}], "range": {"start": "", "end": ""}}, "bn": {"value": "একটি নির্দিষ্ট সাংকেতিক ভাষায়, \"CAGES\" কে \"NADYB\" এবং \"SILVER\" কে \"LZRIGR\" লেখা হয়। তাহলে \"WATER\" কে সেই সাংকেতিক ভাষায় কীভাবে লেখা হবে?", "options": [{"prompt": "1", "value": "MAQYV"}, {"prompt": "2", "value": "SGWEB"}, {"prompt": "3", "value": "QCPVR"}, {"prompt": "4", "value": "VYQAM"}], "range": {"start": "", "end": ""}}, "gu": {"value": "એક ચોક્કસ કોડ ભાષામાં, \"CAGES\" ને \"NADYB\" તરીકે લખવામાં આવે છે અને \"SILVER\" ને \"LZRIGR\" તરીકે લખવામાં આવે છે. તો તે કોડ ભાષામાં \"WATER\" ને કેવી રીતે લખી શકાય?", "options": [{"prompt": "1", "value": "MAQYV"}, {"prompt": "2", "value": "SGWEB"}, {"prompt": "3", "value": "QCPVR"}, {"prompt": "4", "value": "VYQAM"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ಒಂದು ನಿರ್ದಿಷ್ಟ ಸಂಕೇತ ಭಾಷೆಯಲ್ಲಿ, \"CAGES\" ಅನ್ನು \"NADYB\" ಎಂದು ಮತ್ತು \"SILVER\" ಅನ್ನು \"LZRIGR\" ಎಂದು ಬರೆಯಲಾಗಿದೆ. ಅದೇ ಸಂಕೇತ ಭಾಷೆಯಲ್ಲಿ \"WATER\" ಅನ್ನು ಹೇಗೆ ಬರೆಯಲಾಗುತ್ತದೆ?", "options": [{"prompt": "1", "value": "MAQYV"}, {"prompt": "2", "value": "SGWEB"}, {"prompt": "3", "value": "QCPVR"}, {"prompt": "4", "value": "VYQAM"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ஒரு குறிப்பிட்ட குறியீட்டு மொழியில், \"CAGES\" என்பது \"NADYB\" என்றும், \"SILVER\" என்பது \"LZRIGR\" என்றும் எழுதப்படுகிறது. அந்த குறியீட்டு மொழியில் \"WATER\" எப்படி எழுதப்படும்?", "options": [{"prompt": "1", "value": "MAQYV"}, {"prompt": "2", "value": "SGWEB"}, {"prompt": "3", "value": "QCPVR"}, {"prompt": "4", "value": "VYQAM"}], "range": {"start": "", "end": ""}}, "or": {"value": "ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ କୋଡ୍ ଭାଷାରେ, \"CAGES\" କୁ \"NADYB\" ଭାବରେ ଲେଖାଯାଏ ଏବଂ \"SILVER\" କୁ \"LZRIGR\" ଭାବରେ ଲେଖାଯାଏ। \"WATER\" କୁ ସେହି କୋଡ୍ ଭାଷାରେ କିପରି ଲେଖାଯିବ?", "options": [{"prompt": "1", "value": "MAQYV"}, {"prompt": "2", "value": "SGWEB"}, {"prompt": "3", "value": "QCPVR"}, {"prompt": "4", "value": "VYQAM"}], "range": {"start": "", "end": ""}}, "pa": {"value": "ਇੱਕ ਖਾਸ ਕੋਡ ਭਾਸ਼ਾ ਵਿੱਚ, \"CAGES\" ਨੂੰ \"NADYB\" ਲਿਖਿਆ ਜਾਂਦਾ ਹੈ ਅਤੇ \"SILVER\" ਨੂੰ \"LZRIGR\" ਲਿਖਿਆ ਜਾਂਦਾ ਹੈ। \"WATER\" ਨੂੰ ਉਸ ਕੋਡ ਭਾਸ਼ਾ ਵਿੱਚ ਕਿਵੇਂ ਲਿਖਿਆ ਜਾਵੇਗਾ?", "options": [{"prompt": "1", "value": "MAQYV"}, {"prompt": "2", "value": "SGWEB"}, {"prompt": "3", "value": "QCPVR"}, {"prompt": "4", "value": "VYQAM"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>In a certain code language,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/489cd38a6dd24a33c47a8c72b550b97a66c489a9ba35bdbbd709666c5cee5cfc.png\" /></p>\n\n<p>And</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/40e07492af314291e1143a99b067a8c1eda4b10fcdc3a2df7e55e4602b81665e.png\" /></p>\n\n<p>Similarly,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c47f130e58de4247da87c09ea2a6a5c5c07fa23cac1b98d55c897a9c3d59c63.png\" style=\"height:132px; width:117px\" /></p>\nHence, &lsquo;WATER&rsquo; can be written as MAQYV.", "hn": "<p>एक विशिष्ट कूट भाषा में,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/489cd38a6dd24a33c47a8c72b550b97a66c489a9ba35bdbbd709666c5cee5cfc.png\" /></p>\n\n<p>और</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/40e07492af314291e1143a99b067a8c1eda4b10fcdc3a2df7e55e4602b81665e.png\" /></p>\n\n<p>उसी प्रकार,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c47f130e58de4247da87c09ea2a6a5c5c07fa23cac1b98d55c897a9c3d59c63.png\" style=\"height:132px; width:117px\" /></p>\nअतः &lsquo;WATER&rsquo; को MAQYV के रूप में लिखा जा सकता है।", "te": "<p>ఒక నిర్దిష్ట కోడ్ భాషలో,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/489cd38a6dd24a33c47a8c72b550b97a66c489a9ba35bdbbd709666c5cee5cfc.png\" /></p>\n\n<p>మరియు</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/40e07492af314291e1143a99b067a8c1eda4b10fcdc3a2df7e55e4602b81665e.png\" /></p>\n\n<p>అదేవిధంగా,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c47f130e58de4247da87c09ea2a6a5c5c07fa23cac1b98d55c897a9c3d59c63.png\" style=\"height:132px; width:117px\" /></p>\nకాబట్టి, ‘WATER’ ను MAQYV గా వ్రాయవచ్చు.", "mr": "<p>एका विशिष्ट सांकेतिक भाषेत,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/489cd38a6dd24a33c47a8c72b550b97a66c489a9ba35bdbbd709666c5cee5cfc.png\" /></p>\n\n<p>आणि</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/40e07492af314291e1143a99b067a8c1eda4b10fcdc3a2df7e55e4602b81665e.png\" /></p>\n\n<p>त्याचप्रमाणे,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c47f130e58de4247da87c09ea2a6a5c5c07fa23cac1b98d55c897a9c3d59c63.png\" style=\"height:132px; width:117px\" /></p>\nम्हणून, ‘WATER’ ला MAQYV असे लिहिता येईल.", "bn": "<p>একটি নির্দিষ্ট সাংকেতিক ভাষায়,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/489cd38a6dd24a33c47a8c72b550b97a66c489a9ba35bdbbd709666c5cee5cfc.png\" /></p>\n\n<p>এবং</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/40e07492af314291e1143a99b067a8c1eda4b10fcdc3a2df7e55e4602b81665e.png\" /></p>\n\n<p>একইভাবে,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c47f130e58de4247da87c09ea2a6a5c5c07fa23cac1b98d55c897a9c3d59c63.png\" style=\"height:132px; width:117px\" /></p>\nঅতএব, ‘WATER’ কে MAQYV হিসাবে লেখা যেতে পারে।", "ml": "", "gu": "<p>એક ચોક્કસ કોડ ભાષામાં,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/489cd38a6dd24a33c47a8c72b550b97a66c489a9ba35bdbbd709666c5cee5cfc.png\" /></p>\n\n<p>અને</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/40e07492af314291e1143a99b067a8c1eda4b10fcdc3a2df7e55e4602b81665e.png\" /></p>\n\n<p>એ જ રીતે,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c47f130e58de4247da87c09ea2a6a5c5c07fa23cac1b98d55c897a9c3d59c63.png\" style=\"height:132px; width:117px\" /></p>\nતેથી, ‘WATER’ ને MAQYV તરીકે લખી શકાય છે.", "kn": "<p>ಒಂದು ನಿರ್ದಿಷ್ಟ ಸಂಕೇತ ಭಾಷೆಯಲ್ಲಿ,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/489cd38a6dd24a33c47a8c72b550b97a66c489a9ba35bdbbd709666c5cee5cfc.png\" /></p>\n\n<p>ಮತ್ತು</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/40e07492af314291e1143a99b067a8c1eda4b10fcdc3a2df7e55e4602b81665e.png\" /></p>\n\n<p>ಅದೇ ರೀತಿ,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c47f130e58de4247da87c09ea2a6a5c5c07fa23cac1b98d55c897a9c3d59c63.png\" style=\"height:132px; width:117px\" /></p>\nಆದ್ದರಿಂದ, 'WATER' ಅನ್ನು MAQYV ಎಂದು ಬರೆಯಬಹುದು.", "ta": "<p>ஒரு குறிப்பிட்ட குறியீட்டு மொழியில்,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/489cd38a6dd24a33c47a8c72b550b97a66c489a9ba35bdbbd709666c5cee5cfc.png\" /></p>\n\n<p>மேலும்</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/40e07492af314291e1143a99b067a8c1eda4b10fcdc3a2df7e55e4602b81665e.png\" /></p>\n\n<p>இதேபோல்,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c47f130e58de4247da87c09ea2a6a5c5c07fa23cac1b98d55c897a9c3d59c63.png\" style=\"height:132px; width:117px\" /></p>\nஆகவே, ‘WATER’ என்பது MAQYV என்று எழுதப்படலாம்.", "or": "<p>ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ କୋଡ୍ ଭାଷାରେ,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/489cd38a6dd24a33c47a8c72b550b97a66c489a9ba35bdbbd709666c5cee5cfc.png\" /></p>\n\n<p>ଏବଂ</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/40e07492af314291e1143a99b067a8c1eda4b10fcdc3a2df7e55e4602b81665e.png\" /></p>\n\n<p>ସେହିପରି,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c47f130e58de4247da87c09ea2a6a5c5c07fa23cac1b98d55c897a9c3d59c63.png\" style=\"height:132px; width:117px\" /></p>\nତେଣୁ, ‘WATER’ କୁ MAQYV ଭାବରେ ଲେଖାଯାଇପାରିବ।", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>ਇੱਕ ਖਾਸ ਕੋਡ ਭਾਸ਼ਾ ਵਿੱਚ,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/489cd38a6dd24a33c47a8c72b550b97a66c489a9ba35bdbbd709666c5cee5cfc.png\" /></p>\n\n<p>ਅਤੇ</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/40e07492af314291e1143a99b067a8c1eda4b10fcdc3a2df7e55e4602b81665e.png\" /></p>\n\n<p>ਇਸੇ ਤਰ੍ਹਾਂ,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c47f130e58de4247da87c09ea2a6a5c5c07fa23cac1b98d55c897a9c3d59c63.png\" style=\"height:132px; width:117px\" /></p>\nਇਸ ਲਈ, ‘WATER’ ਨੂੰ MAQYV ਲਿਖਿਆ ਜਾ ਸਕਦਾ ਹੈ।", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Coding and Decoding By Letter Shifting"], "concept": "Coding-Decoding", "confidence": "high"}, {"qid": "6217798939648cae7b7a3e26", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "If MATERIAL is coded as SZLREKZH, then how would EQUATION be coded?", "options": [{"prompt": "1", "value": "TPATDMNH"}, {"prompt": "2", "value": "PDTAMTNH"}, {"prompt": "3", "value": "TPDTAMNH"}, {"prompt": "4", "value": "SRFTAOPJ"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि MATERIAL को SZLREKZH के रूप में कूटित किया जाता है, तो EQUATION को कैसे <span style=\"\">कूटित&nbsp;</span>किया जाएगा?", "options": [{"prompt": "1", "value": "TPATDMNH"}, {"prompt": "2", "value": "PDTAMTNH"}, {"prompt": "3", "value": "TPDTAMNH"}, {"prompt": "4", "value": "SRFTAOPJ"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p><span style=\"\">MATERIAL అనేది SZLREKZH గా కోడ్ చేయబడితే, అప్పుడు EQUATION ఎలా కోడ్ చేయబడుతుంది?</span></p>\n", "options": [{"prompt": "1", "value": "<span style=\"\">TPATDMNH</span>"}, {"prompt": "2", "value": "<span style=\"\">PDTAMTNH</span>"}, {"prompt": "3", "value": "<span style=\"\">TPDTAMNH</span>"}, {"prompt": "4", "value": "<span style=\"\">SRFTAOPJ</span>"}], "range": {"start": "", "end": ""}}, "mr": {"value": "जर MATERIAL हे SZLREKZH असे सांकेतिक केले असेल, तर EQUATION कसे सांकेतिक केले जाईल?", "options": [{"prompt": "1", "value": "TPATDMNH"}, {"prompt": "2", "value": "PDTAMTNH"}, {"prompt": "3", "value": "TPDTAMNH"}, {"prompt": "4", "value": "SRFTAOPJ"}], "range": {"start": "", "end": ""}}, "bn": {"value": "যদি MATERIAL কে SZLREKZH হিসেবে কোড করা হয়, তাহলে EQUATION কে কীভাবে কোড করা হবে?", "options": [{"prompt": "1", "value": "TPATDMNH"}, {"prompt": "2", "value": "PDTAMTNH"}, {"prompt": "3", "value": "TPDTAMNH"}, {"prompt": "4", "value": "SRFTAOPJ"}], "range": {"start": "", "end": ""}}, "ml": {"value": "MATERIAL എന്നത് SZLREKZH എന്ന് കോഡ് ചെയ്യുകയാണെങ്കിൽ, EQUATION എന്നത് എങ്ങനെ കോഡ് ചെയ്യും?", "options": [{"prompt": "1", "value": "TPATDMNH"}, {"prompt": "2", "value": "PDTAMTNH"}, {"prompt": "3", "value": "TPDTAMNH"}, {"prompt": "4", "value": "SRFTAOPJ"}], "range": {"start": "", "end": ""}}, "gu": {"value": "જો MATERIALને SZLREKZH તરીકે કોડેડ કરવામાં આવે, તો પછી EQUATION કેવી રીતે કોડેડ થશે?", "options": [{"prompt": "1", "value": "TPATDMNH"}, {"prompt": "2", "value": "PDTAMTNH"}, {"prompt": "3", "value": "TPDTAMNH"}, {"prompt": "4", "value": "SRFTAOPJ"}], "range": {"start": "", "end": ""}}, "kn": {"value": "MATERIAL ಅನ್ನು SZLREKZH ಎಂದು ಕೋಡ್ ಮಾಡಿದ್ದರೆ, EQUATION ಅನ್ನು ಹೇಗೆ ಕೋಡ್ ಮಾಡಲಾಗುತ್ತದೆ?", "options": [{"prompt": "1", "value": "TPATDMNH"}, {"prompt": "2", "value": "PDTAMTNH"}, {"prompt": "3", "value": "TPDTAMNH"}, {"prompt": "4", "value": "SRFTAOPJ"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<span style=\"\">MATERIAL என்பது </span>SZLREKZH எனக் குறியிடப்பட்டால், <span style=\"\">EQUATION </span>என்பது எவ்வாறு குறியிடப்படும்?", "options": [{"prompt": "1", "value": "TPATDMNH"}, {"prompt": "2", "value": "PDTAMTNH"}, {"prompt": "3", "value": "TPDTAMNH"}, {"prompt": "4", "value": "SRFTAOPJ"}], "range": {"start": "", "end": ""}}, "or": {"value": "ଯଦି <span style=\"\"> MATERIAL </span>କୁ <span style=\"\">SZLREKZH</span> ଭାବରେ କୋଡ୍ କରାଯାଏ, ତେବେ <span style=\"\">EQUATION </span>କିପରି କୋଡ୍ କରାଯିବ?", "options": [{"prompt": "1", "value": "TPATDMNH"}, {"prompt": "2", "value": "PDTAMTNH"}, {"prompt": "3", "value": "TPDTAMNH"}, {"prompt": "4", "value": "SRFTAOPJ"}], "range": {"start": "", "end": ""}}, "pa": {"value": "ਜੇਕਰ MATERIAL ਨੂੰ SZLREKZH ਕੋਡਬੱਧ ਕੀਤਾ ਜਾਂਦਾ ਹੈ, ਤਾਂ EQUATION ਨੂੰ ਕਿਵੇਂ ਕੋਡਬੱਧ ਕੀਤਾ ਜਾਵੇਗਾ?", "options": [{"prompt": "1", "value": "TPATDMNH"}, {"prompt": "2", "value": "PDTAMTNH"}, {"prompt": "3", "value": "TPDTAMNH"}, {"prompt": "4", "value": "SRFTAOPJ"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>The logic followed here is :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\"height: 107px; width: 450px;\" /></p>\n\n<p><span style=\"\">MATERIAL is coded as SZLREKZH</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com", "hn": "<p><span style=\"\">यहाँ अनुसरण किया&nbsp;</span><span style=\"\">गया&nbsp;</span><span style=\"\">तर्क है: -</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\"height: 107px; width: 450px;\" /></p>\n\n<p>MATERIAL को SZLREKZH के रूप में कूटित किया गया है</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aac043fa9d0b1619", "te": "<p>ఇక్కడ అనుసరించిన లాజిక్:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\" height: 107px; width: 450px;\" /></p>\n\n<p><span style=\"\">MATERIAL అనేది </span>SZLREKZHగా కోడ్ చేయబడింది</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aac043fa9d0b1619b1930deb7fe5c2959d64c3ef8632103500de3ca9880fdfcd.png\" style=\" width: 331px; height: 157px;\" /></p>\n\n<p>అదేవిధంగా,</p>\n\n<p>EQUATION ఇలా కోడ్ చేయబడుతుంది:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/052cba10896c1c629895fdee44e49dd024fc69dc39903694e78071aca790f129.png\" style=\" width: 316px; height: 146px;\" /></p>\n\n<p>కాబట్టి, సరైన సమాధానం <strong>\"TPDTAMNH\".</strong></p>\n", "mr": "<p>येथे अनुसरण केलेला तर्क आहे:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\"height: 107px; width: 450px;\" /></p>\n\n<p><span style=\"\">MATERIAL हे SZLREKZH म्हणून सांकेतिक केलेले आहे</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aac043fa9d0b1619b1930deb7fe5c2959d64c3ef8632103500de3ca9880fdfcd.png\" style=\"width: 331px; height: 157px;\" /></p>\n\n<p>त्याचप्रमाणे,</p>\n\n<p><span style=\"\">EQUATION खालीलप्रमाणे सांकेतिक केले जाईल:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/052cba10896c1c629895fdee44e49dd024fc69dc39903694e78071aca790f129.png\" style=\" width: 316px; height: 146px;\" /></p>\n\n<p><span style=\"\">म्हणून, योग्य उत्तर <strong>\"TPDTAMNH\" </strong></span>आहे.</p>\n", "bn": "<p>এখানে ব্যবহৃত লজিক হলো :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\"height: 107px; width: 450px;\" /></p>\n\n<p><span style=\"\">MATERIAL কে SZLREKZH হিসেবে কোড করা হয়েছে</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aac043fa9d0b1619b1930deb7fe5c2959d64c3ef8632103500de3ca9880fdfcd.png\" style=\"width: 331px; height: 157px;\" /></p>\n\n<p>একইভাবে,</p>\n\n<p><span style=\"\">EQUATION কে কোড করা হবে :</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/021a7f1ee76390d44a5fe5566ac94980077198d9d72dae3f5741421a07adfa19.png\" style=\"width: 329px; height: 155px;\" /></p>\n\n<p><span style=\"\">অতএব, সঠিক উত্তর হলো <strong>\"TPDTAMNH\"।</strong></span></p>\n", "ml": "<p>ഇവിടെ പിന്തുടരുന്ന യുക്തി ഇതാണ്;- </p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\"height: 107px; width: 450px;\" /></p>\n\n<p><span style=\"\">MATERIAL എന്നത് SZLREKZH എന്ന് കോഡ് ചെയ്യാം </span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aac043fa9d0b1619b1930deb7fe5c2959d64c3ef8632103500de3ca9880fdfcd.png\" style=\"width: 331px; height: 157px;\" /></p>\n\n<p>സമാനമായി,</p>\n\n<p><span style=\"\">EQUATION എന്നത് ഇങ്ങനെ കോഡ് ചെയ്യാം :</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/052cba10896c1c629895fdee44e49dd024fc69dc39903694e78071aca790f129.png\" style=\" width: 316px; height: 146px;\" /></p>\n\n<p>അതിനാൽ, ശരിയായ ഉത്തരം<strong>\"TPDTAMNH\" </strong>ആണ്.</p>\n", "gu": "<p>અહીં અનુસરવામાં આવેલ તર્ક નીચે મુજબ છે:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\"height: 107px; width: 450px;\" /></p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">MATERIALએ</span><span style=\"\"> SZLREKZH તરીકે કોડેડ છે</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aac043fa9d0b1619b1930deb7fe5c2959d64c3ef8632103500de3ca9880fdfcd.png\" style=\"width: 331px; height: 157px;\" /></p>\n\n<p>તેવી જ રીતે,</p>\n\n<p><span style=\"\">EQUATION આ રીતે કોડેડ કરવામાં આવશે:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/021a7f1ee76390d44a5fe5566ac94980077198d9d72dae3f5741421a07adfa19.png\" style=\"width: 329px; height: 155px;\" /></p>\n\n<p><span style=\"\">તેથી, સાચો જવાબ <strong>\"TPDTAMNH\"</strong></span> છે.</p>\n", "kn": "<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ತರ್ಕ ಹೀಗಿದೆ:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\"height: 107px; width: 450px;\" /></p>\n\n<p><span style=\"\">MATERIAL</span> ಅನ್ನು SZLREKZH ಎಂದು ಕೋಡ್ ಮಾಡಲಾಗಿದೆ</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aac043fa9d0b1619b1930deb7fe5c2959d64c3ef8632103500de3ca9880fdfcd.png\" style=\"width: 331px; height: 157px;\" /></p>\n\n<p>ಹಾಗೆಯೇ,</p>\n\n<p>EQUATION ಅನ್ನು ಈ ರೀತಿ ಕೋಡ್ ಮಾಡಲಾಗುತ್ತದೆ:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/052cba10896c1c629895fdee44e49dd024fc69dc39903694e78071aca790f129.png\" style=\" width: 316px; height: 146px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ <strong>\"TPDTAMNH\"</strong> ಆಗಿದೆ.</p>\n", "ta": "<p>இங்கே பின்பற்றப்படும் தர்க்கம்:-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\"height: 107px; width: 450px;\" /></p>\n\n<p><span style=\"\">MATERIAL என்பது </span>SZLREKZH எனக் குறியிடப்பட்டுள்ளது</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aac043fa9d0b1619b1930deb7fe5c2959d64c3ef8632103500de3ca9880fdfcd.png\" style=\"width: 331px; height: 157px;\" /></p>\n\n<p>இதுபோல், </p>\n\n<p><span style=\"\">EQUATION என்பது இவ்வாறு குறியிடப்படும் :</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/052cba10896c1c629895fdee44e49dd024fc69dc39903694e78071aca790f129.png\" style=\" width: 316px; height: 146px;\" /></p>\n\n<p><span style=\"\">எனவே, சரியான பதில் <strong>\"TPDTAMNH\".</strong></span></p>\n", "or": "<p>ଏଠାରେ ଅନୁସରଣ କରାଯାଇଥିବା ତର୍କ ହେଉଛି :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\"height: 107px; width: 450px;\" /></p>\n\n<p><span style=\"\">MATERIAL </span>କୁ <span style=\"\"> SZLREKZH</span> ଭାବରେ କୋଡ୍ କରାଯାଇଛି</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aac043fa9d0b1619b1930deb7fe5c2959d64c3ef8632103500de3ca9880fdfcd.png\" style=\"width: 331px; height: 157px;\" /></p>\n\n<p>ସେହିଭଳି, </p>\n\n<p><span style=\"\">EQUATION</span> କୋଡ୍ ହେବ ଯେପରି :</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/021a7f1ee76390d44a5fe5566ac94980077198d9d72dae3f5741421a07adfa19.png\" style=\"width: 329px; height: 155px;\" /></p>\n\n<p>ତେଣୁ, ସଠିକ୍ ଉତ୍ତର ହେଉଛି <span style=\"\"> </span><span style=\"font-weight: 700; \">\"TPDTAMNH\" </span>।</p>\n", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>ਇੱਥੇ ਲਾਗੂ ਕੀਤਾ ਗਿਆ ਤਰਕ ਹੈ :-</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eaffa1a5051159cd1e066e98d5c4afa345709cecd4ede71443b0285ebe285b22.png\" style=\"height: 107px; width: 450px;\" /></p>\n\n<p><span style=\"\">MATERIAL ਨੂੰ SZLREKZH ਵਜੋਂ ਕੋਡਬੱਧ ਕੀਤਾ ਗਿਆ ਹੈ।</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aac043fa9d0b1619b1930deb7fe5c2959d64c3ef8632103500de3ca9880fdfcd.png\" style=\"width: 331px; height: 157px;\" /></p>\n\n<p>ਇਸੇ ਤਰ੍ਹਾਂ, </p>\n\n<p><span style=\"\">EQUATION ਨੂੰ ਇਸ ਤਰ੍ਹਾਂ ਕੋਡਬੱਧ ਕੀਤਾ ਜਾਵੇਗਾ:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/021a7f1ee76390d44a5fe5566ac94980077198d9d72dae3f5741421a07adfa19.png\" style=\"width: 329px; height: 155px;\" /></p>\n\n<p><span style=\"\">ਇਸ ਲਈ, ਸਹੀ ਉੱਤਰ ਹੈ <strong>\"TPDTAMNH\"।</strong></span></p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Coding and Decoding By Letter Shifting"], "concept": "Coding-Decoding", "confidence": "high"}, {"qid": "6231917730c20c11254f59f9", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In a certain language, MOLE is written as ELOM. How will DRIVE be written in the same code language?</p>\n", "options": [{"prompt": "1", "value": "ERIDV"}, {"prompt": "2", "value": "ERIVD"}, {"prompt": "3", "value": "EVIDR"}, {"prompt": "4", "value": "EVIRD"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक निश्चित भाषा में, MOLE को ELOM लिखा जाता है। उसी कोड भाषा में DRIVE को कैसे लिखा जाएगा?", "options": [{"prompt": "1", "value": "ERIDV"}, {"prompt": "2", "value": "ERIVD"}, {"prompt": "3", "value": "EVIDR"}, {"prompt": "4", "value": "EVIRD"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>ఒక నిర్దిష్ట భాషలో, MOLE ను ELOM గా వ్రాస్తారు. అదే కోడ్ భాషలో DRIVE ను ఎలా వ్రాస్తారు?</p>\n", "options": [{"prompt": "1", "value": "ERIDV"}, {"prompt": "2", "value": "ERIVD"}, {"prompt": "3", "value": "EVIDR"}, {"prompt": "4", "value": "EVIRD"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>एका विशिष्ट भाषेत, MOLE हे ELOM असे लिहिले जाते. त्याच सांकेतिक भाषेत DRIVE कसे लिहिले जाईल?</p>\n", "options": [{"prompt": "1", "value": "ERIDV"}, {"prompt": "2", "value": "ERIVD"}, {"prompt": "3", "value": "EVIDR"}, {"prompt": "4", "value": "EVIRD"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>একটি নির্দিষ্ট ভাষায়, MOLE কে ELOM লেখা হয়। একই সাঙ্কেতিক ভাষায় DRIVE কে কীভাবে লেখা হবে?</p>\n", "options": [{"prompt": "1", "value": "ERIDV"}, {"prompt": "2", "value": "ERIVD"}, {"prompt": "3", "value": "EVIDR"}, {"prompt": "4", "value": "EVIRD"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>કોઈ કોડ ભાષામાં, MOLEને ELOM તરીકે લખવામાં આવે છે. તો DRIVEને સમાન કોડ ભાષામાં કેવી રીતે લખવામાં આવશે?</p>\n", "options": [{"prompt": "1", "value": "ERIDV"}, {"prompt": "2", "value": "ERIVD"}, {"prompt": "3", "value": "EVIDR"}, {"prompt": "4", "value": "EVIRD"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಒಂದು ನಿರ್ದಿಷ್ಟ ಭಾಷೆಯಲ್ಲಿ, MOLE ಅನ್ನು ELOM ಎಂದು ಬರೆಯಲಾಗಿದೆ. ಅದೇ ಕೋಡ್ ಭಾಷೆಯಲ್ಲಿ DRIVE ಅನ್ನು ಹೇಗೆ ಬರೆಯಲಾಗುತ್ತದೆ?</p>\n", "options": [{"prompt": "1", "value": "ERIDV"}, {"prompt": "2", "value": "ERIVD"}, {"prompt": "3", "value": "EVIDR"}, {"prompt": "4", "value": "EVIRD"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>ஒரு குறிப்பிட்ட மொழியில், MOLE என்பது ELOM என எழுதப்பட்டுள்ளது. அதே குறியீட்டு மொழியில் DRIVE எப்படி எழுதப்படும்?</p>", "options": [{"prompt": "1", "value": "ERIDV"}, {"prompt": "2", "value": "ERIVD"}, {"prompt": "3", "value": "EVIDR"}, {"prompt": "4", "value": "EVIRD"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1ea82bd5c97415b6a0bb4a31c9208d4af49dfee9c43ef8ee84e3fd4a2b56e847.png\" style=\"width: 490px; height: 103px;\" /></p>\n\n<p><strong>LOGIC: The word is rearranged according to reverse order (right to left)</strong>.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/87274bae6b014bc45f54a665d8df408267ea2e4c2b51a6cea60c3211ee65cc3e.png\" style=\"width: 263px; height: 42px;\" /></p>\n\n<p>Similarly,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c3f5e30fe34cee1df133897ada3149755ac53d91ac8cb5fdefdff4ddb53e692f.png\" style=\" width: 265px; height: 47px;\" /></p>\n\n<p>Hence, the correct answer is <strong>&quot;EVIRD&quot;.</strong></p>\n", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1ea82bd5c97415b6a0bb4a31c9208d4af49dfee9c43ef8ee84e3fd4a2b56e847.png\" style=\"width: 490px; height: 103px;\" /></p>\n\n<p><strong>LOGIC: </strong>शब्द को प्रतिलोम क्रम (दाएँ से बाएँ) के अनुसार पुनर्व्यवस्थित किया गया है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/87274bae6b014bc45f54a665d8df408267ea2e4c2b51a6cea60c3211ee65cc3e.png\" style=\" width: 263px; height: 42px;\" /></p>\n\n<p>इसी प्रकार,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c3f5e30fe34cee1df133897ada3149755ac53d91ac8cb5fdefdff4ddb53e692f.png\" style=\"width: 265px; height: 47px;\" /></p>\n\n<p>इसलिए, सही उत्तर <strong>&quot;EVIRD&quot;</strong> है।</p>\n", "te": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1ea82bd5c97415b6a0bb4a31c9208d4af49dfee9c43ef8ee84e3fd4a2b56e847.png\" style=\"width: 490px; height: 103px;\" /></p>\n\n<p><strong>తర్కం: పదాన్ని తిరగేసిన (కుడి నుండి ఎడమకు) ప్రకారం పునర్వ్యవస్థీకరించబడింది.</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/87274bae6b014bc45f54a665d8df408267ea2e4c2b51a6cea60c3211ee65cc3e.png\" style=\"width: 263px; height: 42px;\" /></p>\n\n<p>అదే విధంగా,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c3f5e30fe34cee1df133897ada3149755ac53d91ac8cb5fdefdff4ddb53e692f.png\" style=\" width: 265px; height: 47px;\" /></p>\n\n<p>కాబట్టి, సరైన సమాధానం <strong>\"EVIRD\".</strong></p>\n", "mr": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1ea82bd5c97415b6a0bb4a31c9208d4af49dfee9c43ef8ee84e3fd4a2b56e847.png\" style=\"width: 490px; height: 103px;\" /></p>\n\n<p><strong>तर्क: शब्दाची उलट क्रमाने (उजवीकडून डावीकडे) पुनर्रचना केली आहे</strong>.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/87274bae6b014bc45f54a665d8df408267ea2e4c2b51a6cea60c3211ee65cc3e.png\" style=\"width: 263px; height: 42px;\" /></p>\n\n<p>त्याचप्रमाणे,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c3f5e30fe34cee1df133897ada3149755ac53d91ac8cb5fdefdff4ddb53e692f.png\" style=\" width: 265px; height: 47px;\" /></p>\n\n<p>म्हणून, योग्य उत्तर <strong>\"EVIRD\"</strong> आहे.</p>\n", "bn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1ea82bd5c97415b6a0bb4a31c9208d4af49dfee9c43ef8ee84e3fd4a2b56e847.png\" style=\"width: 490px; height: 103px;\" /></p>\n\n<p><strong>যুক্তি: শব্দটি উল্টো ক্রমে (ডান থেকে বাম) পুনর্বিন্যস্ত করা হয়েছে।</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/87274bae6b014bc45f54a665d8df408267ea2e4c2b51a6cea60c3211ee65cc3e.png\" style=\"width: 263px; height: 42px;\" /></p>\n\n<p>একইভাবে,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c3f5e30fe34cee1df133897ada3149755ac53d91ac8cb5fdefdff4ddb53e692f.png\" style=\" width: 265px; height: 47px;\" /></p>\n\n<p>সুতরাং, সঠিক উত্তরটি হল <strong>\"EVIRD\"</strong></p>\n", "ml": "", "gu": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1ea82bd5c97415b6a0bb4a31c9208d4af49dfee9c43ef8ee84e3fd4a2b56e847.png\" style=\"width: 490px; height: 103px;\" /></p>\n\n<p><strong>તર્ક: શબ્દને વિપરીત ક્રમ (જમણેથી ડાબે) અનુસાર ફરીથી ગોઠવવામાં આવે છે</strong>.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/87274bae6b014bc45f54a665d8df408267ea2e4c2b51a6cea60c3211ee65cc3e.png\" style=\"width: 263px; height: 42px;\" /></p>\n\n<p>તેવી જ રીતે,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c3f5e30fe34cee1df133897ada3149755ac53d91ac8cb5fdefdff4ddb53e692f.png\" style=\" width: 265px; height: 47px;\" /></p>\n\n<p>તેથી, સાચો જવાબ <strong>\"EVIRD\"</strong> છે.</p>\n", "kn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1ea82bd5c97415b6a0bb4a31c9208d4af49dfee9c43ef8ee84e3fd4a2b56e847.png\" style=\"width: 490px; height: 103px;\" /></p>\n\n<p><strong>ತರ್ಕ: ಪದವನ್ನು ಹಿಮ್ಮುಖ ಕ್ರಮದಲ್ಲಿ (ಬಲದಿಂದ ಎಡಕ್ಕೆ) ಮರುಹೊಂದಿಸಲಾಗಿದೆ</strong>.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/87274bae6b014bc45f54a665d8df408267ea2e4c2b51a6cea60c3211ee65cc3e.png\" style=\"width: 263px; height: 42px;\" /></p>\n\n<p>ಅದೇ ರೀತಿ,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c3f5e30fe34cee1df133897ada3149755ac53d91ac8cb5fdefdff4ddb53e692f.png\" style=\" width: 265px; height: 47px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ <strong>\"EVIRD\".</strong></p>\n", "ta": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1ea82bd5c97415b6a0bb4a31c9208d4af49dfee9c43ef8ee84e3fd4a2b56e847.png\" style=\"width: 490px; height: 103px;\" /></p><p> <strong>தர்க்கம்: தலைகீழ் வரிசையில் (வலமிருந்து இடமாக) வார்த்தை மறுசீரமைக்கப்பட்டுள்ளது</strong> . </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/87274bae6b014bc45f54a665d8df408267ea2e4c2b51a6cea60c3211ee65cc3e.png\" style=\"width: 263px; height: 42px;\" /></p><p> இதேபோல், </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c3f5e30fe34cee1df133897ada3149755ac53d91ac8cb5fdefdff4ddb53e692f.png\" style=\" width: 265px; height: 47px;\" /></p><p> எனவே, சரியான பதில் <strong>\"EVIRD\".</strong></p>", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Coding and Decoding By Letter Shifting"], "concept": "Coding-Decoding", "confidence": "high"}, {"qid": "6001876978ef629ac91a9820", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Ina certain code language, &#39;STRONG&#39; is written as &#39;RTSUQSNPMOFH&#39;. How will &#39;ORDER&#39; be written as in that language ?", "options": [{"prompt": "1", "value": "NORSCFDFRS"}, {"prompt": "2", "value": "NPQSCEDFQS"}, {"prompt": "3", "value": "OPQTCEDFQS"}, {"prompt": "4", "value": "NPQSCEGFQT"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक निश्चित कूट&nbsp;भाषा में, &#39;STRONG&#39; को &#39;RTSUQSNPMOFH&#39; के रूप में&nbsp;लिखा जाता है। उसी भाषा में &#39;ORDER&#39; को किस प्रकार लिखा जाएगा?", "options": [{"prompt": "1", "value": "NORSCFDFRS"}, {"prompt": "2", "value": "NPQSCEDFQS"}, {"prompt": "3", "value": "OPQTCEDFQS"}, {"prompt": "4", "value": "NPQSCEGFQT"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>Given,</p>\n\n<p>&#39;STRONG&#39; is written as &#39;RTSUZBEGEG&#39;.</p>\n\n<p>The pattern followed here is,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fe0be3f65af8cd36d14bdd35d2b2ebb409ce5283afc74376324b5a9e71b18d68.png\" style=\"width: 361px; height: 96px;\" /></p>\n\n<p>Similarly,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ad2f9671b14c7c7cfe427852abd42344cdc88f3aadb3277e85f0226eb35afb21.png\" style=\"width: 300px; height: 100px;\" /></p>\n\n<p><strong>Hence, the correct answer&nbsp;NPQSCEDFQS.</strong></p>\n", "hn": "<p>दिया गया है,</p>\n\n<p>&#39;STRONG&#39; को &#39;RTSUZBEGEG&#39; के रूप में लिखा गया है।</p>\n\n<p>यहां अनुसरण किया गया स्वरूप निम्न प्रकार है,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fe0be3f65af8cd36d14bdd35d2b2ebb409ce5283afc74376324b5a9e71b18d68.png\" style=\"width: 361px; height: 96px;\" /></p>\n\n<p>इसी प्रकार,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ad2f9671b14c7c7cfe427852abd42344cdc88f3aadb3277e85f0226eb35afb21.png\" style=\"width: 300px; height: 100px;\" /></p>\n\n<p><strong>अतः,&nbsp;सही उत्तर </strong><span style=\"font-weight: 700;\">NPQSCEDFQS&nbsp;</span><strong>है।</strong></p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Coding and Decoding By Letter Shifting"], "concept": "Coding-Decoding", "confidence": "high"}, {"qid": "627494133d3a7466daa1ff04", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In a certain code language, &lsquo;BUILDER&rsquo;&nbsp;is written as&nbsp;&lsquo;VZNFXJL&rsquo;. How will &lsquo;PARKING&rsquo;&nbsp;be written in that language?", "options": [{"prompt": "1", "value": "JLFNEHA&amp;nbsp;"}, {"prompt": "2", "value": "EIFLBIM"}, {"prompt": "3", "value": "IELFMIB&amp;nbsp;"}, {"prompt": "4", "value": "JFLENHA&amp;nbsp;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक निश्चित कूट भाषा में, &#39;BUILDER&#39; को &#39;VZNFXJL&#39; के रूप में लिखा जाता है। उसी भाषा में &#39;PARKING&#39; को कैसे लिखा जाएगा?", "options": [{"prompt": "1", "value": "JLFNEHA&amp;nbsp;"}, {"prompt": "2", "value": "EIFLBIM"}, {"prompt": "3", "value": "IELFMIB"}, {"prompt": "4", "value": "JFLENHA&amp;nbsp;"}], "range": {"start": "", "end": ""}}, "or": {"value": "ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ କୋଡ୍ ଭାଷାରେ, ‘BUILDER’ କୁ ‘VZNFXJL’ ଭାବରେ ଲେଖାଯାଇଛି | ସେହି ଭାଷାରେ <span style=\"\">‘PARKING’</span> କିପରି ଲେଖାଯିବ?", "options": [{"prompt": "1", "value": "JLFNEHA&nbsp;"}, {"prompt": "2", "value": "EIFLBIM"}, {"prompt": "3", "value": "IELFMIB&nbsp;"}, {"prompt": "4", "value": "JFLENHA&nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p>The position of letters according to the English alphabet series:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/9b1ef5af07dc7cdface0347994bbc6f824cbda2bac27bcab0cb4cf07968dfa00.png\" /></p>\n\n<p><strong>Logic:&nbsp; </strong></p>\n\n<ul>\n\t<li><strong>Consonant - Subtract of - 6&nbsp;in every consonant.</strong></li>\n\t<li><strong>Vowel - Addition of + 5 in e", "hn": "<p>अंग्रेजी वर्णमाला श्रृंखला के अनुसार अक्षरों की स्थिति:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/9b1ef5af07dc7cdface0347994bbc6f824cbda2bac27bcab0cb4cf07968dfa00.png\" /></p>\n\n<p><strong>तर्क:&nbsp; </strong></p>\n\n<ul>\n\t<li><strong>व्यंजन - प्रत्येक व्यंजन में - 6 का घटाव।<br />\n\tस्वर - प्रत्येक वर्णाक्षर में +5 का योग।</strong></li>\n</ul>\n\n<p><span style=\"\">&#39;BUILDER&#39; को &#39;VZNFXJL&#39; के रूप में लिखा जाता है</span></p>", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "<p>ଇଂରାଜୀ ବର୍ଣ୍ଣମାଳା କ୍ରମ ଅନୁଯାୟୀ ଅକ୍ଷରର ସ୍ଥିତି:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/9b1ef5af07dc7cdface0347994bbc6f824cbda2bac27bcab0cb4cf07968dfa00.png\" /></p>\n\n<p><strong>ତର୍କ:  </strong></p>\n\n<ul>\n\t<li><strong>ବ୍ୟଞ୍ଜନ ବର୍ଣ୍ଣ - ପ୍ରତ୍ୟେକ ବ୍ୟଞ୍ଜନ ବର୍ଣ୍ଣରେ - 6 ବିୟୋଗ କର |</strong></li>\n\t<li><strong>ସ୍ୱର ବର୍ଣ୍ଣ - ପ୍ରତ୍ୟେକ ସ୍ୱର ବର୍ଣ୍ଣରେ + 5 ର ଯୋଗ କର |</strong></li>\n</ul>\n\n<p>‘BUILDER’ କୁ ‘VZNFXJL’  ଭାବରେ ଲେଖାଯାଏ </p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/a77fb134a13c68df80469cfd4d9ba9909929b0eec7086af9594dcacea2a17dbb.png\" /></p>\n\n<p>ସେହିଭଳି,</p>\n\n<p>‘PARKING’ କେଉଁ ଭାବରେ ଲେଖାଯିବ '?'</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/beef7c53b639f10059fbb4c48db8e72eab77dbfa15e08b997c8a0e7ae5f8fb3c.png\" /></p>\n\n<p>ତେଣୁ, ସଠିକ ଉତ୍ତର \"JFLENHA\" ଅଟେ <span style=\"\">|</span></p>\n", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Coding and Decoding By Letter Shifting"], "concept": "Coding-Decoding", "confidence": "high"}, {"qid": "626472702fb955a7507d181f", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In a certain code language, CLOUD is written as DMNTE, and MANGO is written as NZOHN. How will PASTEUR be written in that language?&nbsp;", "options": [{"prompt": "1", "value": "UTBQSVF"}, {"prompt": "2", "value": "QZTUDTS"}, {"prompt": "3", "value": "QZRSDVS"}, {"prompt": "4", "value": "QBTUFVS"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक निश्चित कूट भाषा में CLOUD को DMNTE के रूप में लिखा जाता है और MANGO को NZOHN के रूप में लिखा जाता है। उसी भाषा में PASTEUR को किस प्रकार लिखा जाएगा?", "options": [{"prompt": "1", "value": "UTBQSVF"}, {"prompt": "2", "value": "QZTUDTS"}, {"prompt": "3", "value": "QZRSDVS"}, {"prompt": "4", "value": "QBTUFVS"}], "range": {"start": "", "end": ""}}, "te": {"value": "ఒక నిర్దిష్ట సంకేతం భాషలో, CLOUDను DMNTEగా రాస్తారు మరియు MANGOను NZOHNగా రాస్తారు. అయితే ఆ సంకేతం భాషలో PASTEURను ఎలా రాస్తారు?", "options": [{"prompt": "1", "value": "UTBQSVF"}, {"prompt": "2", "value": "QZTUDTS"}, {"prompt": "3", "value": "QZRSDVS"}, {"prompt": "4", "value": "QBTUFVS"}], "range": {"start": "", "end": ""}}, "mr": {"value": "एका विशिष्ट सांकेतिक भाषेत, CLOUD ला DMNTE असे लिहिले जाते आणि MANGO ला NZOHN असे लिहिले जाते. त्याच भाषेत PASTEUR कसे लिहिले जाईल?", "options": [{"prompt": "1", "value": "UTBQSVF"}, {"prompt": "2", "value": "QZTUDTS"}, {"prompt": "3", "value": "QZRSDVS"}, {"prompt": "4", "value": "QBTUFVS"}], "range": {"start": "", "end": ""}}, "bn": {"value": "একটি নির্দিষ্ট সংকেত ভাষায়, CLOUD কে DMNTE হিসাবে লেখা হয়, এবং MANGO কে NZOHN হিসাবে লেখা হয়। PASTEUR কে সেই ভাষায় কিভাবে লেখা হবে?", "options": [{"prompt": "1", "value": "UTBQSVF"}, {"prompt": "2", "value": "QZTUDTS"}, {"prompt": "3", "value": "QZRSDVS"}, {"prompt": "4", "value": "QBTUFVS"}], "range": {"start": "", "end": ""}}, "gu": {"value": "કોઈ કોડ ભાષામાં, CLOUD ને DMNTE તરીકે લખવામાં આવે છે, અને MANGO ને NZOHN તરીકે લખવામાં આવે છે. તે ભાષામાં PASTEUR કેવી રીતે લખવામાં આવશે?", "options": [{"prompt": "1", "value": "UTBQSVF"}, {"prompt": "2", "value": "QZTUDTS"}, {"prompt": "3", "value": "QZRSDVS"}, {"prompt": "4", "value": "QBTUFVS"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ನಿರ್ದಿಷ್ಟ ಸಾಂಕೇತಿಕ ಭಾಷೆಯಲ್ಲಿ, CLOUD ಅನ್ನು DMNTE ಎಂದು ಬರೆಯಲಾಗುತ್ತದೆ ಮತ್ತು MANGO ಅನ್ನು NZOHN ಎಂದು ಬರೆಯಲಾಗುತ್ತದೆ. PASTEUR ಅನ್ನು ಆ ಭಾಷೆಯಲ್ಲಿ ಹೇಗೆ ಬರೆಯಲಾಗುತ್ತದೆ?", "options": [{"prompt": "1", "value": "UTBQSVF"}, {"prompt": "2", "value": "QZTUDTS"}, {"prompt": "3", "value": "QZRSDVS"}, {"prompt": "4", "value": "QBTUFVS"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ஒரு குறிப்பிட்ட குறியீட்டு மொழியில், CLOUD என்பது DMNTE என்றும், MANGO என்பது NZOHN என்றும் எழுதப்பட்டுள்ளது. அந்த மொழியில் PASTEUR எவ்வாறு எழுதப்படும்?", "options": [{"prompt": "1", "value": "<span style=\"color: rgb(33, 37, 41);\">UTBQSVF</span>"}, {"prompt": "2", "value": "<span style=\"color: rgb(33, 37, 41);\">QZTUDTS</span>"}, {"prompt": "3", "value": "<span style=\"color: rgb(33, 37, 41);\">QZRSDVS</span>"}, {"prompt": "4", "value": "<span style=\"color: rgb(33, 37, 41);\">QBTUFVS</span>"}], "range": {"start": "", "end": ""}}, "or": {"value": "ଏକ ନିର୍ଦ୍ଦିଷ୍ଟ କୋଡ୍ ଭାଷାରେ, CLOUD କୁ DMNTE ଭାବରେ ଲେଖା ହୋଇଛି, ଏବଂ MANGO କୁ  NZOHN ଭାବରେ ଲେଖାଯାଇଛି | ସେହି ଭାଷାରେ PASTEUR କୁ କିପରି ଲେଖାଯିବ?", "options": [{"prompt": "1", "value": "UTBQSVF&nbsp;"}, {"prompt": "2", "value": "QZTUDTS"}, {"prompt": "3", "value": "QZRSDVS&nbsp;"}, {"prompt": "4", "value": "QBTUFVS&nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>The logic followed here is :-</p>\n\n<p>The alphabetic positional value of consonant is added with +1.</p>\n\n<p><span style=\"\">The alphabetic positional value of vowel is subtracted with -1.</span></p>\n\n<p><span style=\"\">CLOUD is written as DMNTE.</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/656f7453c2c536fd591ec30f24a10cd10a7f8d7f523f833a4127500", "hn": "\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>यहाँ अनुसरण किया गया तर्क निम्नलिखित&nbsp;है: -</p>\n\n<p>व्यंजन के&nbsp;वर्णानुक्रमिक स्थितीय मान में +1&nbsp;जोड़ा जाता है।</p>\n\n<p>स्वर के&nbsp;वर्णानुक्रमिक स्थितीय मान से&nbsp;-1 से घटाया जाता है।</p>\n\n<p>CLOUD को DMNTE के रूप में&nbsp;लिखा जाता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/656f7453c2c536fd591ec30f24a10cd10a7f8d7f523f833a4127500e83e7bc3c.png\" style=\" width: 169px; height: 102px;\" /></p>\n\n<p>और</p>\n\n<p>MANGO को NZOHN के रूप में&nbsp;लिखा जाता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/12a3f21be8824b433d7d8266e1de0553f9f36729eb737b4e4d11fb7afbf2b6cf.png\" style=\" width: 173px; height: 102px;\" /></p>\n\n<p>इसी तरह,</p>\n\n<p>PASTEUR को इस प्रकार&nbsp;लिखा जाएगा:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4505af4ee58af827b08bae9cde3aa3659896a48080c3ec7bd7d15761b44f6ddf.png\" style=\" width: 232px; height: 102px;\" /></p>\n\n<p>अतः, सही उत्तर <strong>&quot;QZTUDTS&quot;</strong> है।</p>\n\n32:T6e1,\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>येथे अनुसरण केलेले तर्क आहे:-</p>\n\n<p>व्यंजनाच्या वर्णक्रम स्थान मूल्यात +1 जोडले जाते.</p>\n\n<p><span style=\"\">स्वरा</span><span style=\"color: rgb(33, 37, 41);\">च्या </span><span style=\"color: rgb(33, 37,", "te": "<p>ఇక్కడ అనుసరించే తర్కం :-</p>\n\n<p>సంధి అక్షరాల హల్లుల స్థాన విలువకు +1 జోడించబడుతుంది.</p>\n\n<p>స్వర అక్షరాల హల్లుల స్థాన విలువకు -1 తీసివేయబడుతుంది.</p>\n\n<p>CLOUDను DMNTEగా రాస్తారు.</p>\n\n<p>మరియు</p>\n\n<p>MANGOను NZOHNగా రాస్తారు.</p>\n\n<p>అదే విధంగా,</p>\n\n<p>PASTEURను ఇలా రాస్తారు :</p>\n\n<p>కాబట్టి, సరైన సమాధానం <strong>\"QZTUDTS\".</strong></p>\n", "mr": "\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>येथे अनुसरण केलेले तर्क आहे:-</p>\n\n<p>व्यंजनाच्या वर्णक्रम स्थान मूल्यात +1 जोडले जाते.</p>\n\n<p><span style=\"\">स्वरा</span><span style=\"color: rgb(33, 37, 41);\">च्या </span><span style=\"color: rgb(33, 37, 41);\">वर्णक्रम</span><span style=\"color: rgb(33, 37, 41);\"> स्थान मूल्यातून </span><span style=\"\">-1 वजा केले जाते.</span></p>\n\n<p><span style=\"\">CLOUD हे DMNTE असे लिहिले आहे.</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/656f7453c2c536fd591ec30f24a10cd10a7f8d7f523f833a4127500e83e7bc3c.png\" style=\"width: 169px; height: 102px;\" /></p>\n\n<p><span style=\"\">आणि</span></p>\n\n<p><span style=\"\">MANGO हे NZOHN असे लिहिले आहे.</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/12a3f21be8824b433d7d8266e1de0553f9f36729eb737b4e4d11fb7afbf2b6cf.png\" style=\"width: 173px; height: 102px;\" /></p>\n\n<p><span style=\"\">त्याचप्रमाणे,</span></p>\n\n<p><span style=\"\">PASTEUR असे लिहिले जाईल:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4505af4ee58af827b08bae9cde3aa3659896a48080c3ec7bd7d15761b44f6ddf.png\" style=\"width: 232px; height: 102px;\" /></p>\n\n<p>म्हणून, <strong>\"<span style=\"\">QZTUDTS\"</span></strong> हे बरोबर उत्तर आहे.</p>\n\n33:T67a,<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>এখানে অনুসৃত যুক্তি হল:-</p>\n\n<p>ব্যঞ্জনবর্ণের বর্ণানুক্রমিক স্থানীয় মান +1 এর সাথে যোগ করা হয়।</p>\n\n<p><span style=\"\">স্বরবর্ণের বর্ণানুক্রমিক </span><span style=\"color: rgb(33, ", "bn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>এখানে অনুসৃত যুক্তি হল:-</p>\n\n<p>ব্যঞ্জনবর্ণের বর্ণানুক্রমিক স্থানীয় মান +1 এর সাথে যোগ করা হয়।</p>\n\n<p><span style=\"\">স্বরবর্ণের বর্ণানুক্রমিক </span><span style=\"color: rgb(33, 37, 41);\">স্থানীয় </span><span style=\"\">মান -1 দিয়ে বিয়োগ করা হয়।</span></p>\n\n<p><span style=\"\">CLOUD কে DMNTE হিসাবে লেখা হয়।</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/656f7453c2c536fd591ec30f24a10cd10a7f8d7f523f833a4127500e83e7bc3c.png\" style=\"width: 169px; height: 102px;\" /></p>\n\n<p><span style=\"\">এবং</span></p>\n\n<p><span style=\"\">MANGO কে NZOHN হিসাবে লেখা হয়।</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/12a3f21be8824b433d7d8266e1de0553f9f36729eb737b4e4d11fb7afbf2b6cf.png\" style=\"width: 173px; height: 102px;\" /></p>\n\n<p><span style=\"\">একইভাবে,</span></p>\n\n<p><span style=\"\">PASTEUR কে এভাবে লেখা হবে:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4505af4ee58af827b08bae9cde3aa3659896a48080c3ec7bd7d15761b44f6ddf.png\" style=\"width: 232px; height: 102px;\" /></p>\n\n<p>অতএব, সঠিক উত্তর হল <strong>\" <span style=\"\">QZTUDTS\"</span></strong></p>\n34:T66f,<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>અહીં અનુસરવામાં આવતો તર્ક નીચે મુજબ છે:</p>\n\n<p>વ્યંજનના મૂળાક્ષરના સ્થાન મૂલ્યમાં +1 ઉમેરવામાં આવે છે.</p>\n\n<p><span style=\"\">સ્વરના મૂળાક્ષરના સ્થાન મૂલ્યમાં -1 બાદ કર", "ml": "", "gu": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>અહીં અનુસરવામાં આવતો તર્ક નીચે મુજબ છે:</p>\n\n<p>વ્યંજનના મૂળાક્ષરના સ્થાન મૂલ્યમાં +1 ઉમેરવામાં આવે છે.</p>\n\n<p><span style=\"\">સ્વરના મૂળાક્ષરના સ્થાન મૂલ્યમાં -1 બાદ કરવામાં આવે છે.</span></p>\n\n<p><span style=\"\">CLOUDને DMNTE તરીકે લખવામાં આવે છે.</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/656f7453c2c536fd591ec30f24a10cd10a7f8d7f523f833a4127500e83e7bc3c.png\" style=\"width: 169px; height: 102px;\" /></p>\n\n<p><span style=\"\">અને</span></p>\n\n<p><span style=\"\">MANGOને NZOHN તરીકે લખવામાં આવે છે.</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/12a3f21be8824b433d7d8266e1de0553f9f36729eb737b4e4d11fb7afbf2b6cf.png\" style=\"width: 173px; height: 102px;\" /></p>\n\n<p><span style=\"\">તેવી જ રીતે,</span></p>\n\n<p><span style=\"\">PASTEUR આ રીતે લખાશે:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4505af4ee58af827b08bae9cde3aa3659896a48080c3ec7bd7d15761b44f6ddf.png\" style=\"width: 232px; height: 102px;\" /></p>\n\n<p>તેથી, સાચો જવાબ <strong>\"<span style=\"\">QZTUDTS\"</span></strong> છે.</p>\n35:T687,<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ತರ್ಕ ಹೀಗಿದೆ:-</p>\n\n<p>ವ್ಯಂಜನದ ವರ್ಣಮಾಲೆಯ ಸ್ಥಾನಿಕ ಮೌಲ್ಯವನ್ನು +1 ನೊಂದಿಗೆ ಸೇರಿಸಲಾಗುತ್ತದೆ.</p>\n\n<p><span style=\"\">ಸ್ವರದ ವರ್ಣಮಾಲೆಯ ಸ್ಥಾನಿಕ ಮೌಲ್ಯವನ್ನು -1 ನೊಂದಿಗೆ ಕಳೆಯಲಾಗುತ್ತದೆ.</span></p>\n\n<p><span style=", "kn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ತರ್ಕ ಹೀಗಿದೆ:-</p>\n\n<p>ವ್ಯಂಜನದ ವರ್ಣಮಾಲೆಯ ಸ್ಥಾನಿಕ ಮೌಲ್ಯವನ್ನು +1 ನೊಂದಿಗೆ ಸೇರಿಸಲಾಗುತ್ತದೆ.</p>\n\n<p><span style=\"\">ಸ್ವರದ ವರ್ಣಮಾಲೆಯ ಸ್ಥಾನಿಕ ಮೌಲ್ಯವನ್ನು -1 ನೊಂದಿಗೆ ಕಳೆಯಲಾಗುತ್ತದೆ.</span></p>\n\n<p><span style=\"\">CLOUD ಅನ್ನು DMNTE ಎಂದು ಬರೆಯಲಾಗಿದೆ.</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeate\nrmock.com/tb/656f7453c2c536fd591ec30f24a10cd10a7f8d7f523f833a4127500e83e7bc3c.png\" style=\"width: 169px; height: 102px;\" /></p>\n\n<p><span style=\"\">ಮತ್ತು</span></p>\n\n<p><span style=\"\">MANGO ಅನ್ನು NZOHN ಎಂದು ಬರೆಯಲಾಗಿದೆ", "ta": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"color: rgb(33, 37, 41); height: 95px; width: 400px;\" /></p>\n\n<p>இங்கே பின்பற்றப்படும் தர்க்கம்:-</p>\n\n<p>மெய்யெழுத்தின் அகரவரிசை நிலை மதிப்பு +1 உடன் கூட்டப்படுகிறது.</p>\n\n<p>உயிரெழுத்தின் அகரவரிசை நிலை மதிப்பு -1 உடன் கழிக்கப்படுகிறது.</p>\n\n<p>CLOUD என்பது DMNTE என எழுதப்பட்டுள்ளது.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/656f7453c2c536fd591ec30f24a10cd10a7f8d7f523f833a4127500e83e7bc3c.png\" style=\"color: rgb(33, 37, 41); width: 169px; height: 102px;\" /></p>\n\n<p>மற்றும்</p>\n\n<p>MANGO என்பது NZOHN என எழுதப்பட்டுள்ளது</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/12a3f21be8824b433d7d8266e1de0553f9f36729eb737b4e4d11fb7afbf2b6cf.png\" style=\"color: rgb(33, 37, 41); width: 173px; height: 102px;\" /></p>\n\n<p>இதேபோல்,</p>\n\n<p>PASTEUR பின்வருமாறு எழுதப்படும்:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4505af4ee58af827b08bae9cde3aa3659896a48080c3ec7bd7d15761b44f6ddf.png\" style=\"color: rgb(33, 37, 41); width: 232px; height: 102px;\" /></p>\n\n<p>எனவே, சரியான பதில் \"<strong>QZTUDTS</strong>\"</p>\n37:T69e,<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>ଏଠାରେ ଅନୁସରଣ କରାଯାଉଥିବା ତର୍କ ହେଉଛି: -</p>\n\n<p>ବ୍ୟଞ୍ଜନ ବର୍ଣ୍ଣ<span style=\"color: rgb(33, 37, 41);\">ର</span> ସ୍ଥିତିଗତ ମୂଲ୍ୟରେ +1 ଯୋଗ କରାଯାଇଛି |</p>\n\n<p><span style=\"\">ସ୍ୱର ବର୍ଣ୍ଣର ସ୍ଥିତିଗତ ମୂଲ୍ୟ -1 ବିୟୋଗ ହୋଇଛି |</span></p>\n\n<p><span style=\"\">CLOUD କୁ DMNTE ଭାବରେ ଲେଖା", "or": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2d16e50abe1a866069dc7ff61c99f97f83c1c43a73bc7da4d0c011f370fc1dfe.png\" style=\"height: 95px; width: 400px;\" /></p>\n\n<p>ଏଠାରେ ଅନୁସରଣ କରାଯାଉଥିବା ତର୍କ ହେଉଛି: -</p>\n\n<p>ବ୍ୟଞ୍ଜନ ବର୍ଣ୍ଣ<span style=\"color: rgb(33, 37, 41);\">ର</span> ସ୍ଥିତିଗତ ମୂଲ୍ୟରେ +1 ଯୋଗ କରାଯାଇଛି |</p>\n\n<p><span style=\"\">ସ୍ୱର ବର୍ଣ୍ଣର ସ୍ଥିତିଗତ ମୂଲ୍ୟ -1 ବିୟୋଗ ହୋଇଛି |</span></p>\n\n<p><span style=\"\">CLOUD କୁ DMNTE ଭାବରେ ଲେଖାଯାଇଛି |</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/656f7453c2c536fd591ec30f24a10cd10a7f8d7f523f833a4127500e83e7bc3c.png\" style=\"width: 169px; height: 102px;\" /></p>\n\n<p><span style=\"\">ଏବଂ</span></p>\n\n<p><span style=\"\">MANGO କୁ NZOHN ଭାବରେ ଲେଖାଯାଇଛି |</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/12a3f21be8824b433d7d8266e1de0553f9f36729eb737b4e4d11fb7afbf2b6cf.png\" style=\"width: 173px; height: 102px;\" /></p>\n\n<p><span style=\"\">ସେହିଭଳି</span></p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">PASTEUR ଏପରି</span><span style=\"\"> ଭାବରେ ଲେଖାଯିବ:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4505af4ee58af827b08bae9cde3aa3659896a48080c3ec7bd7d15761b44f6ddf.png\" style=\"width: 232px; height: 102px;\" /></p>\n\n<p>ତ\nେଣୁ, ସଠିକ୍ ଉତ୍ତର <strong>\" <span style=\"\">QZTUDTS\" </span></strong><span style=\"\">ଅଟେ |</span></p>\n38:T493,<p>The position of letters according to the English alphabet series:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/9b1ef5af07dc7cdface0347994bbc6f824cbda2bac27bcab0cb4cf07968dfa00.png\" /></p>\n\n<p><strong>Logic:&nbsp; </strong></p>\n\n<ul>\n\t<li><st", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Coding and Decoding By Letter Shifting"], "concept": "Coding-Decoding", "confidence": "high"}, {"qid": "623048231eb883d78c4587d9", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In a certain code language, THEOCRACY is written as CYACROHET. How will RELATIONS be written in that language?", "options": [{"prompt": "1", "value": "NSOIATLER"}, {"prompt": "2", "value": "NSOTIAELR"}, {"prompt": "3", "value": "OSNAIATLER"}, {"prompt": "4", "value": "SONIATELR"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक निश्चित कूट भाषा में, THEOCRACY को CYACROHET के रूप में लिखा जाता है। उस भाषा में RELATIONS को कैसे लिखा जायेगा?", "options": [{"prompt": "1", "value": "NSOIATLER"}, {"prompt": "2", "value": "NSOTIAELR"}, {"prompt": "3", "value": "OSNAIATLER"}, {"prompt": "4", "value": "SONIATELR"}], "range": {"start": "", "end": ""}}, "te": {"value": "ఒక నిర్దిష్ట కోడ్ భాషలో, THEOCRACY ని CYACROHET గా వ్రాస్తారు. అదే భాషలో RELATIONS ను ఎలా వ్రాయగలరు?", "options": [{"prompt": "1", "value": "NSOIATLER"}, {"prompt": "2", "value": "NSOTIAELR"}, {"prompt": "3", "value": "OSNAIATLER"}, {"prompt": "4", "value": "SONIATELR"}], "range": {"start": "", "end": ""}}, "mr": {"value": "एका विशिष्ट सांकेतिक भाषेत, THEOCRACY हे CYACROHET असे लिहिले जाते. त्याच भाषेत RELATIONS कसे लिहिले जाईल?", "options": [{"prompt": "1", "value": "NSOIATLER"}, {"prompt": "2", "value": "NSOTIAELR"}, {"prompt": "3", "value": "OSNAIATLER"}, {"prompt": "4", "value": "SONIATELR"}], "range": {"start": "", "end": ""}}, "bn": {"value": "নির্দিষ্ট কোড ভাষায়, THEOCRACY কে CYACROHET লেখা হয়। এই ভাষায় RELATIONS কে কীভাবে লেখা হবে?", "options": [{"prompt": "1", "value": "NSOIATLER"}, {"prompt": "2", "value": "NSOTIAELR"}, {"prompt": "3", "value": "OSNAIATLER"}, {"prompt": "4", "value": "SONIATELR"}], "range": {"start": "", "end": ""}}, "gu": {"value": "કોઈ કોડ ભાષામાં, THEOCRACY ને CYACROHET તરીકે લખવામાં આવે છે. તે ભાષામાં RELATIONS કેવી રીતે લખવામાં આવશે?", "options": [{"prompt": "1", "value": "<span data-darkreader-inline-color=\"\" style=\"color: rgb(33, 37, 41); --darkreader-inline-color: #d1cdc7;\">NSOIATLER</span>"}, {"prompt": "2", "value": "NSOTIAELR"}, {"prompt": "3", "value": "OSNAIATLER"}, {"prompt": "4", "value": "SONIATELR"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ಒಂದು ನಿರ್ದಿಷ್ಟ ಕೋಡ್ ಭಾಷೆಯಲ್ಲಿ, THEOCRACY ಅನ್ನು CYACROHET ಎಂದು ಬರೆಯಲಾಗಿದೆ. RELATIONS ಅನ್ನು ಆ ಭಾಷೆಯಲ್ಲಿ ಹೇಗೆ ಬರೆಯಲಾಗುತ್ತದೆ?", "options": [{"prompt": "1", "value": "NSOIATLER"}, {"prompt": "2", "value": "NSOTIAELR"}, {"prompt": "3", "value": "OSNAIATLER"}, {"prompt": "4", "value": "SONIATELR"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ஒரு குறிப்பிட்ட குறியீட்டு மொழியில், THEOCRACY என்பது CYACROHET என எழுதப்பட்டுள்ளது. அந்த மொழியில் RELATIONS எப்படி எழுதப்படும்?", "options": [{"prompt": "1", "value": "NSOIATLER"}, {"prompt": "2", "value": "NSOTIAELR"}, {"prompt": "3", "value": "OSNAIATLER"}, {"prompt": "4", "value": "SONIATELR"}], "range": {"start": "", "end": ""}}, "pa": {"value": "ਇੱਕ ਨਿਸ਼ਚਿਤ ਕੋਡ ਭਾਸ਼ਾ ਵਿੱਚ, THEOCRACY ਨੂੰ CYACROHET ਲਿਖਿਆ ਜਾਂਦਾ ਹੈ। ਉਸ ਭਾਸ਼ਾ ਵਿੱਚ RELATIONS ਨੂੰ ਕਿਵੇਂ ਲਿਖਿਆ ਜਾਵੇਗਾ?", "options": [{"prompt": "1", "value": "NSOIATLER"}, {"prompt": "2", "value": "NSOTIAELR"}, {"prompt": "3", "value": "OSNAIATLER"}, {"prompt": "4", "value": "SONIATELR"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>The pattern for the code is as follows:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/7e57bedfe4c79621b8ec4dbb3ebc779d0f317aeab0cc8382c8ca6766f691228d.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 145px;\" /></p>\n\n<p>Similarly,&nbsp;</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/0c3b9bf13dfc6edb9c285d2a91756311f4e9a602f08bc1c7027755e2ff6c9dfc.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 144px;\" /></p>\n\n<p>Hence, the correct answer is <strong>&quot;</strong><strong>NSOTIAELR&quot;.</strong></p>\n", "hn": "<p>कूट के लिए स्वरूप इस प्रकार है:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/7e57bedfe4c79621b8ec4dbb3ebc779d0f317aeab0cc8382c8ca6766f691228d.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 145px;\" /></p>\n\n<p>इसी प्रकार,&nbsp;</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/0c3b9bf13dfc6edb9c285d2a91756311f4e9a602f08bc1c7027755e2ff6c9dfc.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 144px;\" /></p>\n\n<p><span style=\"\">अत:, सही उत्तर&nbsp;</span><strong>&quot;NSOTIAELR&quot;</strong> है।</p>\n", "te": "<p>కోడ్ యొక్క నమూనా ఈ విధంగా ఉంది:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/7e57bedfe4c79621b8ec4dbb3ebc779d0f317aeab0cc8382c8ca6766f691228d.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 145px;\" /></p>\n\n<p>అదేవిధంగా, </p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/0c3b9bf13dfc6edb9c285d2a91756311f4e9a602f08bc1c7027755e2ff6c9dfc.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 144px;\" /></p>\n\n<p>కాబట్టి, సరైన సమాధానం <strong>\"</strong><strong>NSOTIAELR\".</strong></p>\n", "mr": "<p>संकेतभाषेचा नमुना खालीलप्रमाणे आहे:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/7e57bedfe4c79621b8ec4dbb3ebc779d0f317aeab0cc8382c8ca6766f691228d.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 145px;\" /></p>\n\n<p>त्याचप्रमाणे, </p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/0c3b9bf13dfc6edb9c285d2a91756311f4e9a602f08bc1c7027755e2ff6c9dfc.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 144px;\" /></p>\n\n<p>म्हणून, योग्य उत्तर <strong>\"NSOTIAELR\"</strong> आहे.</p>\n", "bn": "<p>কোডের প্যাটার্ন নিম্নরূপ:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/7e57bedfe4c79621b8ec4dbb3ebc779d0f317aeab0cc8382c8ca6766f691228d.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 145px;\" /></p>\n\n<p>একইভাবে,</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/0c3b9bf13dfc6edb9c285d2a91756311f4e9a602f08bc1c7027755e2ff6c9dfc.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 144px;\" /></p>\n\n<p>অতএব, সঠিক উত্তর হলো <strong>\"</strong><strong>NSOTIAELR\".</strong></p>\n", "ml": "", "gu": "<p>કોડ માટેની પેટર્ન નીચે મુજબ છે:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/7e57bedfe4c79621b8ec4dbb3ebc779d0f317aeab0cc8382c8ca6766f691228d.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 145px;\" /></p>\n\n<p>તેવી જ રીતે,</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/0c3b9bf13dfc6edb9c285d2a91756311f4e9a602f08bc1c7027755e2ff6c9dfc.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 144px;\" /></p>\n\n<p>તેથી, સાચો જવાબ <strong>\"</strong><strong>NSOTIAELR\"</strong> છે.</p>\n", "kn": "<p>ಕೋಡ್‌ನ ಮಾದರಿ ಹೀಗಿದೆ:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/7e57bedfe4c79621b8ec4dbb3ebc779d0f317aeab0cc8382c8ca6766f691228d.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 145px;\" /></p>\n\n<p>ಅದೇ ರೀತಿ, </p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/0c3b9bf13dfc6edb9c285d2a91756311f4e9a602f08bc1c7027755e2ff6c9dfc.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 144px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ <strong>\"NSOTIAELR\".</strong></p>\n", "ta": "<p>குறியீட்டிற்கான <span style=\"color: rgb(33, 37, 41);\">முறையமைப்பு </span>பின்வருமாறு:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/7e57bedfe4c79621b8ec4dbb3ebc779d0f317aeab0cc8382c8ca6766f691228d.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 145px;\" /></p>\n\n<p>இதேபோல்,</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/0c3b9bf13dfc6edb9c285d2a91756311f4e9a602f08bc1c7027755e2ff6c9dfc.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 144px;\" /></p>\n\n<p>எனவே, சரியான பதில் <strong>\"</strong> <strong>NSOTIAELR\".</strong></p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>ਕੋਡ ਲਈ ਪੈਟਰਨ ਇਸ ਪ੍ਰਕਾਰ ਹੈ:</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/7e57bedfe4c79621b8ec4dbb3ebc779d0f317aeab0cc8382c8ca6766f691228d.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 145px;\" /></p>\n\n<p>ਇਸੇ ਤਰ੍ਹਾਂ,</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/0c3b9bf13dfc6edb9c285d2a91756311f4e9a602f08bc1c7027755e2ff6c9dfc.png\" style=\"font-weight: 700; white-space: pre-wrap;  margin-left: 0px; margin-top: 0px; width: 276px; height: 144px;\" /></p>\n\n<p>ਇਸ ਲਈ, ਸਹੀ ਉੱਤਰ ਹੈ <strong>\"NSOTIAELR\"।</strong></p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Coding and Decoding By Letter Shifting"], "concept": "Coding-Decoding", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 8 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
