@@ -2394,11 +2394,48 @@ class ImageDownloader:
         rel_path = f"images/{filename}"
         return abs_path, rel_path
 
+    def _sanitize_url(self, url: str) -> str:
+        """Fix common URL issues that cause download failures.
+        
+        Bug #1 fix: URL-encode paths with control characters (newlines, tabs, etc.)
+        Bug #2 fix: Rewrite Wikipedia thumbnail URLs to use standard 500px size
+        """
+        if not url:
+            return url
+        # Bug #1: Strip control characters from URL
+        # Python's urllib rejects URLs containing \n, \r, \t, etc.
+        # Some RepeaterMock CDN URLs have embedded newlines from HTML parsing
+        import re as _re
+        url = _re.sub(r'[\x00-\x1f\x7f-\x9f]', '', url)  # Remove control chars
+        
+        # Re-encode the path portion to handle spaces, special chars
+        try:
+            from urllib.parse import urlsplit, urlunsplit, quote
+            parts = urlsplit(url)
+            # Quote the path (but preserve / and standard chars)
+            clean_path = quote(parts.path, safe='/')
+            # Quote query string too (preserve =, &, etc.)
+            clean_query = quote(parts.query, safe='=&')
+            url = urlunsplit((parts.scheme, parts.netloc, clean_path, clean_query, parts.fragment))
+        except Exception:
+            pass  # If URL parsing fails, use original (will fail with original error)
+        
+        # Bug #2: Rewrite Wikipedia thumbnail URLs to use standard size
+        # Wikipedia returns HTTP 400 for non-standard sizes like /200px- or /150px-
+        # Standard sizes: 120, 180, 240, 320, 400, 500, 640, 800, 1024
+        # Note: image host is upload.wikimedia.org (not wikipedia.org)
+        if any(h in url.lower() for h in ['wikipedia.org', 'wikimedia.org']) and '/thumb/' in url:
+            url = _re.sub(r'/\d+px-', '/500px-', url)
+        
+        return url
+
     async def download_one(self, cdn_url: str, test_id: str = "", qid: str = "") -> Optional[str]:
         """Download a single image. Returns relative path if success, None if failed.
         
-        Uses in-page fetch() to bypass CORS + Cloudflare (runs in browser context).
-        Skips if already downloaded (idempotent).
+        Handles 3 known image URL bugs:
+        - Control characters in URL (Bug #1)
+        - Wikipedia thumbnail size 400 (Bug #2)
+        - Google image hosts 403 (Bug #3) — needs Referer header
         """
         if not cdn_url or not cdn_url.startswith("http"):
             return None
@@ -2412,20 +2449,48 @@ class ImageDownloader:
             self.manifest[cdn_url] = rel_path
             return rel_path
         
-        # Use urllib for simplicity (browser context not always available here)
+        # Sanitize URL (fixes Bug #1 and #2)
+        clean_url = self._sanitize_url(cdn_url)
+        
+        # Bug #3: Google image hosts require specific Referer + full browser UA
+        # Otherwise they return 403 Forbidden
+        is_google_host = any(h in cdn_url for h in [
+            'googleusercontent.com', 'gstatic.com', 'google.com',
+        ])
+        is_wikipedia = any(h in cdn_url for h in ['wikipedia.org', 'wikimedia.org'])
+        
+        if is_google_host:
+            referer = "https://repeatermock.com/"
+            user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+        elif is_wikipedia:
+            # Wikipedia requires a User-Agent that identifies the bot
+            referer = "https://repeatermock.com/"
+            user_agent = "RepeaterMockScraper/1.0 (https://github.com/sujitbhai7710/repeatermock-mass-scraper; educational use)"
+        else:
+            referer = WEB_BASE
+            user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+        
         try:
             import urllib.request as ur
-            req = ur.Request(cdn_url, headers={
-                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
-                "Referer": WEB_BASE,
+            req = ur.Request(clean_url, headers={
+                "User-Agent": user_agent,
+                "Referer": referer,
+                "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
             })
-            with ur.urlopen(req, timeout=15) as resp:
+            with ur.urlopen(req, timeout=20) as resp:
                 if resp.status != 200:
                     raise Exception(f"HTTP {resp.status}")
                 data = resp.read()
             # GitHub file size limit: 100 MB. Skip if >95 MB (safety margin).
             if len(data) > 95 * 1024 * 1024:
                 raise Exception(f"Image too large for GitHub: {len(data)} bytes")
+            # Verify it's actually an image (check magic bytes)
+            if len(data) < 4:
+                raise Exception("Response too short to be an image")
+            # Check for HTML error pages (some sites return 200 + HTML for 404s)
+            if data[:9].lower().startswith(b'<!doctype') or data[:5].lower().startswith(b'<html'):
+                raise Exception("Response is HTML, not image (likely error page)")
             # Atomic write: tmp file + rename
             tmp_path = abs_path + ".tmp"
             with open(tmp_path, "wb") as f:
