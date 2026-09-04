@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 20: Mirror image - II</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 20: Mirror image - II</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-reasoning-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">6 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63999cf23cba02548c98e082</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63999cf23cba02548c98e082", "title": "PYCT 20: Mirror image - II", "series_slug": "ssc-reasoning-previous-year-questions", "duration_min": 6, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "628542a7f87f5ae63c94033f", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "6247fbbd1b3b753ce570a6eb", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the correct mirror image of the given combination when the mirror is placed at PQ as shown.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d60d5be2ec5ff43472912683e1d6b38ab38a245d067c0c8326b98c7a4ec0944.png\" style=\"width: 151px; height: 93px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/b9f4ad87b0a891d61ac6abbbaa273b5a9259e92e85cb61f6e6272b2cf6d8d2cd.png&quot; style=&quot;width: 126px; height: 25px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/caee0afc0112fb2fd5acf24af3a565fbc9a4e4c5daa39cadd8137df077ce984e.png&quot; style=&quot;width: 124px; height: 23px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/8d4c306ddcf20f353821f88cc3496ed29292b856c8eba426f0f69194c17e1bb2.png&quot; style=&quot;width: 125px; height: 24px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/a5605c5495331bcff5fc2e3bd1993410dec9125fb969e5596fe251e1c12c90b4.png&quot; style=&quot;width: 125px; height: 23px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p><span style=\"color: rgb(37, 37, 37);  \">दिए गए संयोजन के सही दर्पण प्रतिबिंब का चयन करें, जब दर्पण को PQ पर रखा गया है जैसा कि दिखाया गया है।</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d60d5be2ec5ff43472912683e1d6b38ab38a245d067c0c8326b98c7a4ec0944.png\" style=\" width: 151px; height: 93px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/b9f4ad87b0a891d61ac6abbbaa273b5a9259e92e85cb61f6e6272b2cf6d8d2cd.png&quot; style=&quot; width: 126px; height: 25px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/caee0afc0112fb2fd5acf24af3a565fbc9a4e4c5daa39cadd8137df077ce984e.png&quot; style=&quot; width: 124px; height: 23px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/8d4c306ddcf20f353821f88cc3496ed29292b856c8eba426f0f69194c17e1bb2.png&quot; style=&quot; width: 125px; height: 24px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/a5605c5495331bcff5fc2e3bd1993410dec9125fb969e5596fe251e1c12c90b4.png&quot; style=&quot; width: 125px; height: 23px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>చూపిన విధంగా అద్దం PQ వద్ద ఉంచబడినప్పుడు ఇచ్చిన కలయిక యొక్క సరైన మిర్రర్ ఇమేజ్‌ను ఎంచుకోండి. </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d60d5be2ec5ff43472912683e1d6b38ab38a245d067c0c8326b98c7a4ec0944.png\" style=\"width: 151px; height: 93px;\" /></p>", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b9f4ad87b0a891d61ac6abbbaa273b5a9259e92e85cb61f6e6272b2cf6d8d2cd.png\" style=\"width: 126px; height: 25px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/caee0afc0112fb2fd5acf24af3a565fbc9a4e4c5daa39cadd8137df077ce984e.png\" style=\"width: 124px; height: 23px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d4c306ddcf20f353821f88cc3496ed29292b856c8eba426f0f69194c17e1bb2.png\" style=\"width: 125px; height: 24px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a5605c5495331bcff5fc2e3bd1993410dec9125fb969e5596fe251e1c12c90b4.png\" style=\"width: 125px; height: 23px;\" />"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>खाली दर्शवल्याप्रमाणे आरसा हा PQ वर ठेवल्यावर दिलेल्या संयोजनाची आरशातील योग्य प्रतिमा निवडा.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d60d5be2ec5ff43472912683e1d6b38ab38a245d067c0c8326b98c7a4ec0944.png\" style=\"width: 151px; height: 93px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b9f4ad87b0a891d61ac6abbbaa273b5a9259e92e85cb61f6e6272b2cf6d8d2cd.png\" style=\"width: 126px; height: 25px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/caee0afc0112fb2fd5acf24af3a565fbc9a4e4c5daa39cadd8137df077ce984e.png\" style=\"width: 124px; height: 23px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d4c306ddcf20f353821f88cc3496ed29292b856c8eba426f0f69194c17e1bb2.png\" style=\"width: 125px; height: 24px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a5605c5495331bcff5fc2e3bd1993410dec9125fb969e5596fe251e1c12c90b4.png\" style=\"width: 125px; height: 23px;\" />"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>যখন প্রদর্শিতের ন্যায় দর্পণটিকে PQ এর উপর স্থাপন করা হয় তখন <span style=\"\">প্রদত্ত সংমিশ্রণের সঠিক দর্পণ প্রতিবিম্বটি নির্বাচন করুন</span>।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d60d5be2ec5ff43472912683e1d6b38ab38a245d067c0c8326b98c7a4ec0944.png\" style=\" width: 151px; height: 93px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b9f4ad87b0a891d61ac6abbbaa273b5a9259e92e85cb61f6e6272b2cf6d8d2cd.png\" style=\"width: 126px; height: 25px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/caee0afc0112fb2fd5acf24af3a565fbc9a4e4c5daa39cadd8137df077ce984e.png\" style=\"width: 124px; height: 23px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d4c306ddcf20f353821f88cc3496ed29292b856c8eba426f0f69194c17e1bb2.png\" style=\"width: 125px; height: 24px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a5605c5495331bcff5fc2e3bd1993410dec9125fb969e5596fe251e1c12c90b4.png\" style=\"width: 125px; height: 23px;\" />"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>બતાવ્યા પ્રમાણે જ્યારે અરીસાને PQ પર મૂકવામાં આવે ત્યારે આપેલ સંયોજનની સાચી અરીસાની છબી પસંદ કરો.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d60d5be2ec5ff43472912683e1d6b38ab38a245d067c0c8326b98c7a4ec0944.png\" style=\"width: 151px; height: 93px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b9f4ad87b0a891d61ac6abbbaa273b5a9259e92e85cb61f6e6272b2cf6d8d2cd.png\" style=\"width: 126px; height: 25px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/caee0afc0112fb2fd5acf24af3a565fbc9a4e4c5daa39cadd8137df077ce984e.png\" style=\"width: 124px; height: 23px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d4c306ddcf20f353821f88cc3496ed29292b856c8eba426f0f69194c17e1bb2.png\" style=\"width: 125px; height: 24px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a5605c5495331bcff5fc2e3bd1993410dec9125fb969e5596fe251e1c12c90b4.png\" style=\"width: 125px; height: 23px;\" />"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ತೋರಿಸಿರುವಂತೆ ಕನ್ನಡಿಯನ್ನು PQ ನಲ್ಲಿ ಇರಿಸಿದಾಗ ನೀಡಿರುವ ಸಂಯೋಜನೆಯ ಸರಿಯಾದ ಕನ್ನಡಿ ಚಿತ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d60d5be2ec5ff43472912683e1d6b38ab38a245d067c0c8326b98c7a4ec0944.png\" style=\"width: 151px; height: 93px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b9f4ad87b0a891d61ac6abbbaa273b5a9259e92e85cb61f6e6272b2cf6d8d2cd.png\" style=\"width: 126px; height: 25px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/caee0afc0112fb2fd5acf24af3a565fbc9a4e4c5daa39cadd8137df077ce984e.png\" style=\"width: 124px; height: 23px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d4c306ddcf20f353821f88cc3496ed29292b856c8eba426f0f69194c17e1bb2.png\" style=\"width: 125px; height: 24px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a5605c5495331bcff5fc2e3bd1993410dec9125fb969e5596fe251e1c12c90b4.png\" style=\"width: 125px; height: 23px;\" />"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>காட்டப்பட்டுள்ளபடி PQ இல் கண்ணாடி வைக்கப்படும் போது கொடுக்கப்பட்ட கலவையின் சரியான பிரதிபலிப்பு படத்தைத் தேர்ந்தெடுக்கவும்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d60d5be2ec5ff43472912683e1d6b38ab38a245d067c0c8326b98c7a4ec0944.png\" style=\"width: 151px; height: 93px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b9f4ad87b0a891d61ac6abbbaa273b5a9259e92e85cb61f6e6272b2cf6d8d2cd.png\" style=\"width: 126px; height: 25px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/caee0afc0112fb2fd5acf24af3a565fbc9a4e4c5daa39cadd8137df077ce984e.png\" style=\"width: 124px; height: 23px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d4c306ddcf20f353821f88cc3496ed29292b856c8eba426f0f69194c17e1bb2.png\" style=\"width: 125px; height: 24px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a5605c5495331bcff5fc2e3bd1993410dec9125fb969e5596fe251e1c12c90b4.png\" style=\"width: 125px; height: 23px;\" />"}], "range": {"start": "", "end": ""}}, "or": {"value": "<p>ପ୍ରଦତ୍ତ ସଂଯୋଜନର ସଠିକ ଦର୍ପଣ ପ୍ରତିଛବି ଚୟନ କରନ୍ତୁ ଯେତେବେଳେ ଦର୍ପଣଟି PQ ରେ ଅଛି ଯାହା ନିମ୍ନରେ ପ୍ରଦର୍ଶିତ ହୋଇଛି । </p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d60d5be2ec5ff43472912683e1d6b38ab38a245d067c0c8326b98c7a4ec0944.png\" style=\"width: 151px; height: 93px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b9f4ad87b0a891d61ac6abbbaa273b5a9259e92e85cb61f6e6272b2cf6d8d2cd.png\" style=\"width: 126px; height: 25px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/caee0afc0112fb2fd5acf24af3a565fbc9a4e4c5daa39cadd8137df077ce984e.png\" style=\"width: 124px; height: 23px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d4c306ddcf20f353821f88cc3496ed29292b856c8eba426f0f69194c17e1bb2.png\" style=\"width: 125px; height: 24px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a5605c5495331bcff5fc2e3bd1993410dec9125fb969e5596fe251e1c12c90b4.png\" style=\"width: 125px; height: 23px;\" />"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct mirror image of the given figure when the mirror is held at the right side is:<u1:p></u1:p><o:p></o:p></p>\n\n<p style=\"margin: 0cm 0cm 7.5pt; background: white;\"><o:p></o:p></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\"width: 277px; height: 91px;\" /></p>\n\n<p style=\"\"><span style=\"\"><u><span style=\"font-weight: 700;\"><span style=\"font-size:14px;\">Detailed Explanation</span>:</span></u></span></p>\n\n<ul style=\"\">\n\t<li>The line PQ is the mirror</li>\n\t<li>The given word &ldquo;G R 8 Z E Q&quot; ends with &lsquo;&rsquo;Q&quot;. So the mirror image will start with &ldquo;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f7c96841f46ede93e202b19d9f8aac8f8ac369efff5e0a3d12c7168e3e0c791a.png\" style=\"width: 17px; height: 18px;\" />&quot; &rarr; Options 1, 2&nbsp;and 3&nbsp;are eliminated.</li>\n</ul>\n\n<p style=\"\"><span style=\"color: rgb(30, 43, 51);\">Hence,&nbsp;</span><span style=\"font-weight: 700;\">&quot;option (4)&quot;</span>&nbsp;is the correct answer</p>", "hn": "<p>दी गई आकृति की सही दर्पण छवि, जब दर्पण को दाईं ओर रखा जाता है:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\" width: 277px; height: 91px;\" /></p>\n\n<p><u><strong>विस्तृत विवरण:</strong></u></p>\n\n<ul>\n\t<li>रेखा PQ, दर्पण है</li>\n\t<li>दिया गया शब्द &quot;G R 8 Z E Q&quot;, &#39;&#39;Q&#39;&#39; पर समाप्त होता है।</li>\n</ul>\n\n<p>अतः दर्पण प्रतिबिम्ब &quot;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f7c96841f46ede93e202b19d9f8aac8f8ac369efff5e0a3d12c7168e3e0c791a.png\" style=\" width: 17px; height: 18px;\" />&quot;&nbsp;से प्रारंभ होगा &rarr; विकल्प 1, 2 और 3 खारिज हो जाते हैं।</p>\n\n<p>अतः, <strong>&quot;विकल्प (4)&quot;</strong> सही उत्तर है।</p>\n", "te": "<p>అద్దం కుడి వైపున ఉంచబడినప్పుడు ఇచ్చిన బొమ్మ యొక్క సరైన అద్దం చిత్రం: <u1:p></u1:p><o:p></o:p></p><p style=\"margin: 0cm 0cm 7.5pt; background: white;\"><o:p></o:p></p><p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\"width: 277px; height: 91px;\" /></p><p style=\"\"> <span style=\"\"><u><span style=\"font-weight: 700;\"><span style=\"font-size:14px;\">వివరణాత్మక వివరణ</span> :</span></u></span></p><ul style=\"\"><li> లైన్ PQ అద్దం</li><li> ఇచ్చిన పదం “GR 8 ZE Q” “Q”తో ముగుస్తుంది. కాబట్టి అద్దం చిత్రం \"తో ప్రారంభమవుతుంది <img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f7c96841f46ede93e202b19d9f8aac8f8ac369efff5e0a3d12c7168e3e0c791a.png\" style=\"width: 17px; height: 18px;\" /> \"→ ఎంపికలు 1, 2 మరియు 3 తొలగించబడ్డాయి.</li></ul><p style=\"\"> <span style=\"color: rgb(30, 43, 51);\">కాబట్టి,</span> <span style=\"font-weight: 700;\">\"ఎంపిక (4)\"</span> సరైన సమాధానం</p>", "mr": "<p>जेव्हा आरसा उजव्या बाजूला ठेवला जातो तेव्हा दिलेल्या आकृतीची आरशातील योग्य प्रतिमा पुढीलप्रमाणे आहे:<o:p></o:p></p>\n\n<p style=\"margin: 0cm 0cm 7.5pt; background: white;\"><o:p></o:p></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\"width: 277px; height: 91px;\" /></p>\n\n<p style=\"\"><span style=\"\"><u><span style=\"font-weight: 700;\"><span style=\"font-size:14px;\">सविस्तर स्पष्टीकरण</span>:</span></u></span></p>\n\n<ul style=\"\">\n\t<li>रेषा PQ हा आरसा आहे</li>\n\t<li>\"<span style=\"\">G R 8 Z E Q</span>\" हा शब्द \"Q\" ने संपतो. म्हणून दर्पण प्रतिमा <span style=\"\">“</span><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f7c96841f46ede93e202b19d9f8aac8f8ac369efff5e0a3d12c7168e3e0c791a.png\" style=\" width: 17px; height: 18px;\" /><span style=\"\">\" </span>ने सुरु होईल.→ म्हणून पर्याय 1, 2 आणि 3 वगळले जातात.</li>\n</ul>\n\n<p style=\"\"><span style=\"color: rgb(30, 43, 51);\">म्हणून,</span> <span style=\"font-weight: 700;\">\"पर्याय (4)\"</span> हे योग्य उत्तर आहे.</p>\n30:T573,<p>જ્યારે અરીસાને જમણી બાજુએ રાખવામાં આવે ત્યારે આપેલ આકૃતિની સાચી અરીસાની છબી છે: <u1:p></u1:p><o:p></o:p></p>\n\n<p style=\"margin: 0cm 0cm 7.5pt; background: white;\"><o:p></o:p></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\"width: 277px; height: 91px;\" /></p>\n\n<p style=\"\"><span style=\"\"><u><span style=\"font-weig", "bn": "<p>যখন দর্পণটিকে ডানদিকে স্থাপন করা হয় তখন <span style=\"\">প্রদত্ত চিত্রটির সঠিক দর্পণ প্রতিবিম্বটি হয়</span>:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\" width: 277px; height: 91px;\" /></p>\n\n<p><u><strong>বিস্তারিত ব্যাখ্যা:</strong></u></p>\n\n<ul>\n\t<li>রেখা PQ হল দর্পণ</li>\n\t<li>প্রদত্ত শব্দ \"G R 8 Z E Q\" শেষ হয় 'Q' দিয়ে। সুতরাং <span style=\"\">দর্পণ প্রতিবিম্বটি</span> \"<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f7c96841f46ede93e202b19d9f8aac8f8ac369efff5e0a3d12c7168e3e0c791a.png\" style=\" width: 17px; height: 18px;\" />\" দিয়ে শুরু হবে → বিকল্প 1, 2 এবং 3 বাদ হয়ে যাবে।</li>\n</ul>\n\n<p>সুতরাং, <strong>\"বিকল্প (4)\"</strong> হল সঠিক উত্তর।</p>\n", "ml": "", "gu": "<p>જ્યારે અરીસાને જમણી બાજુએ રાખવામાં આવે ત્યારે આપેલ આકૃતિની સાચી અરીસાની છબી છે: <u1:p></u1:p><o:p></o:p></p>\n\n<p style=\"margin: 0cm 0cm 7.5pt; background: white;\"><o:p></o:p></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\"width: 277px; height: 91px;\" /></p>\n\n<p style=\"\"><span style=\"\"><u><span style=\"font-weight: 700;\"><span style=\"font-size:14px;\">વિગતવાર સમજૂતી</span> :</span></u></span></p>\n\n<ul style=\"\">\n\t<li>રેખા PQ એ અરીસો છે</li>\n\t<li>આપેલ શબ્દ \"GR 8 ZEQ\" \"Q\" સાથ", "kn": "<p>ಕನ್ನಡಿಯನ್ನು ಬಲಭಾಗದಲ್ಲಿ ಇರಿಸಿದಾಗ ನೀಡಲಾದ ಆಕೃತಿಯ ಸರಿಯಾದ ಕನ್ನಡಿ ಚಿತ್ರ ಈ ಕೆಳಗಿನಂತಿದೆ: <u1:p></u1:p><o:p></o:p></p>\n\n<p style=\"margin: 0cm 0cm 7.5pt; background: white;\"><o:p></o:p></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\"width: 277px; height: 91px;\" /></p>\n\n<p style=\"\"><span style=\"\"><u><span style=\"font-weight: 700;\"><span style=\"font-size:14px;\">ವಿವರವಾದ ವಿವರಣೆ</span> :</span></u></span></p>\n\n<ul style=\"\">\n\t<li>ರೇಖೆ PQ ಕನ್ನಡಿಯಾಗಿದೆ</li>\n\t<li>ಕೊಟ್ಟಿರುವ ಪದ <span style=\"color: rgb(33, 37, 41);\">“G R 8 Z E Q\"</span> ಇದು<span style=\"color: rgb(33, 37, 41);\"> ‘’Q\" </span>ನೊಂದಿಗೆ ಕೊನೆಗೊಳ್ಳುತ್ತದೆ. ಹಾಗಾಗಿ ಕನ್ನಡಿ ಚಿತ್ರವು <span style=\"color: rgb(33, 37, 41);\"> “</span><img alt=\"\" src=\"https://cdn.repeaterm\nock.com/tb/f7c96841f46ede93e202b19d9f8aac8f8ac369efff5e0a3d12c7168e3e0c791a.png\" style=\"color: rgb(33, 37, 41); width: 17px; height: 18px;\" /><span style=\"color: rgb(33, 37, 41);\">\"</span> ನಿಂದ ಪ್ರಾರಂಭವಾಗುತ್ತದೆ → ಆಯ್ಕೆಗಳು 1, 2 ಮತ್ತು 3 ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ.</li>\n</ul>\n\n<p style=\"\"><span style=\"color: rgb(30, 43, 51);\">ಆದ್ದರಿಂದ,</span> <span style=\"font-weight: 700;\">\"ಆಯ್ಕೆ (4)\"</span> ಸರಿಯಾದ ಉತ್ತರವಾಗಿದೆ</p>\n32:T5fd,<p>கண்ணாடியை வலது பக்கத்தில் வைத்திருக்கும் போது கொடுக்கப்பட்ட படத்தின் சரியான பிரதிபலிப்பு படம்:<u1:p></u1:p><o:p></o:p></p>\n\n<p style=\"margin: 0cm 0cm 7.5pt; background: white;\"><o:p></o:p></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\"width: 277px; height: 91px;\" /></p>\n\n<p style=\"\"><u><strong>விரிவான விளக்கம்​<span style=\"\"><span style=\"font-weight: 700;\">:</span></sp", "ta": "<p>கண்ணாடியை வலது பக்கத்தில் வைத்திருக்கும் போது கொடுக்கப்பட்ட படத்தின் சரியான பிரதிபலிப்பு படம்:<u1:p></u1:p><o:p></o:p></p>\n\n<p style=\"margin: 0cm 0cm 7.5pt; background: white;\"><o:p></o:p></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\"width: 277px; height: 91px;\" /></p>\n\n<p style=\"\"><u><strong>விரிவான விளக்கம்​<span style=\"\"><span style=\"font-weight: 700;\">:</span></span></strong></u></p>\n\n<ul style=\"\">\n\t<li>கோடு PQ என்பது கண்ணாடி</li>\n\t<li>கொடுக்கப்பட்ட சொல் “G R 8 Z E Q” என்பது ‘’Q” என்று முடிகிறது. எனவே <span style=\"\">பிரதிபலிப்பு </span>படம் “<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f7c96841f46ede93e202b19d9f8aac8f8ac369efff5e0a3d12c7168e3e0c791a.png\" style=\" width: 17px; height: 18px;\" />\" <span style=\"\">இல் தொடங்கும்</span> → விருப்பங்கள் 1, 2 மற்றும் 3 நீக்கப்படுகிறது.</li>\n</ul>\n\n<p style=\"\">எனவே, \"<strong>விருப்பம் (4)</strong>\" என்பது சரியான பதில்</p>\n33:T5a3,<p>ଯେତେବେଳେ ଦର୍ପଣଟି ଡାହାଣ ପାର୍ଶ୍ୱରେ ଧରାଯାଏ, ଦିଆଯାଇଥିବା ଚିତ୍ରର ସଠିକ ଦର୍ପଣ ପ୍ରତିଛବି ହେଉଛି: <u1:p></u1:p><o:p></o:p></p>\n\n<p style=\"margin: 0cm 0cm 7.5pt; background: white;\"><o:p></o:p></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\"width: 277px; height: 91px;\" /></p>\n\n<p style=\"\"><span style=\"\"><u><span style=\"font-weight: 700;\"><span style=\"font-size:14px;\">ବିସ୍ତୃତ ବ୍ୟାଖ୍ୟା</span> :</span></u>", "or": "<p>ଯେତେବେଳେ ଦର୍ପଣଟି ଡାହାଣ ପାର୍ଶ୍ୱରେ ଧରାଯାଏ, ଦିଆଯାଇଥିବା ଚିତ୍ରର ସଠିକ ଦର୍ପଣ ପ୍ରତିଛବି ହେଉଛି: <u1:p></u1:p><o:p></o:p></p>\n\n<p style=\"margin: 0cm 0cm 7.5pt; background: white;\"><o:p></o:p></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cb27e5c3a34710466e1f48c64f6cdba6944eff0b98ca26ca533aeb0ffb8620a.png\" style=\"width: 277px; height: 91px;\" /></p>\n\n<p style=\"\"><span style=\"\"><u><span style=\"font-weight: 700;\"><span style=\"font-size:14px;\">ବିସ୍ତୃତ ବ୍ୟାଖ୍ୟା</span> :</span></u></span></p>\n\n<ul style=\"\">\n\t<li>ରେଖା PQ ହେଉଛି ଦର୍ପଣ । </li>\n\t<li>ପ୍ରଦତ୍ତ ଶବ୍ଦ “GR 8 ZEQ” 'Q' ସହିତ ସମାପ୍ତ ।  ତେଣୁ ଦର୍ପଣ ପ୍ରତିଛବି ଆରମ୍ଭ ହେବ “ <img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f7c96841f46ede93e202b19d9f8aac8f8ac369efff5e0a3d12c7168e3e0c791a.png\" style=\"width: 17px; height: 18px;\" /> \"→ ବିକଳ୍ପ 1, 2 ଏବଂ 3 ଅପସାରିତ ହୋଇଛି । </li>\n</ul>\n\n<p style=\"\"><span style=\"color: rgb(30, 43, 51);\">ତେଣୁ,</span> <span style=\"font-weight: 700;\">“ବିକଳ୍ପ (4)”</span> ହେଉଛି ସଠିକ୍ ଉତ୍ତର । </p>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 20: Mirror image - II\",\"sections\":[{\"_id\":\"628542a7f87f5ae63c94033f\",\"qCount\":10,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":0.5,\"posMarks\":2,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isPartialMarking\":false,\"_id\":\"6247fbbd1b3b753ce570a6eb\",\"en\":{\"value\":\"<p>Select the correct mirror image of the giv", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Mirror Image"], "concept": "Mirror/Water Image", "confidence": "high"}, {"qid": "5ec2a17bf60d5d20a469ea68", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Which of the option figures is the exact mirror image of the given figure when the mirror is held at the right side?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/98ca3803791158d6db202f75dbdca919898b0e999378e26fe897e15d0a1b38d4.png\" style=\"width: 82px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/ef4bc5a5e07ee6938582a769691a6546633d1364d247e1815e746b04b3767bd1.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/8c6ae1de085a83c6ebb68a8fd26214023746501c6b4e1f528d3970c38dcedbd3.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/27f71e1df700ee3aeb13686a1c5479ea201e8842b5cc26e93664f5656475a4c9.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/e7075bcceb3d9f7ed9780baf09ce0b6e30f80fe55b3045b6902f14755ad73cca.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>यदि दर्पण को दाईं ओर रखा जाता है तो विकल्प आकृति में से कौन सी छवि दी गई आकृति की सही दर्पण छवि है?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/98ca3803791158d6db202f75dbdca919898b0e999378e26fe897e15d0a1b38d4.png\" style=\"width: 82px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/ef4bc5a5e07ee6938582a769691a6546633d1364d247e1815e746b04b3767bd1.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/8c6ae1de085a83c6ebb68a8fd26214023746501c6b4e1f528d3970c38dcedbd3.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/27f71e1df700ee3aeb13686a1c5479ea201e8842b5cc26e93664f5656475a4c9.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/e7075bcceb3d9f7ed9780baf09ce0b6e30f80fe55b3045b6902f14755ad73cca.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>The exact mirror image of the given figure when the mirror is held at the right sideis,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b3b90b300ae86183cb5039c5e6c1e8ff6f967ed4308a82a597065c6f2a0e4634.png\" style=\"width: 180px; height: 91px;\" /></p>\nHence, option 1 is the correct answer.", "hn": "<p>दर्पण को दाईं ओर रखने पर दी गई आकृति की सही दर्पण छवि इस प्रकार है,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b3b90b300ae86183cb5039c5e6c1e8ff6f967ed4308a82a597065c6f2a0e4634.png\" style=\"width: 180px; height: 91px;\" /></p>\nअत: &ldquo;विकल्प 1&rdquo; सही उत्तर है।", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Mirror Image"], "concept": "Mirror/Water Image", "confidence": "high"}, {"qid": "614c14df586e976950c61a81", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the correct mirror image of the given combination when the mirror is placed at &#39;PQ&#39; as shown</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/67c51624fc97c7bbbd7217ecba9f774ea5a60b2c1fc79117023814419c06d86c.png\" style=\"width: 146px; height: 93px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/b04eaaa408dcaa77e5de139886b510ec8e9177bf6ec5c840725bf6520b081fb8.png&quot; style=&quot;width: 127px; height: 20px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/730ce8b7af26e4a1292317487039cf164400ed1137b489c10cca83bc7427a303.png&quot; style=&quot;width: 127px; height: 21px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/0dd9e5f102b5a86eb20703861b7992b220094954e7d2ba4c6bd54a15b51c2068.png&quot; style=&quot;width: 127px; height: 20px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/ebf5c00975e980d0b91eccc3188183819dd9b9f2b492f26bc076b4806e221fb8.png&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए संयोजन की सही दर्पण छवि का चयन कीजिये जब दर्पण को &#39;PQ&#39; पर रखा जाता है जैसा कि दिखाया गया है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/67c51624fc97c7bbbd7217ecba9f774ea5a60b2c1fc79117023814419c06d86c.png\" style=\"width: 146px; height: 93px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/b04eaaa408dcaa77e5de139886b510ec8e9177bf6ec5c840725bf6520b081fb8.png&quot; style=&quot;width: 127px; height: 20px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/730ce8b7af26e4a1292317487039cf164400ed1137b489c10cca83bc7427a303.png&quot; style=&quot;width: 127px; height: 21px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/0dd9e5f102b5a86eb20703861b7992b220094954e7d2ba4c6bd54a15b51c2068.png&quot; style=&quot;width: 127px; height: 20px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/ebf5c00975e980d0b91eccc3188183819dd9b9f2b492f26bc076b4806e221fb8.png&quot; /&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>The mirror image of the given combination when the mirror is placed at PQ as shown below -</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a67a21c3981305b040b59e69ca746819edca73791807041e1d19227a1ec618c8.png\" style=\"width: 273px; height: 91px;\" /></p>\n\n<p>Hence, <strong>&quot;option 3&quot;</strong> is the correct answer.</p>\n", "hn": "<p>दिए गए संयोजन की दर्पण छवि इस प्रकार है जब दर्पण को PQ पर रखा जाता है जैसा कि नीचे दिखाया गया है -</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a67a21c3981305b040b59e69ca746819edca73791807041e1d19227a1ec618c8.png\" style=\"width: 273px; height: 91px;\" /></p>\n\n<p>अतः, सही उत्तर&nbsp;<span style=\"font-weight: 700;\">&quot;विकल्प 3&quot;</span>&nbsp;है।&nbsp;</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Mirror Image"], "concept": "Mirror/Water Image", "confidence": "high"}, {"qid": "624d60f3beaf66aac0fb705b", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the correct mirror image of the given figure when the mirror is placed at the right side.</p>\n\n<p>&nbsp;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/bf10a8a4038eb299ddd345518f842a650bd6fd3ed9855a0fe82346b24152f47a.png\" style=\"width: 93px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/fea1033ae69c6cdd96caa76087a26a3e147527e97d1339a768dc7eb5291fccbd.png&quot; style=&quot;width: 93px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/46d09b88193eb821c25426e938ea3bbe43b3d0652b8773f224761e37516d869b.png&quot; style=&quot;width: 94px; height: 82px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/f36575e167adf942239f16a1650aee351b5b0e7b21aef28b5995b2b654b52559.png&quot; style=&quot;width: 93px; height: 86px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/30d19db8fdb7cd7c9645e085911b0851fa5e658f4e1b538e7c6c8a4fc150a5f6.png&quot; style=&quot;width: 94px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दी गई आकृति के सही दर्पण प्रतिबिम्ब का चयन करें जब दर्पण को दाहिनी ओर रखा जाता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/bf10a8a4038eb299ddd345518f842a650bd6fd3ed9855a0fe82346b24152f47a.png\" style=\" width: 93px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/fea1033ae69c6cdd96caa76087a26a3e147527e97d1339a768dc7eb5291fccbd.png&quot; style=&quot;width: 93px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/46d09b88193eb821c25426e938ea3bbe43b3d0652b8773f224761e37516d869b.png&quot; style=&quot;width: 94px; height: 82px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/f36575e167adf942239f16a1650aee351b5b0e7b21aef28b5995b2b654b52559.png&quot; style=&quot;width: 93px; height: 86px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/30d19db8fdb7cd7c9645e085911b0851fa5e658f4e1b538e7c6c8a4fc150a5f6.png&quot; style=&quot;width: 94px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p>The image found when the mirror is placed on the right side is shown below:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b79019761d3aa4e659be46ca547dab7b3dc641f12e064a46f8e6a883b9b2ceed.png\" style=\"width: 210px; height: 102px;\" /></p>\n\n<p>Hence, the correct answer is &#39;<u><strong>option 4</strong></u>&#39;</p>\n", "hn": "<p>दर्पण को दायीं ओर रखने पर प्राप्त प्रतिबिम्ब को नीचे दिखाया गया है:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b79019761d3aa4e659be46ca547dab7b3dc641f12e064a46f8e6a883b9b2ceed.png\" style=\" width: 210px; height: 102px;\" /></p>\n\n<p>अत:,<strong> </strong>सही उत्तर<strong> <u>&#39;विकल्प 4&#39;</u></strong><u> </u>है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Mirror Image"], "concept": "Mirror/Water Image", "confidence": "high"}, {"qid": "609a5a45dbe9089b5c335f8d", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the correct mirror image of the given combination when the mirror is placed at &#39;PQ&#39; as shown.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/72a1a66acaa7c43e5eb4fa14518c8c2bd8ac4e32370b7c6d2308f1f96272a9f9.png\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/0d4f451595ea35397b15ec159ac045d16a65c958f0ae635cda22933d5442f311.png&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/35941e3e1aa80f70221c8dba2610ca6442a346e61add09b8b8e53c70c878d6bb.png&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/b4bc02b7e63d9eebe367188601719c2363f75194bf804c580b4ff49aedcb7ac2.png&quot; style=&quot;width: 117px; height: 25px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/51a14af2ab99a8697882164fdc9b4474ba7b95e8d0cf462688e748ee1fe572c6.png&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए संयोजन की सही प्रतिबिंब छवि का चयन कीजिए&nbsp;जब प्रतिबिंब को &#39;PQ&#39; पर दर्शाए गए अनुसार रखा&nbsp;जाता&nbsp;है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/72a1a66acaa7c43e5eb4fa14518c8c2bd8ac4e32370b7c6d2308f1f96272a9f9.png\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/0d4f451595ea35397b15ec159ac045d16a65c958f0ae635cda22933d5442f311.png&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/35941e3e1aa80f70221c8dba2610ca6442a346e61add09b8b8e53c70c878d6bb.png&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/b4bc02b7e63d9eebe367188601719c2363f75194bf804c580b4ff49aedcb7ac2.png&quot; style=&quot;width: 117px; height: 25px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/51a14af2ab99a8697882164fdc9b4474ba7b95e8d0cf462688e748ee1fe572c6.png&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>'PQ' তে দর্পণ রাখা হলে প্রদত্ত বর্ণগুচ্ছের সঠিক দর্পণ প্রতিবিম্ব কোনটি হবে? </p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/72a1a66acaa7c43e5eb4fa14518c8c2bd8ac4e32370b7c6d2308f1f96272a9f9.png\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d4f451595ea35397b15ec159ac045d16a65c958f0ae635cda22933d5442f311.png\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/35941e3e1aa80f70221c8dba2610ca6442a346e61add09b8b8e53c70c878d6bb.png\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b4bc02b7e63d9eebe367188601719c2363f75194bf804c580b4ff49aedcb7ac2.png\" style=\"width: 117px; height: 25px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/51a14af2ab99a8697882164fdc9b4474ba7b95e8d0cf462688e748ee1fe572c6.png\" />"}], "range": {"start": "", "end": ""}}, "ml": {"value": "<p>കാണിച്ചിരിക്കുന്നതുപോലെ 'PQ' വിൽ ദർപ്പണം സ്ഥാപിക്കുമ്പോൾ നൽകിയ കൂട്ടത്തിന്റെ ശരിയായ ദർപ്പണ പ്രതിബിംബം തിരഞ്ഞെടുക്കുക.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/72a1a66acaa7c43e5eb4fa14518c8c2bd8ac4e32370b7c6d2308f1f96272a9f9.png\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d4f451595ea35397b15ec159ac045d16a65c958f0ae635cda22933d5442f311.png\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/35941e3e1aa80f70221c8dba2610ca6442a346e61add09b8b8e53c70c878d6bb.png\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b4bc02b7e63d9eebe367188601719c2363f75194bf804c580b4ff49aedcb7ac2.png\" style=\"width: 117px; height: 25px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/51a14af2ab99a8697882164fdc9b4474ba7b95e8d0cf462688e748ee1fe572c6.png\" />"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>காட்டப்பட்டுள்ளபடி கண்ணாடியை 'PQ' இல் வைக்கும்போது கொடுக்கப்பட்ட எழுத்தின் சரியான பிம்பத்தைத் தேர்ந்தெடுக்கவும்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/72a1a66acaa7c43e5eb4fa14518c8c2bd8ac4e32370b7c6d2308f1f96272a9f9.png\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0d4f451595ea35397b15ec159ac045d16a65c958f0ae635cda22933d5442f311.png\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/35941e3e1aa80f70221c8dba2610ca6442a346e61add09b8b8e53c70c878d6bb.png\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b4bc02b7e63d9eebe367188601719c2363f75194bf804c580b4ff49aedcb7ac2.png\" style=\"width: 117px; height: 25px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/51a14af2ab99a8697882164fdc9b4474ba7b95e8d0cf462688e748ee1fe572c6.png\" />"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>The mirror image of this image is:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/72a1a66acaa7c43e5eb4fa14518c8c2bd8ac4e32370b7c6d2308f1f96272a9f9.png\" /><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b4bc02b7e63d9eebe367188601719c2363f75194bf804c580b4ff49aedcb7ac2.png\" style=\"width: 117px; height: 25px;\" /></p>\n\n<p>Hence,&nbsp;<span style=\"font-weight: 700;\">option 3&nbsp;</span>is the correct answer.</p>\n", "hn": "<p>इस छवि की प्रतिबिंब छवि है:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/72a1a66acaa7c43e5eb4fa14518c8c2bd8ac4e32370b7c6d2308f1f96272a9f9.png\" /><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b4bc02b7e63d9eebe367188601719c2363f75194bf804c580b4ff49aedcb7ac2.png\" style=\"width: 117px; height: 25px;\" /></p>\n\n<p>अत:,&nbsp;<strong>विकल्प 3</strong> सही उत्तर है।</p>\n", "te": "", "mr": "", "bn": "<p>এই চিত্রটির দর্পণ প্রতিবিম্বটি হ'ল:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/72a1a66acaa7c43e5eb4fa14518c8c2bd8ac4e32370b7c6d2308f1f96272a9f9.png\" /><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b4bc02b7e63d9eebe367188601719c2363f75194bf804c580b4ff49aedcb7ac2.png\" style=\"width: 117px; height: 25px;\" /></p>\n\n<p>সুতরাং, <strong>বিকল্প 3</strong> সঠিক উত্তর।</p>\n", "ml": "<p>ഈ ചിത്രത്തിന്റെ ദർപ്പണ പ്രതിബിംബം ഇതാണ്:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/72a1a66acaa7c43e5eb4fa14518c8c2bd8ac4e32370b7c6d2308f1f96272a9f9.png\" /><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b4bc02b7e63d9eebe367188601719c2363f75194bf804c580b4ff49aedcb7ac2.png\" style=\"width: 117px; height: 25px;\" /></p>\n\n<p>അതിനാൽ, <span style=\"font-weight: 700;\">ഓപ്ഷൻ 3</span> ആണ് ശരിയായ ഉത്തരം.</p>\n", "gu": "", "kn": "", "ta": "<p>இந்த படத்தின் கண்ணாடி படம்:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/72a1a66acaa7c43e5eb4fa14518c8c2bd8ac4e32370b7c6d2308f1f96272a9f9.png\" /><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b4bc02b7e63d9eebe367188601719c2363f75194bf804c580b4ff49aedcb7ac2.png\" style=\"width: 117px; height: 25px;\" /></p>\n\n<p>எனவே, <span style=\"font-weight: 700;\">விருப்பம் 3</span> சரியான பதில்.</p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Mirror Image"], "concept": "Mirror/Water Image", "confidence": "high"}, {"qid": "603f32329647c1a07b7af483", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the correct mirror image of the given figure when the mirror is placed to the right side of the figure.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f600943e8762a71e69e0ab22864f7daaa21e9ae78434ceb28d6f9f257d91243e.png\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/3a2e19c92d47cea5de0e333d6ea1ffa5a3b4a2388bd766e5514af8017c0614fb.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/acd1534ca5c438ec4a57d95bd6ead6c3c3d79f520fc915698e0ad7097a7e9642.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/686b5daab76444d6684e28023f8057b202c3f2125cf02027dd3dd561a63811d1.png&quot; style=&quot;width: 82px; height: 81px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/e681f0e2142772b3b09557e355de051a617c59bd7f90a666f33d490d8bfe7a03.png&quot; style=&quot;width: 81px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p><span style=\"color: rgb(37, 37, 37);  \">दी गई आकृति की सही दर्पण छवि का चयन कीजिये जब दर्पण को आकृति के दाएं ओर रखा जाता है।</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f600943e8762a71e69e0ab22864f7daaa21e9ae78434ceb28d6f9f257d91243e.png\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/3a2e19c92d47cea5de0e333d6ea1ffa5a3b4a2388bd766e5514af8017c0614fb.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/acd1534ca5c438ec4a57d95bd6ead6c3c3d79f520fc915698e0ad7097a7e9642.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/686b5daab76444d6684e28023f8057b202c3f2125cf02027dd3dd561a63811d1.png&quot; style=&quot;width: 82px; height: 81px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/e681f0e2142772b3b09557e355de051a617c59bd7f90a666f33d490d8bfe7a03.png&quot; style=&quot;width: 81px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p><span style=\"\">చిత్రం యొక్క కుడి వైపున అద్దం ఉంచినప్పుడు ఇచ్చిన చిత్రం యొక్క సరైన అద్దం ప్రతిబింబాన్ని ఎంచుకోండి.</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f600943e8762a71e69e0ab22864f7daaa21e9ae78434ceb28d6f9f257d91243e.png\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3a2e19c92d47cea5de0e333d6ea1ffa5a3b4a2388bd766e5514af8017c0614fb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/acd1534ca5c438ec4a57d95bd6ead6c3c3d79f520fc915698e0ad7097a7e9642.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/686b5daab76444d6684e28023f8057b202c3f2125cf02027dd3dd561a63811d1.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/e681f0e2142772b3b09557e355de051a617c59bd7f90a666f33d490d8bfe7a03.png\" style=\"width: 81px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>जर आरसा आकृतीच्या उजव्या बाजूला ठेवला तर दिलेल्या आकृतीची योग्य आरशातील प्रतिमा निवडा.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f600943e8762a71e69e0ab22864f7daaa21e9ae78434ceb28d6f9f257d91243e.png\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3a2e19c92d47cea5de0e333d6ea1ffa5a3b4a2388bd766e5514af8017c0614fb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/acd1534ca5c438ec4a57d95bd6ead6c3c3d79f520fc915698e0ad7097a7e9642.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/686b5daab76444d6684e28023f8057b202c3f2125cf02027dd3dd561a63811d1.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/e681f0e2142772b3b09557e355de051a617c59bd7f90a666f33d490d8bfe7a03.png\" style=\"width: 81px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>দর্পণটিকে চিত্রের ডান দিকে স্থাপন করা হলে প্রদত্ত চিত্রটির সঠিক দর্পণ চিত্র কোনটি হবে নির্বাচন করুন।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f600943e8762a71e69e0ab22864f7daaa21e9ae78434ceb28d6f9f257d91243e.png\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3a2e19c92d47cea5de0e333d6ea1ffa5a3b4a2388bd766e5514af8017c0614fb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/acd1534ca5c438ec4a57d95bd6ead6c3c3d79f520fc915698e0ad7097a7e9642.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/686b5daab76444d6684e28023f8057b202c3f2125cf02027dd3dd561a63811d1.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/e681f0e2142772b3b09557e355de051a617c59bd7f90a666f33d490d8bfe7a03.png\" style=\"width: 81px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "ml": {"value": "<p>ചിത്രത്തിന്റെ വലതുവശത്ത് ദർപ്പണം സ്ഥാപിക്കുമ്പോൾ,  നൽകിയിരിക്കുന്ന ചിത്രത്തിന്റെ ശരിയായ ദർപ്പണ പ്രതിബിംബം  തിരഞ്ഞെടുക്കുക.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f600943e8762a71e69e0ab22864f7daaa21e9ae78434ceb28d6f9f257d91243e.png\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3a2e19c92d47cea5de0e333d6ea1ffa5a3b4a2388bd766e5514af8017c0614fb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/acd1534ca5c438ec4a57d95bd6ead6c3c3d79f520fc915698e0ad7097a7e9642.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/686b5daab76444d6684e28023f8057b202c3f2125cf02027dd3dd561a63811d1.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/e681f0e2142772b3b09557e355de051a617c59bd7f90a666f33d490d8bfe7a03.png\" style=\"width: 81px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>જ્યારે અરીસો આકૃતિની જમણી બાજુએ મૂકવામાં આવે ત્યારે આપેલ આકૃતિનું સાચું આરસી પ્રતિબિંબ પસંદ કરો.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f600943e8762a71e69e0ab22864f7daaa21e9ae78434ceb28d6f9f257d91243e.png\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3a2e19c92d47cea5de0e333d6ea1ffa5a3b4a2388bd766e5514af8017c0614fb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/acd1534ca5c438ec4a57d95bd6ead6c3c3d79f520fc915698e0ad7097a7e9642.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/686b5daab76444d6684e28023f8057b202c3f2125cf02027dd3dd561a63811d1.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/e681f0e2142772b3b09557e355de051a617c59bd7f90a666f33d490d8bfe7a03.png\" style=\"width: 81px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>Select the correct mirror image of the given figure when the mirror is placed to the right side of the figure.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f600943e8762a71e69e0ab22864f7daaa21e9ae78434ceb28d6f9f257d91243e.png\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3a2e19c92d47cea5de0e333d6ea1ffa5a3b4a2388bd766e5514af8017c0614fb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/acd1534ca5c438ec4a57d95bd6ead6c3c3d79f520fc915698e0ad7097a7e9642.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/686b5daab76444d6684e28023f8057b202c3f2125cf02027dd3dd561a63811d1.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/e681f0e2142772b3b09557e355de051a617c59bd7f90a666f33d490d8bfe7a03.png\" style=\"width: 81px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>படத்தின் வலது பக்கத்தில் ஆடியை வைக்கும்போது கொடுக்கப்பட்ட படத்தின் சரியான ஆடி பிம்பத்தைத் தேர்ந்தெடுக்கவும்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f600943e8762a71e69e0ab22864f7daaa21e9ae78434ceb28d6f9f257d91243e.png\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3a2e19c92d47cea5de0e333d6ea1ffa5a3b4a2388bd766e5514af8017c0614fb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/acd1534ca5c438ec4a57d95bd6ead6c3c3d79f520fc915698e0ad7097a7e9642.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/686b5daab76444d6684e28023f8057b202c3f2125cf02027dd3dd561a63811d1.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/e681f0e2142772b3b09557e355de051a617c59bd7f90a666f33d490d8bfe7a03.png\" style=\"width: 81px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>The correct mirror image of the given figure when the mirror is placed to the right side of the figure is shown below:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ab46f29250d4a57e2694f025e4d83f28d9452740880b3804363591083caf7261.png\" style=\"width: 210px; height: 111px;\" /></p>\n\n<p>Hence, &lsquo;<strong>option 1</strong>&rsquo; is the correct answer.</p>\n", "hn": "<p><span style=\"color: rgb(37, 37, 37);  \">दिए गए आकृति की सही दर्पण छवि, जब दर्पण को आकृति के दाएं ओर रखा जाता है, नीचे दर्शाया गया है:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ab46f29250d4a57e2694f025e4d83f28d9452740880b3804363591083caf7261.png\" style=\"width: 210px; height: 111px;\" /></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">अतः, &#39;<strong>विकल्प 1</strong>&#39; सही उत्तर है।</span></p>\n", "te": "<p><span style=\"color: rgb(37, 37, 37);  \">చిత్రం యొక్క కుడి వైపున అద్దం ఉంచినప్పుడు ఇచ్చిన చిత్రం యెక్క సరైన అద్దం ప్రతిబింబం క్రింద చూపబడింది:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ab46f29250d4a57e2694f025e4d83f28d9452740880b3804363591083caf7261.png\" style=\"width: 210px; height: 111px;\" /></p>\n\n<p>కావునా, ‘<strong>ఎంపిక 1</strong>’ సరైన సమాధానం.</p>\n", "mr": "<p>जर आरसा आकृतीच्या उजव्या बाजूला ठेवला तर दिलेल्या आकृतीची योग्य आरशातील प्रतिमा खाली दिली गेली आहे:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ab46f29250d4a57e2694f025e4d83f28d9452740880b3804363591083caf7261.png\" style=\"width: 210px; height: 111px;\" /></p>\n\n<p>म्हणून, <strong>‘पर्याय 1’</strong> हे योग्य उत्तर आहे.</p>\n", "bn": "<p>দর্পণটিকে চিত্রের ডান দিকে স্থাপন করা হলে প্রদত্ত চিত্রটির সঠিক যে দর্পণ চিত্রটি গঠিত হবে তা নিম্নে প্রদর্শিত করা হল:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ab46f29250d4a57e2694f025e4d83f28d9452740880b3804363591083caf7261.png\" style=\"width: 210px; height: 111px;\" /></p>\n\n<p>সুতরাং, <strong>'বিকল্প <span style=\"font-weight: 700;\">1'</span></strong> হল সঠিক উত্তর।</p>\n", "ml": "<p>ചിത്രത്തിന്റെ വലതുവശത്ത് <span style=\"\">ദർപ്പണം സ്ഥാപിക്കുമ്പോൾ,</span> നൽകിയിരിക്കുന്ന ചിത്രത്തിന്റെ ശരിയായ ദർപ്പണ പ്രതിബിംബം ചുവടെ കാണിച്ചിരിക്കുന്നു:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ab46f29250d4a57e2694f025e4d83f28d9452740880b3804363591083caf7261.png\" style=\"width: 210px; height: 111px;\" /></p>\n\n<p>അതിനാൽ,<strong> 'ഓപ്ഷൻ 1' </strong>ആണ് ശരിയായ ഉത്തരം.</p>\n", "gu": "<p>જ્યારે અરીસો આકૃતિની જમણી બાજુએ મૂકવામાં આવે છે, ત્યારે આપેલ આકૃતિનું સાચું આરસી પ્રતિબિંબ નીચે બતાવેલ છે:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ab46f29250d4a57e2694f025e4d83f28d9452740880b3804363591083caf7261.png\" style=\"width: 210px; height: 111px;\" /></p>\n\n<p>તેથી, '<strong>વિકલ્પ 1</strong>' સાચો જવાબ છે.</p>\n", "kn": "<p>ಪ್ರತಿಬಿಂಬ ಆಕೃತಿಯನ್ನು ಬಲಭಾಗದಲ್ಲಿ ಇರಿಸಿದಾಗ ನೀಡಲಾದ ಆಕೃತಿಯ ಸರಿಯಾದ <span style=\"\">ಪ್ರತಿಬಿಂಬ</span> ಚಿತ್ರವನ್ನು ಕೆಳಗೆ ತೋರಿಸಲಾಗಿದೆ:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ab46f29250d4a57e2694f025e4d83f28d9452740880b3804363591083caf7261.png\" style=\"width: 210px; height: 111px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, <strong>'ಆಯ್ಕೆ 1'</strong> ಸರಿಯಾದ ಉತ್ತರವಾಗಿದೆ.</p>\n", "ta": "<p>படத்தின் வலது பக்கத்தில் ஆடியை வைக்கும்போது கொடுக்கப்பட்ட படத்தின் சரியான ஆடி பிம்பம் கீழே காட்டப்பட்டுள்ளது:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ab46f29250d4a57e2694f025e4d83f28d9452740880b3804363591083caf7261.png\" style=\"width: 210px; height: 111px;\" /></p>\n\n<p>எனவே, '<strong>விருப்பம் 1</strong>' என்பது சரியான பதில்.</p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Mirror Image"], "concept": "Mirror/Water Image", "confidence": "high"}, {"qid": "5b5084c0ebb04f0c316b2c6c", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>If a mirror is placed on the line MN, then which of the answer figures is the right image of the given figure?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fb6ef0fb706b8e9dbb32f5639c0072862473919aebf4bd2552078325e4d91c45.png\" style=\"height:109px; width:126px\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/d5222928c3024517309daf5f0f12eac393e3115831ad8746103033eb67f65ebc.png&quot; style=&quot;height:84px; width:83px&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/e3dc881b78a13c1edd4cd3c603635739044d5688639919990f65152a15038ab0.png&quot; style=&quot;height:83px; width:84px&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/37815a505df3cc93951931dadac6f84cb83387c76b92c7247701fee5e1142487.png&quot; style=&quot;height:85px; width:85px&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/973f923e0e2a2dfc1d1f9edbf0031d92bf55a96ff8b5f5c323e51068a3d86ffb.png&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>यदि एक दर्पण को MN रेखा पर रखा जाए, तो दी गई उत्तर आकृतियों में से कौन सी आकृति प्रश्न आकृति की सही छवि होगी?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fb6ef0fb706b8e9dbb32f5639c0072862473919aebf4bd2552078325e4d91c45.png\" style=\"height:109px; width:126px\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/d5222928c3024517309daf5f0f12eac393e3115831ad8746103033eb67f65ebc.png&quot; style=&quot;height:84px; width:83px&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/e3dc881b78a13c1edd4cd3c603635739044d5688639919990f65152a15038ab0.png&quot; style=&quot;height:83px; width:84px&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/37815a505df3cc93951931dadac6f84cb83387c76b92c7247701fee5e1142487.png&quot; style=&quot;height:85px; width:85px&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/973f923e0e2a2dfc1d1f9edbf0031d92bf55a96ff8b5f5c323e51068a3d86ffb.png&quot; /&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/51dff3cf21ed576e41f0a9ac4313977d33734453449d3e23ce3117219a86ab6a.png\" style=\"height:153px; width:105px\" /></p>\n\n<p>Thus, option figure 3 is the mirror image of the question figure.</p>\n\n<p>Hence, answer is option 3.</p>\n", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/51dff3cf21ed576e41f0a9ac4313977d33734453449d3e23ce3117219a86ab6a.png\" style=\"height:153px; width:105px\" /></p>\n\n<p>इसलिए, वैकल्पिक आकृति 3, प्रश्न आकृति की दर्पण प्रतिबिम्ब है।</p>\n\n<p>अत: उत्तर विकल्प 3 है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Mirror Image"], "concept": "Mirror/Water Image", "confidence": "high"}, {"qid": "5e09eb4ef99c390d0355616a", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the mirror image of the given figure when the mirror is placed to the right of the figure.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3d2bc6c5f6dc7ade0f886dfc17bdda4493d6993992ff747cbdd34130cc5aca98.png\" style=\"width: 115px; height: 108px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/f24e8110f94e02954399b1d1f315ed0f8d9e22fbf65eb90029808dcb21258e0e.png&quot; style=&quot;width: 101px; height: 102px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/f51a2e8b5aaaca074bfdebe1435e7882d893d7a53a88288c8dd0bdbed85c0c87.png&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6603554fe59270692c65ca5fe70187f13966eb7825370de1104751cea275b984.png&quot; style=&quot;width: 101px; height: 101px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/e7e768cb194b3ee2cb8131b95f1bcd12a44060a535a055061c89eabd744dd44f.png&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दी गयी आकृति के दर्पण प्रतिबिम्ब का चयन कीजिये जब दर्पण को आकृति के दायें स्थान पर रखा जाता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3d2bc6c5f6dc7ade0f886dfc17bdda4493d6993992ff747cbdd34130cc5aca98.png\" style=\"width: 115px; height: 108px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/f24e8110f94e02954399b1d1f315ed0f8d9e22fbf65eb90029808dcb21258e0e.png&quot; style=&quot;width: 101px; height: 102px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/f51a2e8b5aaaca074bfdebe1435e7882d893d7a53a88288c8dd0bdbed85c0c87.png&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6603554fe59270692c65ca5fe70187f13966eb7825370de1104751cea275b984.png&quot; style=&quot;width: 101px; height: 101px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/e7e768cb194b3ee2cb8131b95f1bcd12a44060a535a055061c89eabd744dd44f.png&quot; /&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>The mirror image when mirror is placed right of the line is,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/939325d515e13225a79d5d03e2cba9d05490a63edd06f19eeb48f6943355b563.png\" /></p>\n\n<p>Hence, option 3 is the correct answer.</p>\n", "hn": "<p>दर्पण प्रतिबिम्ब जब दर्पण को आकृति के दायें स्थान पर रखा जाता है,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/939325d515e13225a79d5d03e2cba9d05490a63edd06f19eeb48f6943355b563.png\" /></p>\n\n<p>अतः विकल्प 3 सही उत्तर है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Mirror Image"], "concept": "Mirror/Water Image", "confidence": "high"}, {"qid": "5b2216de8440130c258ca705", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>If a mirror is placed on the line MN, then which of the answer figures is the right image of the given figure?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f85b2c91f1c0dd4b2e8ebd246cb58324084a9c5c4bd30eba30827bda6ada6f02.png\" style=\"height:149px; width:139px\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6676722330530c2f236a883b82e8508a8c42f08b81b7ec649b42445b3627fb4a.png&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/bdcd296b4c55038e4f6db4b31f7c16a80b428154e788d87b8b3a3ce97411301d.png&quot; style=&quot;height:86px; width:85px&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/5684eae72fa44ed675c6a0776c187c46979cf943475ebcc0fa5ba91a3556eeda.png&quot; style=&quot;height:86px; width:85px&quot; /&gt;"}, {"prompt": "4", "value": "None of these"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>यदि एक दर्पण को MN रेखा पर रखा जाए, तो दी गई उत्तर आकृतियों में से कौन सी आकृति प्रश्न आकृति की सही छवि होगी?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f85b2c91f1c0dd4b2e8ebd246cb58324084a9c5c4bd30eba30827bda6ada6f02.png\" style=\"height:149px; width:139px\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6676722330530c2f236a883b82e8508a8c42f08b81b7ec649b42445b3627fb4a.png&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/bdcd296b4c55038e4f6db4b31f7c16a80b428154e788d87b8b3a3ce97411301d.png&quot; style=&quot;height:86px; width:85px&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/5684eae72fa44ed675c6a0776c187c46979cf943475ebcc0fa5ba91a3556eeda.png&quot; style=&quot;height:86px; width:85px&quot; /&gt;"}, {"prompt": "4", "value": "इनमे से कोई नहीं"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>Clearly, fig.1 shows the correct mirror image of question figure.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3b7c132b1e5f89bfec7861676e8bdfbda0118a96167938d857b2e2d9dced4a71.png\" style=\"height:147px; width:261px\" /></p>\nHence, figure 1 is the correct answer.", "hn": "<p>स्पष्ट रूप से, आकृति 1 प्रश्न आकृति की सही दर्पण छवि होगी।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3b7c132b1e5f89bfec7861676e8bdfbda0118a96167938d857b2e2d9dced4a71.png\" style=\"height:147px; width:261px\" /></p>\nइसलिए, आकृति 1 सही उत्तर है।", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Mirror Image"], "concept": "Mirror/Water Image", "confidence": "high"}, {"qid": "5b279f5c8db45d0c6bd3aaa7", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>If a mirror is placed on the line AB, then which of the answer figure is the right image of the given figure?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7a8a60b4b1d1fbb3179a9d53b70f87b20b9aa4afb4507581b227c3acc5dae3e1.png\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/e918dd279b2684c039fca9db6b1152df91f13da9e936d70483c2799203cf8544.png&quot; style=&quot;height:84px; width:80px&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/8050ea13aca19a76239dee2763f8553fcfe5b71158cd080adeb116bb207a24be.png&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/1c515bff2e826c16832608961c7830d8ad0707123efd3f016c7e5eae2b64b249.png&quot; style=&quot;height:83px; width:81px&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/efc54c0ce9ef267cd1cbf8f46d9be5e08283a444608b317e6b6242972274d9a7.png&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>यदि एक दर्पण को AB रेखा पर रखा जाए, तो दी गई उत्तर आकृतियों में से कौन सी आकृति प्रश्न आकृति की सही छवि होगी?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7a8a60b4b1d1fbb3179a9d53b70f87b20b9aa4afb4507581b227c3acc5dae3e1.png\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/e918dd279b2684c039fca9db6b1152df91f13da9e936d70483c2799203cf8544.png&quot; style=&quot;height:84px; width:80px&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/8050ea13aca19a76239dee2763f8553fcfe5b71158cd080adeb116bb207a24be.png&quot; style=&quot;background-color:rgb(223, 240, 216); color:rgb(60, 118, 61)&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/1c515bff2e826c16832608961c7830d8ad0707123efd3f016c7e5eae2b64b249.png&quot; style=&quot;height:83px; width:81px&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/efc54c0ce9ef267cd1cbf8f46d9be5e08283a444608b317e6b6242972274d9a7.png&quot; /&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>The diagram below shows the Right Mirror image of the question figure.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3cfc115e3d563230228c859d90e12e125e7b8afd7c82e36793bee7f86171b9c0.png\" /></p>\n\n<p>Hence, figure shown in option (2) is the correct answer.</p>\n", "hn": "<p>यह आकृति प्रश्न आकृति के सही दर्पण छवि को दर्शाता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3cfc115e3d563230228c859d90e12e125e7b8afd7c82e36793bee7f86171b9c0.png\" /></p>\n\n<p>अतः विकल्प (2) में दर्शायी गयी आकृति सही उत्तर है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Mirror Image"], "concept": "Mirror/Water Image", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 6 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>

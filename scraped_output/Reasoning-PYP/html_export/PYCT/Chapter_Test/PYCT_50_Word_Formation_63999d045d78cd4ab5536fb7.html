@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 50: Word Formation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 50: Word Formation</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-reasoning-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">6 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63999d045d78cd4ab5536fb7</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63999d045d78cd4ab5536fb7", "title": "PYCT 50: Word Formation", "series_slug": "ssc-reasoning-previous-year-questions", "duration_min": 6, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "628542a7f87f5ae63c94033f", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "622b7e284e4dad537944ecdd", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Which of the following words <strong>CANNOT</strong> be formed using the letters in the word <strong>&#39;WONDERFUL&#39;</strong>?", "options": [{"prompt": "1", "value": "FUEL"}, {"prompt": "2", "value": "FOUND"}, {"prompt": "3", "value": "DAWN"}, {"prompt": "4", "value": "NERD"}], "range": {"start": "", "end": ""}}, "hn": {"value": "निम्नलिखित में से कौन सा शब्द <strong>&#39;WONDERFUL&#39;</strong> शब्द के अक्षरों का उपयोग करके <strong>नहीं</strong> बनाया जा सकता है?", "options": [{"prompt": "1", "value": "FUEL"}, {"prompt": "2", "value": "FOUND"}, {"prompt": "3", "value": "DAWN"}, {"prompt": "4", "value": "NERD"}], "range": {"start": "", "end": ""}}, "te": {"value": "'<strong>WONDERFUL</strong><strong>'</strong> అనే పదంలోని అక్షరాలను ఉపయోగించి కింది వాటిలో ఏ పదాలు రూపొందించబడవు?", "options": [{"prompt": "1", "value": "FUEL"}, {"prompt": "2", "value": "FOUND"}, {"prompt": "3", "value": "DAWN"}, {"prompt": "4", "value": "NERD"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<strong>'WONDERFUL'</strong> या शब्दातील अक्षरे वापरून खालीलपैकी कोणता शब्द तयार होऊ <strong>शकत नाही</strong>?", "options": [{"prompt": "1", "value": "FUEL"}, {"prompt": "2", "value": "FOUND"}, {"prompt": "3", "value": "DAWN"}, {"prompt": "4", "value": "NERD"}], "range": {"start": "", "end": ""}}, "bn": {"value": "নীচের কোন শব্দটি <strong>'WONDERFUL'</strong> <strong>শব্দের</strong> অক্ষর ব্যবহার করে গঠন করা যায় না?", "options": [{"prompt": "1", "value": "FUEL"}, {"prompt": "2", "value": "FOUND"}, {"prompt": "3", "value": "DAWN"}, {"prompt": "4", "value": "NERD"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<strong>'WONDERFUL'</strong> શબ્દના અક્ષરોનો ઉપયોગ કરીને નીચેનામાંથી કયો શબ્દ બનાવી <strong>શકાતો નથી</strong> ?", "options": [{"prompt": "1", "value": "FUEL"}, {"prompt": "2", "value": "FOUND"}, {"prompt": "3", "value": "DAWN"}, {"prompt": "4", "value": "NERD"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ಕೆಳಗಿನ ಯಾವ ಪದವನ್ನು <strong>'WONDERFUL'</strong> ಎಂಬ ಪದದಲ್ಲಿರುವ ಅಕ್ಷರಗಳನ್ನು ಬಳಸಿ ರಚಿಸಲು <strong>ಸಾಧ್ಯವಿಲ್ಲ</strong>?", "options": [{"prompt": "1", "value": "FUEL"}, {"prompt": "2", "value": "FOUND"}, {"prompt": "3", "value": "DAWN"}, {"prompt": "4", "value": "NERD"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<strong>'</strong><span style=\"font-weight: 700; \">WONDERFUL</span><strong>'</strong> என்ற வார்த்தையில் உள்ள எழுத்துக்களைப் பயன்படுத்தி பின்வரும் எந்த வார்த்தைகளை உருவாக்க <strong>முடியாது</strong> ?", "options": [{"prompt": "1", "value": "FUEL"}, {"prompt": "2", "value": "FOUND"}, {"prompt": "3", "value": "DAWN"}, {"prompt": "4", "value": "NERD"}], "range": {"start": "", "end": ""}}, "pa": {"value": "ਹੇਠ ਲਿਖੇ ਸ਼ਬਦਾਂ ਵਿੱਚੋਂ ਕਿਹੜਾ ਸ਼ਬਦ 'WONDERFUL' ਸ਼ਬਦ ਦੇ ਅੱਖਰਾਂ ਦੀ ਵਰਤੋਂ ਕਰਕੇ <strong>ਨਹੀਂ</strong> ਬਣਾਇਆ ਜਾ ਸਕਦਾ ਹੈ?", "options": [{"prompt": "1", "value": "FUEL"}, {"prompt": "2", "value": "FOUND"}, {"prompt": "3", "value": "DAWN"}, {"prompt": "4", "value": "NERD"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>1) FUEL &ndash; WOND<strong>E</strong>R<strong>FUL </strong>(Can be formed)</p>\n\n<p>2) FOUND &ndash; W<strong>OND</strong>ER<strong>FU</strong>L (Can be formed)</p>\n\n<p>3) DAWN &ndash; <strong>W</strong>O<strong>ND</strong>ERFUL (Cannot be formed because <strong>A</strong> is missing)</p>\n\n<p>4) NERD &ndash; WO<strong>NDER</strong>FUL (Can be formed)</p>\n\n<p>Hence, the correct answer is <strong>&ldquo;DAWN&rdquo;.</strong></p>\n", "hn": "\n<p><span style=\"\">1) FUEL &ndash; WOND</span><span style=\"font-weight: 700; \">E</span><span style=\"\">R</span><span style=\"font-weight: 700; \">FUL</span> (बनाया जा सकता है)</p>\n\n<p><span style=\"\">2) FOUND &ndash; W</span><span style=\"font-weight: 700; \">OND</span><span style=\"\">ER</span><span style=\"font-weight: 700; \">FU</span><span style=\"\">L</span> (बनाया जा सकता है)</p>\n\n<p><span style=\"\">3) DAWN &ndash;&nbsp;</span><span style=\"font-weight: 700; \">W</span><span style=\"\">O</span><span style=\"font-weight: 700; \">ND</span><span style=\"\">ERFUL</span> (नहीं बनाया जा सकता क्योंकि <strong>A</strong> लुप्त है)</p>\n\n<p><span style=\"\">4) NERD &ndash; WO</span><span style=\"font-weight: 700; \">NDER</span><span style=\"\">FUL</span> (बनाया जा सकता है)</p>\n\n<p>इसलिए, सही उत्तर <strong>&quot;</strong><span style=\"font-weight: 700; \">DAWN</span><strong>&quot;</strong> है।</p>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 50: Word Formation\",\"sections\":[{\"_id\":\"628542a7f87f5ae63c94033f\",\"qCount\":10,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isN", "te": "<p>1) <span style=\"\">FUEL</span> – WOND <strong>E</strong> R <strong>FUL</strong> (ఏర్పరచవచ్చు)</p>\n\n<p>2) <span style=\"\">FOUND</span> - W <strong>OND</strong> ER <strong>FU</strong> L (ఏర్పరచవచ్చు)</p>\n\n<p>3) DAWN – <strong>W</strong> O <strong>ND</strong> ERFUL ( <strong>A</strong> తప్పిపోయినందున ఏర్పడదు)</p>\n\n<p>4) NERD – WO <strong>NDER</strong> FUL (ఏర్పరచవచ్చు)</p>\n\n<p>కాబట్టి, సరైన సమాధానం <strong>“</strong><span style=\"font-weight: 700; \">DAWN</span><strong>”.</strong></p>\n", "mr": "<p style=\"\">1) FUEL – WOND<span style=\"font-weight: 700;\">E</span>R<span style=\"font-weight: 700;\">FUL </span>(तयार होऊ शकतो)</p>\n\n<p style=\"\">2) FOUND – W<span style=\"font-weight: 700;\">OND</span>ER<span style=\"font-weight: 700;\">FU</span>L (<span style=\"\">तयार होऊ शकतो</span>)</p>\n\n<p style=\"\">3) DAWN – <span style=\"font-weight: 700;\">W</span>O<span style=\"font-weight: 700;\">ND</span>ERFUL (तयार होऊ शकत नाही कारण <span style=\"font-weight: 700;\">A</span> उपलब्ध नाही)</p>\n\n<p style=\"\">4) NERD – WO<span style=\"font-weight: 700;\">NDER</span>FUL (<span style=\"\">तयार होऊ शकतो</span>)</p>\n\n<p>म्हणून, योग्य उत्तर <strong>\"DAWN\" </strong>आहे.</p>\n", "bn": "<p>1) FUEL – WOND<strong>E</strong>R<strong>FUL </strong>(গঠন করা যেতে <span style=\"\">পারে</span>)</p>\n\n<p>2) FOUND – W<strong>OND</strong>ER<strong>FU</strong>L (<span style=\"\">গঠন করা যেতে </span><span style=\"\">পারে</span>)</p>\n\n<p>3) DAWN – <strong>W</strong>O<strong>ND</strong>ERFUL (গঠন করা যাবে না কারণ <strong>A</strong> হল অনুপস্থিত)</p>\n\n<p>4) NERD – WO<strong>NDER</strong>FUL (<span style=\"\">গঠন করা যেতে </span><span style=\"\">পারে</span>)</p>\n\n<p>অতএব, সঠিক উত্তরটি হল <strong>“DAWN”</strong></p>\n", "ml": "", "gu": "<p>1) <span style=\"color: rgb(33, 37, 41);\">FUEL </span>- WOND <strong>E</strong> R <strong>FUL</strong> (રચના કરી શકાય છે)</p>\n\n<p>2) FOUND - W <strong>OND</strong> ER <strong>FU</strong> L (રચના કરી શકાય છે)</p>\n\n<p>3) DAWN - <strong>WO</strong> <strong>ND</strong> ERFUL (રચના કરી શકાતી નથી કારણ કે <strong>A</strong> ખૂટે છે)</p>\n\n<p>4) NERD - WO <strong>NDER</strong> FUL (રચના કરી શકાય છે)</p>\n\n<p>તેથી, સાચો જવાબ <strong>“DAWN”</strong><span style=\"color: rgb(33, 37, 41);\"> છે</span><strong>.</strong></p>\n", "kn": "<p>1) FUEL - WOND<strong>E</strong>R<strong>FUL </strong>(ರಚಿಸಬಹುದು)</p>\n\n<p>2) FOUND - W<strong>OND</strong>ER<strong>FU</strong>L (ರಚಿಸಬಹುದು)</p>\n\n<p>3) DAWN - <strong>W</strong>O<strong>ND</strong>ERFUL (ರಚಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ ಏಕೆಂದರೆ <strong>A</strong> ಕಾಣೆಯಾಗಿದೆ)</p>\n\n<p>4) NERD - WO<strong>NDER</strong>FUL (ರಚಿಸಬಹುದು)</p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ <strong>“DAWN”</strong>.</p>\n", "ta": "<p>1) <span style=\"\">FUEL – WOND</span><span style=\"font-weight: 700; \">E</span><span style=\"\">R</span><span style=\"font-weight: 700; \">FUL</span> (உருவாக்கலாம்)</p>\n\n<p>2) <span style=\"\">FOUND – W</span><span style=\"font-weight: 700; \">OND</span><span style=\"\">ER</span><span style=\"font-weight: 700; \">FU</span><span style=\"\">L</span> (உருவாக்கலாம்)</p>\n\n<p>3) DAWN – <span style=\"font-weight: 700; \">W</span><span style=\"\">O</span><span style=\"font-weight: 700; \">ND</span><span style=\"\">ERFUL </span>( <strong>A</strong> இல்லாததால் உருவாக்க முடியாது)</p>\n\n<p>4) NERD - <span style=\"\">WO</span><span style=\"font-weight: 700; \">NDER</span><span style=\"\">FUL </span> (உருவாக்கலாம்)</p>\n\n<p>எனவே, சரியான பதில் <strong>\"</strong><span style=\"font-weight: 700; \">DAWN</span><strong>\".</strong></p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>1) FUEL - WOND<strong>E</strong>R<strong>FUL </strong>(ਬਣਾਇਆ ਜਾ ਸਕਦਾ ਹੈ)</p>\n\n<p>2) FOUND - W<strong>OND</strong>ER<strong>FU</strong>L (ਬਣਾਇਆ ਜਾ ਸਕਦਾ ਹੈ)</p>\n\n<p>3) DAWN - <strong>W</strong>O<strong>ND</strong>ERFUL (ਨਹੀਂ ਬਣਾਇਆ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ <strong>A</strong> ਗਾਇਬ ਹੈ)</p>\n\n<p>4) NERD - WO<strong>NDER</strong>FUL (ਬਣਾਇਆ ਜਾ ਸਕਦਾ ਹੈ)</p>\n\n<p>ਇਸ ਲਈ, ਸਹੀ ਜਵਾਬ ਹੈ <strong>“DAWN”</strong>।</p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Word Formation"], "concept": "Word Formation", "confidence": "high"}, {"qid": "5dc00b30f60d5d2bac859972", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In the following question, select the word which cannot be formed using the letters of the given word.</p>\n<strong>TREASURER</strong>", "options": [{"prompt": "1", "value": "SURE"}, {"prompt": "2", "value": "TREAT"}, {"prompt": "3", "value": "REST"}, {"prompt": "4", "value": "TEASE"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्न प्रश्न में, उस शब्द को चयन कीजिये जिसे दिए गए शब्द के अक्षरों का प्रयोग करके नहीं बनाया जा सकता है।</p>\n<strong>TREASURER</strong>", "options": [{"prompt": "1", "value": "SURE"}, {"prompt": "2", "value": "TREAT"}, {"prompt": "3", "value": "REST"}, {"prompt": "4", "value": "TEASE"}], "range": {"start": "", "end": ""}}, "pa": {"value": "<p>ਹੇਠਾਂ ਦਿੱਤੇ ਪ੍ਰਸ਼ਨ ਵਿੱਚ, ਉਹ ਸ਼ਬਦ ਚੁਣੋ ਜੋ ਦਿੱਤੇ ਗਏ ਸ਼ਬਦ ਦੇ ਅੱਖਰਾਂ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਨਹੀਂ ਬਣਾਇਆ ਜਾ ਸਕਦਾ ਹੈ।</p>\n<span style=\"font-weight: bolder;\">TREASURER</span>", "options": [{"prompt": "1", "value": "<span style=\"color: rgb(33, 37, 41);\">SURE</span>"}, {"prompt": "2", "value": "<span style=\"color: rgb(33, 37, 41);\">TREAT</span>"}, {"prompt": "3", "value": "<span style=\"color: rgb(33, 37, 41);\">REST</span>"}, {"prompt": "4", "value": "TEASE"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>In word &lsquo;Treat&rsquo;, there is two &lsquo;T&rsquo;. But we have only one &lsquo;T&rsquo; in the give word &lsquo;TREASURE<strong>&rsquo;.</strong></p>\nHence, the correct answer is &lsquo;TREAT&rsquo;.", "hn": "<p>&lsquo;Treat&rsquo; शब्द में, दो &lsquo;T&rsquo; हैं। लेकिन दिए गए शब्द &lsquo;TREASURE<strong>&rsquo;</strong> में हमारे पास केवल एक &lsquo;T&rsquo; है।</p>\nअतः, सही उत्तर &lsquo;TREAT&rsquo; है।", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>ਸ਼ਬਦ '<span style=\"color: rgb(33, 37, 41);\">Treat</span>' ਵਿਚ ਦੋ 'T  ਹਨ। ਪਰ ਸਾਡੇ ਕੋਲ ਦੇਣ ਵਾਲੇ ਸ਼ਬਦ '<span style=\"color: rgb(33, 37, 41);\">TREASURE</span><strong>' ਵਿੱਚ ਸਿਰਫ਼ ਇੱਕ 'T ' ਹੈ।</strong></p>\nਇਸ ਲਈ, ਸਹੀ ਜਵਾਬ 'TREAT' ਹੈ।", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Word Formation"], "concept": "Word Formation", "confidence": "high"}, {"qid": "5c361451fdb8bb79fa2f34c6", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In the following question, select the word which cannot be formed using the letters of the given word. (Using one letter&nbsp;once only)</p>\n<strong>PROJECTIONS</strong>", "options": [{"prompt": "1", "value": "POISON"}, {"prompt": "2", "value": "INJECTION"}, {"prompt": "3", "value": "PROJECT"}, {"prompt": "4", "value": "SECTION"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्नलिखित विकल्पों में से वह शब्द चुनिए, जिसे दिए गए शब्द के अक्षरों का प्रयोग करके नहीं बनाया जा सकता है। (केवल एक बार एक अक्षर का उपयोग करना)&nbsp;</p>\n\n<p><strong>PROJECTIONS</strong></p>\n", "options": [{"prompt": "1", "value": "POISON"}, {"prompt": "2", "value": "INJECTION"}, {"prompt": "3", "value": "PROJECT"}, {"prompt": "4", "value": "SECTION"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>క్రింది ప్రశ్నలో, ఇచ్చిన పదంలోని అక్షరాలను ఉపయోగించి ఏ పదాన్ని రూపొందించలేమో ఎంచుకోండి. (ఒక అక్షరాన్ని ఒకసారి మాత్రమే ఉపయోగించాలి)</p>\n<strong>PROJECTIONS</strong>", "options": [{"prompt": "1", "value": "POISON"}, {"prompt": "2", "value": "INJECTION"}, {"prompt": "3", "value": "PROJECT"}, {"prompt": "4", "value": "SECTION"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>खालील प्रश्नामध्ये, दिलेल्या शब्दातील अक्षरे वापरून कोणता शब्द तयार केला जाऊ शकत नाही ते निवडा. (प्रत्येक अक्षर एकदाच वापरा)</p>\n<strong>PROJECTIONS</strong>", "options": [{"prompt": "1", "value": "POISON"}, {"prompt": "2", "value": "INJECTION"}, {"prompt": "3", "value": "PROJECT"}, {"prompt": "4", "value": "SECTION"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>নিম্নলিখিত প্রশ্নে, একটি শব্দ চয়ন করুন যা প্রদত্ত শব্দের অক্ষরগুলি ব্যবহার করে গঠিত হতে পারে না। (শুধুমাত্র একটি অক্ষর একবার ব্যবহার করে)</p>\n<strong>PROJECTIONS</strong>", "options": [{"prompt": "1", "value": "POISON"}, {"prompt": "2", "value": "INJECTION"}, {"prompt": "3", "value": "PROJECT"}, {"prompt": "4", "value": "SECTION"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>નીચેના પ્રશ્નમાં, આપેલ શબ્દના અક્ષરોનો ઉપયોગ કરીને જે શબ્દ બની શકતો નથી તે પસંદ કરો. (ફક્ત એક જ વાર એક અક્ષરનો ઉપયોગ કરવો)</p>\n<span style=\"font-weight: bolder;\">PROJECTIONS</span>", "options": [{"prompt": "1", "value": "<span style=\"color: rgb(33, 37, 41);\">POISON</span>"}, {"prompt": "2", "value": "<span style=\"color: rgb(33, 37, 41);\">INJECTION</span>"}, {"prompt": "3", "value": "<span style=\"color: rgb(33, 37, 41);\">PROJECT</span>"}, {"prompt": "4", "value": "<span style=\"color: rgb(33, 37, 41);\">SECTION</span>"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಪ್ರಶ್ನೆಯಲ್ಲಿ, ಕೊಟ್ಟಿರುವ ಪದದ ಅಕ್ಷರಗಳನ್ನು ಬಳಸಿ ರಚಿಸಲಾಗದ ಪದವನ್ನು ಆರಿಸಿ. (ಒಂದು ಅಕ್ಷರವನ್ನು ಒಮ್ಮೆ ಮಾತ್ರ ಬಳಸಿ)</p>\n<strong>PROJECTIONS</strong>", "options": [{"prompt": "1", "value": "POISON"}, {"prompt": "2", "value": "INJECTION"}, {"prompt": "3", "value": "PROJECT"}, {"prompt": "4", "value": "SECTION"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வரும் கேள்வியில், கொடுக்கப்பட்ட வார்த்தையின் எழுத்துக்களைப் பயன்படுத்தி உருவாக்க முடியாத வார்த்தையைத் தேர்ந்தெடுக்கவும். (ஒரு எழுத்தை ஒரு முறை மட்டுமே பயன்படுத்தவும்)</p>\n<strong>PROJECTIONS</strong>", "options": [{"prompt": "1", "value": "POISON"}, {"prompt": "2", "value": "INJECTION"}, {"prompt": "3", "value": "PROJECT"}, {"prompt": "4", "value": "SECTION"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>1) POISON &rarr;&nbsp;<strong>P</strong>R<strong>O</strong>JECT<strong>IONS</strong>, hence the word can be formed.</p>\n\n<p>2) <strong>INJECTION&nbsp;&rarr; As only single &#39;I&#39; is present in the word PROJECTIONS, the word &#39;Injection&#39; cannot be formed.</strong></p>\n\n<p>3) PROJECT&nbsp;&rarr; <strong>PROJECT</strong>IONS, hence the word can be formed.</p>\n\n<p>4) SECTION&nbsp;&rarr; PROJ<strong>ECTIONS</strong>, hence the word can be formed.</p>\n\n<p>Hence, the word &#39;INJECTION&#39; cannot be formed.</p>\n", "hn": "<p>1) POISON &rarr;&nbsp;<strong>P</strong>R<strong>O</strong>JECT<strong>IONS</strong>, अतः यह शब्द बनाया जा सकता है 2) <strong>INJECTION&nbsp;&rarr; जैसाकि केवल एक&nbsp;&#39;I&#39; शब्द PROJECTIONS में है, शब्द&nbsp;&#39;Injection&#39; नहीं बनाया जा सकता है</strong></p>\n\n<p>3) PROJECT&nbsp;&rarr; <strong>PROJECT</strong>IONS, अतः, शब्द बनाया जा सकता है</p>\n\n<p>4) SECTION&nbsp;&rarr; PROJ<strong>ECTIONS</strong>, अतः, शब्द बनाया जा सकता है</p>\n\n<p>अतः, शब्द INJECTION नहीं बनाया जा सकता है।</p>\n", "te": "<p>1) POISON → <strong>P</strong>R<strong>O</strong>JECT<strong>IONS</strong>, కాబట్టి ఈ పదాన్ని రూపొందించవచ్చు.</p>\n\n<p>2) <strong>INJECTION → PROJECTIONS అనే పదంలో ఒకే ఒక 'I' ఉంది, కాబట్టి 'Injection' అనే పదాన్ని రూపొందించలేము.</strong></p>\n\n<p>3) PROJECT → <strong>PROJECT</strong>IONS, కాబట్టి ఈ పదాన్ని రూపొందించవచ్చు.</p>\n\n<p>4) SECTION → PROJ<strong>ECTIONS</strong>, కాబట్టి ఈ పదాన్ని రూపొందించవచ్చు.</p>\n\n<p>కాబట్టి, 'INJECTION' అనే పదాన్ని రూపొందించలేము.</p>\n", "mr": "<p>1) POISON → <strong>P</strong>R<strong>O</strong>JECT<strong>IONS</strong>, म्हणून हा शब्द तयार होऊ शकतो.</p>\n\n<p>2) <strong>INJECTION → PROJECTIONS या शब्दामध्ये फक्त एकच 'I' असल्यामुळे, 'Injection' हा शब्द तयार होऊ शकत नाही.</strong></p>\n\n<p>3) PROJECT → <strong>PROJECT</strong>IONS, म्हणून हा शब्द तयार होऊ शकतो.</p>\n\n<p>4) SECTION → PROJ<strong>ECTIONS</strong>, म्हणून हा शब्द तयार होऊ शकतो.</p>\n\n<p>म्हणून, 'INJECTION' हा शब्द तयार होऊ शकत नाही.</p>\n", "bn": "<p>1) POISON → <strong>P</strong>R<strong>O</strong>JECT<strong>IONS</strong>, তাই শব্দটি গঠিত হতে পারে।</p>\n\n<p>2) <strong>INJECTION → PROJECTIONS শব্দে শুধুমাত্র একটি 'I' রয়েছে, তাই 'Injection' শব্দটি গঠিত হতে পারে না।</strong></p>\n\n<p>3) PROJECT → <strong>PROJECT</strong>IONS, তাই শব্দটি গঠিত হতে পারে।</p>\n\n<p>4) SECTION → PROJ<strong>ECTIONS</strong>, তাই শব্দটি গঠিত হতে পারে।</p>\n\n<p>সুতরাং, 'INJECTION' শব্দটি গঠিত হতে পারে না।</p>\n", "ml": "", "gu": "<p>1) <span style=\"color: rgb(33, 37, 41);\">POISON </span>→ <span style=\"font-weight: bolder;\">P</span><span style=\"color: rgb(33, 37, 41);\">R</span><span style=\"font-weight: bolder;\">O</span><span style=\"color: rgb(33, 37, 41);\">JECT</span><span style=\"font-weight: bolder;\">IONS</span>, શબ્દ બનાવી શકાય છે.</p>\n\n<p>2) <strong>INJECTION → PROJECTIONS શબ્દમાં માત્ર એક જ 'I' હાજર હોવાથી, '</strong><span style=\"font-weight: bolder;\">INJECTION</span><strong>' શબ્દ બની શકતો નથી.</strong></p>\n\n<p>3) PROJECT → <strong>PROJECT</strong>IONS, <span style=\"color: rgb(33, 37, 41);\">શબ્દ બનાવી શકાય છે</span>.</p>\n\n<p>4) SECTION → PROJ<strong>ECTIONS</strong>, <span style=\"color: rgb(33, 37, 41);\">શબ્દ બનાવી શકાય છે</span><span style=\"color: rgb(33, 37, 41);\">.</span>.</p>\n\n<p>તેથી, 'INJECTION' શબ્દ બનાવી શકતો નથી.</p>\n", "kn": "<p>1) POISON → <strong>P</strong>R<strong>O</strong>JECT<strong>IONS</strong>, ಆದ್ದರಿಂದ ಈ ಪದವನ್ನು ರಚಿಸಬಹುದು.</p>\n\n<p>2) <strong>INJECTION → PROJECTIONS ಪದದಲ್ಲಿ ಒಂದೇ 'I' ಮಾತ್ರ ಇರುವುದರಿಂದ, 'Injection' ಪದವನ್ನು ರಚಿಸಲಾಗುವುದಿಲ್ಲ.</strong></p>\n\n<p>3) PROJECT → <strong>PROJECT</strong>IONS, ಆದ್ದರಿಂದ ಈ ಪದವನ್ನು ರಚಿಸಬಹುದು.</p>\n\n<p>4) SECTION → PROJ<strong>ECTIONS</strong>, ಆದ್ದರಿಂದ ಈ ಪದವನ್ನು ರಚಿಸಬಹುದು.</p>\n\n<p>ಆದ್ದರಿಂದ, 'INJECTION' ಪದವನ್ನು ರಚಿಸಲಾಗುವುದಿಲ್ಲ.</p>\n", "ta": "<p>1) POISON → <strong>P</strong>R<strong>O</strong>JECT<strong>IONS</strong>, எனவே இந்த வார்த்தையை உருவாக்க முடியும்.</p>\n\n<p>2) <strong>INJECTION → PROJECTIONS என்ற வார்த்தையில் ஒரே ஒரு 'I' மட்டுமே இருப்பதால், 'Injection' என்ற வார்த்தையை உருவாக்க முடியாது.</strong></p>\n\n<p>3) PROJECT → <strong>PROJECT</strong>IONS, எனவே இந்த வார்த்தையை உருவாக்க முடியும்.</p>\n\n<p>4) SECTION → PROJ<strong>ECTIONS</strong>, எனவே இந்த வார்த்தையை உருவாக்க முடியும்.</p>\n\n<p>எனவே, 'INJECTION' என்ற வார்த்தையை உருவாக்க முடியாது.</p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Word Formation"], "concept": "Word Formation", "confidence": "high"}, {"qid": "5c208830fd35e945d4d3ca60", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>From the given alternatives, select the word which <strong>CANNOT</strong> be formed using the letters of the given word.</p>\n<strong>Benevolent</strong>", "options": [{"prompt": "1", "value": "Been"}, {"prompt": "2", "value": "Nevin"}, {"prompt": "3", "value": "Lent"}, {"prompt": "4", "value": "Ben"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्नलिखित विकल्पों में से वह शब्द चुनिए, जिसे दिए गए शब्द के अक्षरों का प्रयोग करके नहीं बनाया जा सकता है।</p>\n<strong>Benevolent</strong>", "options": [{"prompt": "1", "value": "Been"}, {"prompt": "2", "value": "Nevin"}, {"prompt": "3", "value": "Lent"}, {"prompt": "4", "value": "Ben"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>We have to checked each Option:</p>\n\n<p>Option (1): Been (Can&nbsp;be formed using the letters of &quot;Benevolent&quot;).</p>\n\n<p>Option (2):&nbsp;Nevin (Cannot be formed using &lsquo;Benevolent&rsquo; because<strong> there is no &lsquo;I&rsquo; in it.</strong>)</p>\n\n<p>Option (3): Lent (<span style=\"\">Can</span><span style=\"\">&nbsp;</spa", "hn": "\n<p>हमें प्रत्येक विकल्प की जांच करनी होगी:</p>\n\n<p style=\"\">विकल्प (1): Been (यह <span style=\"\">&quot;</span><span style=\"\">Benevolent&quot;</span> के अक्षरों का <span style=\"\">प्रयोग&nbsp;</span>करके बनाया जा सकता है).</p>\n\n<p style=\"\">विकल्प (2):&nbsp;Nevin (<span style=\"\">यह &quot;Benevolent&rsquo;&quot; के अक्षरों का प्रयोग करके&nbsp;नहीं बनाया जा सकता है क्योंकि इसमें कोई<strong> &lsquo;I&rsquo; </strong>नहीं है।</span></p>\n\n<p style=\"\">विकल्प (3): Lent (<span style=\"\">यह&nbsp;</span><span style=\"\">&quot;</span><span style=\"\"", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Word Formation"], "concept": "Word Formation", "confidence": "high"}, {"qid": "5b90c83437ed240c43b70046", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>From the given alternatives, select the word which <strong>CANNOT</strong> be formed using the letters of the given word.</p>\n\n<p>UNIVERSITY</p>\n", "options": [{"prompt": "1", "value": "Tune"}, {"prompt": "2", "value": "Until"}, {"prompt": "3", "value": "Very"}, {"prompt": "4", "value": "Try"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए विकल्पों से, उस शब्द का चयन करें जो दिए गए शब्द के अक्षरों का उपयोग करके <strong>नहीं</strong> बनाया जा सकता है।</p>\nUNIVERSITY", "options": [{"prompt": "1", "value": "Tune"}, {"prompt": "2", "value": "Until"}, {"prompt": "3", "value": "Very"}, {"prompt": "4", "value": "Try"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>Let&rsquo;s check each option,</p>\n\n<p>1) TUNE &rarr; can be formed as <strong>UN</strong>IV<strong>E</strong>RSI<strong>T</strong>Y.</p>\n\n<p>2) UNTIL &rarr; cannot be formed as there is no &lsquo;L&rsquo; in UNIVERSITY.</p>\n\n<p>3) VERY &rarr; can be formed as UNI<strong>VER</strong>SIT<strong>Y.</strong></p>\n\n<p>4) TRY &rarr; can be formed as UNIVE<strong>R</strong>SI<strong>TY</strong>.</p>\nHence, UNTIL can&rsquo;t be formed from word UNIVERSITY.", "hn": "<p>हम प्रत्येक विकल्प की जांच करते हैं,</p>\n\n<p>1) T<strong>UNE</strong> &rarr; से <strong>UN</strong>IV<strong>E</strong>RSI<strong>T</strong>Y शब्द बनाया जा सकता हैI</p>\n\n<p>2) UNTIL &rarr; से <strong>UN</strong>IV<strong>E</strong>RSI<strong>T</strong>Y शब्द नहीं बनाया जा सकता है क्योंकि इस शब्द में &lsquo;L&rsquo; अक्षर नहीं हैI</p>\n\n<p>3<strong>) VERY</strong> &rarr; से <strong>UN</strong>IV<strong>E</strong>RSI<strong>T</strong>Y शब्द बनाया जा सकता हैI</p>\n\n<p>4) <strong>TRY</strong> &rarr; से <strong>UN</strong>IV<strong>E</strong>RSI<strong>T</strong>Y शब्द बनाया जा सकता हैI</p>\nइसलिए, UNTIL से UNIVERSITY शब्द नहीं बनाया जा सकता हैI", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Word Formation"], "concept": "Word Formation", "confidence": "high"}, {"qid": "5b06a48e1a3ecc30b9f50ea0", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In the following question, from the given alternative words, select the word which can be formed using the letters of the given word.</p>\n\n<p>CAPITULATE</p>\n", "options": [{"prompt": "1", "value": "CAPABLE"}, {"prompt": "2", "value": "LUPIN"}, {"prompt": "3", "value": "PITTY"}, {"prompt": "4", "value": "TALE"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्नलिखित प्रश्न में, दिए गये वैकल्पिक शब्दों से, वह शब्द चुनिए जो दिए गये शब्दों के अक्षरों का उपयोग कर के बनाया जा सकता।</p>\nCAPITULATE", "options": [{"prompt": "1", "value": "CAPABLE"}, {"prompt": "2", "value": "LUPIN"}, {"prompt": "3", "value": "PITTY"}, {"prompt": "4", "value": "TALE"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>కింది ప్రశ్నలో, ఇచ్చిన ప్రత్యామ్నాయ పదాల నుండి, ఇచ్చిన పదం యొక్క అక్షరాలను ఉపయోగించి ఏర్పడే పదాన్ని ఎంచుకోండి.</p>\n\n<p>CAPITULATE</p>\n", "options": [{"prompt": "1", "value": "CAPABLE"}, {"prompt": "2", "value": "LUPIN"}, {"prompt": "3", "value": "PITTY"}, {"prompt": "4", "value": "TALE"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>खालील प्रश्नामध्ये, दिलेल्या पर्यायी शब्दांमधून, असा शब्द निवडा जो दिलेल्या शब्दांच्या अक्षरांचा वापर करून तयार केला जाऊ शकतो.</p>\n\n<p>CAPITULATE</p>\n", "options": [{"prompt": "1", "value": "CAPABLE"}, {"prompt": "2", "value": "LUPIN"}, {"prompt": "3", "value": "PITTY"}, {"prompt": "4", "value": "TALE"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>নিম্নলিখিত প্রশ্নে, প্রদত্ত বিকল্প শব্দগুলি থেকে, সেই শব্দটি চয়ন করুন যা প্রদত্ত শব্দের অক্ষর ব্যবহার করে গঠিত হতে পারে।</p>\n\n<p>CAPITULATE</p>\n", "options": [{"prompt": "1", "value": "CAPABLE"}, {"prompt": "2", "value": "LUPIN"}, {"prompt": "3", "value": "PITTY"}, {"prompt": "4", "value": "TALE"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>નીચેના પ્રશ્નમાં, આપેલા વિકલ્પોમાંથી, તે શબ્દ પસંદ કરો જે આપેલા શબ્દના અક્ષરોનો ઉપયોગ કરીને બનાવી શકાય છે.</p>\n\n<p>CAPITULATE</p>\n", "options": [{"prompt": "1", "value": "CAPABLE"}, {"prompt": "2", "value": "LUPIN"}, {"prompt": "3", "value": "PITTY"}, {"prompt": "4", "value": "TALE"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಪ್ರಶ್ನೆಯಲ್ಲಿ, ನೀಡಿರುವ ಪರ್ಯಾಯ ಪದಗಳಿಂದ, ನೀಡಿರುವ ಪದದ ಅಕ್ಷರಗಳನ್ನು ಬಳಸಿ ರಚಿಸಬಹುದಾದ ಪದವನ್ನು ಆರಿಸಿ.</p>\n\n<p>CAPITULATE</p>\n", "options": [{"prompt": "1", "value": "CAPABLE"}, {"prompt": "2", "value": "LUPIN"}, {"prompt": "3", "value": "PITTY"}, {"prompt": "4", "value": "TALE"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>பின்வரும் கேள்வியில், கொடுக்கப்பட்ட மாற்று வார்த்தைகளிலிருந்து, கொடுக்கப்பட்ட வார்த்தையின் எழுத்துக்களைப் பயன்படுத்தி உருவாக்கக்கூடிய வார்த்தையைத் தேர்ந்தெடுக்கவும்.</p>\n\n<p>CAPITULATE</p>\n", "options": [{"prompt": "1", "value": "CAPABLE"}, {"prompt": "2", "value": "LUPIN"}, {"prompt": "3", "value": "PITTY"}, {"prompt": "4", "value": "TALE"}], "range": {"start": "", "end": ""}}, "or": {"value": "<p>ନିମ୍ନଲିଖିତ ପ୍ରଶ୍ନରେ, ଦିଆଯାଇଥିବା ବିକଳ୍ପ ଶବ୍ଦଗୁଡ଼ିକରୁ, ସେହି ଶବ୍ଦଟିକୁ ଚୟନ କରନ୍ତୁ ଯାହା ଦିଆଯାଇଥିବା ଶବ୍ଦର ଅକ୍ଷରଗୁଡ଼ିକୁ ବ୍ୟବହାର କରି ଗଠନ କରାଯାଇପାରିବ |</p>\n\n<p>CAPITULATE</p>\n", "options": [{"prompt": "1", "value": "CAPABLE"}, {"prompt": "2", "value": "LUPIN"}, {"prompt": "3", "value": "PITTY"}, {"prompt": "4", "value": "TALE"}], "range": {"start": "", "end": ""}}, "pa": {"value": "<p>ਹੇਠ ਲਿਖੇ ਪ੍ਰਸ਼ਨ ਵਿੱਚ, ਦਿੱਤੇ ਗਏ ਵਿਕਲਪਿਕ ਸ਼ਬਦਾਂ ਵਿੱਚੋਂ, ਉਸ ਸ਼ਬਦ ਦੀ ਚੋਣ ਕਰੋ ਜੋ ਦਿੱਤੇ ਗਏ ਸ਼ਬਦ ਦੇ ਅੱਖਰਾਂ ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਬਣਾਇਆ ਜਾ ਸਕਦਾ ਹੈ।</p>\n\n<p>CAPITULATE</p>\n", "options": [{"prompt": "1", "value": "CAPABLE"}, {"prompt": "2", "value": "LUPIN"}, {"prompt": "3", "value": "PITTY"}, {"prompt": "4", "value": "TALE"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p>1)&nbsp; CAPABLE: &#39;B&#39; is not present in given word&nbsp; &#39;CAPITULATE&#39;, hence, it cannot be formed.</p>\n\n<p>2)&nbsp;LUPIN: &#39;N&#39; is not present in given word &#39;CAPITULATE&#39;, hence, it cannot be formed.</p>\n\n<p>3)&nbsp;PITTY: &#39;Y&#39; is not present in given word &#39;CAPITULATE&#39;, hence, it cannot be formed.</p>\n\n<p>4)&nbsp;TALE: &#39;CAPITU<strong>LATE&#39;,&nbsp;</strong>as all letters are present, hence, it can be formed.</p>\n\n<p>Hence, TALE can be formed from the given word&nbsp;CAPITULATE.</p>\n", "hn": "<p>1) CAPABLE: &#39;B&#39; दिए गए शब्द &#39;CAPITULATE&#39; में मौजूद नहीं है, इसलिए, इसे बनाया&nbsp;नहीं जा सकता है।</p>\n\n<p>2) LUPIN: &#39;N&#39; दिए गए शब्द&nbsp;&#39;CAPITULATE&#39;&nbsp;में मौजूद नहीं है, इसलिए, इसे बनाया&nbsp;नहीं जा सकता है।</p>\n\n<p>3) PITTY: &#39;Y&#39; दिए गए शब्द&nbsp;&#39;CAPITULATE&#39;&nbsp;में मौजूद नहीं है, इसलिए, इसे बनाया&nbsp;नहीं जा सकता है।</p>\n\n<p>4) TALE: &#39;CAPITU<strong>LATE&#39;&nbsp;</strong>शब्द में सभी अक्षर मौजूद हैं, इसलिए, इसे बनाया&nbsp; जा सकता है।</p>\n\n<p>इसलिए, केवल दिए गए CAPITULATE &lsquo;शब्द से TALE&rsquo; शब्द बनाया जा सकता है।</p>\n", "te": "<p>1) CAPABLE: ఇచ్చిన పదం 'CAPITULATE'లో 'B' లేదు, కాబట్టి, దీనిని ఏర్పరచలేము.</p>\n\n<p>2) LUPIN: ఇచ్చిన పదం 'CAPITULATE'లో 'N' లేదు, కాబట్టి, దీనిని ఏర్పరచలేము.</p>\n\n<p>3) PITTY: ఇచ్చిన పదం 'CAPITULATE'లో 'Y' లేదు, కాబట్టి, దీనిని ఏర్పరచలేము.</p>\n\n<p>4) TALE: 'CAPITU<strong>LATE', </strong>అన్ని అక్షరాలు ఉన్నాయి, కాబట్టి, దీనిని ఏర్పరచవచ్చు.</p>\n\n<p>అందువల్ల, ఇచ్చిన పదం CAPITULATE నుండి TALEని ఏర్పరచవచ్చు.</p>\n", "mr": "<p>1) CAPABLE: 'CAPITULATE' या दिलेल्या शब्दात 'B' अक्षर नाही, त्यामुळे तो तयार होऊ शकत नाही.</p>\n\n<p>2) LUPIN: 'CAPITULATE' या दिलेल्या शब्दात 'N' अक्षर नाही, त्यामुळे तो तयार होऊ शकत नाही.</p>\n\n<p>3) PITTY: 'CAPITULATE' या दिलेल्या शब्दात 'Y' अक्षर नाही, त्यामुळे तो तयार होऊ शकत नाही.</p>\n\n<p>4) TALE: 'CAPITU<strong>LATE', </strong>सर्व अक्षरे उपस्थित आहेत, म्हणून, तो तयार होऊ शकतो.</p>\n\n<p>म्हणून, TALE हा शब्द दिलेल्या CAPITULATE शब्दातून तयार केला जाऊ शकतो.</p>\n", "bn": "<p>1) CAPABLE: প্রদত্ত শব্দ 'CAPITULATE'-এ 'B' অনুপস্থিত, তাই এটি গঠন করা যাবে না।</p>\n\n<p>2) LUPIN: প্রদত্ত শব্দ 'CAPITULATE'-এ 'N' অনুপস্থিত, তাই এটি গঠন করা যাবে না।</p>\n\n<p>3) PITTY: প্রদত্ত শব্দ 'ক্যাপিটুলেট (CAPITULATE)'-এ 'Y' অনুপস্থিত, তাই এটি গঠন করা যাবে না।</p>\n\n<p>4) TALE: '<strong>CAPITULATE'</strong>, যেহেতু সমস্ত অক্ষর উপস্থিত আছে, তাই এটি গঠন করা যেতে পারে।</p>\n\n<p>অতএব, প্রদত্ত শব্দ CAPITULATE থেকে TALE গঠন করা যেতে পারে।</p>\n", "ml": "", "gu": "<p>1) CAPABLE: આપેલા શબ્દ 'CAPITULATE'માં 'B' હાજર નથી, તેથી તે બનાવી શકાતો નથી.</p>\n\n<p>2) LUPIN: આપેલા શબ્દ 'CAPITULATE'માં 'N' હાજર નથી, તેથી તે બનાવી શકાતો નથી.</p>\n\n<p>3) PITTY: આપેલા શબ્દ 'CAPITULATE'માં 'Y' હાજર નથી, તેથી તે બનાવી શકાતો નથી.</p>\n\n<p>4) TALE: 'CAPITU<strong>LATE',</strong> બધા અક્ષરો હાજર છે, તેથી તે બનાવી શકાય છે.</p>\n\n<p>તેથી, આપેલા શબ્દ CAPITULATEમાંથી TALE બનાવી શકાય છે.</p>\n", "kn": "<p>1) CAPABLE: 'B' ನೀಡಿರುವ ಪದ 'CAPITULATE' ನಲ್ಲಿ ಇಲ್ಲ, ಆದ್ದರಿಂದ ಇದನ್ನು ರಚಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</p>\n\n<p>2) LUPIN: 'N' ನೀಡಿರುವ ಪದ 'CAPITULATE' ನಲ್ಲಿ ಇಲ್ಲ, ಆದ್ದರಿಂದ ಇದನ್ನು ರಚಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</p>\n\n<p>3) PITTY: 'Y' ನೀಡಿರುವ ಪದ 'CAPITULATE' ನಲ್ಲಿ ಇಲ್ಲ, ಆದ್ದರಿಂದ ಇದನ್ನು ರಚಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</p>\n\n<p>4) TALE: 'CAPITU<strong>LATE', </strong>ಎಲ್ಲಾ ಅಕ್ಷರಗಳು ಇರುವುದರಿಂದ, ಇದನ್ನು ರಚಿಸಬಹುದು.</p>\n\n<p>ಆದ್ದರಿಂದ, 'CAPITULATE' ಪದದಿಂದ TALE ಅನ್ನು ರಚಿಸಬಹುದು.</p>\n", "ta": "<p>1) CAPABLE: 'CAPITULATE' என்ற கொடுக்கப்பட்ட வார்த்தையில் 'B' இல்லை, எனவே, அதை உருவாக்க முடியாது.</p>\n\n<p>2) LUPIN: 'CAPITULATE' என்ற கொடுக்கப்பட்ட வார்த்தையில் 'N' இல்லை, எனவே, அதை உருவாக்க முடியாது.</p>\n\n<p>3) PITTY: 'CAPITULATE' என்ற கொடுக்கப்பட்ட வார்த்தையில் 'Y' இல்லை, எனவே, அதை உருவாக்க முடியாது.</p>\n\n<p>4) TALE: 'CAPITU<strong>LATE',</strong> அனைத்து எழுத்துக்களும் உள்ளன, எனவே, அதை உருவாக்க முடியும்.</p>\n\n<p>எனவே, TALE என்ற வார்த்தையை CAPITULATE என்ற கொடுக்கப்பட்ட வார்த்தையிலிருந்து உருவாக்கலாம்.</p>\n", "or": "<p>୧) CAPABLE: ଦିଆଯାଇଥିବା ଶବ୍ଦ 'CAPITULATE' ରେ 'B' ଉପସ୍ଥିତ ନାହିଁ, ତେଣୁ ଏହା ଗଠନ କରାଯାଇପାରିବ ନାହିଁ |</p>\n\n<p>୨) LUPIN: ଦିଆଯାଇଥିବା ଶବ୍ଦ 'CAPITULATE' ରେ 'N' ଉପସ୍ଥିତ ନାହିଁ, ତେଣୁ ଏହା ଗଠନ କରାଯାଇପାରିବ ନାହିଁ |</p>\n\n<p>୩) PITTY: ଦିଆଯାଇଥିବା ଶବ୍ଦ 'CAPITULATE' ରେ 'Y' ଉପସ୍ଥିତ ନାହିଁ, ତେଣୁ ଏହା ଗଠନ କରାଯାଇପାରିବ ନାହିଁ |</p>\n\n<p>୪) TALE: 'CAPITU<strong>LATE', </strong>ଯେହେତୁ ସମସ୍ତ ଅକ୍ଷର ଉପସ୍ଥିତ ଅଛି, ତେଣୁ ଏହା ଗଠନ କରାଯାଇପାରିବ |</p>\n\n<p>ତେଣୁ, TALE କୁ ଦିଆଯାଇଥିବା ଶବ୍ଦ CAPITULATE ରୁ ଗଠନ କରାଯାଇପାରିବ |</p>\n", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p>1) CAPABLE: 'B' ਦਿੱਤੇ ਗਏ ਸ਼ਬਦ 'CAPITULATE' ਵਿੱਚ ਮੌਜੂਦ ਨਹੀਂ ਹੈ, ਇਸ ਲਈ ਇਸਨੂੰ ਬਣਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।</p>\n\n<p>2) LUPIN: 'N' ਦਿੱਤੇ ਗਏ ਸ਼ਬਦ 'CAPITULATE' ਵਿੱਚ ਮੌਜੂਦ ਨਹੀਂ ਹੈ, ਇਸ ਲਈ ਇਸਨੂੰ ਬਣਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।</p>\n\n<p>3) PITTY: 'Y' ਦਿੱਤੇ ਗਏ ਸ਼ਬਦ 'CAPITULATE' ਵਿੱਚ ਮੌਜੂਦ ਨਹੀਂ ਹੈ, ਇਸ ਲਈ ਇਸਨੂੰ ਬਣਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।</p>\n\n<p>4) TALE: 'CAPITU<strong>LATE', </strong>ਕਿਉਂਕਿ ਸਾਰੇ ਅੱਖਰ ਮੌਜੂਦ ਹਨ, ਇਸ ਲਈ ਇਸਨੂੰ ਬਣਾਇਆ ਜਾ ਸਕਦਾ ਹੈ।</p>\n\n<p>ਇਸ ਲਈ, TALE ਨੂੰ ਦਿੱਤੇ ਗਏ ਸ਼ਬਦ CAPITULATE ਤੋਂ ਬਣਾਇਆ ਜਾ ਸਕਦਾ ਹੈ।</p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Word Formation"], "concept": "Word Formation", "confidence": "high"}, {"qid": "5dc00ae0f60d5d2bac859964", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In the following question, select the word which cannot be formed using the letters of the given word.</p>\n\n<p><strong>TRADITIONAL</strong></p>\n", "options": [{"prompt": "1", "value": "RADON"}, {"prompt": "2", "value": "RATION"}, {"prompt": "3", "value": "NATIONAL"}, {"prompt": "4", "value": "TRAIN"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्न प्रश्न में, उस शब्द को चुनिए जिसे दिए गए शब्दों का प्रयोग करके नहीं बनाया जा सकता।</p>\n<strong>TRADITIONAL</strong>", "options": [{"prompt": "1", "value": "RADON"}, {"prompt": "2", "value": "RATION"}, {"prompt": "3", "value": "NATIONAL"}, {"prompt": "4", "value": "TRAIN"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>In word &lsquo;NATIONAL&rsquo;, there is two &lsquo;N&rsquo;. But we have only one &lsquo;N&rsquo; in the give word &lsquo;TRADITIONAL<strong>&rsquo;.</strong></p>\nHence, the correct answer is &lsquo;NATIONAL&rsquo;.", "hn": "<p>&lsquo;NATIONAL&rsquo; शब्द में, दो &lsquo;N&rsquo; हैं। परंतु दिए गए शब्द &lsquo;TRADITIONAL<strong>&rsquo;</strong> में हमारे पास केवल एक &lsquo;N&rsquo; है।</p>\nअतः<strong>, </strong>सही उत्तर &lsquo;NATIONAL&rsquo; है।", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Word Formation"], "concept": "Word Formation", "confidence": "high"}, {"qid": "5dbafd01f60d5d02d83d431b", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In the following question, select the word which cannot be formed using the letters of the given word.</p>\nBLENDING", "options": [{"prompt": "1", "value": "BLEND"}, {"prompt": "2", "value": "BALD"}, {"prompt": "3", "value": "LEND"}, {"prompt": "4", "value": "BINGE"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्नलिखित प्रश्न में वह शब्द चुनिए जिसे दिए गए शब्द के अक्षरों का प्रयोग करके नहीं बनाया जा सकता है।</p>\nBLENDING", "options": [{"prompt": "1", "value": "BLEND"}, {"prompt": "2", "value": "BALD"}, {"prompt": "3", "value": "LEND"}, {"prompt": "4", "value": "BINGE"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>BALD cannot be formed using the given word.</p>\nHence, option 2 is correct.", "hn": "<p>BALD को दिए गए शब्द का प्रयोग करके नहीं बनाया जा सकता है।</p>\n\n<p>अतः विकल्प 2 सही है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Word Formation"], "concept": "Word Formation", "confidence": "high"}, {"qid": "5d6e74fffdb8bb3fb66c0a8c", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>From the given alternative words select the word which cannot be formed using the letters of the given word.</p>\n\n<p><strong>MUNIFICENT&nbsp;</strong></p>\n", "options": [{"prompt": "1", "value": "faint&amp;nbsp;"}, {"prompt": "2", "value": "tunic&amp;nbsp;"}, {"prompt": "3", "value": "unite&amp;nbsp;"}, {"prompt": "4", "value": "mince&amp;nbsp;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दिए गए वैकल्पिक शब्दों में से उस शब्द का चयन कीजिये जिसे दिए गए शब्द के अक्षरों का उपयोग करके नहीं बनाया जा सकता।</p>\n<strong>MUNIFICENT&nbsp;</strong>", "options": [{"prompt": "1", "value": "faint&amp;nbsp;"}, {"prompt": "2", "value": "tunic&amp;nbsp;"}, {"prompt": "3", "value": "unite&amp;nbsp;"}, {"prompt": "4", "value": "mince&amp;nbsp;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>ఇచ్చిన ప్రత్యామ్నాయ పదాల నుండి ఇచ్చిన పదం యొక్క అక్షరాలను ఉపయోగించి ఏర్పడలేని పదాన్ని ఎంచుకోండి.</p>\n\n<p><strong>MUNIFICENT</strong></p>\n", "options": [{"prompt": "1", "value": "faint&nbsp;"}, {"prompt": "2", "value": "tunic&nbsp;"}, {"prompt": "3", "value": "unite&nbsp;"}, {"prompt": "4", "value": "mince&nbsp;"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>প্রদত্ত বিকল্প শব্দ থেকে এমন শব্দ নির্বাচন করুন যা প্রদত্ত শব্দের অক্ষর ব্যবহার করে গঠন করা যায় না।</p>\n\n<p><span style=\"font-weight: 700; \">MUNIFICENT</span></p>\n", "options": [{"prompt": "1", "value": "faint&nbsp;"}, {"prompt": "2", "value": "tunic&nbsp;"}, {"prompt": "3", "value": "unite&nbsp;"}, {"prompt": "4", "value": "mince&nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>1) faint &rArr; word can&rsquo;t be formed as &lsquo;A&rsquo; is missing in the word MUNIFICENT.</p>\n\n<p>2) tunic &rArr; word can be formed as `M<strong><em><u>UNI</u></em></strong>FI<strong><em><u>C</u></em></strong>EN<strong><em><u>T</u></em></strong>.</p>\n\n<p>3) unite &rArr; word can be formed as M<strong><em><u>UNI</u></em></strong>FIC<strong><em><u>E</u></em></strong>N<strong><em><u>T</u></em></strong>.</p>\n\n<p>4) mince &rArr; word can be formed as <strong><em><u>M</u></em></strong>UN<strong><em><u>I</u></em></strong>FI<strong><em><u>CEN</u></em></strong>T.</p>\nHence, &ldquo;faint&rdquo; can&rsquo;t be formed from the letter of word <strong>MUNIFICENT.</strong>", "hn": "<p>1) faint &rArr; को नहीं बनाया जा सकता है, क्योंकि MUNIFICENT में &lsquo;A&rsquo; नहीं है।</p>\n\n<p>2) tunic &rArr; को बनाया जा सकता है, क्योंकि `M<strong><em><u>UNI</u></em></strong>FI<strong><em><u>C</u></em></strong>EN<strong><em><u>T</u></em></strong></p>\n\n<p>3) unite &rArr; को बनाया जा सकता है, क्योंकि M<strong><em><u>UNI</u></em></strong>FIC<strong><em><u>E", "te": "<p>1) faint ⇒MUNIFICENT అనే పదంలో 'A' లేదు కాబట్టి పదం ఏర్పడదు.</p>\n\n<p>2) tunic ⇒ పదం `M <strong><em><u>UNI</u></em></strong> FI <strong><em><u>C</u></em></strong> EN <strong><em><u>T నుంచి </u></em></strong><strong><em><u>ఏర్పరచవచ్చు</u></em></strong> .</p>\n\n<p>3) unite ⇒ పదం M <strong><em><u>UNI</u></em></strong> FIC <strong><em><u>E</u></em></strong> N <strong><em><u>T నుంచి</u></em></strong> ఏర్పరచవచ్చు.</p>\n\n<p>4) mince ⇒ పదం <strong><em><u>M</u></em></strong> UN <strong><em><u>I</u></em></strong> FI <strong><em><u>CEN</u></em></strong> T నుంచి <strong><em><u>ఏర్పరచవచ్చు</u></em></strong> .</p>\nఅందువల్ల, <strong>MUNIFICENT</strong> అనే పదం యొక్క అక్షరం నుండి “faint” <strong>ఏర్పడదు.</strong>", "mr": "", "bn": "<p>1) <span style=\"\">faint</span> ⇒ শব্দটি MUNIFICENT শব্দে 'A' অনুপস্থিত থাকায় গঠিত হতে পারে না।</p>\n\n<p>2) <span style=\"\">tunic</span> ⇒ শব্দটি <span style=\"\">গঠিত হতে পারে, যেহেতু</span> <span style=\"\">M</span><span style=\"font-weight: 700; \"><em><u>UNI</u></em></span><span style=\"\">FI</span><span style=\"font-weight: 700; \"><em><u>C</u></em></span><span style=\"\">EN</span><span style=\"font-weight: 700; \"><em><u>T</u></em></span> </p>\n\n<p>3) <span style=\"\">unite</span> ⇒ শব্দটি<span style=\"\"> </span><span style=\"\">গঠিত হতে পারে, যেহেতু</span> <span style=\"\">M</span><span style=\"font-", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Word Formation"], "concept": "Word Formation", "confidence": "high"}, {"qid": "5c333663fdb8bb30b4c37ddb", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>From the given alternatives, select the word which CANNOT be formed using the letters of the given word.</p>\n<strong>Disbursement</strong>", "options": [{"prompt": "1", "value": "Burst"}, {"prompt": "2", "value": "Sent"}, {"prompt": "3", "value": "Barn"}, {"prompt": "4", "value": "Reib"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>निम्नलिखित विकल्पों में से वह शब्द चुनिए, जिसे दिए गए शब्द के अक्षरों का प्रयोग करके नहीं बनाया जा सकता है।</p>\n<span style=\"font-weight: 700;\">Disbursement</span>", "options": [{"prompt": "1", "value": "Burst"}, {"prompt": "2", "value": "Sent"}, {"prompt": "3", "value": "Barn"}, {"prompt": "4", "value": "Reib"}], "range": {"start": "", "end": ""}}, "te": {"value": "<div><span style=\"\">ఇవ్వబడ్డ ప్రత్యామ్నాయాల నుంచి, ఇవ్వబడ్డ పదం యొక్క అక్షరాలను ఉపయోగించి రూపొందించలేని పదాన్ని ఎంచుకోండి.</span></div>\n\n<div> </div>\n<span style=\"font-weight: 700;\">Disbursement</span>", "options": [{"prompt": "1", "value": "Burst"}, {"prompt": "2", "value": "Sent"}, {"prompt": "3", "value": "Barn"}, {"prompt": "4", "value": "Reib"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>প্রদত্ত বিকল্পগুলি থেকে, প্রদত্ত শব্দের বর্ণ ব্যবহার করে যে শব্দটি গঠন <strong>করা</strong> <strong>যাবে না</strong> তা নির্বাচন করুন।</p>\n<strong>Disbursement</strong>", "options": [{"prompt": "1", "value": "Burst"}, {"prompt": "2", "value": "Sent"}, {"prompt": "3", "value": "Barn"}, {"prompt": "4", "value": "Reib"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>1) Burst &rarr; Dis<strong>burs</strong>emen<strong>t</strong></p>\n\n<p>2)&nbsp;Sent &rarr; Disbur<strong>se</strong>me<strong>nt</strong></p>\n\n<p>3)&nbsp;Barn &rarr; Dis<strong>b</strong>u<strong>r</strong>seme<strong>n</strong>t, this word cannot be formed as there is no A in Disbursement.</p>\n\n<p>4)&nbsp;Reib&nbsp;&rarr; <strong>Di</strong>sbu<strong>r</strong>s<strong>e</strong>ment</p>\nHence, the correct answer is<strong> &quot; Barn &quot;</strong>.", "hn": "<p>1) Burst &rarr; Dis<span style=\"font-weight: 700;\">burs</span>emen<span style=\"font-weight: 700;\">t</span></p>\n\n<p>2)&nbsp;Sent &rarr; Disbur<span style=\"font-weight: 700;\">se</span>me<span style=\"font-weight: 700;\">nt</span></p>\n\n<p>3)&nbsp;Barn &rarr; Dis<span style=\"font-weight: 700;\">b</span>u<span style=\"font-weight: 700;\">r</span>seme<span style=\"font-weight: 700;\">n</span>t, इस शब्द को नहीं बनाया जा सकता है क्योंकि Disbursement में A अक्षर नहीं है।</p>\n\n<p>4)&nbsp;Reib&nbsp;&rarr;&nbsp;<span style=\"font-weight: 700;\">Di</span>sbu<span style=\"font-weight: 700;\">r</span>s<span style=\"font-weight: 700;\">e</span>ment</p>\nइसलिए, दिए गए शब्द से &quot;Barn&quot; शब्द नहीं बनाया जा सकता है।", "te": "<p>1) Burst → Dis<strong>burs</strong>emen<strong>t</strong></p>\n\n<p>2) Sent → Disbur<strong>se</strong>me<strong>nt</strong></p>\n\n<p>3) Barn → Dis<strong>b</strong>u<strong>r</strong>seme<strong>n</strong>t, Dis<span style=\"font-weight: 700;\">b</span>u<span style=\"font-weight: 700;\">r</span>seme<span style=\"font-weight: 700;\">n</span>tలో A లేదు కనుక ఈ పదం ఏర్పడదు.</p>\n\n<p>4) Reib → <strong>Di</strong>sbu<strong>r</strong>s<strong>e</strong>ment</p>\nఅందువల్ల, ఇవ్వబడ్డ పదం నుంచి \"Barn\" పదం ఏర్పడదు.", "mr": "", "bn": "<p>1) Burst → Dis<strong>burs</strong>emen<strong>t</strong></p>\n\n<p>2) Sent → Disbur<strong>se</strong>me<strong>nt</strong></p>\n\n<p>3) Barn → Dis<strong>b</strong>u<strong>r</strong>seme<strong>n</strong>t, এই শব্দটি গঠন করা যাবে না কারণ Disbursement এ A নেই।</p>\n\n<p>4) Reib → <strong>Di</strong>sbu<strong>r</strong>s<strong>e</strong>ment</p>\nসুতরাং, প্রদত্ত শব্দ থেকে \"Barn\" শব্দটি গঠিত হতে পারে না।", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Word Formation"], "concept": "Word Formation", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 6 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
