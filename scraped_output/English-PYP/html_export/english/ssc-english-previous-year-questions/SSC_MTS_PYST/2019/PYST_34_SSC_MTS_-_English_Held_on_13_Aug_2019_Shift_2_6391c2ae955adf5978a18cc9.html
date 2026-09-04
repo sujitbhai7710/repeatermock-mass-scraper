@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYST 34: SSC MTS - English (Held on: 13 Aug 2019 Shift 2)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYST 34: SSC MTS - English (Held on: 13 Aug 2019 Shift 2)</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-english-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">25</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">15 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">25.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+1.0 / -0.25</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">6391c2ae955adf5978a18cc9</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "6391c2ae955adf5978a18cc9", "title": "PYST 34: SSC MTS - English (Held on: 13 Aug 2019 Shift 2)", "series_slug": "ssc-english-previous-year-questions", "duration_min": 15, "max_marks": 25.0, "languages": ["English"], "sections": [{"section_id": "636503de54051e276aa141cc", "section_name": "Test", "q_count": 25, "max_marks": 25.0, "questions": [{"qid": "5e0af8b677a3a00d09ae191d", "qs_no": 1, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate option to ﬁll in the blank and make a grammatically correct sentence.</p>\n\n<p>Robert and Rooney aren&rsquo;t very good friends although they ________ each other for a long time.</p>\n", "options": [{"prompt": "1", "value": "knew"}, {"prompt": "2", "value": "have known"}, {"prompt": "3", "value": "has known"}, {"prompt": "4", "value": "are knowing"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><b>The correct answer of this question is&nbsp;</b>option 2)&nbsp; &#39; have known&#39;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Using &#39; have known&#39; in the place of blank space to make the sentence correct.</li>\n\t<li>We <span style=\"color: rgb(37, 37, 37);  \">&nbsp;should use present perfect tense&nbsp; here</span>&nbsp;. We cannot use past tense &#39;<strong>knew&#39;&nbsp;&nbsp;</strong>as past tense use is not right here .&nbsp;</li>\n\t<li>We also can not use&nbsp;<span style=\"color: rgb(37, 37, 37);  \">&#39;<strong>has known&#39;</strong> as it is incorrect because here we are talking about two friends so singular form &quot;has&quot; should not come here.​</span></li>\n</ul>\n\n<p><strong><span style=\"color: rgb(37, 37, 37);  \">​The Correct sentence is :&nbsp;</span></strong><span style=\"color: rgb(37, 37, 37);  \"><em> Robert and Rooney aren&#39;t very good friends although they</em></span><strong><span style=\"color: rgb(37, 37, 37);  \"> have known </span></strong><span style=\"color: rgb(37, 37, 37);  \"><em>each other for a long time.</em></span></p>\n\n<p><span style=\"color: rgb(37, 37, 37);  \">​</span></p>\n\n2f:T", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fill in the Blanks"], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "5e0af9294aa1340d047fb176", "qs_no": 2, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate synonym of the given word.</p>\n\n<p>RELEVANT</p>\n", "options": [{"prompt": "1", "value": "Applicable"}, {"prompt": "2", "value": "Inapplicable"}, {"prompt": "3", "value": "Unrelated"}, {"prompt": "4", "value": "Unconnected"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>Relevant means&nbsp;having significant and&nbsp;&nbsp;bearing on the demonstrable matter at hand/ Social relevance. We can also check it being the positive word in meaning as &#39;Relevant&#39;. So all the other words in the options like Inapplicable/ Unrelated/ Unconnected are not the synonym of relevant.</p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "5e0af95377a3a00d09ae21e1", "qs_no": 3, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate word to ﬁll in the blank and make a meaningful sentence.</p>\n\n<p>When I returned home from work I found my son weeping ________.</p>\n", "options": [{"prompt": "1", "value": "happily"}, {"prompt": "2", "value": "bitterly"}, {"prompt": "3", "value": "sweetly"}, {"prompt": "4", "value": "calmly"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><span style=\"font-size:14px;\"><strong>The correct answer to this question is &quot;bitterly&quot;.</strong></span></p>\n\n<p><strong><span style=\"font-size:18px;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></strong></p>\n\n<ul>\n\t<li><span style=\"font-size:14px;\"><strong>&nbsp;</strong>The sentence is set in a <strong>negative tone </strong>i.e. th", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fill in the Blanks"], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "5e0af98872a2a90d02bd57e8", "qs_no": 4, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Identify the segment in the sentence which contains the grammatical error from the given options.</p>\n\n<p>The essay is divided into ﬁve paragraphs and every of these has seven sentences.</p>\n", "options": [{"prompt": "1", "value": "and every of these"}, {"prompt": "2", "value": "The essay is divided"}, {"prompt": "3", "value": "into ﬁve paragraphs"}, {"prompt": "4", "value": "has seven sentences"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>The correct answer is <strong>option 1) i.e. &#39;and every of these&#39;.&nbsp;</strong></p>\n\n<ul>\n\t<li>The usage of &#39;Every&#39; is incorrect here in this part of the sentence.&nbsp;</li>\n\t<li>The correct word that should&nbsp;be used instead &#39;Every&#39; is &#39;Each&#39;.&nbsp;</li>\n\t<li>The difference between &#39;every&#39; and &#39;Each&#39; is that &#39;every&#39; is used for &#39;group of people or objects taken as one&#39; whereas &#39;each&#39; is used for &#39;individual&#39; or one (person or object)&nbsp;</li>\n\t<li>Hence, the sentence will be:&nbsp;The essay is divided into ﬁve paragraphs and <strong>each</strong> of these has seven sentences.</li>\n</ul>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Error Spotting"], "concept": "Error Detection", "confidence": "high"}, {"qid": "5e0af9c0f089795bdf6039a6", "qs_no": 5, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate word to ﬁll in the blank and make a meaningful sentence.</p>\n\n<p>Nowadays, digital services have made our cash transactions easier and ________.</p>\n", "options": [{"prompt": "1", "value": "softer"}, {"prompt": "2", "value": "heavier"}, {"prompt": "3", "value": "smoother"}, {"prompt": "4", "value": "dearer"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>In the&nbsp;last part of sentence &quot;<strong>smoother</strong>&quot; as a adjective should come. Because here one adjective &#39;<strong>easier</strong>&#39; is also in the positive degree so after &#39;and&#39; next adjective should also be in positive degree. While in options two more adjectives gives the sense of positive degree. They are softer and dearer. But they do not give proper meaning and sense to the sentence. That&#39;s why the correct adjective &quot;smoother&quot; should be use here.</p>\n\n<p>The correct sentence is &quot;&nbsp;Nowadays, digital services have made our cash transactions easier and smoother.&quot;</p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fill in the Blanks"], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "5e0afa0ff307fb0d06dabe38", "qs_no": 6, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Identify the segment in the sentence which contains the grammatical error from the given options.</p>\n\n<p>Outside the cinema hall, there was queue of people waiting to watch&nbsp;the movie.</p>\n", "options": [{"prompt": "1", "value": "Outside the cinema hall"}, {"prompt": "2", "value": "people waiting"}, {"prompt": "3", "value": "to watch the movie"}, {"prompt": "4", "value": "there was queue of"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "&#39;<strong>there was queue of</strong>&#39; part consist the grammatical error. Because here we missed the use of article <strong>&#39;a&#39; </strong>before the noun<strong> &#39;queue&#39;.</strong>&nbsp;So the correct sentence should be &quot;&nbsp;<strong>Outside the cinema hall, there was a queue of people waiting to watch the movie.</strong>&quot; There is no error in the rest of the part in the sentence.", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Error Spotting"], "concept": "Error Detection", "confidence": "high"}, {"qid": "5e0afa3a7657380d032c62ae", "qs_no": 7, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Identify the segment in the sentence which contains the grammatical error from the given options.</p>\n\n<p>A friend of mine is working as a photographer of the local newspaper.</p>\n", "options": [{"prompt": "1", "value": "photographer of"}, {"prompt": "2", "value": "is working as a"}, {"prompt": "3", "value": "A friend of mine"}, {"prompt": "4", "value": "the local newspaper"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p><strong>The correct answer is &#39; photographer of &#39;&nbsp;&nbsp;</strong></p>\n\n<p><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></p>\n\n<ul>\n\t<li><strong>The use of preposition &#39; of &#39; is incorrect here .</strong></li>\n\t<li><strong>In place of &#39; of&#39; , we should use preposition &#39;for/at&#39; . The preposition &#39;for&#39; is used to show in relation to someone or something .</strong></li>\n\t<li><b>The preposition &#39;at&#39; is used when we want to show exact position or a particular place.​</b></li>\n</ul>\n\n<p><b><b><b><b>The correct sentence is -&nbsp;<em> </em></b></b></b></b><em>A friend of mine is working as a photographer for the local newspaper.</em>&nbsp;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span> &nbsp;<img alt=\"\" src=\"https://testbook.com/quiz-defence-exams/tests/60d976e5a30d8d02fb1c74d0#/lt-solutions\" /><img alt=\"\" src=\"https://testbook.com/quiz-defence-exams/tests/60d976e5a30d8d02fb1c74d0#/lt-solutions\" /></p>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:350px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td><strong>Preposition&nbsp;</strong></td>\n\t\t\t<td><strong>Use&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </strong>&nbsp; &nbsp;&nbsp;</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td><strong>Behind&nbsp;</strong></td>\n\t\t\t<td>at someone/something &#39;s back or opposite side&nbsp;</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td><strong>Along&nbsp;</strong></td>\n\t\t\t<td>to talk about movement on or beside a line</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td><strong>Of</strong></td>\n\t\t\t<td>to express the relationship of a part of something to its whole&nbsp;</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p><b><b><b>​</b></b>​</b></p>\n\n<p><b><b>​</b></b></p>\n\n<p><b>&nbsp;&nbsp;</b></p>\n\n31:T99", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Error Spotting"], "concept": "Error Detection", "confidence": "high"}, {"qid": "5e0afa648728670cfea1c21a", "qs_no": 8, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate word for the given group of words.</p>\n\n<p>The decision that is given by the jury or judge at the end of a trial</p>\n", "options": [{"prompt": "1", "value": "Allegation"}, {"prompt": "2", "value": "Accusation"}, {"prompt": "3", "value": "Verdict"}, {"prompt": "4", "value": "Punishment"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><strong>Verdict</strong> is the correct word for the sentence &#39;<strong>The decision that is given by the jury or judge at the end of a trial</strong>.&#39;&nbsp;</p>\n\n<ul>\n\t<li>Because verdict means - the finding or decision of a jury on the matter submitted to it in trial&nbsp;or&nbsp;Opinion/Judgement&nbsp;</li>\n\t<li>Allegation means a positive assertion especially of misconduct/&nbsp; an assertion unsupported and by implication regarded as unsupportable.&nbsp; For example-&nbsp; Some former colleagues have made serious allegations against him.&nbsp;</li>\n\t<li>Accusation means a statement saying that someone has done something morally wrong, illegal, or unkind, or the fact of accusing someone.&nbsp; Punishment means the act of punishing someone.</li>\n</ul>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "5e0afaad77a3a00d09ae3609", "qs_no": 9, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate antonym of the word.</p>\n\n<p>ILLUSION</p>\n", "options": [{"prompt": "1", "value": "Reality"}, {"prompt": "2", "value": "Fantasy"}, {"prompt": "3", "value": "Hallucination"}, {"prompt": "4", "value": "Mirage"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<ul>\n\t<li>Illusion means an idea or belief that is not true.&nbsp;</li>\n\t<li>Reality means the state of things as they are, rather than as they are imagined to be.&nbsp;</li>\n\t<li>Fantasy means a pleasant situation that you enjoy thinking about but is unlikely to happen, or the activity of imagining things like this.&nbsp;</li>\n\t<li>Hallucination means an experience in which you see, hear, feel, or smell something that does not exist, usually because you are ill or have taken a drug.</li>\n\t<li>So the appropriate antonym of Illusion is Reality. We can understand it from their meaning.</li>\n</ul>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Antonym", "confidence": "high"}, {"qid": "5e0afadf8728670cfea1c73e", "qs_no": 10, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate option to substitute the underlined segment in the given sentence. If there is no need to substitute it, select No improvement.</p>\n\n<p>I asked two pedestrians the way to the station, <u>and neither of them couldn&rsquo;t</u> help me.</p>\n", "options": [{"prompt": "1", "value": "and either them couldn&amp;rsquo;t"}, {"prompt": "2", "value": "No improvement"}, {"prompt": "3", "value": "but neither of them could"}, {"prompt": "4", "value": "but none of they could"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<ul>\n\t<li>Here in underlined part &quot;<strong>and neither of them couldn&#39;t</strong>&quot; is incorrect here.</li>\n\t<li>Because neither as a word itself is negative we do not need another negative word &#39;couldn&#39;t &#39; here in the sentence.</li>\n\t<li>&#39;Neither&#39; alone gives negative meaning which is essential for the sentence by saying &quot;but neither of them could help me.&quot;</li>\n\t<li>The use of &#39;and&#39; is also inappropriate as a conjunction &#39;but&#39; is more appropriate in context with the sentence.</li>\n\t<li>That&#39;s why &#39;and&#39; is replaced by &#39;but&#39; here.</li>\n\t<li>The correct sentence should be&nbsp;I asked two pedestrians the way to the station,&nbsp;but neither of them could help me.</li>\n</ul>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Phrase Replacement"], "concept": "Sentence Improvement", "confidence": "high"}, {"qid": "5e0afb014aa1340d047fca45", "qs_no": 11, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<strong>Select the correctly spelt word.</strong>", "options": [{"prompt": "1", "value": "Discribe"}, {"prompt": "2", "value": "Disappear"}, {"prompt": "3", "value": "Devlop"}, {"prompt": "4", "value": "Diffrence"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>The correct answer is <strong>option 2) i.e. &#39;Disappear&#39;</strong></p>\n\n<ul>\n\t<li>The meaning of the word &#39;Disappear&#39; is &#39;to cease to be visible&#39;.&nbsp;</li>\n\t<li>In a sentence:&nbsp; The moon disappeared behind the cloud in the cloudy sky.&nbsp;</li>\n\t<li>Pronunciation: DIS+ APP+ EAR</li>\n\t<li>Correct spelling of other option are:\n\t<ul style=\"margin-left: 40px;\">\n\t\t<li>Describe</li>\n\t\t<li>Develop</li>\n\t\t<li>Difference</li>\n\t</ul>\n\t</li>\n</ul>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Spellings"], "concept": "Spelling", "confidence": "high"}, {"qid": "5e0afb2c4aa1340d047fcc49", "qs_no": 12, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate option to ﬁll in the blank and make a grammatically correct sentence.</p>\n\n<p>Children are not allowed to use the swimming pool ______they are accompanied by an adult.</p>\n", "options": [{"prompt": "1", "value": "unless"}, {"prompt": "2", "value": "at least"}, {"prompt": "3", "value": "in case"}, {"prompt": "4", "value": "if only"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>The correct answer is<strong> option 1) i.e. &#39;Unless&#39;&nbsp;</strong></p>\n\n<ul>\n\t<li>The condition conveys, &#39;the children will be allowed to swim only when they are accompanied by an adult with them&#39;.&nbsp;</li>\n\t<li>The correct word to be used here is &#39;Unless&#39;.&nbsp;</li>\n\t<li>&#39;Unless&#39; is used in a sentence to convey that if the first is fulfilled only then the second will execute.&nbsp;</li>\n\t<li>Hence, the correct sentence will be:&nbsp;Children are not allowed to use the swimming pool <strong><u>unless</u></strong> they are accompanied by an adult.​</li>\n</ul>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fill in the Blanks"], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "5e0afb544aa1340d047fce05", "qs_no": 13, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate meaning of the given idiom.</p>\n\n<p>It&rsquo;s raining cats and dogs</p>\n", "options": [{"prompt": "1", "value": "To rain at regular intervals"}, {"prompt": "2", "value": "To rain mildly"}, {"prompt": "3", "value": "To rain continuously"}, {"prompt": "4", "value": "To rain very heavily"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p>&nbsp;It&rsquo;s raining cats and dogs is used for saying that <strong>a lot of rain is falling/&nbsp;To rain very heavily.</strong></p>\n\n<p>Which is expressed by fourth option &#39;To rain very heavily.&#39;</p>\n\n<p>Other options are not gives its meaning so all other options are incorrect here.</p>\n\n<p>So the correct <strong>option is 4.</strong></p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Phrase or Idiom Meaning"], "concept": "Idioms", "confidence": "high"}, {"qid": "5e0afb8ff307fb0d06dad567", "qs_no": 14, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate word for the given group of words.</p>\n\n<p>An extremely large mass of ice which moves very slowly, often down a mountain valley</p>\n", "options": [{"prompt": "1", "value": "Mirage"}, {"prompt": "2", "value": "Ocean"}, {"prompt": "3", "value": "Glacier"}, {"prompt": "4", "value": "Island"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>An extremely large mass of ice which moves very slowly, often down a mountain valley is glacier.</p>\n\n<p><strong>Glacier</strong>- a&nbsp; large mass of ice that moves slowly.</p>\n\n<p><strong>Ocean</strong> - a very large area of sea.</p>\n\n<p><strong>Mirage</strong> - an image, produced by very hot air, of something that seems to be far away but does not really exist.</p>\n\n<p><strong>Island</strong> - a piece of land completely surrounded by water</p>\n\n<p>So the correct option is 3.</p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "5e0afbbef307fb0d06dad6e0", "qs_no": 15, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate option to substitute the underlined segment in the given sentence. If there is no need to substitute it, select No improvement.</p>\n\n<p>Robert told me about his new job, <u>which he was&nbsp;enjoying</u> very much.</p>\n", "options": [{"prompt": "1", "value": "which he enjoying"}, {"prompt": "2", "value": "No improvement"}, {"prompt": "3", "value": "that which he&amp;rsquo;s enjoyed"}, {"prompt": "4", "value": "which he had enjoy"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<ul>\n\t<li>The correct option is 2.</li>\n\t<li>In the sentence &quot;Robert told me about his new job,&nbsp;which he was&nbsp;enjoying&nbsp;very much.&quot;</li>\n\t<li>Sentence is in the Indirect tense where we are talking about present situation so &quot;enjoying&quot; as a gerund&nbsp;is correct here.&nbsp;</li>\n\t<li>Option one is incorrect because helping verb &#39;is&#39; is missing here.</li>\n\t<li>Option 3 is the past tense and option 4 is in the past perfect tense. So both are incorrect.</li>\n\t<li>The correct option is <strong>B.</strong></li>\n</ul>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Phrase Replacement"], "concept": "Sentence Improvement", "confidence": "high"}, {"qid": "5e0afbec75bc8c0d08b32757", "qs_no": 16, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate synonym of the given word.</p>\n\n<p>CALM</p>\n", "options": [{"prompt": "1", "value": "Peaceful"}, {"prompt": "2", "value": "Violent"}, {"prompt": "3", "value": "Windy"}, {"prompt": "4", "value": "Stormy"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<ul>\n\t<li>The correct option is 1.</li>\n\t<li>Calm- peaceful, quiet, and without worry</li>\n\t<li>peaceful - quiet and calm/ without violence</li>\n\t<li>windy- with a lot of wind</li>\n\t<li>Stormy - with strong wind, heavy rain, and often thunder and lightning</li>\n\t<li>Synonym of calm is peaceful. So option <strong>A</strong> is correct.</li>\n</ul>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "5e0afc1372a2a90d02bd719d", "qs_no": 17, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate antonym of the word.</p>\n\n<p>DIMINISH</p>\n", "options": [{"prompt": "1", "value": "Decrease"}, {"prompt": "2", "value": "Decline"}, {"prompt": "3", "value": "Shrink"}, {"prompt": "4", "value": "Increase"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<ul>\n\t<li><strong>Decrease</strong>-to become less, or to make something become less&nbsp;</li>\n\t<li><strong>Decline</strong>- to gradually become less, worse, or lower&nbsp;</li>\n\t<li><strong>Shrink</strong>-to become smaller, or to make something smaller&nbsp;</li>\n\t<li><strong>Increase</strong>-to (make something) become larger in amount or size</li>\n\t<li>From meaning we can understand the correct option is D.</li>\n\t<li>So the correct option is <strong>4.</strong></li>\n</ul>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Antonym", "confidence": "high"}, {"qid": "5e0afc4572a2a90d02bd7320", "qs_no": 18, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate option to substitute the underlined segment in the given sentence. If there is no need to substitute it, select No improvement.</p>\n\n<p>The ﬁre <u>spread through the building very quick</u> but fortunately, nobody was injured.</p>\n", "options": [{"prompt": "1", "value": "No improvement"}, {"prompt": "2", "value": "spreading through building very quick"}, {"prompt": "3", "value": "spread through the building very quickly"}, {"prompt": "4", "value": "spreads through the building quickly"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>the correct answer is &#39;<strong>3</strong> &#39;</p>\n\n<p>&nbsp;<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>&nbsp;In the underlined part&nbsp;<u style=\"box-sizing: border-box;   background-color: rgb(255, 255, 255);\">spread through the building very <strong>quick</strong></u><span style=\"color: rgb(51, 51, 51);   background-color: rgb(255, 255, 255);\">&nbsp;</span></li>\n\t<li>In place of <strong>quick&nbsp;</strong>( adjective ) quickly ( adverb ) will come", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Phrase Replacement"], "concept": "Sentence Improvement", "confidence": "high"}, {"qid": "5e0afc8075bc8c0d08b32c9c", "qs_no": 19, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the most appropriate meaning of the given idiom.</strong></p>\n\n<p>Forty winks</p>\n", "options": [{"prompt": "1", "value": "To blink repeatedly"}, {"prompt": "2", "value": "A sound sleep at night"}, {"prompt": "3", "value": "To keep awake"}, {"prompt": "4", "value": "A short nap during the day"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><strong>Forty winks</strong> means&nbsp;a <strong>short sleep/ nap during the day</strong>.</p>\n\n<p>All other options are incorrect except 4.</p>\n\n<p>So the correct option is 4.</p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Phrase or Idiom Meaning"], "concept": "Idioms", "confidence": "high"}, {"qid": "5e0afca64aa1340d047fdc30", "qs_no": 20, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the correctly spelt word.", "options": [{"prompt": "1", "value": "Disastraus"}, {"prompt": "2", "value": "Diractory"}, {"prompt": "3", "value": "Discipline"}, {"prompt": "4", "value": "Dormitery"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><strong>Discipline</strong> is the correct word in spelling.</p>\n\n<p>All other words spellings are incorrect.</p>\n\n<p>Correct spellings of these words are-</p>\n\n<p><strong>Disastrous</strong></p>\n\n<p><strong>Directory</strong></p>\n\n<p><strong>Dormitory</strong></p>\n\n<p>So the correct option is <strong>3.</strong></p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Spellings"], "concept": "Spelling", "confidence": "high"}, {"qid": "5e0afe2072a2a90d02bd8532", "qs_no": 21, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the most appropriate option to ﬁll in blank No. 1", "options": [{"prompt": "1", "value": "must"}, {"prompt": "2", "value": "could"}, {"prompt": "3", "value": "ought"}, {"prompt": "4", "value": "need"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>In sentence &quot;&nbsp;From this height one ______ see the river and the ﬁeld of ripe corn dotted with the ﬂowers.&quot;&nbsp; Here we should use <strong>&#39;could&#39;</strong> as a auxiliary&nbsp; verb which shows conditions and possibility in the past and the present tense.</p>\n\n<p>Other words such&nbsp;as <strong>must</strong> shows compulsion which makes it incorrect.</p>\n\n<p><strong>Need</strong> is used to express necessity/ duty/ to be want which is also not appropriate with the context.</p>\n\n<p>So the correct option is 2.</p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocab Based Questions"], "concept": "Vocab Based Questions", "confidence": "high"}, {"qid": "5e0afe2072a2a90d02bd8533", "qs_no": 22, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the most appropriate option to ﬁll in blank No. 2", "options": [{"prompt": "1", "value": "rarely"}, {"prompt": "2", "value": "always"}, {"prompt": "3", "value": "hardly"}, {"prompt": "4", "value": "never"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>In sentence &quot;that ______ promised a good harvest.&quot; After that <strong>&#39;always&#39;&nbsp;</strong>should come.</p>\n\n<p>Because it is an positive adverb and always follows by positive phrase. So after always promised a good harvest is appropriate here.</p>\n\n<p>Other three words rarely, hardly, never are negative words which does not give positive sense to the sentence. So we cannot use them.</p>\n\n<p>So the correct option is 2.</p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocab Based Questions"], "concept": "Vocab Based Questions", "confidence": "high"}, {"qid": "5e0afe2072a2a90d02bd8534", "qs_no": 23, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the most appropriate option to ﬁll in blank No. 3", "options": [{"prompt": "1", "value": "longed"}, {"prompt": "2", "value": "prayed"}, {"prompt": "3", "value": "needed"}, {"prompt": "4", "value": "displayed"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>The correct word is &quot;needed&quot; for the sentence &quot;The only thing the earth ______ was a downpour or at least a shower.&quot;</p>\n\n<p>Because we need adjective to qualify what the earth want.</p>\n\n<p>So<strong> &#39;needed&#39;</strong> as an&nbsp;adjective is correct.</p>\n\n<p>We cannot use&nbsp; <strong>long</strong> because it shows the &nbsp;period of time.</p>\n\n<p><strong>Prayed</strong> is past form of pray which means request, or plea.</p>\n\n<p><strong>Displayed</strong>- to arrange something or a collection of things so that it can be seen by the public which is also not in accordance with context.</p>\n\n<p>The correct option is 3.</p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocab Based Questions"], "concept": "Vocab Based Questions", "confidence": "high"}, {"qid": "5e0afe2072a2a90d02bd8535", "qs_no": 24, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the most appropriate option to ﬁll in blank No. 4", "options": [{"prompt": "1", "value": "known"}, {"prompt": "2", "value": "know"}, {"prompt": "3", "value": "knowing"}, {"prompt": "4", "value": "knew"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p>In the sentence &quot;Throughout the morning Paul - who ______ his ﬁelds intimately&quot; the correct word is<strong> knew</strong>. Which is appropriate here to show he knew his field intimately.</p>\n\n<p><strong>Known</strong> is adjective while we need verb here for the subject.</p>\n\n<p><strong>Knowing</strong> is also a adjective so it should not use.</p>\n\n<p><strong>Know</strong> is the verb in present tense is not appropriate with the context.</p>\n\n<p>So the correct option is 4.</p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocab Based Questions"], "concept": "Vocab Based Questions", "confidence": "high"}, {"qid": "5e0afe2072a2a90d02bd8536", "qs_no": 25, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Select the most appropriate option to ﬁll in blank No. 5", "options": [{"prompt": "1", "value": "had"}, {"prompt": "2", "value": "have"}, {"prompt": "3", "value": "having"}, {"prompt": "4", "value": "is"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>In this part&nbsp; &quot;______ done nothing else but watch the sky towards the north-east.&quot;&nbsp; <strong>had</strong> should come.</p>\n\n<p>Because first half of the sentence is in the past tense so for rest part we cannot use present tense, present future tense in place of these past perfect should come here.</p>\n\n<p>That&#39;s why we should use <strong>&#39;had&#39;</strong> here.</p>\n\n<p><strong>Having</strong> cannot be use&nbsp;because it shows possession/ownership.</p>\n\n<p>So the correct option is 1.</p>\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocab Based Questions"], "concept": "Vocab Based Questions", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 25;
+const DURATION_SEC = 15 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
