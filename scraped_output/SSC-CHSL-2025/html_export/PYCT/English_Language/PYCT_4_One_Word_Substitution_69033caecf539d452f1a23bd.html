@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 4: One Word Substitution</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 4: One Word Substitution</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-chsl-previous</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">25</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">12 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">50.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">69033caecf539d452f1a23bd</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "69033caecf539d452f1a23bd", "title": "PYCT 4: One Word Substitution", "series_slug": "ssc-chsl-previous", "duration_min": 12, "max_marks": 50.0, "languages": ["English"], "sections": [{"section_id": "62c6789102a7eb001ddd6f11", "section_name": "Test", "q_count": 25, "max_marks": 50.0, "questions": [{"qid": "6145eb64caff9f41fcf0808b", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the most appropriate one-word substitution for the given group of words.</strong></p>\n\n<p>A large bundle bound for storage or transportation</p>\n", "options": [{"prompt": "1", "value": "Bevy"}, {"prompt": "2", "value": "Bouquet"}, {"prompt": "3", "value": "Bale"}, {"prompt": "4", "value": "Brood"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is <strong>&#39;Bale&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The most appropriate meaning of the given group of words is<span style=\"font-weight: 700;\">&nbsp;&#39;Bale&#39;.</span></li>\n\t<li><span style=\"font-weight: 700;\">Bale</span>:&nbsp;a large quantity of something pressed tightly together and tied up (गट्ठर)\n\t<ul>\n\t\t<li><em>Example:&nbsp;When the storm arose on the river, they had to <strong>bale</strong> out to reach the shore safely.</em></li>\n\t</ul>\n\t</li>\n\t<li>Therefore, as per the points mentioned above, we find that the correct answer is<span style=\"font-weight: 700;\">&nbsp;Option 3.<br />\n\t​</span></li>\n</ul>\n\n<p><span style=\"font-weight: 700;\"><u>Correct Answer:</u></span>&nbsp;<em>Bale</em><em>.</em></p>\n\n<p><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span>&nbsp;</span></p>\n\n<ul>\n\t<li>Let&#39;s look at the meaning of other words given in the Options:</li>\n</ul>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"; width: 350px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center; ;\"><strong>Words</strong></td>\n\t\t\t<td style=\"text-align: center; ;\"><strong>Meaning</strong></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>Bevy</strong></td>\n\t\t\t<td style=\"text-align: center;\">a large group of people or things of a particular kind (लोगों का एक बड़ा समूह या किसी विशेष प्रकार की वस्तु)</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>Bouquet</strong></td>\n\t\t\t<td style=\"text-align: center;\">a bunch of flowers that are arranged in an attractive way<br />\n\t\t\t(आकर्षक रूप से व्यवस्थित फूलों का गुच्छा; गुलदस्&zwj;ता, पुष्&zwj;पगुच्&zwj;छ)</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>Brood</strong></td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\">to worry, or to think a lot about something that makes you worried or sad<br />\n\t\t\t(बहुत चिंता करना; किसी बात पर सोच-विचार कर परेशान या उदास होना)</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n35:Te0d,\n<p>The correct answer is<strong> &#39;Verbatim&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ff", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "62cd7bae2890d1cd4d18e8c4", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the option that can be used as a one-word substitute for the given group of words.</strong></p>\n\n<p>Allowing or assisting to discover</p>\n", "options": [{"prompt": "1", "value": "Conceptual"}, {"prompt": "2", "value": "Ineducative"}, {"prompt": "3", "value": "Unempirical"}, {"prompt": "4", "value": "Heuristic"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is &#39;<strong>Heuristic</strong>&#39;.<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The most appropriate word for the given group of words is &#39;<strong>Heuristic</strong>&#39;.</li>\n\t<li>It means &#39;(used about ways of teaching) encouraging students to learn through doing and discovering things themselves rather than telling them about things&#39;. [(शिक्षण के तरीक़े के लिए प्रयुक्त) स्वतः शोध एवं अनुभव पर आधारित]\n\t<ul>\n\t\t<li><em>Example:&nbsp;When you visit the doctor, he will use <strong>heuristic</strong> methods to rule out certain medical conditions.&nbsp;</em></li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong><u>Correct Answer:</u></strong>&nbsp;<em>Heuristic.</em><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the meaning of other words:\n\t<ul>\n\t\t<li><strong>Conceptual</strong>:&nbsp;relating to or based on mental concepts. (मानसिक अवधारणाओं पर आधारित या उससे संबंधित)</li>\n\t\t<li><strong>Ineducative</strong>:&nbsp;lack of education. (शिक्षा की कमी)</li>\n\t\t<li><span style=\"color: rgb(33, 37, 41);\"><strong>Unempirical</strong>: </span>not based on observation or experience (अनुभवहीन)</li>\n\t</ul>\n\t</li>\n</ul>\n\n3f:Ta91,\n<p>The correct answer is <strong>&quot;Option 4&#39;</strong> i.e.<strong> &#39;Plausible&#39;.</strong></p>\n\n<p><span style=\"display: ", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "61ea7e78c4bada21503928d9", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>&nbsp;Select the option that can be used as a one-word substitute for the given group of words.</p>\n\n<p>A strong interest in something or someone</p>\n", "options": [{"prompt": "1", "value": "Attachment"}, {"prompt": "2", "value": "Apathy"}, {"prompt": "3", "value": "Fixation"}, {"prompt": "4", "value": "Empathy"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n\n<p>The correct answer is: <b>Option 3 (Fixation)</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n    <li>The word <strong>\"Fixation\"</strong> means a strong interest in something or someone that is difficult to change. (लगाव)\n    <ul>\n        <li><strong>Example: </strong>His fixation on collecting stamps has lasted for years.</li>\n    </ul>\n    </li>\n    <li><strong>\"Attachment\"</strong> refers to an emotional bond or connection to someone or something. (संलग्नता)\n    <ul>\n        <li><strong>Example: </strong>She has a strong attachment to her childhood home.</li>\n    </ul>\n    </li>\n    <li>Hence, we can infer that the correct one-word substitute for \"a strong interest in something or someone\" is <strong>\"Fixation\"</strong>.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 3 (Fixation)</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n    <li><strong>Attachment </strong>(<span style=\"color: rgb(33, 37, 41);\">संलग्नता</span>): An emotional bond or connection to someone or something.\n    <ul>\n        <li><strong>Example:</strong> She has a strong attachment to her childhood home.</li>\n    </ul>\n    </li>\n    <li><strong>Apathy </strong>(<span style=\"color: rgb(33, 37, 41);\">उदासीनता</span>): Lack of interest, enthusiasm, or concern.\n    <ul>\n        <li><strong>Example: </strong>His apathy towards the project was evident in his lack of participation.</li>\n    </ul>\n    </li>\n    <li><strong>Empathy</strong> (<span style=\"color: rgb(33, 37, 41);\">सहानुभूति</span>): The ability to understand and share the feelings of another.\n    <ul>\n        <li><strong>Example:</strong> Her empathy towards the victims of the disaster was deeply moving.</li>\n    </ul>\n    </li>\n</ul>\n```\n3b:T7b4,\n<p>The correct answer is <strong>Hypocrite</stro", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "5fbf390a78412126b03cba17", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Directions: Select the word which means the same as the group of words given.</strong></p>\n\n<p>To laugh at something in a cruel way</p>\n", "options": [{"prompt": "1", "value": "Deprive"}, {"prompt": "2", "value": "Deride"}, {"prompt": "3", "value": "Defy"}, {"prompt": "4", "value": "Decide"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is&nbsp;<span style=\"font-weight: 700;\">&quot;</span><span style=\"font-weight: 700;\">Deride</span><span style=\"font-weight: 700;\">&quot;.</span></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><u><span style=\"font-weight: 700;\">Let</span>&nbsp;us&nbsp;<span style=\"font-weight: 700;\">explore</span>&nbsp;the given&nbsp;<span style=\"font-weight: 700;\">option", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "62c54fe723683d6f20c872ea", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the option that can be used as a one-word substitute for the underlined group of words.</strong></p>\n\n<div>My brother is a <u>connoisseur of food</u> and does not miss any chance to experiment with new dishes.</div>\n", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Glutton&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Steward&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Gourmet&amp;nbsp;&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Porter&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is&nbsp;<strong>option 3 i.e. Gourmet.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Connoisseur of food&nbsp;</strong>means&nbsp;a person who has expert knowledge of something, esp. an art, food, or drink, and is qualified to judge and appreciate its quality. (अच्छे भोजन का पारखी)</li>\n\t<li><strong>Gourmet&nbsp;</strong>me", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "642d6898c91b15660370e3c6", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Choose the word that can substitute the given group of words.</p>\n\n<p>One who feeds on plants only</p>\n", "options": [{"prompt": "1", "value": "Vermivorous"}, {"prompt": "2", "value": "Carnivorous"}, {"prompt": "3", "value": "Omnivorous"}, {"prompt": "4", "value": "Herbivorous"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is &#39;<strong>Option 4&#39; </strong>i.e. <strong>&#39;Herbivorous&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>For the question &quot;One who feeds on plants only&quot;, the answer is<strong> Herbivorous.</strong></li>\n\t<li><strong>Herbivorous</strong> refers to an organism that eats only plants.(<span style=\"color: rgb(33, 37, 41);\">शाकाहारी)</span></li>\n</ul>\n\n<p><span style=\"color: rgb(33, 37, 41);\">Therefore, the<strong> correct answer</strong> is: <strong>&#39;Herbivorous&#39;.</strong></span></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Vermivorous</strong> (कीटभक्षी) refers to organisms that eat worms.</li>\n\t<li><strong>Carnivorous</strong> (मांसाहारी) refers to organisms that eat meat.</li>\n\t<li><strong>Omnivorous </strong>(सर्वाहारी) refers to organisms that eat both plants and meat.</li>\n</ul>\n\n42:T976,\n<p>The correct answer is <strong>&#39;Opt", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "600ad2319185b9d50ee52c54", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Directions: Select the word which means the same as the group of words given.</strong></p>\n\n<p>Things which are of the same kind and of the same dimensions</p>\n", "options": [{"prompt": "1", "value": "Homosexual"}, {"prompt": "2", "value": "Homogeneous"}, {"prompt": "3", "value": "Homonymous"}, {"prompt": "4", "value": "Homophony"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is&nbsp;<span style=\"font-weight: 700;\">&#39;H</span><strong>omogeneous</strong><span style=\"font-weight: 700;\">&#39;</span>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><span style=\"font-weight: 700;\">Let</span>&nbsp;us&nbsp;<span style=\"font-weight: 700;\">explore</span>&nbsp;the&nbsp;<span style=\"font-weight: 700;\">given options:-</span>\n\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">&#39;</span><span style=\"font-weight: 700;\">Homosexual</span><span style=\"font-weight: 700;\">&#39;&nbsp;</span>means<span style=\"font-weight: 700;\">&nbsp;</span><strong>sexually attracted to people of one&#39;s own sex</strong>.</li>\n\t\t<li><span style=\"font-weight: 700;\">&#39;<strong>H</strong></span><strong>omogeneous</strong><span style=\"font-weight: 700;\">&#39;&nbsp;</span>means<span style=\"font-weight: 700;\">&nbsp;</span><strong>of the same kind; alike</strong>.</li>\n\t\t<li><span style=\"font-weight: 700;\">&#39;Homonymous&#39;</span><span style=\"font-weight: 700;\">&nbsp;</span>means<span style=\"font-weight: 700;\">&nbsp;</span><strong>having the same name</strong>.</li>\n\t\t<li><span style=\"font-weight: 700;\">&#39;Homophony</span><span style=\"font-weight: 700;\">&#39;&nbsp;</span>is<span style=\"font-weight: 700;\">&nbsp;</span><strong>the quality or state of being&nbsp;having the same sound</strong>.<br />\n\t\t&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Hence, the correct answer is&nbsp;<strong>option 2</strong><i>.</i></p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "642c6a4f46dedaeeb7f8a708", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate one-word substitution for the given group of words.</p>\n\n<p>An argument or statement seeming reasonable or probable</p>\n", "options": [{"prompt": "1", "value": "Incorrigible"}, {"prompt": "2", "value": "Corrigible"}, {"prompt": "3", "value": "Congruent"}, {"prompt": "4", "value": "Plausible"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;Option 4&#39;</strong> i.e.<strong> &#39;Plausible&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The <strong>correct one-word substitution</strong> for &quot;An argument or statement seeming reasonable or probable&quot; is: <strong>Plausible</strong></li>\n\t<li>This<strong> term means</strong> seeming reasonable or probable.(<span style=\"color: rgb(33, 37, 41);\">संभाव्य</span>)</li>\n\t<li><strong>A plausible explanation or argument is one</strong> that seems likely to be true, reasonable, or valid.</li>\n</ul>\n\n<p>Therefore, the <strong>correct answer</strong> is:<strong> &#39;Plausible&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><u style=\"font-size: 21px; font-weight: bolder; font-family: var(--bs-body-font-family); text-align: var(--bs-body-text-align);\">Additional Information</u></span></p>\n\n<ul>\n\t<li>Here&#39;s the explanation for the other options:\n\t<ul>\n\t\t<li><strong>Incorrigible </strong>- This word is used to describe someone (or their habits) who is not able or willing to change or be corrected.(<span style=\"color: rgb(33, 37, 41);\">असुधार्य)</span></li>\n\t\t<li><strong>Corrigible -</strong> It refers to someone (or their behavior) that is capable of being corrected or reformed(<span style=\"color: rgb(33, 37, 41);\">सुधारने योग्य)</span></li>\n\t\t<li><strong>Congruent -</strong> This word is used to describe things that are in agreement or harmony, or identical in form; it&#39;s often used in a mathematical context.(<span style=\"color: rgb(33, 37, 41);\">समरूप)</span></li>\n\t</ul>\n\t</li>\n</ul>\n\n40:T8e9,\n<p>The correct answer is: <strong>Egoist&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "64e6e6521fb9f7064dff9a17", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the option that can be used as a one-word substitute for the given group of words.</strong></p>\n\n<p>The murder of a king</p>\n", "options": [{"prompt": "1", "value": "Sacrilege"}, {"prompt": "2", "value": "Rebel"}, {"prompt": "3", "value": "Reticule"}, {"prompt": "4", "value": "Regicide"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is &#39;<strong>Regicide</strong>&#39;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The most appropriate word for the given group of words is &#39;<strong>Regicide</strong>&#39;.</li>\n\t<li><strong>Regicide</strong>:&nbsp;a person who kills or takes part in killing a king. (वह व्यक्ति जो किसी राजा की हत्या करता है या हत्या में भाग लेता है।)\n\t<ul>\n\t\t<li><em>Example:&nbsp;The 55th anniversary of one such <strong>regicide</strong> passed three days ago.</em><br />\n\t\t&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong><u>Correct Answer:</u></strong>&nbsp;<em>Regicide.</em></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the meaning of other words:\n\t<ul>\n\t\t<li><strong>Sacrilege</strong>:&nbsp;treating a religious object or place without the respect that it deserves. (पवित्र वस्&zwj;तु या स्&zwj;थान का अपमान; अपवित्रीकरण)</li>\n\t\t<li><strong>Rebel</strong>:&nbsp;a person who fights against his/her country&rsquo;s government because he/she wants things to change. [राजद्रोही; सत्ता-विरोधी व्&zwj;यक्ति (परिवर्तन की इच्&zwj;छा से राज्&zwj;य-शासन से संघर्ष करने वाला व्&zwj;यक्ति)]</li>\n\t\t<li><strong>Reticule</strong>:&nbsp;a woman&#39;s small handbag, typically having a drawstring and decorated with embroidery or beading. (एक महिला का छोटा हैंडबैग, जिसमें आमतौर पर एक डोरी होती है और कढ़ाई या बीडिंग से सजाया जाता है।)</li>\n\t</ul>\n\t</li>\n</ul>\n\n44:T9d6,\n<p>The correct answer is <strong>&quot;Someone who leaves one country to settle in another.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-al", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "618a1725848d3da4ea21f8e8", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the word which means the same as the group of words given.</strong></p>\n\n<p>An imaginary, perfect state or place</p>\n", "options": [{"prompt": "1", "value": "utopia"}, {"prompt": "2", "value": "dystopia"}, {"prompt": "3", "value": "arcadia"}, {"prompt": "4", "value": "nostalgia"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is<strong> &#39;utopia&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The most appropriate word for the given group of words is<strong> &#39;utopia&#39;.</strong></li>\n\t<li>It means <strong>&#39;a place or state that exists only in the imagination, where everything is perfect</strong>.&#39; (कल्&zwj;पनालोक (कल्&zwj;पना में बना संसार जहाँ सब कुछ आदर्श स्थिति में है), आदर्श-लोक, रामराज्&zwj;य)\n\t<ul>\n\t\t<li><em>Example:&nbsp;We weren&#39;t out to design a contemporary <strong>utopia</strong>.</em></li>\n\t</ul>\n\t</li>\n\t<li>Therefore, as per the points mentioned above, we find that the correct answer is <strong>Option 1.</strong><br />\n\t​</li>\n</ul>\n\n<p><strong><u>Correct Answer:</u></strong>&nbsp;<em>utopia.</em></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the <strong>meaning </strong>of other words:</li>\n</ul>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"background-color: rgb(255, 255, 255); width: 350px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>Words</strong></td>\n\t\t\t<td style=\"text-align: center;\"><strong>Meaning</strong></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>Dystopia</strong></td>\n\t\t\t<td style=\"text-align: center;\">an imagined state or society in which there is great suffering or injustice, typically one that is totalitarian or post-apocalyptic. (एक कल्पित राज्य या समाज जिसमें बहुत पीड़ा या अन्याय होता है, आमतौर पर एक जो अधिनायकवादी या सर्वनाश के बाद होता है)</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>Arcadia</strong></td>\n\t\t\t<td style=\"text-align: center;\">a place of rustic innocence and simple, quiet pleasure. (देहाती मासूमियत और सरल, शांत आनंद का स्थान)</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>Nostalgia</strong></td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\">a feeling of pleasure, mixed with sadness, when you think of happy times in the past.<br />\n\t\t\t(अतीत के सुखद प्रसंगों की याद से उभरी आनंद और विषाद की मिश्रित भावना; गृहातुरता)</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n37:T88e,\n<div>The correct answer is&nbsp;<strong>&#39;Option 3&#39;</strong>.</div>\n\n<div><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "61e944cfa9c8b1dbf597e5c3", "qs_no": 11, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the most appropriate one-word substitution for the given words.</p>\n\n<p>a period of two weeks</p>\n", "options": [{"prompt": "1", "value": "month"}, {"prompt": "2", "value": "century"}, {"prompt": "3", "value": "fortnight"}, {"prompt": "4", "value": "decade"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<div>The correct answer is&nbsp;<strong>&#39;fortnight&#39;.</strong></div>\n\n<div><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></strong></div>\n\n<ul>\n\t<li><strong>A period of two weeks or fifteen&nbsp;days</strong> is called <strong>&#39;a fortnight&#39;</strong>.\n\n\t<ul>\n\t\t<li>I will be back in a <strong>fortnight</strong>.</li>\n\t\t<li>The project will be completed in a <strong>fortnight</strong>.</li>\n\t</ul>\n\t</li>\n\t<li>Hence, the correct answer is&nbsp;<strong>option 3.</strong></li>\n</ul>\n\n<div><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></strong></div>\n\n<ul>\n\t<li>Let&#39;s understand the <strong>meaning of other words.</strong>\n\n\t<ul>\n\t\t<li><strong>Months </strong>- It is<strong> one of the twelve periods of time that a year is divided into</strong>. <em>January, February, etc.</em></li>\n\t\t<li><strong>Century </strong>- It is a period of <strong>hundred years </strong>that is when stating a date. <em>The 19th century was the period from 1801 to 1900.</em></li>\n\t\t<li><strong>Decade </strong>- It is a period of <strong>ten years.&nbsp;</strong><em>1980 to 1989</em></li>\n\t</ul>\n\t</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "6149bd3a9fcb2bd8eab8b30d", "qs_no": 12, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the option that can be used as a one-word substitute for the given group of words.</p>\n\n<p>In exactly the same words as were used originally</p>\n", "options": [{"prompt": "1", "value": "Verbatim"}, {"prompt": "2", "value": "Duplication"}, {"prompt": "3", "value": "Repetition"}, {"prompt": "4", "value": "Recurrence"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is<strong> &#39;Verbatim&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The most appropriate meaning of the given group of words is<span style=\"font-weight: 700;\">&nbsp;&#39;Verbatim&#39;.</span></li>\n\t<li><span style=\"font-weight: 700;\">Verbatim</span>:&nbsp;exactly as it was spoken or written जैसा बोला या लिखा गया ठीक वैसा; शब्&zwj;दशः\n\t<ul>\n\t\t<li><em>Example:&nbsp;He reported the speech <strong>verbatim</strong>.</em></li>\n\t</ul>\n\t</li>\n\t<li>Therefore, as per the points mentioned above, we find that the correct answer is<span style=\"font-weight: 700;\">&nbsp;Option 1.<br />\n\t​</span></li>\n</ul>\n\n<p><span style=\"font-weight: 700;\"><u>Correct Answer:</u></span>&nbsp;<em>Verbatim.</em></p>\n\n<p><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span>&nbsp;</span></p>\n\n<ul>\n\t<li>Let&#39;s look at the meaning of other words given in the Options:</li>\n</ul>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"background-color: rgb(255, 255, 255); width: 350px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center; background-color: rgb(255, 255, 255);\"><strong>Words</strong></td>\n\t\t\t<td style=\"text-align: center; background-color: rgb(255, 255, 255);\"><strong>Meaning</strong></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>Duplication</strong></td>\n\t\t\t<td style=\"text-align: center;\">the action or process of duplicating something&nbsp;पुनरावृत्ति, अनुलिपिकरण</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>Repetition</strong></td>\n\t\t\t<td style=\"text-align: center;\">doing something again; something that you do or that happens again<br />\n\t\t\tपुनरावृति; दोहराई हुई वस्&zwj;तु</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>Recurrence</strong></td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\">the fact of occurring again&nbsp;पुनरावृत्ति</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n36:Tfc4,\n<p>The correct answer is<strong> &#39;utopia&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "64e958a356e29e36208a52d3", "qs_no": 13, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Choose the correct meaning of the underlined word in the given sentence.</p>\n\n<p>My friend works as a <u>florist</u> at the shop down the street.</p>\n", "options": [{"prompt": "1", "value": "A person who sells and arranges cut flowers"}, {"prompt": "2", "value": "A person who sells sweets"}, {"prompt": "3", "value": "Someone who grows flowers"}, {"prompt": "4", "value": "Someone who works in a bank"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is: <b>Option 1</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n    <li>The word <strong>\"florist\"</strong> refers to a person who sells and arranges cut flowers. It involves the art of creating flower arrangements in vases, bowls, baskets, or other containers, or making bouquets and compositions from cut flowers, foliages, herbs, ornamental grasses, and other plant materials. (फूल विक्रेता)\n\n    <ul>\n        <li><strong>Example: </strong>Being a florist requires not only a deep appreciation for flowers but also the skill to create beautiful arrangements for various occasions.</li>\n    </ul>\n    </li>\n\n    <li>A <strong>florist</strong> is a professional who is skilled in the art of floral design. With knowledge of flower varieties, seasonal availability, and design trends, florists create arrangements to suit their customers' needs and occasions. (फूल विक्रेता)\n\n    <ul>\n        <li><strong>Example: </strong>For her wedding, she entrusted the decoration to a renowned florist known for their elegant and innovative floral designs.</li>\n    </ul>\n    </li>\n\n    <li>Hence, a florist is accurately described as a person who sells and arranges cut flowers.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 1</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n    <li><strong>A person who sells sweets</strong> (मिठाई विक्रेता): This refers to someone whose business is to sell confectioneries or desserts. \n\n    <ul>\n        <li><strong>Example:</strong> The local sweet shop is always crowded, especially during festivals, as the person who sells sweets offers a variety of traditional treats.</li>\n    </ul>\n    </li>\n\n    <li><strong>Someone who grows flowers</strong> (फूल उगाने वाला): This refers to a horticulturist or gardener who specializes in growing flowers for gardens or commercial sale.\n\n    <ul>\n        <li><strong>Example: </strong>The flower grower took pride in the rare orchids cultivated in their greenhouse.</li>\n    </ul>\n    </li>\n\n    <li><strong>Someone who works in a bank</strong> (बैंक कर्मचारी): This refers to a bank employee responsible for various tasks, including customer service, financial transactions, and account management.\n\n    <ul>\n        <li><strong>Example:</strong> My cousin, who works in a bank, helped me understand the process of applying for a home loan.</li>\n    </ul>\n    </li>\n</ul>\n46:Tcb7,\n<p>The correct answer is: <b>Leisure</b>.</p>\n\n<p><span style=\"displa", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "61ea7f6c4a9ee226dbbbffc7", "qs_no": 14, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the word which means the same as the group of words given.</strong></p>\n\n<p>A person who pretends to have morals and beliefs that he or she doesn&rsquo;t believe in</p>\n", "options": [{"prompt": "1", "value": "versatile"}, {"prompt": "2", "value": "radical"}, {"prompt": "3", "value": "hypocrite"}, {"prompt": "4", "value": "communal"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is <strong>Hypocrite</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s see the meanings of the given words-\n\t<ul>\n\t\t<li><em><strong>Versatile-</strong>&nbsp;(used about an object) having many different uses (वस्&zwj;तु) अनेक कामों के लिए प्रयुक्त, बहु-उद्देश्&zwj;यीय, बहु-हेतुक</em></li>\n\t\t<li><em><strong>Radical-&nbsp;</strong>(used about changes in something) very great; complete (परिवर्तन) अत्&zwj;यधिक; पूर्ण</em></li>\n\t\t<li><em><strong>Hypocrite-</strong>&nbsp;a person who pretends to have moral standards or opinions which he/she does not really have. Hypocrites say one thing and do another (वास्&zwj;तविकता के विपरीत) उच्&zwj;च नैतिक मानदंड और व्&zwj;यवहार का ढोंग रचने वाला व्&zwj;यक्ति; पाखंडी, ढोंगी</em></li>\n\t\t<li><em><strong>Communal-</strong>&nbsp;shared by a group of people सामूहिक, सामुदायिक, पंचायती</em></li>\n\t</ul>\n\t</li>\n\t<li>Hence, the correct answer is <strong>Option 3 i.e. Hypocrite.</strong></li>\n</ul>\n\n3c:T848,\n<p>The correct answer is&nbsp;<strong>option 3 i.e. Gourmet.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "5facde8b468e206fc6467b83", "qs_no": 15, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the word which means the same as the group of words given.</strong></p>\n\n<p>Using the right and left hand equally well</p>\n", "options": [{"prompt": "1", "value": "Unskilled"}, {"prompt": "2", "value": "Inexpert"}, {"prompt": "3", "value": "Ambidextrous"}, {"prompt": "4", "value": "Left-handed"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; white-space: pre-wrap;\">The correct answer is -</span><span style=\"font-weight: 700;\"><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\"> </span></span><strong>Ambidextrous</strong><span style=\"font-weight: 700;\"><span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">.</span></span></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the meaning&nbsp;of the marked option:\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">Ambidextrous -&nbsp;</span>using both hands with equal ease or dexterity.</li>\n\t</ul>\n\t</li>\n\t<li>Here, the prefix &#39;<strong>Ambi</strong>&#39; <strong>i.e., both</strong> reveals the meaning of the given word.</li>\n\t<li>Let&#39;s look at the meanings of the other given options:&nbsp;\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">Unskilled -&nbsp;</span>not having or requiring special skill or training.</li>\n\t\t<li><span style=\"font-weight: 700;\">Inexpert -&nbsp;</span>having or showing a lack of skill or knowledge.</li>\n\t\t<li><span style=\"font-weight: 700;\">Left-handed -&nbsp;</span>(of a person) using the left hand more naturally than the right.</li>\n\t</ul>\n\t</li>\n\t<li>Hence, from the given meanings, we find that&nbsp;<span style=\"font-weight: 700;\">Ambidextrous&nbsp;</span>is the correct<span style=\"font-weight: 700;\">&nbsp;one-word substitute.</span></li>\n</ul>\n\n<p><em>&nbsp;</em><span style=\"font-weight: 700;\">​</span>​​​<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span>&nbsp;&nbsp;</p>\n\n<ul>\n\t<li>Let&#39;s look at the synonyms and antonyms for the given word:\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">Synonyms&nbsp;</span>-&nbsp;adroit, artful, deft, delicate, dexterous</li>\n\t\t<li><span style=\"font-weight: 700;\">Antonyms -&nbsp;</span>&nbsp;unfit, unfitted, unqualified, unskilled, unskillful</li>\n\t</ul>\n\t</li>\n</ul>\n\n2f:T95", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "62cbef72c5022a6aded874a9", "qs_no": 16, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the option that can be used as a one-word substitute for the given group of words.</strong></p>\n\n<p>A journey undertaken by a group of people with a particular purpose, especially that of exploration or research.</p>\n", "options": [{"prompt": "1", "value": "Voyage"}, {"prompt": "2", "value": "Expedition"}, {"prompt": "3", "value": "Sojourn"}, {"prompt": "4", "value": "Pilgrimage"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is&nbsp;<strong>&#39;Expedition&#39;</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Let us look into the meaning of the words in the options -&nbsp;\n\t<ul>\n\t\t<li><strong>Voyage -&nbsp;</strong>a long journey involving travel by sea or in space. - <em>His <strong>voyage </strong>to America was long.&nbsp;</em></li>\n\t\t<li><strong>Expedition -&nbsp;</strong>a journey undertaken by a group of people with a particular purpose, especially that of exploration, research, or war. -&nbsp;<em>He was on an <strong>expedition </strong>to explore the Antarctic.&nbsp;</em></li>\n\t</ul>\n\t</li>\n\t<li>From the above meanings it is clear that&nbsp;<strong>expedition&nbsp;</strong>is the best word to substitute the given group of words.&nbsp;</li>\n</ul>\n\n<p>Hence,&nbsp;<strong>option 2&nbsp;</strong>is the correct answer.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Voyage (यात्रा) </strong>- a long journey involving travel by sea or in space.\n\n\t<ul>\n\t\t<li><strong>Example</strong>: Their voyage across the Atlantic Ocean took over a month.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Expedition (अभियान) </strong>- a journey undertaken by a group of people with a particular purpose, especially that of exploration, research, or war.\n\t<ul>\n\t\t<li><strong>Example:</strong> The expedition to the South Pole was challenging but ultimately successful.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Sojourn (ठहराव)</strong> - a temporary stay at a place.\n\t<ul>\n\t\t<li><strong>Example: </strong>During our trip, we had a brief sojourn in a quaint village in the mountains.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Pilgrimage (तीर्थयात्रा)</strong> - a journey to a sacred place or shrine of importance to a person&#39;s beliefs and faith.\n\t<ul>\n\t\t<li><strong>Example</strong>: Every year, thousands make a pilgrimage to the holy city of Varanasi.</li>\n\t</ul>\n\t</li>\n</ul>\n\n3e:T9b1,\n<p>The correct answer is &#39;<s", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "64e968bc75b455db9dcecf1d", "qs_no": 17, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>&nbsp;Select the option that can be used as a one-word substitute for the given group of words.</p>\n\n<p>Free time; time at one&rsquo;s own disposal</p>\n", "options": [{"prompt": "1", "value": "Leisure"}, {"prompt": "2", "value": "Legible"}, {"prompt": "3", "value": "Lethal"}, {"prompt": "4", "value": "Legion"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is: <b>Leisure</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The phrase <strong>&quot;Free time; time at one&rsquo;s own disposal&quot;</strong> refers to periods when one is not working or occupied; it is time available for hobbies and other activities that one enjoys. (खाली समय)\n\n\t<ul>\n\t\t<li><strong>Example: </strong>During my leisure time, I enjoy reading books and gardening.</li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Leisure&quot;</strong> directly matches the description of having free time or time at one&#39;s own disposal. It denotes time free from the demands of work or duty, where one can relax. (अवकाश)\n\t<ul>\n\t\t<li><strong>Example: </strong>She looks forward to the weekends for some leisure time away from her busy schedule.</li>\n\t</ul>\n\t</li>\n\t<li>Hence, based on the definition and context, <strong>&#39;Leisure&#39;</strong> is the appropriate one-word substitute.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Option 1</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p>Here are the other options explained along with their Hindi meanings and example sentences:</p>\n\n<ul>\n\t<li><strong>Legible</strong> (<span style=\"color: rgb(33, 37, 41);\">पठनीय</span>): Capable of being read or deciphered, especially with ease.\n\n\t<ul>\n\t\t<li><strong>Example:</strong> His handwriting is clear and legible, making his notes easy to study from.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Lethal</strong> (<span style=\"color: rgb(33, 37, 41);\">घातक </span>): Sufficient to cause death; deadly.\n\t<ul>\n\t\t<li><strong>Example: </strong>The poison is highly lethal and can cause death within minutes.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Legion</strong> (<span style=\"color: rgb(33, 37, 41);\">लीजन</span>): A large number of people or things.\n\t<ul>\n\t\t<li><strong>Example:</strong> Fans of the popular book series are legion, with millions around the world.</li>\n\t</ul>\n\t</li>\n</ul>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 4:", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "642e4a5b3224baf8e0617e65", "qs_no": 18, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Choose the word that can substitute the given group of words.</p>\n\n<p>Killing one&#39;s father</p>\n", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Insecticide&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Suicide&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Tyrannicide&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Patricide&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&#39;Option 4&#39;</strong> i.e.<strong> &#39;Patricide&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word that can substitute the given group of words,<strong> &quot;Killing one&#39;s father,&quot; i</strong>s<strong> &quot;Patricide&quot;.</strong></li>\n\t<li><strong>&quot;Patricide&quot; </strong>is derived from the Latin words &#39;pater&#39; meaning &#39;father,&#39", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "642c793f29f9277c8201aa63", "qs_no": 19, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Choose the word that can substitute the given group of words.</strong></p>\n\n<p>A lover of oneself, of one&rsquo;s advancement</p>\n", "options": [{"prompt": "1", "value": "Philistine"}, {"prompt": "2", "value": "Mercenary"}, {"prompt": "3", "value": "Cynic"}, {"prompt": "4", "value": "Egoist"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is: <strong>Egoist</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word &quot;egoist&quot; is the correct option as it represents a person who is excessively self-centered or self-focused.</li>\n\t<li>An egoist is someone who loves and prioritizes oneself and is primarily concerned with personal advancement and well-being.</li>\n</ul>\n\n<p>Therefore, the correct answer is: <strong>Egoist</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>The meanings of the rest of the options are given below:\n\t<ul>\n\t\t<li><strong>Philistine: </strong>Philistine refers to a person who is indifferent or hostile to artistic, intellectual, or cultural values and pursuits. In Hindi: संगीत और कला के प्रति असंवेदनशील व्यक्ति</li>\n\t\t<li><strong>Mercenary: </strong>Mercenary describes a person who is motivated primarily by personal gain or profit, often willing to do anything for money or material rewards. In Hindi: प्रवासी सैनिक</li>\n\t\t<li><strong>Cynic: </strong>Cynic refers to a person who distrusts or doubts the motives and sincerity of others, often having a pessimistic or negative outlook on life. In Hindi: नास्तिक</li>\n\t</ul>\n\t</li>\n</ul>\n\n41:T7eb,\n<p>The correct answer is &#39;<strong>Option 4&#39; </strong>i.e. <", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "64e85b5bdccfaf28f5ab67ec", "qs_no": 20, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Choose the correct meaning of the underlined word in the given sentence.</strong></p>\n\n<p>The government is planning a new policy to help the <strong><u>immigrants</u></strong> coming from the neighbouring country.</p>\n", "options": [{"prompt": "1", "value": "Someone who leaves one country to settle in another&amp;nbsp;"}, {"prompt": "2", "value": "Someone who goes to visit a new country for a short time&amp;nbsp;"}, {"prompt": "3", "value": "Someone who travels for work"}, {"prompt": "4", "value": "&amp;nbsp;Someone who travels to space"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;Someone who leaves one country to settle in another.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;immigrants&quot;</strong> refers to people who are moving from one country to another to settle there permanently. (दूसरे देश में आकर वहीं स्&zwj;थायी रूप से बसने वाला व्&zwj;यक्ति; आप्रवासी)\n\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>The government plans to tighten controls to prevent illegal <u><strong>immigrants</strong></u>.</em></li>\n\t</ul>\n\t</li>\n\t<li>The suffix <strong>&quot;-ants&quot;</strong> in <strong>&quot;immigrants&quot;</strong> indicates a person who performs a particular action (in this case, leaving their country to settle elsewhere).</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>&nbsp;The key difference between immigrants and emigrants lies in viewpoint. Immigrants are viewed from the perspective of the receiving country , as they are coming into that country. Emigrants are viewed from the perspective of the country they are leaving, as they are departing from that country to&nbsp; settle elsewhere . Essentially, immigrants are arrivals, while emigrants are departures.</li>\n</ul>\n\n<p>&nbsp;</p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 1.</span></p>\n\n45:Tc63,\n<p>The correct answer is: <b>Option 1</b>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "5fc0a02b47d6d562d7b5e9f8", "qs_no": 21, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the word which means the same as the group of words given.</strong></p>\n\n<p>One who tells future from the stars</p>\n", "options": [{"prompt": "1", "value": "Philanthropist"}, {"prompt": "2", "value": "Personification"}, {"prompt": "3", "value": "Astrologer"}, {"prompt": "4", "value": "Miser"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is <strong>&#39;Astrologer&#39;.&nbsp;</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Astrologer:&nbsp;a person who uses astrology to tell others about their character or to predict their future.</strong>\n\n\t<ul>\n\t\t<li><em>Example: He was advised by <strong>astrologers</strong> to delay his departure.&nbsp;&nbsp;</em></li>\n\t</ul>\n\t</li>\n\t<li><em>​</em>Therefore, the correct answer is <strong>Option 3.</strong></li>\n</ul>\n\n<p>&nbsp;</p>\n\n<p><strong><u>Correct Answer:</u></strong>&nbsp;<em>Astrologer.&nbsp;</em></p>\n\n<p><em><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></em></p>\n\n<ul>\n\t<li><strong>Philanthropist:&nbsp;a person who seeks to promote the welfare of others, especially by the generous donation of money to good causes.</strong>\n\n\t<ul>\n\t\t<li><i>Example: </i><em>The trust was founded by an American <strong>philanthropist.&nbsp;</strong></em></li>\n\t</ul>\n\t</li>\n\t<li><strong><em>​</em>Personification:&nbsp;the attribution of a personal nature or human characteristics to something non-human, or the representation of an abstract quality in human form.</strong>\n\t<ul>\n\t\t<li><em>Example: The book provides a sustained account of how literary <strong>personification</strong> works.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>Miser:&nbsp;a person who hoards wealth and spends as little money as possible.</strong>\n\t<ul>\n\t\t<li><em>Example: A typical <strong>miser</strong>&nbsp;hid his money in the house in various places.</em></li>\n\t</ul>\n\t</li>\n</ul>\n\n32", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "612cd03774caf650e7b5adf8", "qs_no": 22, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the word which means the same as the group of words given.</strong></p>\n\n<p>A person who draws or produces maps</p>\n", "options": [{"prompt": "1", "value": "Choreographer"}, {"prompt": "2", "value": "Chauffeur"}, {"prompt": "3", "value": "Cartographer"}, {"prompt": "4", "value": "Calligrapher"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is&nbsp;<span style=\"font-weight: 700;\">&#39;</span><strong>Cartographer</strong><span style=\"font-weight: 700;\">&#39;.</span></p>\n\n<p><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>&nbsp;</span></p>\n\n<ul>\n\t<li>The most appropriate <strong>meaning </strong>of the given group of words is<span style=\"font-weight: 700;\">&nbsp;&#39;Cartographer&#39;.</span></li>\n\t<li><strong>Cartographer</s", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "61e6a84a28fe6b48ae370a0c", "qs_no": 23, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Select the option which means the same as the group of words given.</p>\n\n<p>Not active or growing</p>\n", "options": [{"prompt": "1", "value": "inanimate"}, {"prompt": "2", "value": "duplicate"}, {"prompt": "3", "value": "invisible"}, {"prompt": "4", "value": "dormant"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p style=\"\">The correct answer is&nbsp;<span style=\"font-weight: 700;\">option 4) i.e., &#39;dormant&#39;.</span></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></p>\n\n<ul style=\"\">\n\t<li>Let us look into the meaning of the given options -&nbsp;&nbsp;\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">inanimate -&nbsp;</span>showing no sign of life; lifeless.</li>\n\t\t<li><span style=\"font-weight: 700;\">duplicate -&nbsp;</span>exactly like something else, especially through having been copied.</li>\n\t\t<li><span style=\"font-weight: 700;\">invisible -&nbsp;</span>unable to be seen.</li>\n\t\t<li><span style=\"font-weight: 700;\">dormant -&nbsp;</span>(of a plant or bud) alive but not actively growing.</li>\n\t</ul>\n\t</li>\n\t<li>From the above meanings it is clear that dormant<span style=\"font-weight: 700;\">&nbsp;</span>is the most appropriate one-word substitution for the given words -&nbsp;<span style=\"font-weight: 700;\">Not active or growing</span></li>\n\t<li>Thus,&nbsp;<span style=\"font-weight: 700;\">option 4</span>&nbsp;is the correct answer.&nbsp;</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "61a4ab6a0ada8606e81120e1", "qs_no": 24, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the option that can be used as a one-word substitute for the given group of words.</strong></p>\n\n<p>A close-fitting cover for the blade of a knife or sword</p>\n", "options": [{"prompt": "1", "value": "carrier"}, {"prompt": "2", "value": "case"}, {"prompt": "3", "value": "sheath"}, {"prompt": "4", "value": "Shield"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<div>The correct answer is&nbsp;<strong>&#39;Option 3&#39;</strong>.</div>\n\n<div><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></div>\n\n<ul>\n\t<li>A close-fitting cover for the blade of knife or sword is known as&nbsp;<strong>&#39;Sheath&#39;</strong>.</li>\n\t<li>Moreover, &#39;a close-fitting covering to protect something is also known as&nbsp;<strong>Sheath</strong>&#39;.</li>\n\t<li>For example, I always prefer to buy a thermoplastic-<strong>sheathed </strong>cable.</li>\n</ul>\n\n<div>Based on the above points, it&#39;s clear that the accurate answer is&nbsp;<strong>&quot;Sheath&quot;</strong>.</div>\n\n<div><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></div>\n\n<div>Let&#39;s understand the meaning of other options.</div>\n\n<ul>\n\t<li><strong>Carrier </strong>(noun) - One that carries, bearer, messenger.</li>\n\t<li><strong>Case </strong>(noun) - a set of conditions, a situation requiring investigation.</li>\n\t<li><strong>Shield </strong>(noun) - something or someone used as protection.</li>\n</ul>\n\n<div>Hence, the correct answer is &#39;<strong><em>Sheath&#39;</em></strong><em>.</em></div>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "5fc082de325ee17e938fd5fd", "qs_no": 25, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Directions: Select the word which means the same as the group of words given.</strong></p>\n\n<p>A person who is blamed for something that someone else has done</p>\n", "options": [{"prompt": "1", "value": "Opponent"}, {"prompt": "2", "value": "Enemy"}, {"prompt": "3", "value": "Competitor"}, {"prompt": "4", "value": "Scapegoat"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is&nbsp;<span style=\"font-weight: 700;\">&quot;</span><span style=\"font-weight: 700;\">Scapegoat</span><span style=\"font-weight: 700;\">&quot;.</span></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><u><span style=\"font-weight: 700;\">Let</span>&nbsp;us&nbsp;<span style=\"font-weight: 700;\">explore</span>&nbsp;the given&nbsp;<span style=\"font-weight: 700;\">options</span></u>:\n\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">&#39;Opponent&#39;</span>&nbsp;is&nbsp;<strong>someone who competes with or opposes another in a contest, game, or argument</strong>.</li>\n\t\t<li><span style=\"font-weight: 700;\">&#39;Enemy&#39;</span>&nbsp;is&nbsp;<strong>a person who is actively opposed or hostile to someone or something</strong>.</li>\n\t\t<li><span style=\"font-weight: 700;\">&#39;Competitor&#39;</span>&nbsp;is&nbsp;<strong>a person who takes part in a sporting contest</strong>.</li>\n\t\t<li><span style=\"font-weight: 700;\">&#39;Scapegoat&#39;&nbsp;</span>means<span style=\"font-weight: 700;\">&nbsp;</span><strong>a person who is blamed for the wrongdoings, mistakes, or faults of others</strong>.</li>\n\t</ul>\n\t</li>\n\t<li><span style=\"font-weight: 700;\">Hence</span>,&nbsp;the correct answer&nbsp;is&nbsp;<span style=\"font-weight: 700;\">option 4.</span></li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 25;
+const DURATION_SEC = 12 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
