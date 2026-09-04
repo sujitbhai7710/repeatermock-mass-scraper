@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RRB ALP CBT 2 Fitter (Precision Force): Mini Live Test</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">RRB ALP CBT 2 Fitter (Precision Force): Mini Live Test</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">rrb-alp-previous</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">30</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">30 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">30.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+1.0 / -0.33</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">6a169f1e651c301550f1690b</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "6a169f1e651c301550f1690b", "title": "RRB ALP CBT 2 Fitter (Precision Force): Mini Live Test", "series_slug": "rrb-alp-previous", "duration_min": 30, "max_marks": 30.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "63ea1ffdfcad020ff81c45b3", "section_name": "Technical", "q_count": 30, "max_marks": 30.0, "questions": [{"qid": "684fb35b49dfc264c44b1406", "qs_no": 1, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">For general purpose, a bench&nbsp;vice is fixed at a height of</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;80 cm&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;90 cm&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;106 cm&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;125 cm&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "सामान्य उद्देश्य हेतु बेंच वाइस को ___________&nbsp;<span style=\"\">की ऊचाई पर लगाया जाता है</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;80 cm&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;90 cm&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;106 cm&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;125 cm&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb35a9fc51fd009a6fac1", "qs_no": 2, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">The best example of splash lubrication&nbsp;</span><span style=\"\">is</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Wick feed lubricator&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Ring lubricator&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Grease gun&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Pump lubricator&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "छिडकाव (स्प्लैश) स्नेहन का श्रेष्ठ उदाहरण ___________&nbsp;है", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;वर्तिक भरण (विक फीड) स्नेहक&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;वलय स्नेहक&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;ग्रीस गन&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;पंप स्नेहक&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb35a737054b26a2039f4", "qs_no": 3, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">For effective cutting of steel with hand hacksaw, which one of the following coolants is suitable</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Grease&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Cutting oil&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Lard oil&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Kerosene oil&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "हस्त लोहा-आरी से इस्पात को प्रभावी रूप से काटने हेतु निम्नलिखित में से कौन-सा शीतलक उपयोग में लाया जाता है&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;ग्रीस&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;कटिंग तेल&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;लार्ड तेल&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;मिट्टी का तेले&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb35a7282b91ec72f1518", "qs_no": 4, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "S. W. L. means?", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Safe working load&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Standard working load&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Side working load&lt;/span&gt;"}, {"prompt": "4", "value": "Stable working load"}], "range": {"start": "", "end": ""}}, "hn": {"value": "﻿S.W.L. का अर्थ है&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;सेफ वर्किंग लोड&amp;nbsp;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;स्टेंडर्ड वर्किंग लोड&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;साइड वर्किंग लोड&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;स्टेबल वर्किंग लोड&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb359c820c62e258abe90", "qs_no": 5, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">While thread cutting on a lathe by using single point tool, the tool moves in a path called as</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Epicycloid&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Cycloid&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Rake&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Helix&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "लेथ पर एक बिंदु वाले उपकरण का उपयोग करते हुए थ्रेड कटिंग के समय उपकरण _____&nbsp; नामक पथ पर चलता है&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;अधिचक्रज&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;चक्रज&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;रेकन&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;हेलिक्स&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3593caa87a8c9b78a13", "qs_no": 6, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">For grinding carbide materials _________&nbsp;</span><span style=\"\">is used.</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Aluminium oxide wheel&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Silicone carbide wheel&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Diamond wheel&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Corundum wheel&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "कार्बाइड पदार्थ की ग्राइंडिंग हेतु ________ का उपयोग किया जाता है&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;एलुमिनियम ऑक्साइड पहिया&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;सिलिकन कार्बाइड पहिया&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;हीरे का पाहिया&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;कोरंडम पहिया&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb35902658c542bf904db", "qs_no": 7, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Which one of the following is the solid carburizing&nbsp;</span><span style=\"\">material?</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Charcoal&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Petrol&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Ammonia&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Kerosene&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span style=\"color: rgb(0, 0, 0);   background-color: rgb(248, 248, 248);\">﻿</span>निम्नलिखित में से क्या ठोस कारबुराइजिंग पदार्थ है&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;चारकोल&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;पेट्रोल&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;अमोनिया&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;मिट्टी का तेल&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3589c53818bb32e2a26", "qs_no": 8, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">The purpose of levelling bolts is to</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Support the load of the machine&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Adjust the height of the machine&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;To provide rigidity to the machine&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;None of the above&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "बोल्ट के समतलन का उद्देश्य ____________&nbsp;<span style=\"color: rgb(0, 0, 0);   background-color: rgb(248, 248, 248);\">&nbsp;</span>है", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;मशीन के भार को संबल प्रदान करना&amp;nbsp;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;मशीन की ऊँचाई को समायोजित करना&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;मशीन को दृढ़ता प्रदान करना&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;इनमें से कोई नहीं&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3585bafe09c31fdb8ba", "qs_no": 9, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "If the hole size is 25<sup>+0.00/+0.02</sup>mm and the shaft size is&nbsp;<span style=\"\">25<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">-</span></span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">0.005/-0.025&nbsp;</span>mm, the maximum clearance is", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;0.020 mm&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;0.025 mm&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;0.040 mm&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;0.045 mm&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि छिद्र का आकार <span style=\"\">25</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">+0.00/+0.02</span>mm है और शाफ्ट का आकार&nbsp;<span style=\"\">25<sup>-</sup></span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">0.005/-0.025</span> mm है तो अधिकतम निष्कासन (क्लियरेंस) __________&nbsp;<span style=\"\">है</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;0.020 mm&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;0.025 mm&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;0.040 mm&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;0.045 mm&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "రంధ్రం పరిమాణం 25<sup>+0.00/+0.02</sup>మి.మీ మరియు షాఫ్ట్ పరిమాణం <span style=\"\">25<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">-</span></span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">0.005/-0.025 </span>మి.మీ అయితే, గరిష్ట క్లియరెన్స్", "options": [{"prompt": "1", "value": "<span style=\"\">0.020 మి.మీ</span>"}, {"prompt": "2", "value": "<span style=\"\">0.025 మి.మీ</span>"}, {"prompt": "3", "value": "<span style=\"\">0.040 మి.మీ</span>"}, {"prompt": "4", "value": "<span style=\"\">0.045 మి.మీ</span>"}], "range": {"start": "", "end": ""}}, "mr": {"value": "जर छिद्राचा आकार 25<sup>+0.00/+0.02</sup>mm असेल आणि शाफ्टचा आकार <span style=\"\">25<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">-</span></span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">0.005/-0.025 </span>mm असेल, तर कमाल क्लिअरन्स (clearance) किती असेल?", "options": [{"prompt": "1", "value": "<span style=\"\">0.020 mm</span>"}, {"prompt": "2", "value": "<span style=\"\">0.025 mm</span>"}, {"prompt": "3", "value": "<span style=\"\">0.040 mm</span>"}, {"prompt": "4", "value": "<span style=\"\">0.045 mm</span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "যদি গর্তের আকার 25<sup>+0.00/+0.02</sup>মিমি এবং শ্যাফটের আকার 25<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">-</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">0.005/-0.025 </span>মিমি হয়, তবে সর্বাধিক ছাড়পত্র হল:", "options": [{"prompt": "1", "value": "<span style=\"\">0.020 মিমি</span>"}, {"prompt": "2", "value": "<span style=\"\">0.025 মিমি</span>"}, {"prompt": "3", "value": "<span style=\"\">0.040 মিমি</span>"}, {"prompt": "4", "value": "<span style=\"\">0.045 মিমি</span>"}], "range": {"start": "", "end": ""}}, "gu": {"value": "જો હોલનું કદ 25<sup>+0.00/+0.02</sup>mm અને શાફ્ટનું કદ 25<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">-</span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">0.005/-0.025 </span>mm હોય, તો મહત્તમ ક્લિયરન્સ કેટલું હશે?", "options": [{"prompt": "1", "value": "<span style=\"\">0.020 mm</span>"}, {"prompt": "2", "value": "<span style=\"\">0.025 mm</span>"}, {"prompt": "3", "value": "<span style=\"\">0.040 mm</span>"}, {"prompt": "4", "value": "<span style=\"\">0.045 mm</span>"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ರಂಧ್ರದ ಗಾತ್ರವು 25<sup>+0.00/+0.02</sup>ಮಿಮೀ ಮತ್ತು ಶಾಫ್ಟ್ ಗಾತ್ರವು <span style=\"\">25<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">-</span></span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">0.005/-0.025 </span>ಮಿಮೀ ಆಗಿದ್ದರೆ, ಗರಿಷ್ಠ ತೆರವು ಎಷ್ಟಿರುತ್ತದೆ?", "options": [{"prompt": "1", "value": "<span style=\"\">0.020 ಮಿಮೀ</span>"}, {"prompt": "2", "value": "<span style=\"\">0.025 ಮಿಮೀ</span>"}, {"prompt": "3", "value": "<span style=\"\">0.040 ಮಿಮೀ</span>"}, {"prompt": "4", "value": "<span style=\"\">0.045 ಮಿಮೀ</span>"}], "range": {"start": "", "end": ""}}, "ta": {"value": "துளையின் அளவு 25<sup>+0.00/+0.02</sup>மிமீ மற்றும் ஷாஃப்ட்டின் அளவு <span style=\"\">25<span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">-</span></span><span style=\" line-height: 0; position: relative; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">0.005/-0.025 </span>மிமீ ஆக இருந்தால், அதிகபட்ச கிளியரன்ஸ் என்பது", "options": [{"prompt": "1", "value": "<span style=\"\">0.020 மிமீ</span>"}, {"prompt": "2", "value": "<span style=\"\">0.025 மிமீ</span>"}, {"prompt": "3", "value": "<span style=\"\">0.040 மிமீ</span>"}, {"prompt": "4", "value": "<span style=\"\">0.045 மிமீ</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb357eae39d3612bf29a0", "qs_no": 10, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">The heat treatment process which is used to increase the toughness and to reduce brittleness is</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Annealing&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Case hardening&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Normalizing&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Tempering&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "﻿चर्मलता को बढ़ाने और भंगुरता को घटाने के लिए उपयोग की जाने वाली ऊष्मा उपचार प्रक्रिया _________कहलाती है&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;तापनुशीतन&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;केस कठोरन&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;प्रसामान्यीकरण&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;मृदुकरण&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb357c89593715d5cbd1a", "qs_no": 11, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">The principle of&nbsp;&quot;Interchangeability&quot; is normally employed for</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Mass production&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Production of identical parts&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Parts within the prescribed limit of sizes&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;All of the above&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "&ldquo;अंतरपरिवर्तनीया&rdquo; का सिद्धांत आम तौर पर _________&nbsp;<span style=\"\">के लिए उपयोग किया जाता है</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;थोक उत्पादन&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;समान भागों के उत्पादन&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;आकार की निर्धारित सीमा वाले भागों&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;उपरोक्त सभी&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3572030e0f1e5a2fb42", "qs_no": 12, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Three turners take two days to produce 30 pieces. How long does it take for five turners to produce 75 such pieces?</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;3&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;4.5&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;5&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;5.5&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "30 पीस बनाने के लिए तीन खरादी (टर्नर) दो दिन लेते हैं। ऐसे 75 पीस बनाने के लिए पाँच टर्नर कितना समय लेंगे?", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;3&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;4.5&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;5&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;5.5&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb356d0e539e10df01bd7", "qs_no": 13, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Grade- 1 slip gauges are used in</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Workshop by operator&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Inspection Room&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Either (1) or (2)&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Neither (1) nor (2)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "﻿ग्रेड-1 के सर्पण (स्लिप) प्रमापी _________ में उपयोग किए जाते हैं।&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;प्रचालक द्वारा कार्यस्थल&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;निरीक्षण कक्ष&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;(1) अथवा (2) दोनों&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;न तो&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;&quot;&gt;(1) और ना ही (2)&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3564918bede3cdd8167", "qs_no": 14, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">&nbsp;Maintenance consists of the following action(s):</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Replacement of components&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Repair of components&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Service of components&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;All of the above&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "अनुरक्षण में निम्नलिखित में से कौन से कार्य शामिल हैं?", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;कंपोनेंट का विस्थापन&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;कंपोनेंट की मरम्मत&amp;nbsp;&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;कंपोनेंट की सर्विस&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;उपरोक्त सभी&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3560da0dbe83c828e26", "qs_no": 15, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "Which of the following are included in the finishing processes?", "options": [{"prompt": "1", "value": "Polishing and lapping"}, {"prompt": "2", "value": "Honing and welding"}, {"prompt": "3", "value": "Coating and milling"}, {"prompt": "4", "value": "Molding and plating"}], "range": {"start": "", "end": ""}}, "hn": {"value": "निम्नलिखित में से क्या परिपूर्णता (फिनिशिंग ) प्रक्रिया में शामिल हैं&nbsp;", "options": [{"prompt": "1", "value": "प्रमार्जन एवं सूक्ष्म घर्षण"}, {"prompt": "2", "value": "शाणन एवं वेल्डन"}, {"prompt": "3", "value": "लेपन एवं पेषण"}, {"prompt": "4", "value": "संचन एवं विद्युत लेपन"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3557f15f65303eceb3f", "qs_no": 16, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "Jenny Caliper is also called as", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Inside caliper&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Hermaphrodite caliper&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Outside caliper&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;None of the above&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "जेन्नी कैलिपर _________ भी कहलाता है&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;अभ्यंतर कैलिपर&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;हर्मेंफ्रोडाइड कैलिपर&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;बहिर्कैलिपर&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;इनमें से कोई नहीं&amp;nbsp;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb355729f007debc93370", "qs_no": 17, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Name the washer which&nbsp;</span><span style=\"\">is used to prevent vibration loosening of nuts?</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Plain washer&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Machined washer&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Split washer&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Spring washer&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "﻿कंपन के कारण नट के ढीले पड़ने को रोकने के लिए किस वॉशर का उपयोग किया जाता है&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;सपाट वॉशर&amp;nbsp;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;यंत्रीकृत वॉशर&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;विभक्त (स्प्लिट) वॉशर&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;स्प्रिंग वॉशर&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3556f79cb923de1cedc", "qs_no": 18, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">You have to machine a flat surface on a workpiece 2 m in length. Which of the following machines you will choose for this?</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Shaping machine&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Milling machine&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Slotting machine&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Planing machine&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "आपको एक 2 m लंबे वर्क पीस पर सपाट सतह वाले पदार्थ पर कार्य करना है। इस हेतु आप निम्नलिखित में से कौन-सी मशीन का चयन करेंगे&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;आकार देने वाली मशीन&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;पेषण मशीन&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;खाँचा मशीन&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;प्लेनिंग (समतलन )&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb354d48070d23d360fc5", "qs_no": 19, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">The use of jigs and fixtures</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Facilitate deployment of less skilled labor for production&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Eliminates pre-machining operations like marking, measuring, etc.&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Reduces manual handling operations&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;All of the above&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "जिग एवं फिक्सचर का उपयोग ___________&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;उत्पादन हेतु कम कुशल श्रमिकों के नियोजन में सहायक होता है&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;यंत्रीकरण - पूर्व कार्य जैसे अंकन, मापन, इत्यादि को हटाता है&amp;nbsp;&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;व्यक्तियों द्वारा किए जाने वाले कार्यों को घटा देता है&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;उपरोक्त सभी&amp;nbsp;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3541cef0becd20b57d5", "qs_no": 20, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">The best&nbsp;</span><span style=\"\">position to hold the job in the vice when filing is _________</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Arm level&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Elbow level&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Eye level&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Shoulder level&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "रेतन के दौरान, जॉब को वाइस में पकड़ने की सही अवस्था वह है जब रेतन________ पर हो&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;आर्म स्तर&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;एल्बो स्तर&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;नेत्र स्तर&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;शोल्डर स्तर&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb353cd2a645bf09695a8", "qs_no": 21, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Fullers are used for which of the following purposes?</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Necking and grooving&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Forming the heads of rivets, bolts, etc.&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Drawing down&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Marking shoulders with right angles&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "﻿फुल्लर्स किस कार्य हेतु उपयोग किए जाते हैं&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;नेक्किंग एवं ग्रूविंग&amp;nbsp;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;कील, बोल्ट का शीर्ष बनाने के लिए&amp;nbsp;&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;ड्रॉइंग डाउन&amp;nbsp;&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;स्कंध को सम कोण से अंकित करने के लिए&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<span style=\"\">కిందివాటిలో దేని కోసం ఫుల్లర్‌లను ఉపయోగిస్తారు?</span>", "options": [{"prompt": "1", "value": "<span style=\"\">నెకింగ్ మరియు గ్రూవింగ్</span>"}, {"prompt": "2", "value": "<span style=\"\">రివెట్&zwnj;లు, బోల్ట్&zwnj;లు మొదలైన వాటి తలలను తయారు చేయడానికి.</span>"}, {"prompt": "3", "value": "<span style=\"\">డ్రాయింగ్ డౌన్</span>"}, {"prompt": "4", "value": "<span style=\"\">కుడి కోణాలతో భుజాలను గుర్తించడం</span>"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<span style=\"\">फुलर्सचा उपयोग खालीलपैकी कोणत्या कारणांसाठी केला जातो?</span>", "options": [{"prompt": "1", "value": "<span style=\"\">नेकिंग आणि ग्रूव्हिंग</span>"}, {"prompt": "2", "value": "<span style=\"\">रिव्हट्स, बोल्ट इत्यादींचे हेड तयार करणे</span>"}, {"prompt": "3", "value": "<span style=\"\">खाली ओढणे</span>"}, {"prompt": "4", "value": "<span style=\"\">काटकोनामध्ये खांद्यावर (शोल्डर्स) खून करणे</span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<span style=\"\">ফুলের্স নিম্নলিখিত কোন উদ্দেশ্যে ব্যবহৃত হয়?</span>", "options": [{"prompt": "1", "value": "<span style=\"\">নেকিং এবং গ্রুভিং</span>"}, {"prompt": "2", "value": "<span style=\"\">রিভেট, বোল্ট ইত্যাদির মাথা তৈরি করা</span>"}, {"prompt": "3", "value": "<span style=\"\">ড্রয়িং ডাউন</span>"}, {"prompt": "4", "value": "<span style=\"\">কাঁধকে সমকোণে চিহ্নিত করা</span>"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<span style=\"\">ફુલર્સનો ઉપયોગ નીચેનામાંથી કયા હેતુઓ માટે થાય છે?</span>", "options": [{"prompt": "1", "value": "<span style=\"\">નેકિંગ અને ગ્રુવિંગ</span>"}, {"prompt": "2", "value": "<span style=\"\">રિવેટ્સ, બોલ્ટ્સ વગેરેના હેડ બનાવવા</span>"}, {"prompt": "3", "value": "<span style=\"\">ડ્રોઇંગ ડાઉન</span>"}, {"prompt": "4", "value": "<span style=\"\">કાટખૂણે ખભાને માર્કિંગ કરવા</span>"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<span style=\"\">ಫುಲ್ಲರ್‌ಗಳನ್ನು ಈ ಕೆಳಗಿನ ಯಾವ ಉದ್ದೇಶಗಳಿಗಾಗಿ ಬಳಸಲಾಗುತ್ತದೆ?</span>", "options": [{"prompt": "1", "value": "<span style=\"\">ನೆಕ್ಕಿಂಗ್ ಮತ್ತು ಗ್ರೂವಿಂಗ್</span>"}, {"prompt": "2", "value": "<span style=\"\">ರಿವೆಟ್‌ಗಳು, ಬೋಲ್ಟ್‌ಗಳು ಇತ್ಯಾದಿಗಳ ತಲೆಗಳನ್ನು ರೂಪಿಸಲು</span>"}, {"prompt": "3", "value": "<span style=\"\">ಡ್ರಾಯಿಂಗ್ ಡೌನ್</span>"}, {"prompt": "4", "value": "<span style=\"\">ಭುಜಗಳನ್ನು ಲಂಬ ಕೋನಗಳಲ್ಲಿ ಗುರುತಿಸುವುದು</span>"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<span style=\"\">ஃபுல்லர்கள் பின்வரும் எந்த நோக்கங்களுக்காகப் பயன்படுத்தப்படுகின்றன?</span>", "options": [{"prompt": "1", "value": "<span style=\"\">நெக்கிங் மற்றும் குரூவிங்</span>"}, {"prompt": "2", "value": "<span style=\"\">ரிவெட்டுகள், போல்ட்டுகள் போன்றவற்றின் தலைகளை உருவாக்குதல்.</span>"}, {"prompt": "3", "value": "<span style=\"\">டிராயிங் டவுன்</span>"}, {"prompt": "4", "value": "<span style=\"\">சரியான கோணங்களில் தோள்களைக் குறித்தல்</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3538bca02365aaf0b88", "qs_no": 22, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">The lowest possible rate of feed will give?</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Poor surface finish&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Medium surface finish&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Good surface finish&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;None of the above&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "भरण की संभावित न्यूनतम दर __________ प्रदान करेगी&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;निम्न सतह परिसज्जा&amp;nbsp;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;मध्यम सतह परिसज्जा&amp;nbsp;&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;अच्छी सतह परिसज्जा&amp;nbsp;&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;इनमें से कोई नहीं&amp;nbsp;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb3532030e0f1e5a2fb38", "qs_no": 23, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "Screwdrivers used for tightening screws having star or cross grooved&nbsp;heads used in electronic equipment is _____________", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Ratchet screw driver&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Philips screw driver&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Watch makers screw driver&lt;/span&gt;"}, {"prompt": "4", "value": "Offset screw driver"}], "range": {"start": "", "end": ""}}, "hn": {"value": "विद्युत संबंधी उपकरणों में तारक अथवा क्रॉस खाँचे के शीर्ष वाले स्क्रू को कसने हेतु उपयोग किया जाने वाला पेंचकस _________ हैं", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;रैचेट पेंचकस&amp;nbsp;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;फिलिप्स पेंचकस&amp;nbsp;&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;घड़ी बनाने वाले का पेंचकस&amp;nbsp;&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;ऑफसेट पेंचकस&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb352ff348bac71ddc076", "qs_no": 24, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Scrapping is done by ___</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Scraper&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;File&lt;/span&gt;"}, {"prompt": "3", "value": "Hacksaw"}, {"prompt": "4", "value": "Chisel"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span style=\"\">स्क्रेपिंग, ___ द्वारा किया जाता है।</span>", "options": [{"prompt": "1", "value": "स्क्रैपर&amp;nbsp;"}, {"prompt": "2", "value": "फाइल (रेती)&amp;nbsp;"}, {"prompt": "3", "value": "आरी"}, {"prompt": "4", "value": "छेनी&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb352d0029c9d45692785", "qs_no": 25, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Spanner no. 10 is used for __ bolt.</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;M10&lt;/span&gt;"}, {"prompt": "2", "value": "M5"}, {"prompt": "3", "value": "M6"}, {"prompt": "4", "value": "M20"}], "range": {"start": "", "end": ""}}, "hn": {"value": "__ बोल्ट के लिए पाना (स्पेनर) नं. 10 का इस्तमाल किया जाता है।", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;M10&lt;/span&gt;"}, {"prompt": "2", "value": "M5"}, {"prompt": "3", "value": "M6"}, {"prompt": "4", "value": "M20"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb352a83c52b4a966551d", "qs_no": 26, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Angle of acme thread is ____.</span>", "options": [{"prompt": "1", "value": "30&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;55&amp;deg;&lt;/span&gt;"}, {"prompt": "3", "value": "29&amp;deg;&amp;nbsp;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;60&amp;deg;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span style=\"\">एक्मे थ्रेड का एंगल ___&nbsp; है।&nbsp;</span>", "options": [{"prompt": "1", "value": "30&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;55&amp;deg;&lt;/span&gt;"}, {"prompt": "3", "value": "29&amp;deg;&amp;nbsp;"}, {"prompt": "4", "value": "45&lt;span style=&quot;&quot;&gt;&amp;deg;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<span style=\"\">એકમે થ્રેડનો ખૂણો ____ છે.</span>", "options": [{"prompt": "1", "value": "30<span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "<span style=\"\">55&deg;</span>"}, {"prompt": "3", "value": "29&deg; "}, {"prompt": "4", "value": "<span style=\"\">60&deg;</span>"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<span style=\"\">அக்மெ நூலின் கோணம் ____.</span>", "options": [{"prompt": "1", "value": "30<span style=\"\">&deg;</span>"}, {"prompt": "2", "value": "<span style=\"\">55&deg;</span>"}, {"prompt": "3", "value": "29&deg;"}, {"prompt": "4", "value": "<span style=\"\">60&deg;</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb351fdf65a0df7ce5b4b", "qs_no": 27, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Dial test indicator used for&nbsp;</span>", "options": [{"prompt": "1", "value": "Job diameter"}, {"prompt": "2", "value": "comparing the variation in the sizes of components"}, {"prompt": "3", "value": "testing the tensile strength&amp;nbsp;of components"}, {"prompt": "4", "value": "testing the compressive strength ​of components"}], "range": {"start": "", "end": ""}}, "hn": {"value": "डायल परीक्षण संकेतक ________ के लिए उपयोग किया जाता है", "options": [{"prompt": "1", "value": "जॉब व्यास"}, {"prompt": "2", "value": "घटकों के आकार में भिन्नता की तुलना करने"}, {"prompt": "3", "value": "घटकों की तन्य शक्ति का परीक्षण"}, {"prompt": "4", "value": "घटकों की संपीड़न शक्ति का परीक्षण"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb351fdf65a0df7ce5b49", "qs_no": 28, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Melting point of aluminum is __&deg;C.&nbsp;</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;660&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;1250&lt;/span&gt;"}, {"prompt": "3", "value": "1510"}, {"prompt": "4", "value": "1670"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span style=\"\">एल्युमिनियम का गलन उष्णतामान __&deg;C है।</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;660&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;1250&lt;/span&gt;"}, {"prompt": "3", "value": "1510"}, {"prompt": "4", "value": "1670"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb351f3342e8eb587f950", "qs_no": 29, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">Second cut is a type of ___ in file.&nbsp;</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Grade&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Shape&lt;/span&gt;"}, {"prompt": "3", "value": "Cut"}, {"prompt": "4", "value": "None of the above"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span style=\"\">फाईल में सेकंड कट ये ___ का एक प्रकार है।</span>", "options": [{"prompt": "1", "value": "ग्रेड&amp;nbsp;"}, {"prompt": "2", "value": "आकार&amp;nbsp;"}, {"prompt": "3", "value": "काट&amp;nbsp;"}, {"prompt": "4", "value": "उपरोक्त में से कोई नहीं"}], "range": {"start": "", "end": ""}}, "te": {"value": "<span style=\"\">సెకండ్ కట్ అనేది ఫైల్‌లో ఒక రకమైన ___ .</span>", "options": [{"prompt": "1", "value": "<span style=\"\">గ్రేడ్</span>"}, {"prompt": "2", "value": "<span style=\"\">ఆకారం</span>"}, {"prompt": "3", "value": "కట్"}, {"prompt": "4", "value": "పైవన్నీ కాదు"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<span style=\"\">দ্বিতীয় কাট ফাইলের একটি </span>___<span style=\"\">প্রকার । </span>", "options": [{"prompt": "1", "value": "<span style=\"\">গ্রেড</span>"}, {"prompt": "2", "value": "<span style=\"\">আকৃতি</span>"}, {"prompt": "3", "value": "কাট"}, {"prompt": "4", "value": "উপরের কোনটিই নয়"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<span style=\"\">બીજો કટ એ ફાઇલમાં ___ નો એક પ્રકાર છે.</span>", "options": [{"prompt": "1", "value": "<span style=\"\">ગ્રેડ</span>"}, {"prompt": "2", "value": "<span style=\"\">આકાર</span>"}, {"prompt": "3", "value": "કટ"}, {"prompt": "4", "value": "ઉપરોક્તમાંથી કોઈ નહીં"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<span style=\"\">ಎರಡನೇ ಕಟ್ ಫೈಲ್‌ನಲ್ಲಿ ___ ಒಂದು ವಿಧವಾಗಿದೆ.</span>", "options": [{"prompt": "1", "value": "<span style=\"\">ದರ್ಜೆ</span>"}, {"prompt": "2", "value": "<span style=\"\">ಆಕಾರ</span>"}, {"prompt": "3", "value": "ಕಟ್"}, {"prompt": "4", "value": "ಮೇಲಿನ ಯಾವುದೇ ಅಲ್ಲ"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<span style=\"\">செகண்ட் கட் என்பது ஒரு கோப்பில் உள்ள ___ வகையாகும். </span>", "options": [{"prompt": "1", "value": "<span style=\"\">தரம் (Grade)</span>"}, {"prompt": "2", "value": "<span style=\"\">வடிவம் (Shape)</span>"}, {"prompt": "3", "value": "கட் (Cut)"}, {"prompt": "4", "value": "மேலே உள்ள எதுவும் இல்லை"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "684fb350cf7841f00a71c410", "qs_no": 30, "pos_marks": 1.0, "neg_marks": 0.33, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">____ is used to transmit the power at 90&deg;.</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Spur gear&lt;/span&gt;"}, {"prompt": "2", "value": "Helical Gear&lt;br /&gt;\n"}, {"prompt": "3", "value": "Bevel gear"}, {"prompt": "4", "value": "None of the above"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<span style=\"\">90&deg; पर पावर (शक्ति/गति) संचारण के लिए बेवल गीयर का उपयोग होता है।</span>", "options": [{"prompt": "1", "value": "स्पर गियर"}, {"prompt": "2", "value": "हेलिकल गियर&lt;br /&gt;\n"}, {"prompt": "3", "value": "बेवल गियर&lt;br /&gt;\n"}, {"prompt": "4", "value": "उपरोक्त में से कोई नहीं"}], "range": {"start": "", "end": ""}}}, "correct_option": null, "solution_html": {"en": "", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 30;
+const DURATION_SEC = 30 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
