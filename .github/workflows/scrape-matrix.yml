@@ -229,28 +229,40 @@ jobs:
           import json, os, glob
           from datetime import datetime, timezone
 
-          all_pro_tests = []
-          seen_ids = set()
+          # Use a dict keyed by test_id so the SAME test from multiple sources
+          # (per-job PRO_TESTS.json + per-job progress.json 'pro' key) is only kept ONCE.
+          # Per-job PRO_TESTS.json is the source of truth (has full metadata).
+          # Progress.json 'pro' key is a fallback for test_ids missing from PRO_TESTS.json.
+          all_pro_by_id = {}
 
           # Source 1: per-job PRO_TESTS.json files (pretty JSON written by PROTracker)
+          # This is the authoritative source — has title, series_name, section, etc.
           pro_files = glob.glob("scraped_output/*/PRO_TESTS.json")
           print(f"Found {len(pro_files)} per-job PRO_TESTS.json files")
+          pro_count_1 = 0
           for pf in pro_files:
               try:
                   with open(pf) as f:
                       data = json.load(f)
                   for t in data.get("pro_tests", []):
                       tid = t.get("test_id")
-                      if tid and tid not in seen_ids:
-                          seen_ids.add(tid)
-                          all_pro_tests.append(t)
+                      if tid and tid not in all_pro_by_id:
+                          all_pro_by_id[tid] = t
+                          pro_count_1 += 1
+                      elif tid:
+                          # Already have this test_id — keep the one with more metadata
+                          existing = all_pro_by_id[tid]
+                          if not existing.get("title") and t.get("title"):
+                              all_pro_by_id[tid] = t
               except Exception as e:
                   print(f"  ⚠️ couldn't parse {pf}: {e}")
+          print(f"  → {pro_count_1} unique PRO tests from PRO_TESTS.json files")
 
-          # Source 2: per-job progress.json files (under 'pro' key, written by ProgressTracker)
-          # This is a fallback in case PRO_TESTS.json was lost on a cancelled job
+          # Source 2: per-job progress.json files (under 'pro' key)
+          # FALLBACK ONLY: only add test_ids NOT already in all_pro_by_id (Bug #5 fix)
           progress_files = glob.glob("scraped_output/*/progress.json")
-          print(f"Found {len(progress_files)} per-job progress.json files (PRO fallback)")
+          print(f"Found {len(progress_files)} per-job progress.json files (fallback)")
+          pro_count_2 = 0
           for pf in progress_files:
               try:
                   with open(pf) as f:
@@ -259,30 +271,36 @@ jobs:
                       if not isinstance(series_data, dict):
                           continue
                       for tid, meta in series_data.get("pro", {}).items():
-                          if tid not in seen_ids:
-                              seen_ids.add(tid)
-                              all_pro_tests.append({
-                                  "test_id": tid,
-                                  "title": meta.get("title", ""),
-                                  "series_slug": series_slug,
-                                  "series_name": series_slug,
-                                  "section": "",
-                                  "subsection": "",
-                                  "attempt_url": f"https://repeatermock.com/tb/test-series/{series_slug}/test/{tid}/attempt?lang=en",
-                                  "analysis_url": f"https://repeatermock.com/tb/test-series/{series_slug}/test/{tid}/analysis",
-                                  "solution_url": f"https://repeatermock.com/tb/test-series/{series_slug}/test/{tid}/solution",
-                                  "first_seen": meta.get("timestamp", ""),
-                                  "source": "progress.json fallback",
-                              })
+                          if tid in all_pro_by_id:
+                              continue  # Already have it from PRO_TESTS.json
+                          # Fallback entry — minimal metadata
+                          all_pro_by_id[tid] = {
+                              "test_id": tid,
+                              "title": meta.get("title", ""),
+                              "series_slug": series_slug,
+                              "series_name": series_slug,
+                              "section": "",
+                              "subsection": "",
+                              "attempt_url": f"https://repeatermock.com/tb/test-series/{series_slug}/test/{tid}/attempt?lang=en",
+                              "analysis_url": f"https://repeatermock.com/tb/test-series/{series_slug}/test/{tid}/analysis",
+                              "solution_url": f"https://repeatermock.com/tb/test-series/{series_slug}/test/{tid}/solution",
+                              "first_seen": meta.get("timestamp", ""),
+                              "source": "progress.json fallback",
+                          }
+                          pro_count_2 += 1
               except Exception as e:
                   print(f"  ⚠️ couldn't parse {pf}: {e}")
+          print(f"  → {pro_count_2} additional PRO tests from progress.json (fallback only)")
+
+          all_pro_tests = list(all_pro_by_id.values())
+          print(f"  → Total unique PRO tests: {len(all_pro_tests)}")
 
           # Write merged PRO_TESTS.json at top level
           os.makedirs("scraped_output", exist_ok=True)
           merged = {
               "generated_at": datetime.now(timezone.utc).isoformat(),
               "total_pro_tests": len(all_pro_tests),
-              "description": "Merged PRO tests from ALL 22 matrix jobs. These returned 402 Payment Required when attempted with free (guest) cookies. They require a RepeaterMock PRO subscription. Sources: per-job PRO_TESTS.json + per-job progress.json 'pro' key (fallback).",
+              "description": "Merged PRO tests from ALL 22 matrix jobs. These returned 402 Payment Required when attempted with free (guest) cookies. They require a RepeaterMock PRO subscription. Sources: per-job PRO_TESTS.json (primary) + per-job progress.json 'pro' key (fallback for missing test_ids only).",
               "how_to_use": [
                   "1. Log in to repeatermock.com with a PRO subscription account",
                   "2. Copy any URL from pro_tests[].attempt_url below",
