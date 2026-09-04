@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 7: Maths (Compound Interest)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 7: Maths (Compound Interest)</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-maths-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">10 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">30.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+3.0 / -1.0</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63afc3584985ec89b160e68f</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63afc3584985ec89b160e68f", "title": "PYCT 7: Maths (Compound Interest)", "series_slug": "ssc-maths-previous-year-questions", "duration_min": 10, "max_marks": 30.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "6329b604972c5fb08aaf42e7", "section_name": "Test", "q_count": 10, "max_marks": 30.0, "questions": [{"qid": "5fca6456cb9eec6789e6d694", "qs_no": 1, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "At what rate per cent per annum will a sum of Rs. 15,625 amount to Rs. 21,952 in three years, if the interest is compounded annually?", "options": [{"prompt": "1", "value": "12%"}, {"prompt": "2", "value": "10%"}, {"prompt": "3", "value": "9%"}, {"prompt": "4", "value": "8%"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि ब्याज प्रतिवर्ष समायोजित होती है, तो प्रतिवर्ष किस दर पर 15,625 रुपये की राशि&nbsp;3 वर्ष&nbsp;में 21,952 रुपये होगी?", "options": [{"prompt": "1", "value": "12%"}, {"prompt": "2", "value": "10%"}, {"prompt": "3", "value": "9%"}, {"prompt": "4", "value": "8%"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>For a period of 3 years, the ratio of Amount to Principal is (1 + R/100)<sup>3</sup>.</p>\n<p>Ratio A : P = 21952 : 15625</p>\n<p>Take cube root for 1-year ratio ⇒ √<sup>3</sup>21952 : √<sup>3</sup>15625 = 28 : 25</p>\n<p>Rate % = [(28 − 25) ÷ 25] × 100 = (3 ÷ 25) × 100 = 12%</p>\n<p><strong>∴ The correct answer is 12%.</strong></p>\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Principal (P) = ₹15,625</p>\n<p>Amount (A) = ₹21,952</p>\n<p>Time (n) = 3 years</p>\n<p><strong>Formula Used:</strong></p>\n<p>A = P(1 + R/100)<sup>n</sup></p>\n<img src=\"https://cdn.repeatermock.com/tb/dd9642163204ccf1513db2a0dfd90f72cf38c507afbe5687c2625a871ede4061.png\" style=\"max-width: 450px;\" />\n<p><strong>Calculations:</strong></p>\n<p>⇒ 21952 = 15625 × (1 + R/100)<sup>3</sup></p>\n<p>⇒ 21952 ÷ 15625 = (1 + R/100)<sup>3</sup></p>\n<p>⇒ (28/25)<sup>3</sup> = (1 + R/100)<sup>3</sup></p>\n<p>⇒ 28/25 = 1 + R/100</p>\n<p>⇒ R/100 = 28/25 − 1</p>\n<p>⇒ R/100 = 3/25</p>\n<p>⇒ R = (3 × 100) ÷ 25</p>\n<p>⇒ R = 12%</p>\n<p><strong>∴ The correct answer is 12%.</strong></p>\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Standard Compound Interest Formula</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">The total amount A = P(1 + r/n)<sup>nt</sup>, where P is principal, r is annual rate, n is compounding frequency, and t is time in years.</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Effective Rate of Interest</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">For two years at R%, the effective CI rate is (R + R + R<sup>2</sup>/100)%. For three years, it is (3R + 3R<sup>2</sup>/100 + R<sup>3</sup>/100<sup>2</sup>)%.</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Difference between CI and SI</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">Difference for 2 years: D = P(R/100)<sup>2</sup>. Difference for 3 years: D = P(R/100)<sup>2</sup> × (3 + R/100).</p>\n2f", "hn": "\n<p><span style=\"font-weight: 700;\">दिया गया है:</span></p>\n\n<p>मूलधन (P) = 15625 रुपये</p>\n\n<p>समय (T) = 3 वर्ष</p>\n\n<p>मिश्रण (A) = 21,952&nbsp;रुपये</p>\n\n<p><span style=\"font-weight: 700;\">उपयोग की गई संकल्पना:</span></p>\n\n<p>मिश्रधन&nbsp;= P(1 + R/100)<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">T</span></p>\n\n<p><span style=\"font-weight: 700;\">गणना:</span></p>\n\n<p>माना कि प्रतिवर्ष ब्याज दर R है।</p>\n\n<p>21952&nbsp;= 15625(1 + R/100)<sup>3</sup></p>\n\n<p>&rArr; 21952/15625 =&nbsp;(1 + R/100)<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">3</span></p>\n\n<p>&rArr;&nbsp;∛(21952/15625) = 1 + R/100</p>\n\n<p>&rArr; 28/25 = 1 + R/100</p>\n\n<p>&rArr; 28/25&nbsp;&ndash; 1 = R/100</p>\n\n<p>&rArr; (28&nbsp;&ndash; 25)/25 = R/100</p>\n\n<p>&rArr; 3/25 = R/100</p>\n\n<p>&rArr; R = (3/25)&nbsp;&times; 100</p>\n\n<p>&rArr;&nbsp;R = 3&nbsp;&times; 4</p>\n\n<p>&rArr; R = 12%</p>\n\n<p><strong>&there4; प्रतिवर्ष ब्याज दर&nbsp;12% है।</strong></p>\n\n30:T6f2,\n<p><strong>Given:</strong></p>\n\n<p>Money doubles in 4 years</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>&nbsp;A = P&nbsp;&times;", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Compound Interest"], "concept": "Compound Interest", "confidence": "high"}, {"qid": "5fe99746d54559a724c77014", "qs_no": 2, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The simple interest on a sum of money at 10% per annum for 2 years is Rs. 8,100. Compounded annually, what would be the compound interest (in Rs.) on the same sum for the same period at the same rate of interest?", "options": [{"prompt": "1", "value": "8,100"}, {"prompt": "2", "value": "8,505"}, {"prompt": "3", "value": "8,715"}, {"prompt": "4", "value": "9,000"}], "range": {"start": "", "end": ""}}, "hn": {"value": "2 वर्ष के लिए 10% की वार्षिक दर से एक राशि पर साधारण ब्याज 8,100 रुपये है। वार्षिक रूप से समायोजित होने पर, समान ब्याज की दर पर समान अवधि के लिए उसी राशि पर चक्रवृद्धि ब्याज (रुपये में) क्या होगा?", "options": [{"prompt": "1", "value": "8,100"}, {"prompt": "2", "value": "8,505"}, {"prompt": "3", "value": "8,715"}, {"prompt": "4", "value": "9,000"}], "range": {"start": "", "end": ""}}, "or": {"value": "2 ବର୍ଷ ପାଇଁ ବାର୍ଷିକ 10% ହାରରେ କିଛି ଟଙ୍କା ଉପରେ ସରଳ ସୁଧ ହେଉଛି 8,100 ଟଙ୍କା । ବାର୍ଷିକ ସମାନ ସୁଧ ହାରରେ ସମାନ ଅବଧି ପାଇଁ ସମାନ ରାଶି ଉପରେ ଚକ୍ରବୃଦ୍ଧି ସୁଧ (ଟଙ୍କାରେ) କେତେ ହେବ?", "options": [{"prompt": "1", "value": "<span style=\"color: rgb(33, 37, 41);\">8,100</span>"}, {"prompt": "2", "value": "<span style=\"color: rgb(33, 37, 41);\">8,505</span>"}, {"prompt": "3", "value": "<span style=\"color: rgb(33, 37, 41);\">8,715</span>"}, {"prompt": "4", "value": "<span style=\"color: rgb(33, 37, 41);\">9,000</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Effective Simple Interest (SI) rate for 2 years = 10% × 2 = 20%</p>\n<p>Effective Compound Interest (CI) rate for 2 years = 10% + 10% + (10 × 10) ÷ 100 = 21%</p>\n<p>If 20% → Rs. 8,100, then 1% → 8,100 ÷ 20 = 405</p>\n<p>⇒ CI (21%) = 405 × 21 = 8,505</p>\n<p><strong>∴ The correct answer is Rs. 8,505.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Simple Interest (SI) = Rs. 8,100</p>\n<p>Rate (R) = 10%</p>\n<p>Time (T) = 2 years</p>\n<p><strong>Formula Used:</strong></p>\n<p>SI = (P × R × T) ÷ 100</p>\n<p>CI = P × [(1 + R/100)<sup>T</sup> − 1]</p>\n\n<svg width=\"420\" height=\"240\" viewBox=\"0 0 420 240\" xmlns=\"http://www.w3.org/2000/svg\" style=\"display:block;margin:12px 0;background:#ffffff;border-radius:10px;border:1px solid #cccccc;\">\n  <defs>\n    <marker id=\"arrow\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"6\" markerHeight=\"6\" orient=\"auto\">\n      <path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#2255cc\"/>\n    </marker>\n  </defs>\n\n  <line x1=\"210\" y1=\"40\" x2=\"110\" y2=\"80\" stroke=\"#2255cc\" stroke-width=\"1.5\" marker-end=\"url(#arrow)\"/>\n  <line x1=\"210\" y1=\"40\" x2=\"310\" y2=\"80\" stroke=\"#2255cc\" stroke-width=\"1.5\" marker-end=\"url(#arrow)\"/>\n  <path d=\"M 110 110 Q 110 165 240 165\" fill=\"none\" stroke=\"#2255cc\" stroke-width=\"1.5\" marker-end=\"url(#arrow)\"/>\n\n  <text x=\"145\" y=\"55\" font-family=\"sans-serif\" font-size=\"12\" fill=\"#cc5500\" font-weight=\"bold\">10%</text>\n  <text x=\"275\" y=\"55\" font-family=\"sans-serif\" font-size=\"12\" fill=\"#cc5500\" font-weight=\"bold\">10%</text>\n  <text x=\"170\" y=\"155\" font-family=\"sans-serif\" font-size=\"12\" fill=\"#cc5500\" font-weight=\"bold\">10%</text>\n\n  <rect x=\"150\" y=\"10\" width=\"120\" height=\"30\" rx=\"6\" fill=\"#ddeeff\" stroke=\"#2255cc\" stroke-width=\"1.5\"/>\n  <text x=\"210\" y=\"30\" font-family=\"sans-serif\" font-size=\"13\" fill=\"#222222\" font-weight=\"bold\" text-anchor=\"middle\">P = 40,500</text>\n\n  <rect x=\"50\" y=\"80\" width=\"120\" height=\"30\" rx=\"6\" fill=\"#fff0cc\" stroke=\"#cc5500\" stroke-width=\"1.5\"/>\n  <text x=\"110\" y=\"100\" font-family=\"sans-serif\" font-size=\"13\" fill=\"#222222\" text-anchor=\"middle\">Yr 1: 4,050</text>\n\n  <rect x=\"250\" y=\"80\" width=\"120\" height=\"30\" rx=\"6\" fill=\"#fff0cc\" stroke=\"#cc5500\" stroke-width=\"1.5\"/>\n  <text x=\"310\" y=\"100\" font-family=\"sans-serif\" font-size=\"13\" fill=\"#222222\" text-anchor=\"middle\">Yr 2: 4,050</text>\n\n  <rect x=\"250\" y=\"150\" width=\"120\" height=\"30\" rx=\"6\" fill=\"#ccffcc\" stroke=\"#007700\" stroke-width=\"1.5\"/>\n  <text x=\"310\" y=\"170\" font-family=\"sans-serif\" font-size=\"13\" fill=\"#222222\" text-anchor=\"middle\">CI on Yr 1: 405</text>\n\n  <text x=\"210\" y=\"215\" font-family=\"sans-serif\" font-size=\"14\" fill=\"#2255cc\" font-weight=\"bold\" text-anchor=\"middle\">Total CI = 4050 + 4050 + 405 = Rs. 8,505</text>\n</svg>\n\n<p><strong>Calculations:</strong></p>\n<p>⇒ P = (SI × 100) ÷ (R × T)</p>\n<p>⇒ P = (8100 × 100) ÷ (10 × 2)</p>\n<p>⇒ P = 810000 ÷ 20 = 40,500</p>\n<p>Now, finding the Compound Interest on the Principal calculated:</p>\n<p>⇒ CI = 40500 × [(1 + 10/100)<sup>2</sup> − 1]</p>\n<p>⇒ CI = 40500 × [(11/10)<sup>2</sup> − 1]</p>\n<p>⇒ CI = 40500 × [121/100 − 1]</p>\n<p>⇒ CI = 40500 × (21/100)</p>\n<p>⇒ CI = 405 × 21 = 8,505</p>\n<p><strong>∴ The correct answer is Rs. 8,505.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Direct Relation between CI and SI for 2 years</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">When rate (R) and time (T = 2 years) are the same, CI can be directly found using: CI = SI × (1 + R/200).</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Difference between CI and SI for 2 years</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">The difference between compound and simple interest on a sum P for 2 years is: Difference = P × (R/100)<sup>2</sup>.</p>\n<p style=\"margin:8px 0 2px 0;font-weight:700;color:#222222;\">Effective Rate of Compound Interest</p>\n<p style=\"margin:0 0 8px 0;color:#444444;\">The total effective CI rate for 2 years can be calculated using the successive percentage formula: X + Y + (X × Y)/100.</p></p", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p>साधारण ब्याज = 8,100 रुपये</p>\n\n<p>समय = 2 वर्ष</p>\n\n<p>ब्याज दर&nbsp;= 10%</p>\n\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n\n<p>C.I = P&nbsp;&times; [1 +(R/100)]<sup>t</sup>&nbsp;<span style=\"\">&nbsp;- P</span></p>\n\n<p>C.I = चक्रवृद्धि ब्याज</p>\n\n<p>P = मूलधन</p>\n\n<p>R = ब्याज दर</p>\n\n<p>t = समय</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>1&nbsp;वर्ष के लिए साधारण ब्याज&nbsp;= 10%</p>\n\n<p>और 2&nbsp;वर्ष के लिए साधारण ब्याज = 20%</p>\n\n<p>इसलिए,&nbsp;</p>\n\n<p>&rArr; 20% = 8100</p>\n\n<p>&rArr; 100% = 8100&nbsp;&times; (100%/20%)&nbsp;&rArr; 40500 रुपये</p>\n\n<p>C.I&nbsp;= P&nbsp;&times; [1 +(R/100)]<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">t</span>&nbsp;<span style=\"\">&nbsp;- P</span></p>\n\n<p>&rArr;&nbsp;C.I = 40500&nbsp;&times; [ 1 + (10/100)]<sup>2</sup><span style=\"\">&nbsp;- P</span></p>\n\n<p>&rArr; C.I = 40500&nbsp;&times; (11/10)<sup>2</sup><span style=\"\">&nbsp;- P</span></p>\n\n<p>&rArr; C.I = 40500&nbsp;&times; (121/100)&nbsp;&rArr; 49005<span style=\"\">&nbsp;- P</span></p>\n\n<p>&rArr; ब्याज = 49005 - 40500 = 8505</p>\n\n<p><strong>&there4; चक्रवृद्धि ब्याज&nbsp;8505 रुपये है।</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Shortcut Trick</u></span></strong></span></p>\n\n<p>2&nbsp;वर्ष के लिए साधारण ब्याज = 10% + 10% =&nbsp;20%.</p>\n\n<p>2&nbsp;वर्ष के लिए चक्रवृद्धि ब्याज = 10% + 10% + 1% = 21%</p>\n\n<p>&rArr; 20% = 8100&nbsp;</p>\n\n<p>&rArr; 21% = 8100&nbsp;&times; (21/20)</p>\n\n<p>&rArr; 21% = 8505</p>\n\n<p><span style=\"font-weight: 700;\">&there4; चक्रवृद्धि ब्याज 8505 रुपये है।</span></p>\n\n36:Td6b,\n<p style=\"color: rgb(33, 37, 41);\"><strong>ଦିଆଯାଇଛି:</strong></p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">S.I</span> = 8100 ଟଙ୍କା</p>\n\n<p>ସମୟ = 2 ବର୍ଷ</p>\n\n<p>ସୁଧ ହାର = 10%</p>\n\n<p><strong>ସୂତ୍ର ବ୍ୟବହୃତ:</strong></p>\n\n<p style=\"color: rgb(33, 37, 41);\">C.I = P × [1 +(R/100)]<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">t</span>  - P</p>\n\n<p style=\"color: rgb(", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "\n<p style=\"color: rgb(33, 37, 41);\"><strong>ଦିଆଯାଇଛି:</strong></p>\n\n<p><span style=\"color: rgb(33, 37, 41);\">S.I</span> = 8100 ଟଙ୍କା</p>\n\n<p>ସମୟ = 2 ବର୍ଷ</p>\n\n<p>ସୁଧ ହାର = 10%</p>\n\n<p><strong>ସୂତ୍ର ବ୍ୟବହୃତ:</strong></p>\n\n<p style=\"color: rgb(33, 37, 41);\">C.I = P × [1 +(R/100)]<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">t</span>  - P</p>\n\n<p style=\"color: rgb(33, 37, 41);\">C.I = ଚକ୍ରବୃଦ୍ଧି ସୁଧ</p>\n\n<p style=\"color: rgb(33, 37, 41);\">P = ମୂଳଧନ</p>\n\n<p style=\"color: rgb(33, 37, 41);\">R = ସୁଧ ହାର</p>\n\n<p>t = ସମୟ</p>\n\n<p><strong>ଗଣନା:</strong></p>\n\n<p>1 ବର୍ଷ ପାଇଁ S.I = 10%</p>\n\n<p>ଏବଂ 2 ବର୍ଷ ପାଇଁ<span style=\"color: rgb(33, 37, 41);\"> S.I</span> = 20%</p>\n\n<p>ତେଣୁ, </p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 20% = 8100</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 100% = 8100 × (100%/20%) ⇒ Rs.40500</p>\n\n<p style=\"color: rgb(33, 37, 41);\">C.I = P × [1 +(R/100)]<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">t</span> - P</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ C.I = 40500 × [ 1 + (10/100)]<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> - P</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ C.I = 40500 × (11/10)<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span> - P</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ C.I = 40500 × (121/100) - P ⇒ 49005 - P</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ ସୁଧ = 49005 - 40500 = 8505</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">∴ </span><strong>ଚକ୍ରବୃଦ୍ଧି ସୁଧ</strong> <span style=\"font-weight: bolder;\">8505 ହେବ । </span></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /><span style=\"font-weight: bolder;\"><span style=\"font-size:20px;\"><span style=\"vertical-align: middle; \"><u>Shortcut Trick</u></span></span></span></span></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"color: rgb(33, 37, 41);\">2 ବର୍ଷ ପାଇଁ S.I</span> = 10% + 10% = 20%.</p>\n\n<p style=\"color: rgb(33, 37, 41);\"> 2 ବର୍ଷ ପାଇଁ ଚକ୍ରବୃଦ୍ଧି ସୁଧ = 10% + 10% + 1% = 21%</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 20% = 8100 </p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 21% = 8100 × (21/20)</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 21% = 8505</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"color: rgb(33, 37, 41); font-weight: bolder;\">∴ </span><span style=\"font-weight: bolder;\">ଚକ୍ରବୃଦ୍ଧି ସୁଧ</span><span style=\"color: rgb(33, 37, 41);\"> </span><span style=\"color: rgb(33, 37, 41); font-weight: bolder;\">8505 ହେବ । </span></p>\n\n37:Tcf8,\n<p><strong>Given: </strong></p>\n\n<p>compound interest(C.I.) - Rs. 328</p>\n\n<p>Rate - 5% p.a.</p>\n\n<p>Time - 2 years</p>\n\n<p><b>Formula used:</b></p>\n\n<p><span class=\"math-tex\">\\(compound\\;interest = ", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Compound Interest"], "concept": "Compound Interest", "confidence": "high"}, {"qid": "5fd316ec9b2f5f72a62c3eee", "qs_no": 3, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "Nitin&rsquo;s money becomes double in 4 years at compound interest. In how many years will it become sixteen times at compound Interest?", "options": [{"prompt": "1", "value": "20"}, {"prompt": "2", "value": "24"}, {"prompt": "3", "value": "16"}, {"prompt": "4", "value": "28"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">चक्रवृद्धि ब्याज के दर से 4 वर्षों में नितिन का धन दोगुना हो जाता है। </font><font style=\"vertical-align: inherit;\">चक्रवृद्धि ब्याज की समान दर से यह कितने वर्षों में सोलह गुना हो जाएगा?</font></font>", "options": [{"prompt": "1", "value": "20"}, {"prompt": "2", "value": "24"}, {"prompt": "3", "value": "16"}, {"prompt": "4", "value": "28"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>Money doubles in 4 years</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>&nbsp;A = P&nbsp;&times;&nbsp;{1 + (r/100)}<sup>t</sup></p>\n\n<p>where A = Amount</p>\n\n<p>P = Principal</p>\n\n<p>r= Rate of interest</p>\n\n<p>t = time</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Let the principal be Rs. x</p>\n\n<p>So, amount will become Rs. 2x</p>\n\n<p>&nbsp;A = P&nbsp;&times;&nbsp;{1 + (r/100)}<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">t</span></p>\n\n<p>&rArr; 2x = x&nbsp;&times; {1 + (r/100)}<sup>4</sup></p>\n\n<p>&rArr; 2&nbsp;= &nbsp;{1 + (r/100)}<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">4</span></p>\n\n<p>&rArr; 2<sup>(1/4)</sup>&nbsp;=&nbsp;&nbsp;{1 + (r/100)}</p>\n\n<p>Now, find for 16x</p>\n\n<p>&rArr; 16x = x&nbsp;&times; {1 + (r/100)}<sup>t</sup></p>\n\n<p>&rArr; 16&nbsp;=&nbsp;&nbsp;{1 + (r/100)}<sup>t</sup></p>\n\n<p>&rArr; 2<sup>4</sup>=&nbsp; 2<sup>(t/4)</sup></p>\n\n<p>&rArr; 2<sup>16</sup>&nbsp;=&nbsp;2<sup>t</sup></p>\n\n<p>&rArr; t = 16 years</p>\n\n<p><strong>&there4; The sum will become 16 times in 16 years.</strong></p>", "hn": "\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया हुआ:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">4 वर्षों&nbsp;में धन&nbsp;दोगुना हो जाता है।&nbsp;</font></font></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">उपयोग किया गया सूत्र:</font></font></strong></p>\n\n<p>&nbsp;A = P&nbsp;&times;&nbsp;{1 + (r/100)}<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">t</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">जहां A&nbsp;= </font></font>मिश्रधन</p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">P&nbsp;=&nbsp;मूलधन &nbsp;</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">r = ब्याज की दर</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">t&nbsp;= समय</font></font></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">माना&nbsp;मूलधन x रुपये है।&nbsp;</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">इसलिए, मिश्रधन&nbsp;</font><font style=\"vertical-align: inherit;\">2x रुपये होगा।&nbsp;</font></font></p>\n\n<p>&nbsp;A = P&nbsp;&times;&nbsp;{1 + (r/100)}<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">t</span></p>\n\n<p>&rArr; 2x = x&nbsp;&times; {1 + (r/100)}<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">4</span></p>\n\n<p>&rArr; 2&nbsp;= &nbsp;{1 + (r/100)}<span style=\"position: relative; line-height: 0; vertical-align: baseline; top: -0.5em; font-size:10.5px;\">4</span></p>\n\n<p>&rArr; 2<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">(1/4)</span>&nbsp;=&nbsp;&nbsp;{1 + (r/100)}</p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">अब, 16x ज्ञात करने के लिए</font></font></p>\n\n<p>&rArr; 16x = x&nbsp;&times; {1 + (r/100)}<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">t</span></p>\n\n<p>&rArr; 16&nbsp;=&nbsp;&nbsp;{1 + (r/100)}<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">t</span></p>\n\n<p>&rArr; 2<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">4</span>=&nbsp; 2<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">(t/4)</span></p>\n\n<p>&rArr; 2<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">16</span>&nbsp;=&nbsp;2<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">t</span></p>\n\n<p>&rArr; t = 16 वर्ष</p>\n\n<p><span style=\"font-weight: 700;\">&there4;</span><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;यह धन&nbsp;16 वर्षों में 16 गुना हो जाएगी।</font></font></strong></p>\n\n32:T7bc,\n<p><strong>Given:</strong></p>\n\n<p>Rate of interest = 17%</p>\n\n<p>Time = 2 years</p>\n\n<p>The difference between CI and SI = Rs. 433.50</p>\n\n<p><b>Formula used:</b></p>\n\n<p>Simple interest = P&nbsp;&times;&nbsp;R%&nb", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Compound Interest"], "concept": "Compound Interest", "confidence": "high"}, {"qid": "6011129373a5b0f48b432f89", "qs_no": 4, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "A sum invested at 8% p.a. amounts to Rs. 20,280 at the end of one year, when the interest is compounded half-yearly. what will be the compound interest (in Rs.) on the same sum for 2 years if the interest rate is the same as earlier and interest is compounded annually?", "options": [{"prompt": "1", "value": "3,260"}, {"prompt": "2", "value": "4,000"}, {"prompt": "3", "value": "2,750"}, {"prompt": "4", "value": "3,120"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>एक मूलधन 8% प्रति वर्ष पर निवेश कर के एक वर्ष के अंत में&nbsp;20,280 रुपये हो जाता है, जब ब्याज अर्धवार्षिक रूप से संयोजित होता है। समान मूलधन पर&nbsp;<span style=\"white-space: nowrap;\">2&nbsp;</span>वर्षों का चक्रवृद्धि ब्याज (रुपये में) कितना होगा&nbsp;यदि ब्याज की दर&nbsp;पूर्व के&nbsp;समान है और&nbsp;ब्याज वार्षिक रूप से संयोजित होता है?&nbsp;</p>\n", "options": [{"prompt": "1", "value": "3,260"}, {"prompt": "2", "value": "4,000"}, {"prompt": "3", "value": "2,750"}, {"prompt": "4", "value": "3,120"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>The sum invested at 8% p.a. amounts to Rs. 20,280 at the end of one year, when the interest is compounded half-yearly.</p>\n\n<p><strong>Formula Used:</strong></p>\n\n<p>A = P(1 + R/100)<sup>nT</sup></p>\n\n<p>A = Amount, P = Principal, R = Rate, T = Time</p>\n\n<p>n = number of times interest compounded per year</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Let Principal be Rs P</p>\n\n<p>Interest is compounded half-yearly</p>\n\n<p>&rArr; Rate = 8/2 = 4%</p>\n\n<p>According to the question</p>\n\n<p>&rArr; P(1 +&nbsp;<span class=\"math-tex\">\\(\\frac{4}{100}\\)</span> )<sup>2</sup>&nbsp;= 20280</p>\n\n<p>&rArr; P(104/100)<sup>2</sup>&nbsp;= 20280</p>\n\n<p>&rArr; P(26/25)<sup>2</sup>&nbsp;= 20280</p>\n\n<p>&rArr; P&nbsp;=&nbsp;<span class=\"math-tex\">\\(\\frac{20280 × 25 × 25}{26 × 26}\\)</span>&nbsp;= 18750 Rs</p>\n\n<p>Again, according to the question</p>\n\n<p>&rArr; Amount = 18750(1 + <span class=\"math-tex\">\\(\\frac{8}{100}\\)</span>)<sup>2</sup></p>\n\n<p>&rArr; Amount =&nbsp;<span class=\"math-tex\">\\(\\frac{18750 × 27 × 27}{25 × 25}\\)</span>&nbsp;=&nbsp;<span style=\"color: rgb(33, 37, 41);\">21870 Rs</span></p>\n\n<p>&rArr; CI = 21870 - 18750 = 3120</p>\n\n<p><strong>&there4; Compound interest for 2 years at the same rate is 3120 Rs.</strong></p>\n\n3e:T", "hn": "\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया गया है:</font></font></strong></p>\n\n<p>एक मूलधन 8% प्रति वर्ष पर निवेश कर के एक वर्ष के अंत में&nbsp;20,280 रुपये हो जाता&nbsp;है, जब ब्याज अर्धवार्षिक रूप से संयोजित होता है।</p>\n\n<p><b>प्रयुक्त सूत्र:</b></p>\n\n<p>A = P(1 + R/100)<sup>n</sup><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">T</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">A&nbsp;= मिश्रधन ,&nbsp;</font></font><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">P&nbsp;= मूलधन,&nbsp;</font></font><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">R&nbsp;= दर,&nbsp;</font></font><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">T = समय</font></font></p>\n\n<p><span style=\"\">n = प्रतिवर्ष ब्याज के संयोजित होने की संख्या</span></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></strong></p>\n\n<p>माना मूलधन <span style=\"color: rgb(33, 37, 41);\">P</span>&nbsp;रुपये है।&nbsp;</p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">समय को अर्धवार्षिक रूप से संयोजित किया जाता है</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; दर = 8/2 = 4%&nbsp;</font></font></p>\n\n<p>प्रश्नानुसार,</p>\n\n<p>&rArr; <span style=\"color: rgb(33, 37, 41);\">P</span>(1 + <span class=\"math-tex\">\\(\\frac{4}{100}\\)</span>)<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>&nbsp;= 20280</p>\n\n<p>&rArr; <span style=\"color: rgb(33, 37, 41);\">P</span>(104/100)<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>&nbsp;= 20280</p>\n\n<p>&rArr; <span style=\"color: rgb(33, 37, 41);\">P</span>(26/25)<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span>&nbsp;= 20280</p>\n\n<p>&rArr; <span style=\"color: rgb(33, 37, 41);\">P</span> = <span class=\"math-tex\">\\(\\frac{20280 × 25 × 25}{26 × 26}\\)</span>&nbsp;=&nbsp;<span style=\"color: rgb(33, 37, 41);\">18750 रूपये&nbsp;</span></p>\n\n<p>पुनः&nbsp;<span style=\"color: rgb(33, 37, 41);\">प्रश्नानुसार,</span></p>\n\n<p>&rArr; मिश्रधन&nbsp;= 18750(1 +&nbsp;<span class=\"math-tex\">\\(\\frac{8}{100}\\)</span> )<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span></p>\n\n<p>&rArr; <span style=\"color: rgb(33, 37, 41);\">मिश्रधन</span>&nbsp;= <span class=\"math-tex\">\\(\\frac{18750 × 27 × 27}{25 × 25}\\)</span>&nbsp;=&nbsp;<span style=\"color: rgb(33, 37, 41);\">21870 रुपये</span></p>\n\n<p>&rArr; चक्रवृद्धि ब्याज<strong> </strong>= 21870 - 18750 = 3120</p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&there4; समान दर पर 2 वर्ष के लिए चक्रवृद्धि ब्याज 3120 रुपये है।&nbsp;</font></font></strong></p>\n\n3f:T474,<p><strong>Given:</strong></p>\n\n<p>Sum = 2200</p>\n\n<p>Rate of interest = 12%</p>\n\n<p>Number of years = 2 years compounded half yearly</p>\n\n<p><strong>Concept:</strong></p>\n\n<p>In compound interest half yearly means the rate of interest is get halved</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>Amount = P[(1 + {(R/2) &times; 1/100})<sup>2n</sup>]</p>\n\n<p><strong>Calculations:</strong></p>\n\n<p>Amount = 2200[(1 + {(12/2)&nbsp;&times; 1/100})<sup>2&nbsp;&times", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Compound Interest"], "concept": "Compound Interest", "confidence": "high"}, {"qid": "5fed99ba761aa1742ab05ad3", "qs_no": 5, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "If the compound interest on a certain sum of money for 2 years at 5% p.a. is Rs. 328, then the sum is equal to:", "options": [{"prompt": "1", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;Rs.&amp;nbsp;&lt;/font&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;3,000&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "2", "value": "Rs.&amp;nbsp;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;3,200&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "3", "value": "Rs.&amp;nbsp;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt; &lt;/font&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;3,600&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "4", "value": "Rs.&amp;nbsp;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;3,500&lt;/font&gt;&lt;/font&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">यदि 5% प्रतिवर्ष दर पर 2 वर्ष के लिए एक निश्चित राशि पर चक्रवृद्धि ब्याज </font><font style=\"vertical-align: inherit;\">328 रुपये है, तो राशि होगी:</font></font>", "options": [{"prompt": "1", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;3,000&amp;nbsp;&lt;/font&gt;&lt;/font&gt;रुपये"}, {"prompt": "2", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;3,200 &lt;/font&gt;&lt;/font&gt;रुपये"}, {"prompt": "3", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;3,600 &lt;/font&gt;&lt;/font&gt;रुपये"}, {"prompt": "4", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;3,500&amp;nbsp;&lt;/font&gt;&lt;/font&gt;रुपये"}], "range": {"start": "", "end": ""}}, "bn": {"value": "যদি একটি নির্দিষ্ট পরিমাণ অর্থের উপর 2 বছরের জন্য 5% প্ৰতিবছর সুদের হারে চক্রবৃদ্ধি সুদ 328 টাকা হয়, তাহলে আসল হবে:", "options": [{"prompt": "1", "value": "<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">3,000 টাকা</font></font>"}, {"prompt": "2", "value": "3,200 টাকা"}, {"prompt": "3", "value": "3,600 টাকা"}, {"prompt": "4", "value": "3,500 টাকা"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ஒரு குறிப்பிட்ட தொகையின் கூட்டு வட்டி 2 ஆண்டுகளுக்கு ஆண்டுக்கு 5% என்ற விகிதத்தில் ரூ.328 யாக இருந்தால், அந்தத் தொகை என்ன ?", "options": [{"prompt": "1", "value": "ரூ. 3,000"}, {"prompt": "2", "value": "ரூ. 3,200"}, {"prompt": "3", "value": "ரூ. 3,600"}, {"prompt": "4", "value": "ரூ. 3,500"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Given: </strong></p>\n\n<p>compound interest(C.I.) - Rs. 328</p>\n\n<p>Rate - 5% p.a.</p>\n\n<p>Time - 2 years</p>\n\n<p><b>Formula used:</b></p>\n\n<p><span class=\"math-tex\">\\(compound\\;interest = principal\\left( {{{\\left( {1 + \\frac{r}{{100}}} \\right)}^t} - 1} \\right)\\)</span></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">Calculation:</font></font></strong></p>\n\n<p>According to formula,</p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(compound\\;interest = principal\\left( {{{\\left( {1 + \\frac{r}{{100}}} \\right)}^t} - 1} \\right)\\)</span></p>\n\n<p>putting the value of C.I., rate, time in above formula</p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(328 = principal\\left( {{{\\left( {1 + \\frac{5}{{100}}} \\right)}^2} - 1} \\right)\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr;&nbsp;</font></font><span class=\"math-tex\">\\(328 = \\frac{{principal\\left( {21 × 21 - 20 × 20} \\right)}}{{20 × 20}}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; principal&nbsp;=&nbsp;</font></font><span class=\"math-tex\">\\(\\left( {328 × 20 × 20} \\right)/41\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&rArr; principal = Rs.&nbsp;</font><font style=\"vertical-align: inherit;\">3200</font></font></p>\n\n<p><strong>&there4; The sum is Rs. 3200.</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a63c93e11c1bd5840d125804b189a0e6fab4be6ad12b4d33c13eace1e72ac42b.png\" style=\"width: 241px; height: 51px;\" /></p>\n\n<p><strong>Ratio method:</strong></p>\n\n<p>Rate = 5%</p>\n\n<p>&rArr;<strong>&nbsp;</strong>&nbsp;5/100 = 1/20</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fea1cfffb51d4427f4ccc6098b804f73feb409b5d831ea4b87307a7c0a8e0ccd.png\" style=\"width: 230px; height: 163px;\" /></p>\n\n<p>&rArr; 41 unit = 328</p>\n\n<p>&rArr; 1 unit = 328/41</p>\n\n<p>&rArr; 1 unit = 8</p>\n\n<p>Then, sum&nbsp;is 400 unit</p>\n\n<p>&rArr; 400 unit = 400&nbsp;&times; 8</p>\n\n<p>&rArr; Rs. 3200</p>\n\n<p><span style=\"font-weight: 700;\">&there4; The sum is Rs. 3200.</span></p>\n\n38:", "hn": "\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया गया है</font></font></strong><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">चक्रवृद्धि ब्याज (CI) =&nbsp;</font><font style=\"vertical-align: inherit;\">328 रुपये</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दर (r) =&nbsp;5% प्रतिवर्ष</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">समय (t) =&nbsp;2 वर्ष</font></font></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">प्रयुक्त सूत्र:</font></font></strong></p>\n\n<p>चक्रवृद्धि ब्याज =&nbsp;मूलधन [(1 + r/100)<sup>t</sup>&nbsp;- 1]</p>\n\n<p><strong><font style=\"ver", "te": "", "mr": "", "bn": "\n<p><strong>প্রদত্ত: </strong></p>\n\n<p>চক্রবৃদ্ধি সুদ (C.I.) - 328 টাকা</p>\n\n<p>সুদের হার - 5% প্রতি বছর </p>\n\n<p>সময় - 2 বছর</p>\n\n<p><b>ব্যবহৃত সূত্র:</b></p>\n\n<p><span class=\"math-tex\">\\(compound\\;interest = principal\\left( {{{\\left( {1 + \\frac{r}{{100}}} \\right)}^t} - 1} \\right)\\)</span></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">গণনা:</font></font></strong></p>\n\n<p>সূত্র অনুযায়ী,</p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">⇒ </font></font><span class=\"math-tex\">\\(compound\\;interest = principal\\left( {{{\\left( {1 + \\frac{r}{{100}}} \\right)}^t} - 1} \\right)\\)</span></p>\n\n<p>উপরের সূত্রে C.I., সুদের হার, সময়ের মান বসিয়ে পাই</p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">⇒ </font></font><span class=\"math-tex\">\\(328 = আসল\\left( {{{\\left( {1 + \\frac{5}{{100}}} \\right)}^2} - 1} \\right)\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">⇒ </font></font><span class=\"math-tex\">\\(328 = \\frac{{আসল\\left( {21 × 21 - 20 × 20} \\right)}}{{20 × 20}}\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">⇒ আসল = </font></font><span class=\"math-tex\">\\(\\left( {328 × 20 × 20} \\right)/41\\)</span></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">⇒ আসল = </font></font><span style=\"color: rgb(33, 37, 41);\">3200 </span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">টাকা</font></font></p>\n\n<p><strong>∴ আসল হল <span style=\"color: rgb(33, 37, 41);\">3200 </span>টাকা।</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a63c93e11c1bd5840d125804b189a0e6fab4be6ad12b4d33c13eace1e72ac42b.png\" style=\"width: 241px; height: 51px;\" /></p>\n\n<p><strong>অনুপাত পদ্ধতি:</strong></p>\n\n<p>সুদের হার = 5%</p>\n\n<p>⇒<strong> </strong> 5/100 = 1/20</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fea1cfffb51d4427f4ccc6098b804f73feb409b5d831ea4b87307a7c0a8e0ccd.png\" style=\"width: 230px; height: 163px;\" /></p>\n\n<p>⇒ 41 একক = 328</p>\n\n<p>⇒ 1 একক = 328/41</p>\n\n<p>⇒ 1 একক = 8</p>\n\n<p>তাহলে, আসল হল 400 একক</p>\n\n<p>⇒ 400 একক = 400 <span style=\"color: rgb(33, 37, 41);\">× </span>8</p>\n\n<p>⇒ <span style=\"color: rgb(33, 37, 41);\">3200 </span>টাকা</p>\n\n<p><span style=\"font-weight: 700;\">∴ আসল হল </span><strong>3200 </strong><span style=\"font-weight: 700;\">টাকা।</span></p>\n\n3a:Td3a,\n<p style=\"color: rgb(33, 37, 41);\"><strong>கொடுக்கப்பட்டது:</strong></p>\n\n<p>கூட்டு வட்டி (C.I.) - ரூ. 328</p>\n\n<p>விகிதம் - ஆண்டிற்கு 5%.</p>\n\n<p>காலம் - 2 ஆண்டுகள்</p>\n\n<p><strong>பயன்படுத்தப்படும் சூத்திரம்:</strong></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span class=\"math-tex\">\\(compound\\;interest = principal\\left( {{{\\left( {1 + \\frac{r}{{100}}} \\right)}^t} - 1} \\right)\\)</span><", "ml": "", "gu": "", "kn": "", "ta": "\n<p style=\"color: rgb(33, 37, 41);\"><strong>கொடுக்கப்பட்டது:</strong></p>\n\n<p>கூட்டு வட்டி (C.I.) - ரூ. 328</p>\n\n<p>விகிதம் - ஆண்டிற்கு 5%.</p>\n\n<p>காலம் - 2 ஆண்டுகள்</p>\n\n<p><strong>பயன்படுத்தப்படும் சூத்திரம்:</strong></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span class=\"math-tex\">\\(compound\\;interest = principal\\left( {{{\\left( {1 + \\frac{r}{{100}}} \\right)}^t} - 1} \\right)\\)</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\"> </p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p>சூத்திரத்தின் படி,</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><font style=\"vertical-align: inherit;\">⇒ </font><span class=\"math-tex\">\\(compound\\;interest = principal\\left( {{{\\left( {1 + \\frac{r}{{100}}} \\right)}^t} - 1} \\right)\\)</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">மேலே உள்ள சூத்திரத்தில் C.I., விகிதம், நேரம் ஆகியவற்றின் மதிப்பை வைப்பது</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><font style=\"vertical-align: inherit;\">⇒ </font><span class=\"math-tex\">\\(328 = principal\\left( {{{\\left( {1 + \\frac{5}{{100}}} \\right)}^2} - 1} \\right)\\)</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><font style=\"vertical-align: inherit;\">⇒ </font><span class=\"math-tex\">\\(328 = \\frac{{principal\\left( {21 × 21 - 20 × 20} \\right)}}{{20 × 20}}\\)</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><font style=\"vertical-align: inherit;\">⇒ </font> அசல் <font style=\"vertical-align: inherit;\">= </font><span class=\"math-tex\">\\(\\left( {328 × 20 × 20} \\right)/41\\)</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">⇒ </font></font> <span style=\"color: rgb(33, 37, 41);\">அசல் </span><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">= </font></font>ரூ.<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> </font><font style=\"vertical-align: inherit;\">3200</font></font></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><strong>∴ தொகை ரூ. 3200.</strong></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/a63c93e11c1bd5840d125804b189a0e6fab4be6ad12b4d33c13eace1e72ac42b.png\" style=\"width: 241px; height: 51px;\" /></p>\n\n<p style=\"color: rgb(33, 37, 41);\"><strong>விகித முறை:</strong></p>\n\n<p style=\"color: rgb(33, 37, 41);\">விகிதம் = 5%</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒<span style=\"font-weight: bolder;\"> </span> 5/100 = 1/20</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/fea1cfffb51d4427f4ccc6098b804f73feb409b5d831ea4b87307a7c0a8e0ccd.png\" style=\"width: 230px; height: 163px;\" /></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 41 அலகு = 328</p>\n\n<p>⇒ 1 அலகு = 328/41</p>\n\n<p>⇒ 1 அலகு = 8</p>\n\n<p>பிறகு, தொகை 400 அலகு </p>\n\n<p>⇒ 400 அலகு = 400 × 8</p>\n\n<p>⇒ ரூ. 3200</p>\n\n<p><strong>∴ தொகை ரூ. 3200.</strong></p>\n\n3b:T976,\n<p><strong>Given:</strong></p>\n\n<p>Principal amount = Rs. 8,000</p>\n\n<p>Rate of interest = 10%</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>Total amount (A) = Principal amount &times; [1 + (rate of interest/100)]<sup>n</sup></p>\n\n<p>Compound interest (C.I.) = Total amount &ndash; Principal amount</p>\n\n<p><strong>Calculation:</s", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Compound Interest"], "concept": "Compound Interest", "confidence": "high"}, {"qid": "6007d8baceec82c3688711f9", "qs_no": 6, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The difference between the compound interest on a sum of Rs. 8,000 for 1 year at the rate of 10% per annum, interest compounded yearly and half yearly is:", "options": [{"prompt": "1", "value": "Rs. 40"}, {"prompt": "2", "value": "Rs. 10"}, {"prompt": "3", "value": "Rs. 30"}, {"prompt": "4", "value": "Rs. 20"}], "range": {"start": "", "end": ""}}, "hn": {"value": "10% प्रति वर्ष की दर से 1 वर्ष के लिए 8,000 रुपए की राशि पर चक्रवृद्धि ब्याज लागू करने पर, वार्षिक और छमाही में चक्रवृद्धि ब्याज के बीच का अंतर है:<br />\n", "options": [{"prompt": "1", "value": "40 रुपए"}, {"prompt": "2", "value": "10&amp;nbsp;रुपए"}, {"prompt": "3", "value": "30&amp;nbsp;रुपए"}, {"prompt": "4", "value": "20&amp;nbsp;रुपए"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>Principal amount = Rs. 8,000</p>\n\n<p>Rate of interest = 10%</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>Total amount (A) = Principal amount &times; [1 + (rate of interest/100)]<sup>n</sup></p>\n\n<p>Compound interest (C.I.) = Total amount &ndash; Principal amount</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Case &ndash; 1 (yearly interest)</p>\n\n<p>Rate of interest (R) = 10%</p>\n\n<p>Principal amount (P) = 8000</p>\n\n<p>Total amount (A) = P &times; [1 + (R/100)]<sup>n</sup></p>\n\n<p>A = 8000 &times; [1 + (10/100)]</p>\n\n<p>&rArr; A = 8000 &times; (11/10)</p>\n\n<p>&rArr; A = 8800</p>\n\n<p>C.I. = A &ndash; P = 8800 &ndash; 8000 = 800</p>\n\n<p>Case &n", "hn": "\n<p><span style=\"font-weight: 700;\">दिया गया है:</span></p>\n\n<p>मूलधन राशि =&nbsp;8,000 रुपए</p>\n\n<p>ब्याज की दर = 10%</p>\n\n<p><span style=\"font-weight: 700;\">प्रयुक्त सूत्र:</span></p>\n\n<p>कुल राशि (A) = मूलधन राशि &times; [1 + (ब्याज की दर/100)]<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">n</span></p>\n\n<p>चक्रवृद्धि ब्याज (C.I.) = कुल राशि &ndash; मूलधन राशि</p>\n\n<p><span style=\"font-weight: 700;\">गणना:</span></p>\n\n<p>स्थिति &ndash; 1 (वार्षिक ब्याज)</p>\n\n<p>ब्याज की दर&nbsp; (R) = 10%</p>\n\n<p>मूलधन राशि&nbsp;(P) = 8000</p>\n\n<p>कुल राशि (A) = P &times; [1 + (R/100)]<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">n</span></p>\n\n<p>A = 8000 &times; [1 + (10/100)]</p>\n\n<p>&rArr; A = 8000 &times; (11/10)</p>\n\n<p>&rArr; A = 8800</p>\n\n<p>C.I. = A &ndash; P = 8800 &ndash; 8000 = 800</p>\n\n<p>स्थिति &ndash; 2 (अर्ध वार्षिक)</p>\n\n<p>ब्याज की दर = R/2 = 10/2 = 5%</p>\n\n<p>मूलधन (P) = 8000</p>\n\n<p>समय अवधि (n) = 2</p>\n\n<p>कुल राशि (A) = P &times; [1 + (R/100)]<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">n</span></p>\n\n<p>&rArr; A = 8000 &times; [1 + (5/100)]<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span></p>\n\n<p>&rArr; A = 8000 &times; (21/20)<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2</span></p>\n\n<p>&rArr; A = 8000 &times; (21/20) &times; (21/20)</p>\n\n<p>&rArr; A = 8820</p>\n\n<p>C.I. = A &ndash; P = 8820 &ndash; 8000 = 820</p>\n\n<p>तो, चक्रवृद्धि ब्याज के बीच का अंतर</p>\n\n<p>&rArr; 820 &ndash; 800</p>\n\n<p>&rArr; 20</p>\n\n<p><span style=\"font-weight: 700;\">&there4;&nbsp;</span><strong>चक्रवृद्धि ब्याज के बीच का अंतर</strong><span style=\"font-weight: 700;\"> 20 रुपए हैI</span></p>\n\n<p><span style=\"font-weight: 700;\"><img height=\"31px\" src=\"https://cdn.repeatermock.com/tb/c3e171704ea19f3a259be7d559e906813ee432ced89a41617e61800cc76dd8bb.png\" width=\"147px\" /></span></p>\n\n<p>वृक्ष विधि का उपयोग करके:</p>\n\n<p><span style=\"font-weight: 700;\">&nbsp;</span><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/08bfd20d0dd15fea6a91e9e67817b77d1b9eba1000ea48458801e0aa10826202.png\" /></p>\n\n<p>अंतर = 820 &ndash; 800 = 20&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</p>\n\n3d:T70d,\n<p><strong>Given:</strong></p>\n\n<p>The sum invested at 8% p.a. amounts to Rs. 20,280 at the end of one year, when the interest is compounded half-yearly.</p>\n\n<p><strong>Formula Used:</strong></p>\n\n<p>A = P(1 + R/100)<sup>nT</sup></p>\n\n<p>A = Amount, P = Principal, R = Rate, T = Time</p>\n\n<p>n = number of times interest compounded per year</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Let Principal b", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Compound Interest"], "concept": "Compound Interest", "confidence": "high"}, {"qid": "601289f46df0586707328a43", "qs_no": 7, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "What will be the amount after 2 years, if a sum of Rs.2,200 is invested at 12% per annum compound interest, compounded half-yearly (correct to two decimal places)?", "options": [{"prompt": "1", "value": "Rs.2,766.18"}, {"prompt": "2", "value": "Rs.2,733.45"}, {"prompt": "3", "value": "Rs.2,777.45"}, {"prompt": "4", "value": "Rs.2,755.76"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">2 वर्ष के बाद मिश्रधन क्या होगा, यदि 2,200 रुपये की धनराशि&nbsp;</font></font>12%<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\"> प्रतिवर्ष चक्रवृद्धि ब्याज पर, अर्धवार्षिक रूप से संयोजित, (दो दशमलव स्थानों के लिए सही) निवेश की जाती है?</font></font>", "options": [{"prompt": "1", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;2,766.18 रुपये&amp;nbsp;&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "2", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;2,733.45 रुपये&amp;nbsp;&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "3", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;2,777.45 रुपये&lt;/font&gt;&lt;/font&gt;"}, {"prompt": "4", "value": "&lt;font style=&quot;vertical-align: inherit;&quot;&gt;&lt;font style=&quot;vertical-align: inherit;&quot;&gt;2,755.76 रुपये&amp;nbsp;&lt;/font&gt;&lt;/font&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>Sum = 2200</p>\n\n<p>Rate of interest = 12%</p>\n\n<p>Number of years = 2 years compounded half yearly</p>\n\n<p><strong>Concept:</strong></p>\n\n<p>In compound interest half yearly means the rate of interest is get halved</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>Amount = P[(1 + {(R/2) &times; 1/100})<sup&g", "hn": "\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">दिया गया है:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">धनराशि&nbsp;= 2200</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">ब्याज की दर = 12%</font></font></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">वर्षों की संख्या = 2 वर्ष </font></font>अर्धवार्षिक&nbsp;संयोजित</p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">अवधारणा:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">चक्रवृद्धि ब्याज में अर्धवार्षिक का अर्थ है कि ब्याज की दर आधी हो जाती है</font></font></p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">प्रयुक्त&nbsp;सूत्र:</font></font></strong></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">मिश्रधन </font></font>= P[(1 + {(R/2) &times; 1/100})<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2n</span>]</p>\n\n<p><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गणना:</font></font></strong></p>\n\n<p>मिश्रधन = 2200[(1 + {(12/2)&nbsp;&times; 1/100})<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">2&nbsp;&times; 2</span><span style=\"color: rgb(33, 37, 41);\">]</span></p>\n\n<p>&rArr; मिश्रधन = 2200 (1 + 6/100)<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">4</span></p>\n\n<p>&rArr; मिश्रधन = 2200 &times; 106&nbsp;&times; 106 &times; 106&nbsp;&times; 106/(100&nbsp;&times; 100 &times; 100 &times; 100)</p>\n\n<p>&rArr; मिश्रधन = 2777.449&nbsp;&asymp; 2777.45</p>\n\n<p><span style=\"font-weight: 700;\">&there4; 2 वर्ष</span><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&nbsp;बाद की मिश्रधन&nbsp;</font><font style=\"vertical-align: inherit;\">2777.45 रुपये है</font></font></strong></p>\n\n41:T6cb,\n<p><strong>Given:</strong></p>\n\n<p>CI on a sum for 2 years @ 15% p.a compounded 8-monthly = Rs.7282</p>\n\n<p><strong>Concept used :</strong></p>\n\n<p><span class=\"math-tex\">\\(A =P×(1+ \\frac{r} {100})^n\\)</span></p>\n\n<p><strong>Calculation :</strong></p>\n\n<p>rate is com", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Compound Interest"], "concept": "Compound Interest", "confidence": "high"}, {"qid": "60178e8c7bfafb1048e85dc1", "qs_no": 8, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The compound interest on a certain sum for 2 years at 15% p. a. is Rs.7,282, interest being compounded 8-monthly. What will be the amount of the same sum at the same rate for the same duration, when the interest is compounded yearly?", "options": [{"prompt": "1", "value": "Rs. 29,095"}, {"prompt": "2", "value": "Rs. 28,540"}, {"prompt": "3", "value": "Rs. 29,282"}, {"prompt": "4", "value": "Rs. 26,620"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p style=\"color: rgb(0, 0, 0);  \"><span style=\" \">किसी निश्चित राशि पर 2 वर्षों के लिए 15% वार्षिक दर पर&nbsp;चक्रवृद्धि ब्याज 7,282 रुपए है, ब्याज 8 माह में संयोजित हो रहा है।&nbsp;यदि ब्याज वार्होषिक संयोजित किया जा रहा हो&nbsp;तो इसी राशि का इसी दर से इसी अवधि तक के लिए कितनी राशि प्राप्त होगी?</span></p>\n", "options": [{"prompt": "1", "value": "29,095 रुपए&amp;nbsp;"}, {"prompt": "2", "value": "28,540&amp;nbsp;रुपए&amp;nbsp;"}, {"prompt": "3", "value": "29,282&amp;nbsp;रुपए&amp;nbsp;"}, {"prompt": "4", "value": "26,620&amp;nbsp;रुपए&amp;nbsp;"}], "range": {"start": "", "end": ""}}, "pa": {"value": "15% ਪੀ 'ਤੇ 2 ਸਾਲਾਂ ਲਈ ਇੱਕ ਨਿਸ਼ਚਿਤ ਰਕਮ 'ਤੇ ਮਿਸ਼ਰਿਤ ਵਿਆਜ 7,282 ਰੁਪਏ ਹੈ, ਵਿਆਜ 8-ਮਹੀਨਾਵਾਰ ਮਿਸ਼ਰਿਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ। ਜਦੋਂ ਵਿਆਜ ਨੂੰ ਸਲਾਨਾ ਮਿਸ਼ਰਿਤ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਤਾਂ ਉਸੇ ਮਿਆਦ ਲਈ ਉਸੇ ਦਰ 'ਤੇ ਉਸੇ ਰਕਮ ਦੀ ਰਕਮ ਕੀ ਹੋਵੇਗੀ?", "options": [{"prompt": "1", "value": "&nbsp;<span style=\"\">ਰੁਪਏ&nbsp;29,095</span>"}, {"prompt": "2", "value": "&nbsp;<span style=\"\">ਰੁਪਏ&nbsp;28,540</span>"}, {"prompt": "3", "value": "&nbsp;<span style=\"\">ਰੁਪਏ&nbsp;29,282</span>"}, {"prompt": "4", "value": "&nbsp;<span style=\"\">ਰੁਪਏ&nbsp;26,620</span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>CI on a sum for 2 years @ 15% p.a compounded 8-monthly = Rs.7282</p>\n\n<p><strong>Concept used :</strong></p>\n\n<p><span class=\"math-tex\">\\(A =P×(1+ \\frac{r} {100})^n\\)</span></p>\n\n<p><strong>Calculation :</strong></p>\n\n<p>rate is compounded 8-monthly</p>\n\n<p>&rArr; n = 24/8&nbsp; &nbsp;(∵ Time is 2 years i.e. 24 months)</p>\n\n<p>&rArr; n = 3</p>\n\n<p>Rate is 15 % p.a&nbsp;</p>\n\n<p>&rArr; For 8-monthly rate = (15/12)&nbsp;&times; 8</p>\n\n<p>&rArr; rate = 10% per 8-month</p>\n\n<p>Let the principal be P</p>\n\n<p>using given values of rate, n, and amount</p>\n\n<p>&rArr; Amount = 1.331&nbsp;&times;&nbsp;P&nbsp; &nbsp; &nbsp;(∵ at&nbsp;10% rate,&nbsp;time period of 3 and&nbsp;with principal P)</p>\n\n<p>&rArr; CI = 1.331P - P</p>\n\n<p>&rArr; CI = 0.331P</p>\n\n<p>&rArr; 7282 = 0.331P</p>\n\n<p>&rArr; P = 22000</p>\n\n<p>Now,&nbsp;<span class=\"math-tex\">\\(A =P×(1+ \\frac{r} {100})^n\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(A =22000×(1+ \\frac{15} {100})^2\\)</span></p>\n\n<p>&rArr;&nbsp;<span class=\"math-tex\">\\(A =22000\\times \\frac{23}{20}\\times \\frac{23}{20}\\)</span></p>\n\n<p>&rArr; A = 29095</p>\n\n<p><strong>&there4; The required amount is Rs.29095</strong></p>\n\n42:T1", "hn": "\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\">दिया गया है:</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\">किसी राशि पर 2 वर्षों के लिए 15% <span style=\"color: rgb(0, 0, 0);\">वार्षिक दर पर</span>&nbsp;8 महीनों में <span style=\"color: rgb(0, 0, 0);\">संयोजित चक्रवृद्धि ब्याज</span>&nbsp;= 7282 रुपए</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><strong>प्रयुक्त अवधारणा:</strong></p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 0pt;\"><span class=\"math-tex\">\\(A =P×(1+ \\frac{r} {100})^n\\)</span></p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 0pt;\">&nbsp;</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><strong>गणना:</strong></p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\">दर&nbsp;8 महीनों संयोजित हो रहा है&nbsp;</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&rArr;</span>&nbsp;n = 24/8&nbsp; &nbsp;(<span style=\"\">∵</span>समय 2 वर्ष है अर्थात 24 महीने)</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&rArr;</span>&nbsp;n = 3</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\">दर15% प्रति वर्ष है&nbsp;</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&rArr;</span>&nbsp;8 महीनों की दर के लिए = (15/12)&nbsp;&times; 8</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&rArr;</span>&nbsp;दर = प्रत्येक 8 महीनों पर 10%</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\">माना कि मूलधन P है</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\">दी गई दर के&nbsp;मूल्यों, n और राशि का प्रयोग करने पर</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&rArr;</span>&nbsp;राशि = 1.331&nbsp;&times;&nbsp;P&nbsp; &nbsp; &nbsp;(<span style=\"\">∵</span>10% दर पर, 3 की समय अवधि और मूलधन P के साथ)</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&rArr;</span>&nbsp;CI = 1.331P - P</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&rArr;</span>&nbsp;CI = 0.331P</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&rArr;</span>&nbsp;7282 = 0.331P</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&rArr;</span>&nbsp;P = 22000</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 0pt;\">अब,&nbsp;</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 0pt;\"><span style=\"\">&rArr;&nbsp;<span class=\"math-tex\">\\(A =22000×(1+ \\frac{15} {100})^2\\)</span></span></p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 0pt;\"><span style=\"\">&rArr;&nbsp;<span class=\"math-tex\">\\(A =22000\\times \\frac{23}{20}\\times \\frac{23}{20}\\)</span></span></p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&rArr;</span>&nbsp;A = 29095</p>\n\n<p style=\"color: rgb(0, 0, 0);   margin-top: 0pt; margin-bottom: 7pt;\"><span style=\"\">&there4;</span>&nbsp;<strong>आवश्यक&nbsp;राशि 29095 रुपए है।&nbsp;</strong></p>\n\n43:T60f,<p><strong>ਦਿੱਤਾ ਗਿਆ:</strong></p>\n\n<p>2 ਸਾਲਾਂ ਲਈ ਇੱਕ ਰਕਮ 'ਤੇ CI @ 15% p.a ਮਿਸ਼ਰਿਤ 8-ਮਹੀਨਾਵਾਰ = 7282 ਰੁਪਏ</p>\n\n<p><strong>ਵਰਤਿਆ ਗਿਆ ਸੰਕਲਪ:</strong></p>\n\n<p><span class=\"math-tex\">\\(A =P×(1+ \\frac{r} {100})^n\\)</span></p>\n\n<p><strong>ਗਣਨਾ:</strong></p>\n\n<p>ਦਰ 8-ਮਹੀਨਾਵਾਰ ਮਿਸ਼ਰਿਤ ਹੈ</p>\n\n<p>⇒ n = 24/8 (∵ ਸਮਾਂ 2 ਸਾਲ ਯਾਨੀ 24 ਮਹੀਨੇ ਹੈ)</p>\n\n<p>⇒ n = 3</p>\n\n<p>ਦਰ 15% p.a</p>\n\n<p>⇒ 8-ਮਾਸਿਕ ਦਰ = (15/12) × 8 ਲਈ</p>\n\n<p>⇒ ਦਰ = 10% ਪ੍ਰਤੀ 8-ਮਹੀਨੇ</p>\n\n<p>ਦੱਸ ਦੇਈਏ ਕਿ ਪ੍ਰਿੰਸੀਪਲ P</p>\n\n<p>ਦਰ, n, ਅਤੇ ਰਕਮ ਦੇ ਦਿੱਤੇ ਗਏ ਮੁੱਲਾਂ ਦੀ ਵਰਤੋਂ ਕਰਦੇ ਹੋ", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p><strong>ਦਿੱਤਾ ਗਿਆ:</strong></p>\n\n<p>2 ਸਾਲਾਂ ਲਈ ਇੱਕ ਰਕਮ 'ਤੇ CI @ 15% p.a ਮਿਸ਼ਰਿਤ 8-ਮਹੀਨਾਵਾਰ = 7282 ਰੁਪਏ</p>\n\n<p><strong>ਵਰਤਿਆ ਗਿਆ ਸੰਕਲਪ:</strong></p>\n\n<p><span class=\"math-tex\">\\(A =P×(1+ \\frac{r} {100})^n\\)</span></p>\n\n<p><strong>ਗਣਨਾ:</strong></p>\n\n<p>ਦਰ 8-ਮਹੀਨਾਵਾਰ ਮਿਸ਼ਰਿਤ ਹੈ</p>\n\n<p>⇒ n = 24/8 (∵ ਸਮਾਂ 2 ਸਾਲ ਯਾਨੀ 24 ਮਹੀਨੇ ਹੈ)</p>\n\n<p>⇒ n = 3</p>\n\n<p>ਦਰ 15% p.a</p>\n\n<p>⇒ 8-ਮਾਸਿਕ ਦਰ = (15/12) × 8 ਲਈ</p>\n\n<p>⇒ ਦਰ = 10% ਪ੍ਰਤੀ 8-ਮਹੀਨੇ</p>\n\n<p>ਦੱਸ ਦੇਈਏ ਕਿ ਪ੍ਰਿੰਸੀਪਲ P</p>\n\n<p>ਦਰ, n, ਅਤੇ ਰਕਮ ਦੇ ਦਿੱਤੇ ਗਏ ਮੁੱਲਾਂ ਦੀ ਵਰਤੋਂ ਕਰਦੇ ਹੋਏ</p>\n\n<p>⇒ ਮਾਤਰਾ = 1.331 × P (∵ 10% ਦਰ 'ਤੇ, 3 ਦੀ ਸਮਾਂ ਮਿਆਦ ਅਤੇ ਮੁੱਖ P ਦੇ ਨਾਲ)</p>\n\n<p>⇒ CI = 1.331P - P</p>\n\n<p>⇒ CI = 0.331P</p>\n\n<p>⇒ 7282 = 0.331 P</p>\n\n<p>⇒ P = 22000</p>\n\n<p>ਹੁਣ,<span class=\"math-tex\">\\(A =P×(1+ \\frac{r} {100})^n\\)</span></p>\n\n<p>⇒<span class=\"math-tex\">\\(A =22000×(1+ \\frac{15} {100})^2\\)</span></p>\n\n<p>⇒<span class=\"math-tex\">\\(A =22000\\times \\frac{23}{20}\\times \\frac{23}{20}\\)</span></p>\n\n<p>⇒ A = 29095</p>\n\n<p><strong>∴ ਲੋੜੀਂਦੀ ਰਕਮ 29095 ਰੁਪਏ ਹੈ</strong></p>\n44:T6ba,\n<p><strong>Given:</strong></p>\n\n<p>A sum = Rs. 12,000</p>\n\n<p>Rate = 10% per annum</p>\n\n<p>And time = 1.5 years.</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>Amount = Principal{1 + (R/100)}<sup>n</sup></p>\n\n<p>Where n = time in years and R = rate percentage/annum</p>\n\n<p>Compund interest = Amount - Principal</p>", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Compound Interest"], "concept": "Compound Interest", "confidence": "high"}, {"qid": "6017e0bd993419179c126a3f", "qs_no": 9, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "The compound interest (in Rs.) on a sum of Rs. 12,000 at 10% per annum for 1.5 years, interest compounded half-yearly, is:", "options": [{"prompt": "1", "value": "Rs. 1,750"}, {"prompt": "2", "value": "Rs. 1,900"}, {"prompt": "3", "value": "Rs. 1,821.50"}, {"prompt": "4", "value": "Rs. 1,891.50"}], "range": {"start": "", "end": ""}}, "hn": {"value": "1.5 वर्ष के लिए 12,000 रुपये का 10% प्रतिवर्ष की दर से चक्रवृद्धि ब्याज (रुपये में) क्या होगा, यदि ब्याज अर्ध-वार्षिक संयोजित है?", "options": [{"prompt": "1", "value": "1,750 रुपये"}, {"prompt": "2", "value": "1,900&amp;nbsp;रुपये"}, {"prompt": "3", "value": "1,821.50&amp;nbsp;रुपये"}, {"prompt": "4", "value": "1,891.50&amp;nbsp;रुपये"}], "range": {"start": "", "end": ""}}, "te": {"value": "రూ. 12,000 మొత్తంపై 1.5 సంవత్సరాల పాటు సంవత్సరానికి 10% చొప్పున చక్రవడ్డీ (రూ.ల్లో), అర్ధ వార్షిక వడ్డీ లెక్కించి వడ్డీని కనుగొనండి?", "options": [{"prompt": "1", "value": "రూ. 1,750"}, {"prompt": "2", "value": "రూ. 1,900"}, {"prompt": "3", "value": "రూ. 1,821.50"}, {"prompt": "4", "value": "రూ. 1,891.50"}], "range": {"start": "", "end": ""}}, "mr": {"value": "12,000 च्या रकमेवर वार्षिक 10% दराने, व्याज सहामाही चक्रवाढ होत असल्यास, 1.5 वर्षांसाठी चक्रवाढ व्याज (रुपयांमध्ये) किती आहे?", "options": [{"prompt": "1", "value": "1,750 रुपये&nbsp;"}, {"prompt": "2", "value": "1,900&nbsp;<span style=\"color: rgb(33, 37, 41);\">रुपये&nbsp;</span>"}, {"prompt": "3", "value": "1,821.50&nbsp;<span style=\"color: rgb(33, 37, 41);\">रुपये&nbsp;</span>"}, {"prompt": "4", "value": "1,891.50&nbsp;<span style=\"color: rgb(33, 37, 41);\">रुपये&nbsp;</span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "চক্রবৃদ্ধি সুদ (রুপিতে) একটি টাকার উপর। 12,000 বার্ষিক 10% হারে 1.5 বছরের জন্য, সুদের অর্ধ-বার্ষিক চক্রবৃদ্ধি, হল:", "options": [{"prompt": "1", "value": "রুপি 1,750"}, {"prompt": "2", "value": "রুপি 1,900"}, {"prompt": "3", "value": "রুপি 1,821.50"}, {"prompt": "4", "value": "রুপি 1,891.50"}], "range": {"start": "", "end": ""}}, "gu": {"value": "રૂ.ની રકમ પર ચક્રવૃદ્ધિ વ્યાજ (રૂ.માં). 1.5 વર્ષ માટે વાર્ષિક 10%ના દરે 12,000, અર્ધવાર્ષિક ચક્રવૃદ્ધિ વ્યાજ, છે:", "options": [{"prompt": "1", "value": "રૂ. 1,750&nbsp;"}, {"prompt": "2", "value": "રૂ. 1,900&nbsp;"}, {"prompt": "3", "value": "રૂ. 1,821.50&nbsp;"}, {"prompt": "4", "value": "રૂ. 1,891.50&nbsp;"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ಅರ್ಧ-ವಾರ್ಷಿಕ ಬಡ್ಡಿಯನ್ನು <span style=\"color: rgb(33, 37, 41);\">ಸಂಯೋಜಿ</span>ಸಿದರೆ, 1.5 ವರ್ಷಗಳವರೆಗೆ ವಾರ್ಷಿಕ 10% ದರದಲ್ಲಿ ರೂ.12,000 ಗಳ ಮೇಲಿನ ಚಕ್ರಬಡ್ಡಿ (ರೂ.ಗಳಲ್ಲಿ) ಏನಾಗಿರುತ್ತದೆ?", "options": [{"prompt": "1", "value": "ರೂ. 1,750"}, {"prompt": "2", "value": "ರೂ. 1,900"}, {"prompt": "3", "value": "ರೂ. 1,821.50"}, {"prompt": "4", "value": "ರೂ. 1,891.50"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ரூ. 12,000-க்கு ஆண்டுக்கு 10% வட்டி விகிதத்தில் 1.5 ஆண்டுகளுக்கு, அரை ஆண்டுக்கு ஒரு முறை கூட்டு வட்டி கணக்கிடப்பட்டால், கூட்டு வட்டி (ரூபாயில்) என்ன?", "options": [{"prompt": "1", "value": "ரூ. 1,750"}, {"prompt": "2", "value": "ரூ. 1,900"}, {"prompt": "3", "value": "ரூ. 1,821.50"}, {"prompt": "4", "value": "ரூ. 1,891.50"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>A sum = Rs. 12,000</p>\n\n<p>Rate = 10% per annum</p>\n\n<p>And time = 1.5 years.</p>\n\n<p><strong>Formula used:</strong></p>\n\n<p>Amount = Principal{1 + (R/100)}<sup>n</sup></p>\n\n<p>Where n = time in years and R = rate percentage/annum</p>\n\n<p>Compund interest = Amount - Principal</p>\n\n<p>If time = n years, rate = R% and interest compounded half-yearly</p>\n\n<p>Then time = 2n&nbsp; and rate = (R/2)%</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Interest compounded half-yearly:</p>\n\n<p>Then time = 2&nbsp;&times; 1.5</p>\n\n<p>&rArr; 3 years</p>\n\n<p>And the rate = 10/2</p>\n\n<p>&rArr; 5%&nbsp;</p>\n\n<p>Amount = 12000 &times; {1 + (5/100)}<sup>3</sup></p>\n\n<p>&rArr; 12000&nbsp;&times; {1 + (1/20)}<sup>3</sup></p>\n\n<p>&rArr; 12000&nbsp;&times; {(20 + 1)/20}<sup>3</sup></p>\n\n<p>&rArr; 12000&nbsp;&times; (21/20)<sup>3</sup></p>\n\n<p>&rArr; 12000&nbsp;&times; (9261/8000)</p>\n\n<p>&rArr; 12&nbsp;&times; 9261/8</p>\n\n<p>&rArr; 1,11,132/8</p>\n\n<p>&rArr; Rs. 13891.5</p>\n\n<p>Compound interest = amount - principal</p>\n\n<p>&rArr; 13891.5 - 12000</p>\n\n<p>&rArr; Rs. 1891.5</p>\n\n<p><strong>&there4; The compound interest is Rs. 1891.5</strong></p>", "hn": "\n<p><strong>दिया है:</strong></p>\n\n<p>धनराशि = 12,000&nbsp;रुपये</p>\n\n<p>दर = 10% प्रति वर्ष</p>\n\n<p>और समय = 1.5 वर्ष</p>\n\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n\n<p>मिश्रधन = मूलधन {1 + (दर/100)}<sup>समय</sup></p>\n\n<p>जहाँ n = वर्ष में समय और R = दर प्रतिशत/वर्ष</p>\n\n<p>चक्रवृद्धि ब्याज = मिश्रधन - मूलधन</p>\n\n<p>यदि समय = n वर्ष, दर = R% और ब्याज अर्ध-वार्षिक संयोजित है</p>\n\n<p>तो समय = 2n&nbsp; और दर = (R/2)%</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>ब्याज अर्धवार्षिक रूप से संयोजित है:</p>\n\n<p>तो समय = 2&nbsp;&times; 1.5</p>\n\n<p>&rArr; 3 वर्ष</p>\n\n<p>और दर = 10/2</p>\n\n<p>&rArr; 5%&nbsp;</p>\n\n<p>मिश्रधन = 12000 &times; {1 + (5/100)}<sup>3</sup></p>\n\n<p>&rArr; 12000&nbsp;&times; {1 + (1/20)}<sup>3</sup></p>\n\n<p>&rArr; 12000&nbsp;&times; {(20 + 1)/20}<sup>3</sup></p>\n\n<p>&rArr; 12000&nbsp;&times; (21/20)<sup>3</sup></p>\n\n<p>&rArr; 12000&nbsp;&times; (9261/8000)</p>\n\n<p>&rArr; 12&nbsp;&times; 9261/8</p>\n\n<p>&rArr; 1,11,132/8</p>\n\n<p>&rArr; 13891.5 रुपये</p>\n\n<p>चक्रवृद्धि ब्याज = मिश्रधन - मूलधन</p>\n\n<p>&rArr; 13891.5 - 12000</p>\n\n<p>&rArr; 1891.5 रुपये</p>\n\n<p><strong>&there4; चक्रवृद्धि ब्याज 1891.5 रुपये है</strong></p>\n\n46:T6ca,<p><strong>ఇచ్చినది:</strong></p>\n\n<p>మొత్తం = రూ. 12,000</p>\n\n<p>రేటు = సంవత్సరానికి 10%</p>\n\n<p>మరియు సమయం = 1.5 సంవత్సరాలు.</p>\n\n<p><strong>ఉపయోగించిన సూత్రం:</strong></p>\n\n<p>మొత్తం = అసలు{1 + (R/100)}<sup>n</sup></p>\n\n<p>ఇక్కడ n = సంవత్సరాలలో సమయం మరియు R = రేటు శాతం/సంవత్సరం</p>\n\n<p>చక్ర వడ్డీ = మొత్తం - అసలు</p>\n\n<p>సమయం = n సంవత్సరాలు అయితే, రేటు = R% మరియు వడ్డీ చక్రవడ్డీ అర్ధ-సంవత్సరానికి</p>\n\n<p>అప్పుడు సమయం = 2n మరియు రేటు = (R/2)%</p>\n\n<p><strong>గణన:</strong></p>\n\n<p>అర్ధ సంవత్సరానికి వడ్డీ లెక్కించబడుతుంది:</p>\n\n<p>అప్పుడు సమయం = 2 x 1.5", "te": "<p><strong>ఇచ్చినది:</strong></p>\n\n<p>మొత్తం = రూ. 12,000</p>\n\n<p>రేటు = సంవత్సరానికి 10%</p>\n\n<p>మరియు సమయం = 1.5 సంవత్సరాలు.</p>\n\n<p><strong>ఉపయోగించిన సూత్రం:</strong></p>\n\n<p>మొత్తం = అసలు{1 + (R/100)}<sup>n</sup></p>\n\n<p>ఇక్కడ n = సంవత్సరాలలో సమయం మరియు R = రేటు శాతం/సంవత్సరం</p>\n\n<p>చక్ర వడ్డీ = మొత్తం - అసలు</p>\n\n<p>సమయం = n సంవత్సరాలు అయితే, రేటు = R% మరియు వడ్డీ చక్రవడ్డీ అర్ధ-సంవత్సరానికి</p>\n\n<p>అప్పుడు సమయం = 2n మరియు రేటు = (R/2)%</p>\n\n<p><strong>గణన:</strong></p>\n\n<p>అర్ధ సంవత్సరానికి వడ్డీ లెక్కించబడుతుంది:</p>\n\n<p>అప్పుడు సమయం = 2 x 1.5</p>\n\n<p>⇒ 3 సంవత్సరాలు</p>\n\n<p>మరియు రేటు = 10/2</p>\n\n<p>⇒ 5%</p>\n\n<p>మొత్తం = 12000 x {1 + (5/100)}<sup>3</sup></p>\n\n<p>⇒ 12000 x {1 + (1/20)}<sup>3</sup></p>\n\n<p>⇒ 12000 x {(20 + 1)/20}<sup>3</sup></p>\n\n<p>⇒ 12000 x (21/20)<sup>3</sup></p>\n\n<p>⇒ 12000 x (9261/8000)</p>\n\n<p>⇒ 12 x 9261/8</p>\n\n<p>⇒ 1,11,132/8</p>\n\n<p>⇒ రూ. 13891.5</p>\n\n<p>చక్ర వడ్డీ = మొత్తం - అసలు</p>\n\n<p>⇒ 13891.5 - 12000</p>\n\n<p>⇒ రూ. 1891.5</p>\n\n<p><strong>∴ చక్రవడ్డీ రూ. 1891.5</strong></p>\n47:Ta62,\n<p><strong>दिलेले आहे:</strong></p>\n\n<p>एक रक्कम = 12,000 <span style=\"color: rgb(33, 37, 41);\">रुपये </span></p>\n\n<p>दर = 10% वार्षिक </p>\n\n<p>आणि मुदत = 1.5 वर्षे.</p>\n\n<p><strong>वापरलेले सूत्र:</strong></p>\n\n<p>रक्कम = मुद्दल 1 + (R/100)}<sup>n</sup></p>\n\n<p>जेथे n = वर्षांमध्ये मुदत आणि R = दर टक्केवारी/वार्षिक</p>\n\n<p>चक्रवाढ व्याज = रक्कम - मुद्दल</p>\n\n<p>जर मुदत = n वर्षे, दर = R% आणि व्याज सहामाही <span style=\"color: rgb(33, 37, 41);\">चक्रवाढ</span></p>\n\n<p>नंतर मुदत = 2n आणि दर = (R/2)%</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>व्याज सहामाही <span style=\"color: rgb(33, 37, 41);", "mr": "\n<p><strong>दिलेले आहे:</strong></p>\n\n<p>एक रक्कम = 12,000 <span style=\"color: rgb(33, 37, 41);\">रुपये </span></p>\n\n<p>दर = 10% वार्षिक </p>\n\n<p>आणि मुदत = 1.5 वर्षे.</p>\n\n<p><strong>वापरलेले सूत्र:</strong></p>\n\n<p>रक्कम = मुद्दल 1 + (R/100)}<sup>n</sup></p>\n\n<p>जेथे n = वर्षांमध्ये मुदत आणि R = दर टक्केवारी/वार्षिक</p>\n\n<p>चक्रवाढ व्याज = रक्कम - मुद्दल</p>\n\n<p>जर मुदत = n वर्षे, दर = R% आणि व्याज सहामाही <span style=\"color: rgb(33, 37, 41);\">चक्रवाढ</span></p>\n\n<p>नंतर मुदत = 2n आणि दर = (R/2)%</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>व्याज सहामाही <span style=\"color: rgb(33, 37, 41);\">चक्रवाढीने</span>:</p>\n\n<p>नंतर मुदत = 2 x 1.5</p>\n\n<p>⇒ 3 वर्षे</p>\n\n<p>आणि दर = 10/2</p>\n\n<p>⇒ 5%</p>\n\n<p>रक्कम = <span style=\"color: rgb(33, 37, 41);\">12000 × {1 + (5/100)}</span><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">3</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 12000 × {1 + (1/20)}<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">3</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 12000 × {(20 + 1)/20}<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">3</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 12000 × (21/20)<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">3</span></p>\n\n<p>⇒ 12000 x (9261/8000)</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 12 × 9261/8</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 1,11,132/8</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 13891.5 रुपये </p>\n\n<p>चक्रवाढ व्याज = रक्कम - मुद्दल</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 13891.5 - 12000</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 1891.5 <span style=\"color: rgb(33, 37, 41);\">रुपये </span></p>\n\n<p><strong>∴ चक्रवाढ व्याज </strong><span style=\"font-weight: bolder;\">1891.5 रुपये आहे.</span></p>\n\n48:T609,<p><strong>આપેલ:</strong></p>\n\n<p>રકમ = રૂ. 12,000 છે</p>\n\n<p>દર = વાર્ષિક 10%</p>\n\n<p>અને સમય = 1.5 વર્ષ.</p>\n\n<p><strong>વપરાયેલ ફોર્મ્યુલા:</strong></p>\n\n<p>રકમ = મુખ્ય{1 + (R/100)} <sup>n</sup></p>\n\n<p>જ્યાં n = વર્ષોમાં સમય અને R = દર ટકાવારી/વાર્ષિક</p>\n\n<p>ચક્રવૃદ્ધિ વ્યાજ = રકમ - મુદ્દલ</p>\n\n<p>જો સમય = n વર્ષ, દર = R% અને વ્યાજ ચક્રવૃદ્ધિ અર્ધવાર્ષિક</p>\n\n<p>પછી સમય = 2n અને દર = (R/2)%</p>\n\n<p><strong>ગણતરી:</strong></p>\n\n<p>અર્ધવાર્ષિક ચક્રવૃદ્ધિ વ્યાજ:</p>\n\n<p>પછી સમય = 2 x 1.5</p>\n\n<p>⇒ 3 વર્ષ</p>\n\n<p>અને દર = 10/2</p>\n\n<p>&", "bn": "<p><strong>প্রদত্ত:</strong></p><p> একটি সমষ্টি = টাকা। 12,000</p><p> হার = বার্ষিক 10%</p><p> এবং সময় = 1.5 বছর।</p><p> <strong>সূত্র ব্যবহৃত:</strong></p><p> পরিমাণ = প্রধান{1 + (R/100)} <sup>n</sup></p><p> যেখানে n = বছরে এবং R = হার শতাংশ/বার্ষিক</p><p> চক্রবৃদ্ধি সুদ = পরিমাণ - মূল</p><p> যদি সময় = n বছর, হার = R% এবং সুদ অর্ধ-বার্ষিক চক্রবৃদ্ধি হয়</p><p> তারপর সময় = 2n এবং হার = (R/2)%</p><p> <strong>গণনা:</strong></p><p> সুদের অর্ধবার্ষিক চক্রবৃদ্ধি:</p><p> তারপর সময় = 2 × 1.5</p><p> ⇒ 3 বছর</p><p> এবং হার = 10/2</p><p> ⇒ 5%</p><p> পরিমাণ = 12000 × {1 + (5/100)} <sup>3</sup></p><p> ⇒ 12000 × {1 + (1/20)} <sup>3</sup></p><p> ⇒ 12000 × {(20 + 1)/20} <sup>3</sup></p><p> ⇒ 12000 × (21/20) <sup>3</sup></p><p> ⇒ 12000 × (9261/8000)</p><p> ⇒ 12 × 9261/8</p><p> ⇒ 1,11,132/8</p><p> ⇒ টাকা 13891.5</p><p> চক্রবৃদ্ধি সুদ = পরিমাণ - মূল</p><p> ⇒ 13891.5 - 12000</p><p> ⇒ টাকা 1891.5</p><p> <strong>∴ চক্রবৃদ্ধি সুদ টাকা। 1891.5</strong></p>\n", "ml": "", "gu": "<p><strong>આપેલ:</strong></p>\n\n<p>રકમ = રૂ. 12,000 છે</p>\n\n<p>દર = વાર્ષિક 10%</p>\n\n<p>અને સમય = 1.5 વર્ષ.</p>\n\n<p><strong>વપરાયેલ ફોર્મ્યુલા:</strong></p>\n\n<p>રકમ = મુખ્ય{1 + (R/100)} <sup>n</sup></p>\n\n<p>જ્યાં n = વર્ષોમાં સમય અને R = દર ટકાવારી/વાર્ષિક</p>\n\n<p>ચક્રવૃદ્ધિ વ્યાજ = રકમ - મુદ્દલ</p>\n\n<p>જો સમય = n વર્ષ, દર = R% અને વ્યાજ ચક્રવૃદ્ધિ અર્ધવાર્ષિક</p>\n\n<p>પછી સમય = 2n અને દર = (R/2)%</p>\n\n<p><strong>ગણતરી:</strong></p>\n\n<p>અર્ધવાર્ષિક ચક્રવૃદ્ધિ વ્યાજ:</p>\n\n<p>પછી સમય = 2 x 1.5</p>\n\n<p>⇒ 3 વર્ષ</p>\n\n<p>અને દર = 10/2</p>\n\n<p>⇒ 5%</p>\n\n<p>રકમ = 12000 x {1 + (5/100)} <sup>3</sup></p>", "kn": "\n<p><strong>ನೀಡಲಾಗಿದೆ:</strong></p>\n\n<p>ಹಣ = ರೂ. 12,000</p>\n\n<p>ದರ = 10% ಪ್ರತಿ ವರ್ಷ</p>\n\n<p>ಮತ್ತು ಸಮಯ = 1.5 ವರ್ಷಗಳು.</p>\n\n<p><strong>ಬಳಸಿದ ಸೂತ್ರ:</strong></p>\n\n<p>ಮೊತ್ತ = ಅಸಲು<span style=\"color: rgb(33, 37, 41);\">{1 + (R/100)}</span><span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">n</span></p>\n\n<p>ಇಲ್ಲಿ n = ವರ್ಷಗಳಲ್ಲಿ ಸಮಯ ಮತ್ತು R = ದರ ಶೇಕಡಾವಾರು/ವಾರ್ಷಿಕ</p>\n\n<p>ಚಕ್ರ ಬಡ್ಡಿ = ಮೊತ್ತ - <span style=\"color: rgb(33, 37, 41);\">ಅ</span><span style=\"color: rgb(33, 37, 41);\">ಸಲು</span></p>\n\n<p>ಸಮಯ = n ವರ್ಷಗಳು, ದರ = R% ಮತ್ತು ಬಡ್ಡಿಯನ್ನು ಅರ್ಧ-ವಾರ್ಷಿಕವಾಗಿ ಸಂಯೋಜಿಸಲಾಗುತ್ತದೆ</p>\n\n<p>ನಂತರ ಸಮಯ = 2n ಮತ್ತು ದರ = (R/2)%</p>\n\n<p><strong>ಲೆಕ್ಕಾಚಾರ:</strong></p>\n\n<p>ಅರ್ಧ-ವಾರ್ಷಿಕ ಬಡ್ಡಿಯನ್ನು ಸಂಯೋಜಿಸಲಾಗಿದೆ:</p>\n\n<p>ನಂತರ ಸಮಯ = 2 x 1.5</p>\n\n<p>⇒ 3 ವರ್ಷಗಳು</p>\n\n<p>ಮತ್ತು ದರ = 10/2</p>\n\n<p>⇒ 5%</p>\n\n<p>ಮೊತ್ತ = 12000 x {1 + (5/100)}<sup>3</sup></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 12000 × {1 + (1/20)}<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">3</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 12000 × {(20 + 1)/20}<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">3</span></p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ 12000 × (21/20)<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">3</span></p>\n\n<p>⇒ 12000 x (9261/8000)</p>\n\n<p>⇒ 12 x 9261/8</p>\n\n<p>⇒ 1,11,132/8</p>\n\n<p>⇒ ರೂ. 13891.5</p>\n\n<p>ಚಕ್ರ ಬಡ್ಡಿ = ಮೊತ್ತ - ಅಸಲು</p>\n\n<p>⇒ 13891.5 - 12000</p>\n\n<p>⇒ ರೂ. 1891.5</p>\n\n<p><strong>∴ ಚಕ್ರಬಡ್ಡಿ ರೂ. 1891.5</strong></p>\n\n4a:T7d5,<p><strong>கொடுக்கப்பட்டது:</strong></p>\n\n<p>தொகை = ரூ. 12,000</p>\n\n<p>வட்டி விகிதம் = ஆண்டுக்கு 10%</p>\n\n<p>காலம் = 1.5 ஆண்டுகள்.</p>\n\n<p><strong>பயன்படுத்தப்படும் சூத்திரம்:</strong></p>\n\n<p>மொத்தத் தொகை = அசல்{1 + (R/100)}<sup>n</sup></p>\n\n<p>இங்கு n = ஆண்டுகளில் காலம் மற்றும் R = ஆண்டு வட்டி விகிதம்</p>\n\n<p>கூட்டு வட்டி = மொத்தத் தொகை - அசல்</p>\n\n<p>காலம் = n ஆண்டுகள், வட்டி விகிதம் = R% மற்றும் அரை ஆண்டுக்கு ஒரு முறை கூட்டு வட்டி கணக்கிடப்பட்டால்</p>\n\n<p>அப்பொழுது காலம் = 2n மற்றும் வட்டி விகிதம் = (R/2)%</p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p>அரை ஆண்டுக்கு ஒ", "ta": "<p><strong>கொடுக்கப்பட்டது:</strong></p>\n\n<p>தொகை = ரூ. 12,000</p>\n\n<p>வட்டி விகிதம் = ஆண்டுக்கு 10%</p>\n\n<p>காலம் = 1.5 ஆண்டுகள்.</p>\n\n<p><strong>பயன்படுத்தப்படும் சூத்திரம்:</strong></p>\n\n<p>மொத்தத் தொகை = அசல்{1 + (R/100)}<sup>n</sup></p>\n\n<p>இங்கு n = ஆண்டுகளில் காலம் மற்றும் R = ஆண்டு வட்டி விகிதம்</p>\n\n<p>கூட்டு வட்டி = மொத்தத் தொகை - அசல்</p>\n\n<p>காலம் = n ஆண்டுகள், வட்டி விகிதம் = R% மற்றும் அரை ஆண்டுக்கு ஒரு முறை கூட்டு வட்டி கணக்கிடப்பட்டால்</p>\n\n<p>அப்பொழுது காலம் = 2n மற்றும் வட்டி விகிதம் = (R/2)%</p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p>அரை ஆண்டுக்கு ஒரு முறை கூட்டு வட்டி:</p>\n\n<p>அப்பொழுது காலம் = 2 x 1.5</p>\n\n<p>⇒ 3 ஆண்டுகள்</p>\n\n<p>மற்றும் வட்டி விகிதம் = 10/2</p>\n\n<p>⇒ 5%</p>\n\n<p>மொத்தத் தொகை = 12000 x {1 + (5/100)}<sup>3</sup></p>\n\n<p>⇒ 12000 x {1 + (1/20)}<sup>3</sup></p>\n\n<p>⇒ 12000 x {(20 + 1)/20}<sup>3</sup></p>\n\n<p>⇒ 12000 x (21/20)<sup>3</sup></p>\n\n<p>⇒ 12000 x (9261/8000)</p>\n\n<p>⇒ 12 x 9261/8</p>\n\n<p>⇒ 1,11,132/8</p>\n\n<p>⇒ ரூ. 13891.5</p>\n\n<p>கூட்டு வட்டி = மொத்தத் தொகை - அசல்</p>\n\n<p>⇒ 13891.5 - 12000</p>\n\n<p>⇒ ரூ. 1891.5</p>\n\n<p><strong>∴ கூட்டு வட்டி ரூ. 1891.5</strong></p>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 7: Maths (Compound Interest)\",\"sections\":[{\"_id\":\"6329b604972c5fb08aaf42e7\",\"qCount\":10,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":1,\"posMarks\":3,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isPartialMarking\":false,\"_id\":\"5fca6456cb9eec6789e6d694\",\"en\":{\"value\":\"At what rate per cent per annum will a sum of Rs. 15,625 amount to Rs. 21,952 in three years, if the interest is compounded annually?\",\"options\":[{\"prompt\":\"1\",\"value\":\"12%\"},{\"prompt\":\"2\",\"value\":\"10%\"},{\"prompt\":\"3\",\"value\":\"9%\"},{\"prompt\":\"4\",\"value\":\"8%\"}],\"Range\":{\"start\":\"\",\"end\":\"\"}},\"hn\":{\"value\":\"यदि ब्याज प्रतिवर्ष समायोजित होती है, तो प्रतिवर्ष किस दर पर 15,625 रुपये की राशि&nbsp;3 वर्ष&nbsp;में 21,952 रुपये होगी?\",\"options\":[{\"prompt\":\"1\",\"value\"", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Compound Interest"], "concept": "Compound Interest", "confidence": "high"}, {"qid": "5fe36ebfa824524fa61be88d", "qs_no": 10, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "If the difference between the compound interest and simple interest at 17% on a sum of money for 2 years (compounded annually) is Rs. 433.50, then the sum (in Rs.) is:", "options": [{"prompt": "1", "value": "12,000"}, {"prompt": "2", "value": "20,000"}, {"prompt": "3", "value": "15,000"}, {"prompt": "4", "value": "25,000"}], "range": {"start": "", "end": ""}}, "hn": {"value": "यदि 2 वर्ष के लिए (वार्षिक रुप से समायोजित) राशि पर चक्रवृद्धि ब्याज और 17% साधारण ब्याज के बीच का अंतर 433.50 रुपये है, तो वह राशि (रुपये में) है:", "options": [{"prompt": "1", "value": "12,000"}, {"prompt": "2", "value": "20,000"}, {"prompt": "3", "value": "15,000"}, {"prompt": "4", "value": "25,000"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p><strong>Given:</strong></p>\n\n<p>Rate of interest = 17%</p>\n\n<p>Time = 2 years</p>\n\n<p>The difference between CI and SI = Rs. 433.50</p>\n\n<p><b>Formula used:</b></p>\n\n<p>Simple interest = P&nbsp;&times;&nbsp;R%&nbsp;&times; T</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Let the principal be Rs. x.</p>\n\n<p>SI =&nbsp;P&nbsp;&times;&nbsp;R%&nbsp;&times; T</p>\n\n<p>&rArr; SI = x&nbsp;&times; 17%&nbsp;&times; 2</p>\n\n<p>&rArr; SI = x&nbsp;&times; 17/100&nbsp;&times; 2</p>\n\n<p>&rArr; SI = 34x/100</p>\n\n<p>&rArr; SI = 0.34x</p>\n\n<p>In the case of CI:</p>\n\n<p>1st year CI =&nbsp;P&nbsp;&times;&nbsp;R%&nbsp;&times; T</p>\n\n<p>&rArr;&nbsp;1st year CI = x&nbsp;&times; 17%&nbsp;&times; 1</p>\n\n<p>&rArr; 1st year CI = 17x/100</p>\n\n<p>&rArr; 1st year CI = 0.17x</p>\n\n<p>Amount after 1st year = P + CI&nbsp;</p>\n\n<p>&rArr; Amount = x + 0.17x</p>\n\n<p>&rArr; Amount = 1.17x</p>\n\n<p>2nd year CI = 1.17x &times; 17%&nbsp;&times; 1</p>\n\n<p>&rArr; 2nd year CI = 0.1989x</p>\n\n<p>Total CI = 1st year CI + 2nd year CI</p>\n\n<p>&rArr; CI = 0.17x + 0.1989x</p>\n\n<p>&rArr; CI = 0.3689x</p>\n\n<p>Required difference = CI&nbsp;&ndash; SI</p>\n\n<p>&rArr; 433.50&nbsp;= 0.3689x&nbsp;&ndash; 0.34x</p>\n\n<p>&rArr; 433.50 = 0.0289x</p>\n\n<p>&rArr; x = 433.50/0.0289</p>\n\n<p>&rArr; x = Rs. 15000</p>\n\n<p><strong>&there4; The sum is Rs. 15000.</strong></p>", "hn": "\n<p><strong>दिया गया है:</strong></p>\n\n<p>ब्याज दर = 17%</p>\n\n<p>समय = 2 वर्ष</p>\n\n<p>चक्रवृद्धि ब्याज और साधारण ब्याज के बीच अंतर = 433.50 रुपये</p>\n\n<p><b>प्रयुक्त सूत्र:</b></p>\n\n<p>साधारण ब्याज = मूलधन&nbsp;&times;&nbsp;दर%&nbsp;&times; समय</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>माना कि मूलधन x रुपये है</p>\n\n<p>साधारण ब्याज&nbsp;=&nbsp;मूलधन&nbsp;&times;&nbsp;दर%&nbsp;&times; समय</p>\n\n<p>&rArr; साधारण ब्याज = x&nbsp;&times; 17%&nbsp;&times; 2</p>\n\n<p>&rArr; साधारण ब्याज = x&nbsp;&times; 17/100&nbsp;&times; 2</p>\n\n<p>&rArr; साधारण ब्याज = 34x/100</p>\n\n<p>&rArr; साधारण ब्याज = 0.34x</p>\n\n<p>चक्रवृद्धि ब्याज की स्थिति में:</p>\n\n<p>पहले वर्ष का&nbsp;चक्रवृद्धि ब्याज&nbsp;=&nbsp;मूलधन&nbsp;&times;&nbsp;दर%&nbsp;&times; समय</p>\n\n<p>&rArr;&nbsp;पहले वर्ष का&nbsp;चक्रवृद्धि ब्याज = x&nbsp;&times; 17%&nbsp;&times; 1</p>\n\n<p>&rArr; पहले वर्ष का&nbsp;चक्रवृद्धि ब्याज = 17x/100</p>\n\n<p>&rArr; पहले वर्ष का&nbsp;चक्रवृद्धि ब्याज = 0.17x</p>\n\n<p>पहले वर्ष के बाद मिश्रधन = मूलधन + चक्रवृद्धि ब्याज</p>\n\n<p>&rArr; मिश्रधन = x + 0.17x</p>\n\n<p>&rArr; मिश्रधन = 1.17x</p>\n\n<p>दूसरे&nbsp;वर्ष का&nbsp;चक्रवृद्धि ब्याज = 1.17x &times; 17%&nbsp;&times; 1</p>\n\n<p>&rArr; दूसरे&nbsp;वर्ष का&nbsp;चक्रवृद्धि ब्याज = 0.1989x</p>\n\n<p>कुल चक्रवृद्धि ब्याज = पहले वर्ष का&nbsp;चक्रवृद्धि ब्याज&nbsp;+ दूसरे&nbsp;वर्ष का&nbsp;चक्रवृद्धि ब्याज</p>\n\n<p>&rArr; चक्रवृद्धि ब्याज = 0.17x + 0.1989x</p>\n\n<p>&rArr; चक्रवृद्धि ब्याज = 0.3689x</p>\n\n<p>अभीष्ट अंतर = चक्रवृद्धि ब्याज&nbsp;&ndash; साधारण ब्याज</p>\n\n<p>&rArr; 433.50&nbsp;= 0.3689x&nbsp;&ndash; 0.34x</p>\n\n<p>&rArr; 433.50 = 0.0289x</p>\n\n<p>&rArr; x = 433.50/0.0289</p>\n\n<p>&rArr; x = 15000 रुपये</p>\n\n<p><strong>&there4; वह राशि 15000 रुपये है।</strong></p>\n\n34:T141f,\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/ca81259519cadfb2d5350673c220e419e60378e9770ad26512fc8e826a8d93f1.png\" width=\"26px\" /> <u style=\"font-size: 21px; font-weight: 700; display: inline !important;\">Shortcut Trick</u></span>\n<p>Effective Simple Interest (SI) rate for 2 years = 10% × 2 = 20%</p>\n<p>Effective Compound Interest (CI) rate for 2 years = 10% + 10% + (10 × 10) ÷ 100 = 21%</p>\n<p>If 20% → Rs. 8,100, then 1% → 8,100 ÷ 20 = 405</p>\n<p>⇒ CI (21%) = 405 × 21 = 8,505</p>\n<p><strong>∴ The correct answer is Rs. 8,505.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/c76c13ba2d2ab46b47f8a931ae621dac081a0cb266b142dc23f58659fac4a466.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Alternate Method</u></span></strong></span></p>\n<p><strong>Given:</strong></p>\n<p>Simple Interest (SI) = Rs. 8,100</p>\n<p>Rate (R) = 10%</p>\n<p>Time (T) = 2 years</p>\n<p><strong>Formula Used:</strong></p>\n<p>SI = ", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Compound Interest"], "concept": "Compound Interest", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 10 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
