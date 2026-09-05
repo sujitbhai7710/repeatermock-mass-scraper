@@ -1059,8 +1059,49 @@ class Worker:
 # SERIES DISCOVERY
 # =============================================================================
 
-async def discover_series_tests(worker: Worker, series_slug: str) -> Tuple[str, str, List[TestRef]]:
-    """Discover all free tests in a series. Returns (series_id, series_name, test_refs)."""
+async def discover_series_tests(worker: Worker, series_slug: str, output_dir: str = "") -> Tuple[str, str, List[TestRef]]:
+    """Discover all free tests in a series. Returns (series_id, series_name, test_refs).
+
+    NEW: Discovery cache (1 hour TTL) — saves ~3-5 min per series on repeat runs.
+    Cache file: <output_dir>/.discovery_cache_<series_slug>.json
+    """
+    # === DISCOVERY CACHE CHECK (1 hour TTL) ===
+    # Speed optimization: discovery takes 3-5 min per series. If we discovered
+    # recently (< 1 hour ago), reuse the cached result instead of re-discovering.
+    CACHE_TTL_SEC = 3600  # 1 hour
+    cache_file = ""
+    if output_dir:
+        cache_file = os.path.join(output_dir, f".discovery_cache_{series_slug}.json")
+        if os.path.exists(cache_file):
+            try:
+                import time as _time
+                with open(cache_file) as f:
+                    cache = json.load(f)
+                age_sec = _time.time() - cache.get("cached_at", 0)
+                if age_sec < CACHE_TTL_SEC:
+                    print(f"  [discover] {series_slug}: using cached discovery ({age_sec/60:.1f} min old, TTL={CACHE_TTL_SEC/60:.0f} min)")
+                    return cache["series_id"], cache["series_name"], [
+                        TestRef(
+                            test_id=t["test_id"],
+                            title=t["title"],
+                            series_slug=t["series_slug"],
+                            series_name=t["series_name"],
+                            section_id=t["section_id"],
+                            section_name=t["section_name"],
+                            sub_section_id=t["sub_section_id"],
+                            sub_section_name=t["sub_section_name"],
+                            is_free=t.get("is_free", False),
+                            duration=t.get("duration", 0),
+                            question_count=t.get("question_count", 0),
+                            total_mark=t.get("total_mark", 0),
+                        ) for t in cache["test_refs"]
+                    ]
+                else:
+                    print(f"  [discover] {series_slug}: cache expired ({age_sec/60:.1f} min old), re-discovering...")
+            except Exception as e:
+                print(f"  [discover] {series_slug}: cache read failed ({e}), re-discovering...")
+    # === END CACHE CHECK ===
+
     # 1. Get series listing
     status, data = await worker.api_call("GET", f"/api/v1/test-series/{series_slug}?variant=tb")
     if status != 200 or not data:
@@ -1132,6 +1173,45 @@ async def discover_series_tests(worker: Worker, series_slug: str) -> Tuple[str, 
             print(f"  [discover] {i+1}/{len(section_counts)} subsections probed, {len(all_tests)} tests queued (incl. potential PRO)")
 
     print(f"  [discover] total tests queued: {len(all_tests)} (PRO tests will be filtered at /start API call)")
+
+    # === DISCOVERY CACHE WRITE ===
+    # Save discovery results so next run can skip re-discovery (1 hour TTL)
+    if cache_file:
+        try:
+            import time as _time
+            cache_data = {
+                "series_slug": series_slug,
+                "series_id": series_id,
+                "series_name": series_name,
+                "cached_at": _time.time(),
+                "cached_at_iso": datetime.now(timezone.utc).isoformat(),
+                "test_count": len(all_tests),
+                "test_refs": [
+                    {
+                        "test_id": t.test_id,
+                        "title": t.title,
+                        "series_slug": t.series_slug,
+                        "series_name": t.series_name,
+                        "section_id": t.section_id,
+                        "section_name": t.section_name,
+                        "sub_section_id": t.sub_section_id,
+                        "sub_section_name": t.sub_section_name,
+                        "is_free": t.is_free,
+                        "duration": t.duration,
+                        "question_count": t.question_count,
+                        "total_mark": t.total_mark,
+                    } for t in all_tests
+                ],
+            }
+            tmp = cache_file + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(cache_data, f, ensure_ascii=False)
+            os.rename(tmp, cache_file)
+            print(f"  [discover] cached {len(all_tests)} tests for {series_slug} (TTL=1 hour)")
+        except Exception as e:
+            print(f"  [discover] cache write failed (non-fatal): {e}")
+    # === END CACHE WRITE ===
+
     return series_id, series_name, all_tests
 
 
@@ -2894,7 +2974,7 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
         for url in series_urls:
             try:
                 platform, series_slug = parse_series_url(url)
-                series_id, series_name, test_refs = await discover_series_tests(discovery_worker, series_slug)
+                series_id, series_name, test_refs = await discover_series_tests(discovery_worker, series_slug, output_dir)
                 # Update series_name on all test_refs
                 for tr in test_refs:
                     tr.series_name = series_name
@@ -3040,9 +3120,15 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                         with open(tmp_ai, "w") as f:
                             json.dump(ai_export, f, ensure_ascii=False, indent=2)
                         os.rename(tmp_ai, ai_path)
-                        # Download images for this test (CDN URLs kept in HTML/JSON)
-                        # Saves to: output_dir/images/<hash>.<ext>
-                        # Failures tracked in: output_dir/image_failures.json
+                        # Update progress.json immediately (so resume works if killed)
+                        await progress.mark_scraped(test_ref.series_slug, test_ref.test_id, html_path)
+                        async with completion_lock:
+                            completed += 1
+                            w.tests_done += 1
+                        print(f"  [worker {worker_id}] ✅ saved HTML ({len(html):,}B) + AI JSON ({len(json.dumps(ai_export)):,}B): {test_ref.title[:50]}")
+                        # BACKGROUND image download (non-blocking — speeds up scrape loop)
+                        # Instead of blocking the worker, fire-and-forget the image download task.
+                        # The ImageDownloader tracks failures in image_failures.json for retry.
                         if w.image_downloader:
                             image_urls = []
                             for q in ai_export.get("questions", []):
@@ -3060,16 +3146,10 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                                         seen_urls.add(u)
                                         unique_urls.append((u, t, q))
                                 if unique_urls:
-                                    img_results = await w.image_downloader.download_batch(unique_urls)
-                                    ok = sum(1 for p in img_results.values() if p)
-                                    fail = len(img_results) - ok
-                                    print(f"  [worker {worker_id}] 📷 images: {ok} downloaded, {fail} failed")
-                        # Update progress.json immediately (so resume works if killed)
-                        await progress.mark_scraped(test_ref.series_slug, test_ref.test_id, html_path)
-                        async with completion_lock:
-                            completed += 1
-                            w.tests_done += 1
-                        print(f"  [worker {worker_id}] ✅ saved HTML ({len(html):,}B) + AI JSON ({len(json.dumps(ai_export)):,}B): {test_ref.title[:50]}")
+                                    # Fire-and-forget: start image download in background
+                                    # Don't wait for completion — worker continues to next test
+                                    # Image failures tracked in image_failures.json
+                                    asyncio.create_task(w.image_downloader.download_batch(unique_urls))
                         # Auto-commit to git every 5 tests (prevents data loss on cancel)
                         if w.tests_done % 5 == 0 and os.environ.get("GITHUB_ACTIONS"):
                             import subprocess
@@ -3102,7 +3182,9 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                 finally:
                     queue.task_done()
                 # Small delay to avoid rate-limiting (with jitter)
-                await asyncio.sleep(3.0 + random.uniform(0, 2.0))  # 3-5s delay to reduce 429s
+                # Reduced from 3-5s to 2-3s for speed optimization
+                # (per-worker 5× 429 breaker protects against rate limits)
+                await asyncio.sleep(2.0 + random.uniform(0, 1.0))  # 2-3s delay
             await w.close()
             print(f"  [worker {worker_id}] done (scraped {w.tests_done} tests)")
 
@@ -3220,7 +3302,7 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
                         print(f"  [retry-{worker_id}] ❌ retry exception: {e}")
                     finally:
                         retry_q.task_done()
-                    await asyncio.sleep(0.5 + random.uniform(0, 0.5))
+                    await asyncio.sleep(0.3 + random.uniform(0, 0.3))  # 0.3-0.6s (reduced from 0.5-1s)
                 await w.close()
 
             # Use fewer workers for retry (to avoid more rate limiting)
