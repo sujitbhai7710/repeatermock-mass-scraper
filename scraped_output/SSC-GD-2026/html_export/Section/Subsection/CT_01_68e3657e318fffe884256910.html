@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CT 01: विलोम शब्द</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">CT 01: विलोम शब्द</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-gd-constable</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">6 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.25</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">68e3657e318fffe884256910</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "68e3657e318fffe884256910", "title": "CT 01: विलोम शब्द", "series_slug": "ssc-gd-constable", "duration_min": 6, "max_marks": 20.0, "languages": ["Hindi"], "sections": [{"section_id": "635f7865e80ceced0816ffce", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "65e45ef7c4b3be4307b03f7e", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;पंगु&#39; का विलोम शब्द है", "options": [{"prompt": "1", "value": "लँगड़ा"}, {"prompt": "2", "value": "सुडौल"}, {"prompt": "3", "value": "अपाहिज"}, {"prompt": "4", "value": "शक्तिहीन"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>&#39;पंगु&#39; का विलोम शब्द<strong>&nbsp;<span style=\"color:  (33, 37, 41);\">सुडौल</span></strong>&nbsp;है, अन्य सभी विकल्प असंगत है।</p>\n\n<p>अत: <strong>विकल्प 2 </strong>सही उत्तर है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>पंगु का अर्थ:-</strong> पैरों में कोई ख़राबी होने के कारण&nbsp;चलने में अक्षम।</li>\n\t<li><strong>पुंग का विलोम:- </strong>सुडौल होगा।</li>\n\t<li>अन्य सभी शब्द&nbsp;<strong>लँगड़ा,&nbsp;अपाहिज,&nbsp;शक्तिहीन</strong> पंगु के समानार्थी है।</li>\n\t<li><strong>सुडौल का अर्थ:-&nbsp;</strong>जिसके सब अंग ठीक और बराबर हों या सही हो या शक्तिशाली हो।</li>\n\t<li><strong>विलोम की परिभाषा:-&nbsp;</strong>जब कोई एक शब्द किसी दूसरे शब्द का <strong>उल्टा या विपरीत अर्थ</strong> व्यक्त करे तो उसे विलोम शब्द कहा जाता है।</li>\n\t<li>साधारण शब्दों में कहें तो जिन शब्दों से किसी दूसरे शब्द का उल्टा शब्द बनें उन्हें <strong>विरुद्धार्थी शब्द या विपरीतार्थक शब्द</strong> कहते है।&nbsp;</li>\n\t<li><strong>जैसे:-</strong>&nbsp;अनुकूल - प्रतिकूल,&nbsp;अगम -<span style=\" -space:pre\"> </span>सुगम,&nbsp;अग्रज - अनुज आदि।</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span><strong>&nbsp;विलोम शब्द के अन्य उदाहरण:-</strong></p>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"color:  (33, 37, 41); width: 200px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><span style=\"font-weight: bolder;\">शब्द&nbsp;</span></td>\n\t\t\t<td style=\"text-align: center;\"><span style=\"font-weight: bolder;\">विलोम&nbsp;</span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">ऊसर</td>\n\t\t\t<td style=\"text-align: center;\">उर्वरा</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">आस्तिक</td>\n\t\t\t<td style=\"text-align: center;\">नास्तिक</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">उत्कृष्ट</td>\n\t\t\t<td style=\"text-align: center;\">निकृष्ट</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">इहलोक</td>\n\t\t\t<td style=\"text-align: center;\">परलोक</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">एकमुखी</td>\n\t\t\t<td style=\"text-align: center;\">बहुमुखी</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">कर्कश</td>\n\t\t\t<td style=\"text-align: center;\">मधुर</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">आदर्श</td>\n\t\t\t<td style=\"text-align: center;\">यथार्थ</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">गणतंत्र</td>\n\t\t\t<td style=\"text-align: center;\">राजतंत्र</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">कुसुम</td>\n\t\t\t<td style=\"text-align: center;\">वज्र</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n36:T14be,\n<p>केन्द्रीय का विलोम<strong>&nbsp;परिधीय </strong>है, अत:<strong> विकल्प 4</strong> सही उत्तर है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>विलोम शब्द की परिभाषा:-&nbsp;</strong>जब कोई एक शब्द किसी दूसरे शब्द का <strong>उल्टा या विपरीत अर्थ</strong> व्यक्त करे तो उसे <strong>विलोम शब्द </strong>कहा जाता है।</li>\n\t<li>साधारण शब्दों में कहें तो जिन शब्दों से किसी दूसरे शब्द का उल्टा शब्द बनें उन्हें <strong>विरुद्धार्थी शब्द या विपरीतार्थक शब्द</strong> कहते है।</li>\n\t<li>विलोम शब्द संज्ञा, सर्वनाम, विशेषण, क्रिया आदि से मिलकर बनते है।</li>\n\t<li>लेकिन ध्यान देने योग्य बात यह है कि संज्ञा का विलोम संज्ञा, सर्वनाम का विलोम सर्वनाम तथा क्रिया का व", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "5f75c4c20a2b09fcc69231ea", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p style=\"\">रेखांकित शब्द का सर्वाधिक उचित विलोम शब्द चुनिए।</p>\n<strong style=\"\">सिपाहियों ने भगदड़ में <u style=\"\">हताहत </u>व्यक्तियों को अस्पताल पहुँचाया।</strong>", "options": [{"prompt": "1", "value": "स्वस्थ"}, {"prompt": "2", "value": "खुश"}, {"prompt": "3", "value": "उच्च"}, {"prompt": "4", "value": "अधम&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p style=\"\">दिए गए विकल्पों में से &lsquo;हताहत&rsquo; शब्द का सर्वाधिक उचित विलोम <strong>स्वस्थ</strong> है। अन्य विकल्प असंगत है।</p>\n\n<ul>\n\t<li style=\"\">हताहत : दुर्घटनाग्रसित</li>\n\t<li style=\"\">स्वस्थ : सुरक्षित और अच्छे स्वस्थ लोग</li>\n</ul>\n\n<p style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<p style=\"\"><strong style=\"\"><u style=\"\">विकल्पों</u></strong> <strong style=\"\"><u style=\"\">के</u></strong> <strong style=\"\"><u style=\"\">अर्थ</u></strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:300px;\">\n\t<tbody style=\"\">\n\t\t<tr style=\"\">\n\t\t\t<td style=\"width:182px;\">\n\t\t\t<p align=\"center\" style=\"\">विकल्प</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:168px;\">\n\t\t\t<p align=\"center\" style=\"\">अर्थ</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr style=\"\">\n\t\t\t<td style=\"width:182px;\">\n\t\t\t<p align=\"center\" style=\"\">स्वस्थ</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:168px;\">\n\t\t\t<p align=\"center\" style=\"\">तंदुरुस्त</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr style=\"\">\n\t\t\t<td style=\"width:182px;\">\n\t\t\t<p align=\"center\" style=\"\">खुश</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:168px;\">\n\t\t\t<p align=\"center\" style=\"\">प्रसन्न</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr style=\"\">\n\t\t\t<td style=\"width:182px;\">\n\t\t\t<p align=\"center\" style=\"\">उच्च</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:168px;\">\n\t\t\t<p align=\"center\" style=\"\">ऊँचा</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr style=\"\">\n\t\t\t<td style=\"width:182px;\">\n\t\t\t<p align=\"center\" style=\"\">अधम</p>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\">नीच</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n2f:T1571,\n<p style=\"\">दिए गए विकल्पों में से &lsquo;मिथ्या&rsquo; शब्द का सर्वाधिक उचित विलोम <strong style=\"\">सत्य</strong> है। अन्य विकल्प असंगत है। अतः सही विकल्प <strong style=\"\">सत्य</strong> है।</p>\n\n<p style=\"\"><strong style=\"\"><u style=\"\">", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "660aaebb12dbb7967ed662e1", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "निम्नलिखित में से असंगत विलोमार्थी शब्द - युग्म है :", "options": [{"prompt": "1", "value": "जीवित - मृत"}, {"prompt": "2", "value": "ताप - शीत"}, {"prompt": "3", "value": "जटिल - सरल"}, {"prompt": "4", "value": "दुर्जन - सजन"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ಕೆಳಗಿನವುಗಳಲ್ಲಿ ಯಾವುದು ಸರಿಯಲ್ಲದ ವಿರುದ್ಧಾರ್ಥಕ ಶಬ್ದ-ಯುಗ್ಮವಾಗಿದೆ?", "options": [{"prompt": "1", "value": "ಜೀವಂತ - ಮೃತ"}, {"prompt": "2", "value": "ಉಷ್ಣ - ಶೀತ"}, {"prompt": "3", "value": "ಜಟಿಲ - ಸರಳ"}, {"prompt": "4", "value": "ದುರ್ಜನ - ಸಜ್ಜನ"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p><strong>दुर्जन - सजन</strong>,&nbsp;असंगत विलोमार्थी शब्द - युग्म है, अत: <strong>विकल्प 4 </strong>सही उत्तर है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>दुर्जन का विलोम <strong>सज्जन</strong> होता है।</li>\n\t<li>दुर्जन का अर्थ<strong>&nbsp;दुष्ट व्यक्ति</strong>, सज्जन का अर्थ-&nbsp;<strong>भला आदमी</strong> होता है।</li>\n\t<li>अन्य विकल्पों में सही विलोम युग्म दिए गए है।</li>\n\t<li>&nbsp;<strong>विलोम शब्द-&nbsp;</strong>वे शब्द जो अपने सामने वाले शब्द के सर्वदा विपरीत अर्थ प्रकट करता हो उसे विलोम शब्द कहा जाता है|</li>\n\t<li><strong>उदाहरण-&nbsp; </strong>1) आरोह &ndash; अवरोह&nbsp; &nbsp;2)आविर्भाव &ndash; तिरोभाव आदि।</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span><strong>विलोम शब्द के अन्य उदाहरण-</strong></p>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:250px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong> शब्द&nbsp;</font></strong></td>\n\t\t\t<td style=\"text-align: center;\"><strong> विलोम</font></strong></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"> ऊसर </font></td>\n\t\t\t<td style=\"text-align: center;\"> उर्वरा</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"> आस्तिक </font></td>\n\t\t\t<td style=\"text-align: center;\"> नास्तिक</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"> गणतंत्र </font></td>\n\t\t\t<td style=\"text-align: center;\"> राजतंत्र</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"> कर्कश </font></td>\n\t\t\t<td style=\"text-align: center;\"> मधुर</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"> नवीन</font></td>\n\t\t\t<td style=\"text-align: center;\">प्राचीन</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n39:Tc5a,\n<p><strong>ದುರ್ಜನ - ಸಜ್ಜನ</strong>, ಸರಿಯಲ್ಲದ ವಿರುದ್ಧಾರ್ಥಕ ಶಬ್ದ-ಯುಗ್ಮವಾಗಿದೆ, ಆದ್ದರಿಂದ <strong>ಆಯ್ಕೆ 4</strong> ಸರಿಯಾದ ಉತ್ತರವಾಗಿದೆ.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>ಮುಖ್ಯ ಅಂಶಗಳು</u></span></strong></span></p>\n\n<ul>\n\t<li>ದುರ್ಜನದ ವಿರುದ್ಧಾರ್ಥಕ <strong>ಸಜ್ಜನ</strong>.</li>\n\t<li>ದುರ್ಜನ ಎಂದರೆ <strong>ದುಷ್ಟ ವ್ಯಕ್ತಿ</strong>, ಸಜ್ಜನ ಎಂದರೆ <strong>ಒಳ್ಳೆಯ ವ್ಯಕ್ತಿ</strong>.</li>\n\t<li>ಉಳಿದ ಆಯ್ಕೆಗಳಲ್ಲಿ ಸರಿಯಾದ ವಿರುದ್ಧಾರ್ಥಕ ಯುಗ್ಮಗಳನ್ನು ನೀಡಲಾಗಿದೆ.</li>\n\t<li><strong>ವಿರುದ್ಧಾರ್ಥಕ ಶಬ್ದಗಳು -</strong> ತಮ್ಮ ", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "\n<p><strong>ದುರ್ಜನ - ಸಜ್ಜನ</strong>, ಸರಿಯಲ್ಲದ ವಿರುದ್ಧಾರ್ಥಕ ಶಬ್ದ-ಯುಗ್ಮವಾಗಿದೆ, ಆದ್ದರಿಂದ <strong>ಆಯ್ಕೆ 4</strong> ಸರಿಯಾದ ಉತ್ತರವಾಗಿದೆ.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>ಮುಖ್ಯ ಅಂಶಗಳು</u></span></strong></span></p>\n\n<ul>\n\t<li>ದುರ್ಜನದ ವಿರುದ್ಧಾರ್ಥಕ <strong>ಸಜ್ಜನ</strong>.</li>\n\t<li>ದುರ್ಜನ ಎಂದರೆ <strong>ದುಷ್ಟ ವ್ಯಕ್ತಿ</strong>, ಸಜ್ಜನ ಎಂದರೆ <strong>ಒಳ್ಳೆಯ ವ್ಯಕ್ತಿ</strong>.</li>\n\t<li>ಉಳಿದ ಆಯ್ಕೆಗಳಲ್ಲಿ ಸರಿಯಾದ ವಿರುದ್ಧಾರ್ಥಕ ಯುಗ್ಮಗಳನ್ನು ನೀಡಲಾಗಿದೆ.</li>\n\t<li><strong>ವಿರುದ್ಧಾರ್ಥಕ ಶಬ್ದಗಳು -</strong> ತಮ್ಮ ಎದುರಿನ ಶಬ್ದಕ್ಕೆ ಯಾವಾಗಲೂ ವಿರುದ್ಧ ಅರ್ಥವನ್ನು ವ್ಯಕ್ತಪಡಿಸುವ ಶಬ್ದಗಳನ್ನು ವಿರುದ್ಧಾರ್ಥಕ ಶಬ್ದಗಳು ಎಂದು ಕರೆಯಲಾಗುತ್ತದೆ.</li>\n\t<li><strong>ಉದಾಹರಣೆಗಳು -</strong> 1) ಆರೋಹಣ - ಅವರೋಹಣ   2) ಆವಿರ್ಭಾವ - ತೀರೋಭಾವ ಇತ್ಯಾದಿ.</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ</u></span></strong></span><strong>ವಿರುದ್ಧಾರ್ಥಕ ಶಬ್ದಗಳ ಇತರ ಉದಾಹರಣೆಗಳು-</strong></p>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:250px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong> ಶಬ್ದ</font></strong></td>\n\t\t\t<td style=\"text-align: center;\"><strong> ವಿರುದ್ಧಾರ್ಥಕ</font></strong></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"> ಬಂಜರು</font></td>\n\t\t\t<td style=\"text-align: center;\"> ಫಲವತ್ತಾದ</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"> ಆಸ್ತಿಕ</font></td>\n\t\t\t<td style=\"text-align: center;\"> ನಾಸ್ತಿಕ</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"> ಗಣರಾಜ್ಯ</font></td>\n\t\t\t<td style=\"text-align: center;\"> ರಾಜ್ಯ</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"> ಕರ್ಕಶ</font></td>\n\t\t\t<td style=\"text-align: center;\"> ಮಧುರ</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"> ಹೊಸ</font></td>\n\t\t\t<td style=\"text-align: center;\">ಪ್ರಾಚೀನ</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"CT 01: विलोम शब्द\",\"sections\":[{\"_id\":\"635f7865e80ceced0816ffce\",\"qCount\":10,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":0.25,\"posMarks\":2,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isPartialMarking\":false,\"_id\":\"65e45ef7c4b3be4307b03f7e\",\"en\":{\"value\":\"&#39;पंगु&#39; का विलोम शब्द है\",\"options\":[{\"prompt\":\"1\",\"value\":\"लँगड़ा\"},{\"prompt\":\"2\",\"value\":\"सुडौल\"},{\"prompt\":\"3\",\"value\":\"अपाहिज\"},{\"prompt\":\"4\",\"value\":\"शक्तिहीन\"}],\"Range\":{\"start\":\"\",\"end\":\"\"}},\"hn\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"te\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"mr\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"bn\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"ml\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"gu\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"kn\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"ta\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"or\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"as\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"ks\":{\"Range\":{\"start\":\"\",\"end\":\"\"}},\"kok\":{\"Range\":{\"start", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "65e04f947262c74e3dce46b3", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>निम्न शब्द के विलोम के लिए दिए गए चार विकल्पों में से उचित विकल्प चुनिए ।</p>\n\n<p>उद्धत</p>\n", "options": [{"prompt": "1", "value": "विनीत"}, {"prompt": "2", "value": "उधृत&amp;nbsp;"}, {"prompt": "3", "value": "उद्यम"}, {"prompt": "4", "value": "उद्धार"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p>ಕೆಳಗಿನ ಪದಕ್ಕೆ ವಿರುದ್ಧಾರ್ಥಕ ಪದವನ್ನು ನೀಡಲಾಗಿರುವ ನಾಲ್ಕು ಆಯ್ಕೆಗಳಿಂದ ಸೂಕ್ತವಾದ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ.</p>\n\n<p>ಉದ್ಧತ</p>", "options": [{"prompt": "1", "value": "ವಿನೀತ"}, {"prompt": "2", "value": "ಉದ್ಧೃತ"}, {"prompt": "3", "value": "ಉದ್ಯಮ"}, {"prompt": "4", "value": "ಉದ್ಧಾರ"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>उपर्युक्त विकल्पों में से&nbsp;विकल्प&nbsp;<strong>1&nbsp;&lsquo;विनीत&rsquo;&nbsp;</strong>इसका सही उत्तर है। अन्य विकल्प असंगत&nbsp;हैं।&nbsp;</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></p>\n\n<ul>\n\t<li><strong>उद्धत का अर्थ:</strong> अक्खड़&nbsp;आदि।&nbsp;</li>\n\t<li><strong>विनीत का अर्थ: </strong>नम्र, शिष्ट, झुका हुआ आदि।</li>\n\t<li><strong>विलोम/विपरीतार्थक-</strong>&nbsp;विपरीत (उल्टा) अर्थ बताने वाले शब्दों को विलोम शब्द कहते हैं।</li>\n\t<li><strong>जैसे-</strong>&nbsp;यश-अपयश ,&nbsp;अनुलोम-विलोम&nbsp;आदि।</li>\n\t<li>अन्य विकल्प असंगत है।</li>\n</ul>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span>&nbsp;</span></p>\n\n<p><strong>विलोम शब्द के अन्य उदाहरण-</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:250px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><strong><font color=\"#58595b\">शब्द</font></strong></p>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><strong><font color=\"#58595b\">विलोम</font></strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><font color=\"#58595b\">उग्र&nbsp;</font></p>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><font color=\"#58595b\">सौम्य</font></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><font color=\"#58595b\">उत्कृष्ट</font></p>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><font color=\"#58595b\">निकृष्ट</font></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">उतीर्ण</font></td>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">अनुतीर्ण</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">उत्थान&nbsp;</font></td>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">&nbsp;पतन</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><font color=\"#58595b\">उदय </font></p>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\">अस्त</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n34:Td29,\n<p>ಮೇಲೆ ನೀಡಲಾಗಿರುವ ಆಯ್ಕೆಗಳಲ್ಲಿ <strong>1 ‘ವಿನೀತ’</strong> ಸರಿಯಾದ ಉತ್ತರವಾಗಿದೆ. ಇತರ ಆಯ್ಕೆಗಳು ಸೂಕ್ತವಲ್ಲ.</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>ಮುಖ್ಯ ಅಂಶಗಳು</u></span></strong></span></span></p>\n\n<ul>\n\t<li><strong>ಉದ್ಧತದ ಅರ್ಥ:</strong> ಅಹಂಕಾರಿ, ಗರ್ವದಿಂದ ಇರುವವನು.</li>\n\t<li><s", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "\n<p>ಮೇಲೆ ನೀಡಲಾಗಿರುವ ಆಯ್ಕೆಗಳಲ್ಲಿ <strong>1 ‘ವಿನೀತ’</strong> ಸರಿಯಾದ ಉತ್ತರವಾಗಿದೆ. ಇತರ ಆಯ್ಕೆಗಳು ಸೂಕ್ತವಲ್ಲ.</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>ಮುಖ್ಯ ಅಂಶಗಳು</u></span></strong></span></span></p>\n\n<ul>\n\t<li><strong>ಉದ್ಧತದ ಅರ್ಥ:</strong> ಅಹಂಕಾರಿ, ಗರ್ವದಿಂದ ಇರುವವನು.</li>\n\t<li><strong>ವಿನೀತದ ಅರ್ಥ:</strong> ನಮ್ರ, ಶಿಷ್ಟ, ವಿಧೇಯ.</li>\n\t<li><strong>ವಿರುದ್ಧಾರ್ಥಕ/ವಿಲೋಮ-</strong> ವಿರುದ್ಧ ಅರ್ಥವನ್ನು ಹೊಂದಿರುವ ಪದಗಳನ್ನು ವಿರುದ್ಧಾರ್ಥಕ ಪದಗಳು ಎನ್ನುತ್ತಾರೆ.</li>\n\t<li><strong>ಉದಾಹರಣೆಗೆ-</strong> ಯಶಸ್ಸು-ಅಪಯಶ, ಅನುಕೂಲ-ಪ್ರತಿಕೂಲ ಇತ್ಯಾದಿ.</li>\n\t<li>ಇತರ ಆಯ್ಕೆಗಳು ಸೂಕ್ತವಲ್ಲ.</li>\n</ul>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>ಹೆಚ್ಚುವರಿ ಮಾಹಿತಿ</u></span></strong></span> </span></p>\n\n<p><strong>ವಿರುದ್ಧಾರ್ಥಕ ಪದಗಳ ಇತರ ಉದಾಹರಣೆಗಳು-</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:250px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><strong><font color=\"#58595b\">ಪದ</font></strong></p>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><strong><font color=\"#58595b\">ವಿರುದ್ಧಾರ್ಥಕ</font></strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><font color=\"#58595b\">ಉಗ್ರ</font></p>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><font color=\"#58595b\">ಸೌಮ್ಯ</font></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><font color=\"#58595b\">ಉತ್ಕೃಷ್ಟ</font></p>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><font color=\"#58595b\">ನಿಕೃಷ್ಟ</font></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">ಉತ್ತೀರ್ಣ</font></td>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">ಅನುತ್ತೀರ್ಣ</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">ಉತ್ಥಾನ</font></td>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">ಪತನ</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\"><font color=\"#58595b\">ಉದಯ</font></p>\n\t\t\t</td>\n\t\t\t<td>\n\t\t\t<p style=\"text-align: center;\">ಅಸ್ತ</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n35:T156b,\n<p>&#39;पंगु&#39; का विलोम शब्द<strong>&nbsp;<span style=\"color:  (33, 37, 41);\">सुडौल</span></strong>&nbsp;है, अन्य सभी विकल्प असंगत है।</p>\n\n<p>अत: <strong>विकल्प 2 </strong>सही उत्तर है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>पंगु का अर्थ:-</", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "6336ba0c63fe90556c50e77a", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p style=\"\">निर्देश : निम्नलिखित वाक्यों में रेखांकित शब्दों के विलोम के लिए चार-चार विकल्प दिये गये हैं। उचित विलोम छाँटकर उसे चिन्हित करें।</p>\n\n<p style=\"\">लंबी योग साधना से उसका&nbsp;<u>ओजस्वी</u>&nbsp;चेहरा देखते ही&nbsp;बनता था।</p>\n", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;शोकाकुल&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;कामुक&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;कान्तिहीन&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;मलीन&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>&#39;<strong>ओजस्वी</strong>&#39; का विलोम शब्द&nbsp;<strong><u>कान्तिहीन</u> </strong>है।</p>\n\n<ul style=\"\">\n\t<li>ओजस्वी&nbsp;का अर्थ - <strong>तेजस्वी</strong></li>\n\t<li>कान्तिहीन का अर्थ -&nbsp;<strong>निस्तेज</strong></li>\n</ul>\n\n<p style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span><strong><u>अन्य विकल्प</u>&nbsp;-</strong></p>\n\n<ul style=\"\">\n\t<li><strong>शोकाकुल&nbsp;</strong>का अर्थ होता है -&nbsp;शोक से व्याकुल&nbsp;</li>\n\t<li>शोक&nbsp;का विलोम -&nbsp;हर्ष</li>\n\t<li><strong>कामुक </strong>का अर्थ होता है -&nbsp;व्यभिचारी,&nbsp;विलासी</li>\n\t<li>कामुक&nbsp;का विलोम -&nbsp;कामहीन</li>\n\t<li><strong>मैला&nbsp;</strong>का अर्थ होता है -&nbsp;अस्वच्छ &nbsp;</li>\n\t<li>मैला&nbsp;का विलोम -&nbsp;उजला</li>\n</ul>\n\n<p style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/4f750a2730aad0987b5e719f277ddc90129c657928205c4d3b5aa23049023fa5.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Important Points</u></span></strong></span><strong><u>विलोम के उदाहरण</u>&nbsp;-</strong></p>\n\n<ul>\n\t<li>विधि -&nbsp;निषेध /&nbsp;अविधि</li>\n\t<li>मैत्री&nbsp;- अमैत्री</li>\n\t<li>अतिथि -&nbsp;आतिथेय</li>\n\t<li>वैमनस्य -&nbsp;सौमनस</li>\n\t<li>तुच्छ&nbsp;- महान</li>\n\t<li>गुण&nbsp;- अवगुण</li>\n\t<li>नैतिक -&nbsp;अनैतिक</li>\n\t<li>संशय&nbsp;- विसंशय</li>\n\t<li>कृश - स्थूल</li>\n\t<li>पंगु - सुडौल</li>\n</ul>\n\n31:T19e3,\n<p>उपरोक्त वाक्य में रेखांकित शब्द&nbsp;<strong><u>स्थिर</u>&nbsp;</strong>का उच&zwj;ित व&zwj;िलोम शब्&zwj;द&nbsp;<u><strong><span style=\"color: rgb(33, 37, 41);\">चंचल&nbsp;</span></strong></u>है। अन्&zwj;य व&zwj;िकल्&zwj;प असंगत हैं।&nbsp;</p>\n\n<p><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: ", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "65e45f78274450bd9d6670f0", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;केन्द्रीय&#39; का विलोम शब्द है", "options": [{"prompt": "1", "value": "मुख्य"}, {"prompt": "2", "value": "मध्य"}, {"prompt": "3", "value": "केंद्रिक"}, {"prompt": "4", "value": "परिधीय"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>केन्द्रीय का विलोम<strong>&nbsp;परिधीय </strong>है, अत:<strong> विकल्प 4</strong> सही उत्तर है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>विलोम शब्द की परिभाषा:-&nbsp;</strong>जब कोई एक शब्द किसी दूसरे शब्द का <strong>उल्टा या विपरीत अर्थ</strong> व्यक्त करे तो उसे <strong>विलोम शब्द </strong>कहा जाता है।</li>\n\t<li>साधारण शब्दों में कहें तो जिन शब्दों से किसी दूसरे शब्द का उल्टा शब्द बनें उन्हें <strong>विरुद्धार्थी शब्द या विपरीतार्थक शब्द</strong> कहते है।</li>\n\t<li>विलोम शब्द संज्ञा, सर्वनाम, विशेषण, क्रिया आदि से मिलकर बनते है।</li>\n\t<li>लेकिन ध्यान देने योग्य बात यह है कि संज्ञा का विलोम संज्ञा, सर्वनाम का विलोम सर्वनाम तथा क्रिया का विलोम क्रिया से बनता है।</li>\n\t<li><strong>जैसे:-&nbsp;</strong>इष्ट -<span style=\"white-space:pre\"> </span>अनिष्ट,&nbsp;ईश्वर -<span style=\"white-space:pre\"> </span>अनीश्वर, उग्र -<span style=\"white-space:pre\"> </span>सौम्य आदि।</li>\n\t<li>अन्य विकल्प&nbsp;<span style=\"color: rgb(33, 37, 41);\">मुख्य,&nbsp;मध्य,&nbsp;केंद्रिक <strong>केन्द्रिय</strong>&nbsp;के समानार्थी शब्द है।</span></li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span><strong>&nbsp;विलोम शब्द के अन्य उदाहरण:-</strong></p>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:200px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong><font color=\"#58595b\">शब्द&nbsp;</font></strong></td>\n\t\t\t<td style=\"text-align: center;\"><strong><font color=\"#58595b\">विलोम</font></strong></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">अनागत&nbsp;</font></td>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">आगत</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">अनिवार्य&nbsp;</font></td>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">वैकल्पिक</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">अनुरक्त </font></td>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">विरक्त</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">अपना&nbsp;</font></td>\n\t\t\t<td style=\"text-align: center;\"><font color=\"#58595b\">पराया</font></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">अभिज्ञ <span style=\"white-space:pre\"> </span></td>\n\t\t\t<td style=\"text-align: center;\"><span style=\"color: rgb(33, 37, 41);\">अनभिज्ञ</span></td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n37:Tbfe,\n<p>&#39;दक्षिण&#39; शब्द का विलोम शब्द है-&nbsp;<u><strong><span style=\"color: rgb(33, 37, 41);\">वाम</span></strong></u></p>\n\n<ul>\n\t<li><span style=\"color: rgb(33, 37, 41);\">वाम का अर्थ है- <strong>उत्तर</strong>&nbsp;</span></li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>पश्चिम का विलोम शब्द&nbsp;<strong>पूरब</strong>&nbsp;होता है।</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/4f750a2730aad0987b5e719f277ddc90129c657928205c4d3b5aa23049", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "65d1bf3697d61c6eed889491", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&quot;अभिज्ञ&quot; शब्द का विलोम शब्द क्या है ?", "options": [{"prompt": "1", "value": "अनभिज्ञ&amp;nbsp;"}, {"prompt": "2", "value": "अल्पज्ञ&amp;nbsp;"}, {"prompt": "3", "value": "विज्ञ"}, {"prompt": "4", "value": "सर्वज्ञ"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>&quot;अभिज्ञ&quot; शब्द का विलोम शब्द है -&nbsp;<span style=\"color: rgb(33, 37, 41);\"><strong><u>अनभिज्ञ</u></strong>&nbsp;</span>अन्य सभी विकल्प असंगत है।&nbsp;</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>&nbsp;</span></span></span></p>\n\n<ul>\n\t<li><strong><span style=\"font-weight: bolder;\">&#39;</span>अभिज्ञ<span style=\"font-weight: bolder;\">&#39;&nbsp;</span></strong>का विलोम शब्द<span style=\"font-weight: bolder;\">&nbsp;<strong>&#39;</strong></span><strong><span style=\"color: rgb(33, 37, 41);\">अनभिज्ञ</span></strong><span style=\"font-weight: bolder;\"><strong>&#39;</strong>&nbsp;</span>होगा।&nbsp;</li>\n\t<li><span style=\"font-weight: bolder;\">&#39;बहुमत&#39;&nbsp;</span>का अर्थ-&nbsp;जानकार,&nbsp;ज्ञाता,&nbsp;कुशल,&nbsp;दक्ष,&nbsp;निपुण।</li>\n\t<li><span style=\"font-weight: bolder;\">&#39;</span><strong><span style=\"color: rgb(33, 37, 41);\">अनभिज्ञ</span></strong><span style=\"font-weight: bolder;\">&#39;<span style=\"font-weight: bolder;\">&nbsp;</span></span>का अर्थ-&nbsp;जो किसी बात को जानता न हो,&nbsp;अनजान, विज्ञ।</li>\n</ul>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">अन्य विकल्प:-</span></p>\n\n<table border=\"2\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:200px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><span style=\"font-weight: 700;\">शब्द</span></td>\n\t\t\t<td style=\"text-align: center;\"><span style=\"font-weight: 700;\">विलोम</span><span style=\"font-weight: 700; white-space: pre;\"> </span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><span style=\"color: rgb(33, 37, 41);\">अल्पज्ञ&nbsp;</span></td>\n\t\t\t<td style=\"text-align: center;\"><span style=\"color: rgb(33, 37, 41);\">सर्व</span>ज्ञ,&nbsp;बहुज्ञ</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><span style=\"color: rgb(33, 37, 41);\">विज्ञ</span></td>\n\t\t\t<td style=\"text-align: center;\">अज्ञ</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span>&nbsp;</span></span></span><span style=\"font-weight: 700;\">कुछ महत्वपूर्ण विलोम शब्द:-</span></p>\n\n<table border=\"2\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:200px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><span style=\"font-weight: bolder;\">शब्द</span></td>\n\t\t\t<td style=\"text-align: center;\"><span style=\"font-weight: bolder;\">विलोम</span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">सध्दर्म</td>\n\t\t\t<td style=\"text-align: center;\">अधर्म</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">अनाहूत</td>\n\t\t\t<td style=\"text-align: center;\">आहुत</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">बहिरंग</td>\n\t\t\t<td style=\"text-align: center;\">अन्तरंग</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">शाश्वत</td>\n\t\t\t<td style=\"text-align: center;\">क्षणिक</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">प्राचीन&nbsp;</td>\n\t\t\t<td style=\"text-align: center;\">अर्वाचीन</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">निरालम्ब</td>\n\t\t\t<td style=\"text-align: center;\">अवलम्ब</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">उपकार</td>\n\t\t\t<td style=\"text-align: center;\">अपकार</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">उन्नत</td>\n\t\t\t<td style=\"text-align: center;\">अवनत&nbsp;</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">अतुकान्त&nbsp;</td>\n\t\t\t<td style=\"text-align: center;\">तुकान्त</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><span style=\"color: rgb(33, 37, 41);\">बहुमत</span></td>\n\t\t\t<td style=\"text-align: center;\"><span style=\"color: rgb(33, 37, 41);\">अल्पमत</span></td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n33:T11d2,\n<p>उपर्युक्त विकल्पों में से&nbsp;विकल्प&nbsp;<strong>1&nbsp;&lsquo;विनीत&rsquo;&nbsp;</strong>इसका सही उत्तर है। अन्य विकल्प असंगत&nbsp;हैं।&nbsp;</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></spa", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "65f939ccdb8d8592b1e4bfe7", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;दक्षिण&#39; शब्द का विलोम शब्द निम्न में से कौन सा है ?", "options": [{"prompt": "1", "value": "वाम"}, {"prompt": "2", "value": "दायाँ"}, {"prompt": "3", "value": "पश्चिम"}, {"prompt": "4", "value": "पूरब"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>&#39;दक्षिण&#39; शब्द का विलोम शब्द है-&nbsp;<u><strong><span style=\"color: rgb(33, 37, 41);\">वाम</span></strong></u></p>\n\n<ul>\n\t<li><span style=\"color: rgb(33, 37, 41);\">वाम का अर्थ है- <strong>उत्तर</strong>&nbsp;</span></li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>पश्चिम का विलोम शब्द&nbsp;<strong>पूरब</strong>&nbsp;होता है।</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/4f750a2730aad0987b5e719f277ddc90129c657928205c4d3b5aa23049023fa5.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Important Points</u></span></strong></span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"color: rgb(33, 37, 41); width: 300px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 61px;\">\n\t\t\t<p align=\"center\"><span style=\"font-weight: bolder;\">शब्द</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 132px;\">\n\t\t\t<p align=\"center\"><span style=\"font-weight: bolder;\">परिभाषा</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 96px;\">\n\t\t\t<p align=\"center\"><span style=\"font-weight: bolder;\">उदाहरण</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 61px;\">\n\t\t\t<p><span style=\"font-weight: bolder;\">विलोम</span><span style=\"font-weight: bolder;\">/</span><span style=\"font-weight: bolder;\">विपरीतार्थक</span>&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 132px;\">\n\t\t\t<p>विपरीत (उल्टा) अर्थ बताने वाले शब्दों को विलोम शब्द कहते हैं।</p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 96px;\">\n\t\t\t<ol>\n\t\t\t\t<li>रात - दिन</li>\n\t\t\t\t<li>सुख - दुःख</li>\n\t\t\t</ol>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n38:Tf10,\n<p><strong>दुर्जन - सजन</strong>,&nbsp;असंगत विलोमार्थी शब्द - युग्म है, अत: <strong>विकल्प 4 </strong>सही उत्तर है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "63fefc758326fe47746c6234", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>निम्नलिखित वाक्य में रेखांकित शब्द के विलोम शब्द का प्रयोग करके रिक्त स्थान की पूर्ति कीजिए।</p>\n\n<p>ऊपर से सोने का स्वभाव <u>स्थिर</u> है जबकि वास्तव में वह ______ है।</p>\n", "options": [{"prompt": "1", "value": "अचल"}, {"prompt": "2", "value": "जागरण"}, {"prompt": "3", "value": "सूक्ष्म"}, {"prompt": "4", "value": "चंचल"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>उपरोक्त वाक्य में रेखांकित शब्द&nbsp;<strong><u>स्थिर</u>&nbsp;</strong>का उच&zwj;ित व&zwj;िलोम शब्&zwj;द&nbsp;<u><strong><span style=\"color: rgb(33, 37, 41);\">चंचल&nbsp;</span></strong></u>है। अन्&zwj;य व&zwj;िकल्&zwj;प असंगत हैं।&nbsp;</p>\n\n<p><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>&nbsp;</span>&nbsp;</span></span><br />\n&nbsp;</span></p>\n\n<ul>\n\t<li><strong>वाक्&zwj;य-&nbsp;</strong>ऊपर से सोने का स्वभाव&nbsp;<strong><u>स्थिर</u>&nbsp;</strong>है जबकि वास्तव में वह <u style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">चंचल&nbsp;</span></u>है।</li>\n\t<li>वाक्&zwj;य में रेखांक&zwj;ित शब्&zwj;द&nbsp;<span style=\"font-weight: bolder;\"><u>स्थिर</u>&nbsp;</span>का सही व&zwj;िलोम शब्&zwj;द&nbsp;<u style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">चंचल&nbsp;</span></u>है।&nbsp;</li>\n\t<li>स्थिर&nbsp;का अर्थ-&nbsp;<strong>स्थायी</strong></li>\n\t<li>चंचल&nbsp;का अर्थ-&nbsp;अस्थिर</li>\n\t<li>अन्&zwj;य व&zwj;िकल्&zwj;प असंगत हैं।&nbsp;</li>\n</ul>\n\n<p><strong>अन्&zwj;य व&zwj;िकल्&zwj;प-&nbsp;</strong></p>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:200px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>शब्&zwj;द&nbsp;</strong></td>\n\t\t\t<td style=\"text-align: center;\"><strong>विलोम</strong></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">अचल</td>\n\t\t\t<td style=\"text-align: center;\">चल</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">जागरण</td>\n\t\t\t<td style=\"text-align: center;\">शयन</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">सूक्ष्म</td>\n\t\t\t<td style=\"text-align: center;\">स्थूल</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/4f750a2730aad0987b5e719f277ddc90129c657928205c4d3b5aa23049023fa5.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Important Points</u></span></strong></span>&nbsp;</span></span>कुछ अन्&zwj;य व&zwj;िलोम शब्&zwj;द-&nbsp;</p>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:175px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><span style=\"font-weight: 700;\">शब्&zwj;द</span></td>\n\t\t\t<td style=\"text-align: center;\"><span style=\"font-weight: 700;\">विलोम</span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">जड़&nbsp;</td>\n\t\t\t<td style=\"text-align: center;\">चेतन</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">वक्&zwj;ता</td>\n\t\t\t<td style=\"text-align: center;\">श्रोता</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">उन्&zwj;मूलन</td>\n\t\t\t<td style=\"text-align: center;\">रोपण</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">आघात</td>\n\t\t\t<td style=\"text-align: center;\">प्रतिघात</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">अनिवार्य</td>\n\t\t\t<td style=\"text-align: center;\">ऐच्छिक</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">आवृत्त</td>\n\t\t\t<td style=\"text-align: center;\">अनावृत्त</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">विज्ञ</td>\n\t\t\t<td style=\"text-align: center;\">अज्ञ</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">आलोक</td>\n\t\t\t<td style=\"text-align: center;\">तिमिर</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\">कृत्रिम</td>\n\t\t\t<td style=\"text-align: center;\">प्राकृतिक</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n32:T1c63,\n<p>&quot;अभिज्ञ&quot; शब्द का विलोम शब्द है -&nbsp;<span style=\"color: rgb(33, 37, 41);\"><strong><u>अनभिज्ञ</u></strong>&nbsp;</span>अन्य सभी विकल्प असंगत है।&nbsp;</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /&g", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}, {"qid": "5f75c7b2571468fc57ac8b5f", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p style=\"\">रेखांकित शब्द का सर्वाधिक उचित विलोम शब्द चुनिए।</p>\nलोगों को अपने बारे में <u style=\"\">मिथ्या </u>अभिमान होता है।", "options": [{"prompt": "1", "value": "सत्य"}, {"prompt": "2", "value": "लौकिक"}, {"prompt": "3", "value": "व्यर्थ"}, {"prompt": "4", "value": "झूठ"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p style=\"\">दिए गए विकल्पों में से &lsquo;मिथ्या&rsquo; शब्द का सर्वाधिक उचित विलोम <strong style=\"\">सत्य</strong> है। अन्य विकल्प असंगत है। अतः सही विकल्प <strong style=\"\">सत्य</strong> है।</p>\n\n<p style=\"\"><strong style=\"\"><u style=\"\">विकल्पों</u></strong> <strong style=\"\"><u style=\"\">के</u></strong> <strong style=\"\"><u style=\"\">अर्थ</u></strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:233px;\">\n\t<tbody style=\"\">\n\t\t<tr style=\"\">\n\t\t\t<td style=\"width:199px;\">\n\t\t\t<p align=\"center\" style=\"\"><strong style=\"\">विकल्प</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:198px;\">\n\t\t\t<p align=\"center\" style=\"\"><strong style=\"\">अर्थ</strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr style=\"\">\n\t\t\t<td style=\"width:199px;\">\n\t\t\t<p align=\"center\" style=\"\"><strong style=\"\">सत्य</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:198px;\">\n\t\t\t<p align=\"center\" style=\"\">सच</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr style=\"\">\n\t\t\t<td style=\"width:199px;\"&g", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Unidentified", "confidence": "unidentified"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 6 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
