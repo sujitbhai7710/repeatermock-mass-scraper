@@ -484,6 +484,25 @@ class ProgressTracker:
                         sdata["failed"] = new_failed
                 if migrated > 0:
                     print(f"  [progress] migrated {migrated} duplicate failed entries → {migrated_unique} unique (dict format)")
+                # RESET: Cap attempts at 9 (below the new MAX_FAILURE_ATTEMPTS=10)
+                # so tests that hit the old cap (5 or 10) get retried with the new DOM-based HTML extraction
+                # This only affects tests that haven't been scraped yet (not PRO, not scraped)
+                reset_count = 0
+                for series_slug, sdata in self.data.items():
+                    if not isinstance(sdata, dict):
+                        continue
+                    failed_dict = sdata.get("failed", {})
+                    if not isinstance(failed_dict, dict):
+                        continue
+                    for tid, info in failed_dict.items():
+                        if isinstance(info, dict) and info.get("attempts", 0) >= 10:
+                            # Reset to 9 so next run will retry (9 < 10 = MAX_FAILURE_ATTEMPTS)
+                            info["attempts"] = 9
+                            info["last_reason"] = "reset for DOM-based retry (was: " + info.get("last_reason", "?")[:60] + ")"
+                            reset_count += 1
+                if reset_count > 0:
+                    print(f"  [progress] reset {reset_count} failed tests from 10→9 attempts (will retry with new DOM extraction)")
+                    self._save()
                 total_scraped = sum(len(v.get("scraped", {})) for v in self.data.values())
                 total_failed = sum(len(v.get("failed", {})) for v in self.data.values())
                 print(f"  [progress] loaded {total_scraped} scraped + {total_failed} failed tests from {self.progress_path}")
@@ -934,12 +953,41 @@ class Worker:
             if "about:blank" in self.page.url:
                 print(f"  [worker {self.worker_id}] solution page self-destructed, skipping")
                 return None
-            # 4. Fetch the HTML via in-page fetch (gets post-JS version with flight data)
+            # 4. Get HTML via DOM (not fetch!) — fixes the root cause of 130+ test failures
+            #
+            # BUG FIX: Previous code used fetch(window.location.href) which gets the RAW server
+            # response. For some tests, the flight data (testData/answersData) is only present
+            # in the browser's DOM AFTER Next.js client-side hydration via self.__next_f.push().
+            # The raw server HTML may NOT contain these strings.
+            #
+            # FIX: Use document.documentElement.outerHTML which returns the CURRENT DOM
+            # (after all JavaScript has executed, including Next.js flight data injection).
+            # This is synchronous (no network round-trip) and more reliable.
+            #
+            # Fallback: if DOM doesn't have testData, try fetch() as well (some pages
+            # might have it in the raw HTML but not in the DOM due to script execution order).
             js_fetch = """
             (function(){
+              // Method 1: Get DOM HTML (after JS execution — has flight data)
+              var domHTML = document.documentElement.outerHTML;
+              var hasTestDataDOM = domHTML.indexOf('testData') >= 0;
+              var hasAnswersDOM = domHTML.indexOf('answersData') >= 0;
+              
+              if (hasTestDataDOM && hasAnswersDOM) {
+                // DOM has flight data — use it
+                window.__HTML__ = domHTML;
+                return {stored: true, len: domHTML.length, hasTestData: true, hasAnswersData: true, source: 'dom'};
+              }
+              
+              // Method 2: Fallback to fetch() if DOM doesn't have flight data
+              // (some pages load flight data via separate AJAX, so DOM might not have it
+              //  but the raw HTML from fetch() might)
               return fetch(window.location.href, {credentials: 'include'})
                 .then(r => r.text())
-                .then(t => { window.__HTML__ = t; return {stored: true, len: t.length, hasTestData: t.indexOf('testData') >= 0, hasAnswersData: t.indexOf('answersData') >= 0}; })
+                .then(t => {
+                  window.__HTML__ = t;
+                  return {stored: true, len: t.length, hasTestData: t.indexOf('testData') >= 0, hasAnswersData: t.indexOf('answersData') >= 0, source: 'fetch'};
+                })
                 .catch(e => ({stored: false, err: String(e).slice(0, 200)}));
             })()
             """
@@ -947,6 +995,14 @@ class Worker:
             if not isinstance(result, dict) or not result.get("stored"):
                 print(f"  [worker {self.worker_id}] failed to fetch solution HTML (attempt {fetch_attempt+1}/3): {result}")
                 continue
+            # If neither DOM nor fetch has testData, retry with longer wait
+            if not result.get("hasTestData") or not result.get("hasAnswersData"):
+                # Log what we got so we can debug
+                src = result.get("source", "?")
+                print(f"  [worker {self.worker_id}] HTML missing testData/answersData (attempt {fetch_attempt+1}/3, len={result.get('len',0)}, source={src}, max=20MB)")
+                if fetch_attempt < 2:
+                    print(f"  [worker {self.worker_id}]   → retrying with longer wait...")
+                    continue
             # 5. Extract HTML in chunks (Bug #1 fix: increased cap from 5 MB to 20 MB)
             # Playwright's page.evaluate() has ~1 MB serialization limit per call.
             # Using 500 KB chunks × 40 chunks = 20 MB max (was 100 KB × 50 = 5 MB)
@@ -964,7 +1020,7 @@ class Worker:
             html = "".join(chunks)
             if html and "testData" in html and "answersData" in html:
                 break  # Success — have full flight data
-            print(f"  [worker {self.worker_id}] HTML missing testData/answersData (attempt {fetch_attempt+1}/3, len={len(html)}, max=20MB)")
+            print(f"  [worker {self.worker_id}] HTML missing testData/answersData after chunk extraction (attempt {fetch_attempt+1}/3, len={len(html)}, max=20MB)")
             if fetch_attempt < 2:
                 print(f"  [worker {self.worker_id}]   → retrying with longer wait...")
                 continue
