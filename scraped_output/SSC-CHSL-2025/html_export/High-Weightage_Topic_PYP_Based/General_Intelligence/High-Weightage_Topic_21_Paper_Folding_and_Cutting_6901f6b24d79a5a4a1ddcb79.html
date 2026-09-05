@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>High-Weightage Topic 21: Paper Folding and Cutting</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">High-Weightage Topic 21: Paper Folding and Cutting</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-chsl-previous</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">8 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">6901f6b24d79a5a4a1ddcb79</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "6901f6b24d79a5a4a1ddcb79", "title": "High-Weightage Topic 21: Paper Folding and Cutting", "series_slug": "ssc-chsl-previous", "duration_min": 8, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "67c6e826f66945a824ba8204", "section_name": "General Intelligence", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "64e8c86ac16efa97ad7c5656", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>A square sheet of paper is folded along the dotted line successively along the directions shown and is then punched in the end. How would the paper look when unfolded?&nbsp;</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f17bc984f76a7c5dfef8b685f55b8cb8691c3a897225c791744365956126b630.png\" style=\"width: 268px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6ecebafd54643d2265fb82b0f4a65a4a164687416f72f3567d141559e08677a1.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/b79b430ada06584da87cebe6f97f073911bad181fcf815cd9c3d982c90d88ef6.png&quot; style=&quot;width: 82px; height: 81px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/8a269d42af956c285f9b71dffdbd52b90b84241a5143d0b019e185e80b3bba8c.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/d9262154e6f7883988d50681dfb3500a61a813f44f74bcb27ae24e47278b1790.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">कागज की एक चौकोर शीट को बिंदीदार रेखा के अनुदिश&nbsp;</font></font>दर्शाए&nbsp;<font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">गए निर्देशों के अनुसार क्रमिक रूप से मोड़ा जाता है और फिर अंत में छिद्रित किया जाता है। खोलने पर कागज किस </font></font>प्रकार दिखाई देगा?&nbsp;</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f17bc984f76a7c5dfef8b685f55b8cb8691c3a897225c791744365956126b630.png\" style=\"width: 268px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6ecebafd54643d2265fb82b0f4a65a4a164687416f72f3567d141559e08677a1.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/b79b430ada06584da87cebe6f97f073911bad181fcf815cd9c3d982c90d88ef6.png&quot; style=&quot;width: 82px; height: 81px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/8a269d42af956c285f9b71dffdbd52b90b84241a5143d0b019e185e80b3bba8c.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/d9262154e6f7883988d50681dfb3500a61a813f44f74bcb27ae24e47278b1790.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>ఒక చతురస్రాకారపు కాగితం చూపిన దిశల వెంట వరుసగా చుక్కల రేఖ వెంబడి మడతపెట్టబడుతుంది మరియు తరువాత చివరలో పంచ్ చేయబడుతుంది. కాగితం <span style=\"color: rgb(37, 37, 37);\">తెరిచినప్పుడు</span> ఎలా ఉంటుంది? </p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f17bc984f76a7c5dfef8b685f55b8cb8691c3a897225c791744365956126b630.png\" style=\"width: 268px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6ecebafd54643d2265fb82b0f4a65a4a164687416f72f3567d141559e08677a1.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b79b430ada06584da87cebe6f97f073911bad181fcf815cd9c3d982c90d88ef6.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8a269d42af956c285f9b71dffdbd52b90b84241a5143d0b019e185e80b3bba8c.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/d9262154e6f7883988d50681dfb3500a61a813f44f74bcb27ae24e47278b1790.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>कागदाची चौकोनी शीट ठिपकेदार रेषेने दर्शविलेल्या दिशानिर्देशांसह क्रमाने दुमडली जाते आणि नंतर भोक पाडले जाते. उलगडल्यावर कागद कसा दिसेल?कागदाची एक चौकोनी शीट दर्शविलेल्या दिशांच्या बिंदूरेषेच्या बाजूने क्रमश: दुमडली जाते आणि नंतर शेवटी पंच केली जाते. तर ती शीट उलगडल्यावर कशी दिसेल?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f17bc984f76a7c5dfef8b685f55b8cb8691c3a897225c791744365956126b630.png\" style=\"width: 268px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6ecebafd54643d2265fb82b0f4a65a4a164687416f72f3567d141559e08677a1.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b79b430ada06584da87cebe6f97f073911bad181fcf815cd9c3d982c90d88ef6.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8a269d42af956c285f9b71dffdbd52b90b84241a5143d0b019e185e80b3bba8c.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/d9262154e6f7883988d50681dfb3500a61a813f44f74bcb27ae24e47278b1790.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>একটি বর্গাকার কাগজের শীট দেখানো দিক বরাবর পরপর ডটযুক্ত রেখা বরাবর ভাঁজ করা হয় এবং তারপর শেষে ছিদ্র করা হয়। যখন কাগজটি খোলা হবে তখন কেমন দেখতে হবে?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f17bc984f76a7c5dfef8b685f55b8cb8691c3a897225c791744365956126b630.png\" style=\"width: 268px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6ecebafd54643d2265fb82b0f4a65a4a164687416f72f3567d141559e08677a1.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b79b430ada06584da87cebe6f97f073911bad181fcf815cd9c3d982c90d88ef6.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8a269d42af956c285f9b71dffdbd52b90b84241a5143d0b019e185e80b3bba8c.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/d9262154e6f7883988d50681dfb3500a61a813f44f74bcb27ae24e47278b1790.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>કાગળની ચોરસ શીટને ડોટેડ લાઇન સાથે ક્રમિક રીતે બતાવેલ દિશાઓ સાથે વાળવામાં આવે છે અને પછી તેને અંતે પંચ કરવામાં આવે છે. જ્યારે કાગળ ખુલશે ત્યારે કેવું દેખાશે?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f17bc984f76a7c5dfef8b685f55b8cb8691c3a897225c791744365956126b630.png\" style=\"width: 268px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6ecebafd54643d2265fb82b0f4a65a4a164687416f72f3567d141559e08677a1.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b79b430ada06584da87cebe6f97f073911bad181fcf815cd9c3d982c90d88ef6.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8a269d42af956c285f9b71dffdbd52b90b84241a5143d0b019e185e80b3bba8c.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/d9262154e6f7883988d50681dfb3500a61a813f44f74bcb27ae24e47278b1790.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>ஒரு சதுரத் தாள் புள்ளியிடப்பட்ட கோட்டுடன் காட்டப்படும் திசைகளில் தொடர்ச்சியாக மடிக்கப்பட்டு இறுதியில் துளையிடப்படுகிறது. காகிதத்தை திறக்கும்போது அது எவ்வாறு தோன்றும்?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f17bc984f76a7c5dfef8b685f55b8cb8691c3a897225c791744365956126b630.png\" style=\"width: 268px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6ecebafd54643d2265fb82b0f4a65a4a164687416f72f3567d141559e08677a1.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b79b430ada06584da87cebe6f97f073911bad181fcf815cd9c3d982c90d88ef6.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8a269d42af956c285f9b71dffdbd52b90b84241a5143d0b019e185e80b3bba8c.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/d9262154e6f7883988d50681dfb3500a61a813f44f74bcb27ae24e47278b1790.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p><span style=\"color: (33, 37, 41);\">The given figure when unfolded is as follows:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ce44a59664185a257822bd222477a6715ff9f157da63b57a2b31f27b2648d39c.png\" style=\"width: 356px; height: 82px;\" /></p>\n\n<p>Hence, the correct answer is<strong> &quot;Option (1)&quot;.</strong></p>\n", "hn": "<p><span style=\"color: (33, 37, 41);\"><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">खोलने पर दी गई आकृति इस प्रकार दिखाई देगी:</font></font></span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ce44a59664185a257822bd222477a6715ff9f157da63b57a2b31f27b2648d39c.png\" style=\"color: rgb(33, 37, 41); width: 356px; height: 82px;\" /></p>\n\n<p><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">अतः, सही उत्तर </font></font><strong><font style=\"vertical-align: inherit;\"><font style=\"vertical-align: inherit;\">&quot;विकल्प (1)&quot; </font></font></strong>है।</p>\n", "te": "<p><span style=\"color: (37, 37, 37);  \">తెరిచినప్పుడు ఇచ్చిన పటం క్రింది విధంగా ఉంది</span><span style=\"color: (33, 37, 41);\">:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ce44a59664185a257822bd222477a6715ff9f157da63b57a2b31f27b2648d39c.png\" style=\"color: rgb(33, 37, 41); width: 356px; height: 82px;\" /></p>\n\n<p><span style=\"color: (37, 37, 37);  \">కాబట్టి, సరైన సమాధానం<strong> \"ఎంపిక (1)\".</strong></span></p>\n", "mr": "<p><span style=\"color: (33, 37, 41);\">उलगडल्यावर दिलेली आकृती खालीलप्रमाणे आहे:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ce44a59664185a257822bd222477a6715ff9f157da63b57a2b31f27b2648d39c.png\" style=\"color: rgb(33, 37, 41); width: 356px; height: 82px;\" /></p>\n\n<p>म्हणून, <strong>\"पर्याय (1)\" </strong>योग्य उत्तर आहे.</p>\n", "bn": "<p><span style=\"color: (33, 37, 41);\">দেওয়া চিত্রটি যখন খোলা হয় তখন দেখতে হবে:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ce44a59664185a257822bd222477a6715ff9f157da63b57a2b31f27b2648d39c.png\" style=\"width: 356px; height: 82px;\" /></p>\n\n<p>সুতরাং, সঠিক উত্তর হল<strong> \"বিকল্প (1)\".</strong></p>\n", "ml": "", "gu": "<p><span style=\"color: (33, 37, 41);\">આપેલ આકૃતિ જ્યારે ખોલવામાં આવે ત્યારે નીચે મુજબ છે:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ce44a59664185a257822bd222477a6715ff9f157da63b57a2b31f27b2648d39c.png\" style=\"color: rgb(33, 37, 41); width: 356px; height: 82px;\" /></p>\n\n<p>તેથી, સાચો જવાબ <strong>\"વિકલ્પ (1)\" </strong>છે.</p>\n", "kn": "", "ta": "<p><span style=\"color: (33, 37, 41);\">திறக்கும்போது கொடுக்கப்பட்ட படம் பின்வருமாறு </span>தோன்று<span style=\"color: (33, 37, 41);\">ம்:</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ce44a59664185a257822bd222477a6715ff9f157da63b57a2b31f27b2648d39c.png\" style=\"color: rgb(33, 37, 41); width: 356px; height: 82px;\" /></p>\n\n<p>எனவே, சரியான விடை <strong>\"விருப்பம் (1)\".</strong></p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Paper Folding and Cutting"], "concept": "Paper Folding/Cutting", "confidence": "high"}, {"qid": "62dfd3d64fc4ff6926e48370", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>A paper is folded and cut as shown. How will it appear when unfolded?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eade0e82bf72c7e5364ffbfca0d4f60d61e45865bad11c5036b28c0423904a43.png\" style=\"width: 263px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/3031809d4bd35475f97899ecb5e4aba7d6119180e66c2ee0f949c16fda6e36e9.png&quot; style=&quot;width: 82px; height: 81px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/f39a83416f907e09e25e247745a723016875eb1f9ad520368789b90e49b528eb.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;&amp;nbsp;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/869bf35e707de5fe35f79af5885df847d0ed650377707e85558dc24dff4a5db2.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/8d201af92f323e97bb38d2d009424e187ca45be9ab2c3ca49a91c31184831498.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p style=\"\">नीचे दी गई आकृतियों में कागज को मोड़कर छिद्रित करने का क्रम दिया गया है। यह कागज खोलने पर कैसा दिखाई देगा?</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eade0e82bf72c7e5364ffbfca0d4f60d61e45865bad11c5036b28c0423904a43.png\" style=\" width: 263px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/3031809d4bd35475f97899ecb5e4aba7d6119180e66c2ee0f949c16fda6e36e9.png&quot; style=&quot;width: 82px; height: 81px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/f39a83416f907e09e25e247745a723016875eb1f9ad520368789b90e49b528eb.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;&amp;nbsp;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/869bf35e707de5fe35f79af5885df847d0ed650377707e85558dc24dff4a5db2.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/8d201af92f323e97bb38d2d009424e187ca45be9ab2c3ca49a91c31184831498.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>ఒక కాగితాన్ని చూపిన విధంగా మడిచి కత్తిరించారు. విప్పినప్పుడు అది ఎలా కనిపిస్తుంది?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eade0e82bf72c7e5364ffbfca0d4f60d61e45865bad11c5036b28c0423904a43.png\" style=\"width: 263px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3031809d4bd35475f97899ecb5e4aba7d6119180e66c2ee0f949c16fda6e36e9.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f39a83416f907e09e25e247745a723016875eb1f9ad520368789b90e49b528eb.png\" style=\"width: 82px; height: 82px;\" /> "}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/869bf35e707de5fe35f79af5885df847d0ed650377707e85558dc24dff4a5db2.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d201af92f323e97bb38d2d009424e187ca45be9ab2c3ca49a91c31184831498.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>खाली दाखवल्याप्रमाणे कागद दुमडला आणि कापला जातो. उलगडल्यावर तो कसा दिसेल?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eade0e82bf72c7e5364ffbfca0d4f60d61e45865bad11c5036b28c0423904a43.png\" style=\"width: 263px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3031809d4bd35475f97899ecb5e4aba7d6119180e66c2ee0f949c16fda6e36e9.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f39a83416f907e09e25e247745a723016875eb1f9ad520368789b90e49b528eb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/869bf35e707de5fe35f79af5885df847d0ed650377707e85558dc24dff4a5db2.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d201af92f323e97bb38d2d009424e187ca45be9ab2c3ca49a91c31184831498.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>একটি কাগজকে ভাঁজ করে কাটা হয়েছে যেমন দেখানো হয়েছে। খোলার পর এটি কেমন দেখতে হবে?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eade0e82bf72c7e5364ffbfca0d4f60d61e45865bad11c5036b28c0423904a43.png\" style=\"width: 263px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3031809d4bd35475f97899ecb5e4aba7d6119180e66c2ee0f949c16fda6e36e9.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f39a83416f907e09e25e247745a723016875eb1f9ad520368789b90e49b528eb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/869bf35e707de5fe35f79af5885df847d0ed650377707e85558dc24dff4a5db2.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d201af92f323e97bb38d2d009424e187ca45be9ab2c3ca49a91c31184831498.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>દર્શાવ્યા પ્રમાણે એક કાગળ વાળીને કાપવામાં આવે છે. જ્યારે ખુલશે ત્યારે તે કેવી રીતે દેખાશે?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eade0e82bf72c7e5364ffbfca0d4f60d61e45865bad11c5036b28c0423904a43.png\" style=\"width: 263px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3031809d4bd35475f97899ecb5e4aba7d6119180e66c2ee0f949c16fda6e36e9.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f39a83416f907e09e25e247745a723016875eb1f9ad520368789b90e49b528eb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/869bf35e707de5fe35f79af5885df847d0ed650377707e85558dc24dff4a5db2.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d201af92f323e97bb38d2d009424e187ca45be9ab2c3ca49a91c31184831498.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "kn": {"value": "<p><span style=\"\">ಕೆಳಗೆ </span>ತೋರಿಸಿರುವಂತೆ ಕಾಗದವನ್ನು ಮಡಚಲಾಗುತ್ತದೆ ಮತ್ತು ಕತ್ತರಿಸಲಾಗುತ್ತದೆ. <span style=\"\">ಈ ಕಾಗದವನ್ನು ತೆರೆದಾಗ ಹೇಗೆ ಕಾಣುತ್ತದೆ?</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eade0e82bf72c7e5364ffbfca0d4f60d61e45865bad11c5036b28c0423904a43.png\" style=\"width: 263px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3031809d4bd35475f97899ecb5e4aba7d6119180e66c2ee0f949c16fda6e36e9.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f39a83416f907e09e25e247745a723016875eb1f9ad520368789b90e49b528eb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/869bf35e707de5fe35f79af5885df847d0ed650377707e85558dc24dff4a5db2.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d201af92f323e97bb38d2d009424e187ca45be9ab2c3ca49a91c31184831498.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>காட்டப்பட்டுள்ளபடி ஒரு காகிதம் மடித்து வெட்டப்படுகிறது. விரிக்கும்போது அது எப்படித் தோன்றும்?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/eade0e82bf72c7e5364ffbfca0d4f60d61e45865bad11c5036b28c0423904a43.png\" style=\"width: 263px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3031809d4bd35475f97899ecb5e4aba7d6119180e66c2ee0f949c16fda6e36e9.png\" style=\"width: 82px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f39a83416f907e09e25e247745a723016875eb1f9ad520368789b90e49b528eb.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/869bf35e707de5fe35f79af5885df847d0ed650377707e85558dc24dff4a5db2.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8d201af92f323e97bb38d2d009424e187ca45be9ab2c3ca49a91c31184831498.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The logic followed here is :</p>\n\n<p>Just unfold the paper as it was folded. The diagonal lines are just the folding of the paper.</p>\n\n<p>Only option (4) is showing the correct cut on the pa</p>\n\n<p>per after unfolding.&nbsp;</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/eb700f6feb9aa4d6e777bde51948855634b39a36ee9886a980c42e0b10ec2526.png\" style=\"white-space: pre-wrap;  margin-left: 5.9508e-14px; margin-top: -38.3052px; width: 318px; height: 81px;\" /></p>\n\n<p>Hence, the correct answer is<strong> option (4)<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Mistake Points</u></span></strong></span></strong></p>\n\n<p>Option2:&nbsp;&nbsp;<strong>&nbsp;</strong><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/cc428daeb552c5871e45382e914a550f9670ab9717f2037a849616e838cb34b1.png\" style=\" width: 81px; height: 82px;\" /></p>\n\n<p>Option 4:&nbsp;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0eddb9cfe82840fc24062a639bbc928e45f45e0e94a4037e96c1634d44db1874.png\" style=\" width: 81px; height: 82px;\" /></p>\n\n<p>Both the option appear to be same but are not same. Direction of the part indicated with in box is different in both the options.</p>", "hn": "\n<p>यहाँ अनुसरण किया गया तर्क है:</p>\n\n<p>कागज को वैसे ही खोल दीजिए जैसे वह मुड़ा हुआ था। विकर्ण रेखाएँ केवल कागज़ की तह होती हैं।</p>\n\n<p>खोलने के बाद केवल विकल्प (4) में कागज पर सही छिद्रित भाग दिखा&nbsp;रहा है।</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/eb700f6feb9aa4d6e777bde51948855634b39a36ee9886a980c42e0b10ec2526.png\" /></p>\n\n<p>इसलिए,&nbsp;सही उत्तर विक<strong>ल्प (4) </strong>है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Mistake Points</u&g", "te": "<p>ఇక్కడ అనుసరించిన తర్కం:</p>\n\n<p>కాగితాన్ని ఎలా మడిచారో అలా విప్పండి. కర్ణ గీతలు కాగితాన్ని మడవడం మాత్రమే.</p>\n\n<p>విప్పిన తర్వాత కాగితంపై సరైన కట్ ఆప్షన్ (4) మాత్రమే చూపిస్తుంది.</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/eb700f6feb9aa4d6e777bde51948855634b39a36ee9886a980c42e0b10ec2526.png\" style=\"white-space: pre-wrap;  margin-left: 5.9508e-14px; margin-top: -38.3052px; width: 318px; height: 81px;\" /></p>\n\n<p>కాబట్టి, సరైన సమాధానం <strong>ఆప్షన్ (4)<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>తప్పు పాయింట్లు</u></spa", "mr": "<p>येथे अनुसरण केलेले तर्क आहे:</p>\n\n<p>कागद जसा दुमडला होता तसाच उलगडून घेवू. कर्णरेषा म्हणजे फक्त कागदाची घडी.</p>\n\n<p>फक्त पर्याय (4) कागदावरील योग्य कट दर्शवत आहे</p>\n\n<p>उलगडल्यानंतर प्रति.</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/eb700f6feb9aa4d6e777bde51948855634b39a36ee9886a980c42e0b10ec2526.png\" style=\"white-space: pre-wrap;  margin-left: 5.9508e-14px; margin-top: -38.3052px; width: 318px; height: 81px;\" /></p>\n\n<p>म्हणून, <strong>पर्याय (4)</strong> हे <span style=\"color: rgb(33, 37, 41);\">योग्य उत्तर </span>आहे <strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" width=\"26px\" /> <strong><s", "bn": "<p>এখানে যে যুক্তি অনুসরণ করা হয়েছে তা হল :</p>\n\n<p>কাগজটি যেভাবে ভাঁজ করা হয়েছিল সেভাবে ভাঁজ খুলুন। তির্যক রেখাগু\nলি কেবল কাগজের ভাঁজ।</p>\n\n<p>শুধুমাত্র বিকল্প (4) খোলার পরে কাগজে সঠিক কাটা দেখাচ্ছে।</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/eb700f6feb9aa4d6e777bde51948855634b39a36ee9886a980c42e0b10ec2526.png\" style=\"white-space: pre-wrap;  margin-left: 5.9508e-14px; margin-top: -38.3052px; width: 318px; height: 81px;\" /></p>\n\n<p>অতএব, সঠিক উত্তর হল <strong>বিকল্প (4)</strong><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" style=\"color: rgb(33, 37, 41); font-weight: 700;\" width=\"26px\" /> <span style=\"font-size:20p", "ml": "", "gu": "<p>અહીં અનુસરવામાં આવેલ તર્ક નીચે મુજબ છે:</p>\n\n<p>કાગળને જેમ વાળવામાં આવ્યો હતો તેમ જ તેને ખોલો. ત્રાંસી રેખાઓ માત્ર કાગળની વાળેલી ગડી છે.</p>\n\n<p>માત્ર વિકલ્પ (4) સાચો ભાગ દર્શાવે છે</p>\n\n<p>અનફોલ્ડિંગ પછી દીઠ.</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/eb700f6feb9aa4d6e777bde51948855634b39a36ee9886a980c42e0b10ec2526.png\" style=\"white-space: pre-wrap;  margin-left: 5.9508e-14px; margin-top: -38.3052px; width: 318px; height: 81px;\" /></p>\n\n<p>તેથી, સાચો જવાબ <strong>વિકલ્પ (4)</strong> છે.</p>\n\n<p><span style=\"font-size:20px;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" style=\"color: rgb(33, 37, 41); font-weight: 700;\" width=\"26px\" /><span style=\"font-weight: bolder;\"><span style=\"vertical-align: middle; \"><u>Mistake Points</u></span></span></span></p>\n\n<p>વિકલ્પ 2:<strong> </strong><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/cc428daeb552c5871e45382e914a550f9670ab9717f2037a849616e838cb34b1.png\" style=\" width: 81px; height: 82px;\" /></p>\n\n<p>વિકલ્પ 4: <img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0eddb9cfe82840fc24062a639bbc928e45f45e0e94a4037e96c1634d44db1874.png\" style=\" width: 81px; height: 82px;\" /></p>\n\n<p>બંને વિકલ્પ સમાન દેખાય છે પરંતુ સમાન નથી. બૉક્સમાં દર્શાવેલ ભાગની દિશા બંને વિકલ્પોમાં અલગ છે.</p>\n38:T795,\n<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ತರ್ಕ ಹೀಗಿದೆ:</p>\n\n<p><span style=\"\">ಕಾಗದವನ್ನು ಮಡಚಿದಂತೆ ಬಿಚ್ಚಿ. ಕರ್ಣೀಯ ರೇಖೆಗಳು ಸರಳವಾಗಿ ಕಾಗದದ ಮಡಿಕೆಗಳಾಗಿವೆ.</span></p>\n\n<p>ಕೇವಲ ಆಯ್ಕೆ (4) ಸರಿಯಾದ ಕಟ್ ಅನ್ನು ತೋರಿಸುತ್ತಿದೆ</p>\n\n<p>ತೆರೆದ ನಂತರ ಪ್ರತಿ.</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/eb700f6feb9aa4d6e777bde51948855634b39a36ee9886a980c42e0b10ec2526.png\" style=\"white-space: pre-wrap;  margin-left: 5.9508e-14px; margin-top: -38.3052px; width: 318px; height: 81px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರವು <strong>ಆಯ್ಕೆ </st", "kn": "\n<p>ಇಲ್ಲಿ ಅನುಸರಿಸಿದ ತರ್ಕ ಹೀಗಿದೆ:</p>\n\n<p><span style=\"\">ಕಾಗದವನ್ನು ಮಡಚಿದಂತೆ ಬಿಚ್ಚಿ. ಕರ್ಣೀಯ ರೇಖೆಗಳು ಸರಳವಾಗಿ ಕಾಗದದ ಮಡಿಕೆಗಳಾಗಿವೆ.</span></p>\n\n<p>ಕೇವಲ ಆಯ್ಕೆ (4) ಸರಿಯಾದ ಕಟ್ ಅನ್ನು ತೋರಿಸುತ್ತಿದೆ</p>\n\n<p>ತೆರೆದ ನಂತರ ಪ್ರತಿ.</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/eb700f6feb9aa4d6e777bde51948855634b39a36ee9886a980c42e0b10ec2526.png\" style=\"white-space: pre-wrap;  margin-left: 5.9508e-14px; margin-top: -38.3052px; width: 318px; height: 81px;\" /></p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರವು <strong>ಆಯ್ಕೆ </strong><span style=\"font-weight: bolder;\">(4) </span><strong>ಆಗಿದೆ <span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" width=\"26px\" /> <strong><span styl", "ta": "\n<p>இங்கே பின்பற்றப்படும் தர்க்கம்:</p>\n\n<p>காகிதத்தை மடித்தபடியே விரிக்கவும். மூலைவிட்ட கோடுகள் காகிதத்தின் மடிப்பு மட்டுமே.</p>\n\n<p>ஒரே விருப்பம் (4) பாவில் சரியான வெட்டுக் காட்டுகிறது</p>\n\n<p>விரித்த பிறகு ஒன்றுக்கு.</p>\n\n<p><img src=\"https://cdn.repeatermock.com/tb/eb700f6feb9aa4d6e777bde51948855634b39a36ee9886a980c42e0b10ec2526.png\" style=\"white-space: pre-wrap;  margin-left: 5.9508e-14px; margin-top: -38.3052px; width: 318px; height: 81px;\" /></p>\n\n<p>எனவே, சரியான பதில் <strong>விருப்பம் (4) <span style=\"display: flex;gap: 6px;align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Mistake Points</u></spa", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Paper Folding and Cutting"], "concept": "Paper Folding/Cutting", "confidence": "high"}, {"qid": "61e947e19991303becca70c3", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>The sequence of folding a piece of paper and the manner in which the folder paper has been cut is shown in the following figures. How would this paper look when unfolded?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0ecfb0fb870472ea841079c041274aa7a6ee30aacb9655ac87ed8246d052f49b.png\" style=\"width: 368px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/86f9f5cc72d50bd4579dfbadac2e4e53c7c665c041c4b39341dc35ee1afd1820.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/142146c3514efa8814fb5808e43546bba062a4a34d3c052d1706515a9d99ad23.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/2e8da9eb08c395e3575dc044bab062eea98700b27afad27dcf623478afb5e927.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/37a227fafaa9884ab1b4bbc3e61d5138d5eaaf7cdb3e271a0bb40f4d57e8b78a.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p><span style=\"\">कागज़</span><span style=\"\">&nbsp;</span>के एक टुकड़े को मोड़ने का क्रम और जिस तरीके से मोड गए कागज़&nbsp;को काटा गया है, उसे निम्न आकृति में दिखाया गया है। खुलने पर यह <span style=\"\">कागज़</span><span style=\"\">&nbsp;</span>कैसा दिखेगा?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0ecfb0fb870472ea841079c041274aa7a6ee30aacb9655ac87ed8246d052f49b.png\" style=\"width: 368px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/86f9f5cc72d50bd4579dfbadac2e4e53c7c665c041c4b39341dc35ee1afd1820.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/142146c3514efa8814fb5808e43546bba062a4a34d3c052d1706515a9d99ad23.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/2e8da9eb08c395e3575dc044bab062eea98700b27afad27dcf623478afb5e927.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/37a227fafaa9884ab1b4bbc3e61d5138d5eaaf7cdb3e271a0bb40f4d57e8b78a.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>ஒரு துண்டு காகிதத்தை மடிக்கும் வரிசை மற்றும் மடிக்கப்பட்ட காகிதம் வெட்டப்பட்ட விதம் பின்வரும் படங்களில் காட்டப்பட்டுள்ளது. இந்தக் காகிதத்தை விரிக்கும்போது எப்படி இருக்கும்?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0ecfb0fb870472ea841079c041274aa7a6ee30aacb9655ac87ed8246d052f49b.png\" style=\"width: 368px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/86f9f5cc72d50bd4579dfbadac2e4e53c7c665c041c4b39341dc35ee1afd1820.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/142146c3514efa8814fb5808e43546bba062a4a34d3c052d1706515a9d99ad23.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2e8da9eb08c395e3575dc044bab062eea98700b27afad27dcf623478afb5e927.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/37a227fafaa9884ab1b4bbc3e61d5138d5eaaf7cdb3e271a0bb40f4d57e8b78a.png\" style=\"width: 82px; height: 82px;\" />"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p style=\"\">The image obtained when the paper is unfolded is,</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0960ede819099093ea8d7cbabb64e7852cc399351e0a10fbe2832d102933baa8.png\" style=\"width: 337px; height: 82px;\" /></p>\n\n<p style=\"\">Hence,&nbsp;<span style=\"font-weight: 700;\">option 4</span>&nbsp;is the correct answer.</p>\n", "hn": "<p style=\"\"><span style=\"\">कागज़</span><span style=\"\">&nbsp;</span>को खोलने पर प्राप्त प्रतिबिम्ब है,</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0960ede819099093ea8d7cbabb64e7852cc399351e0a10fbe2832d102933baa8.png\" style=\" width: 337px; height: 82px;\" /></p>\n\n<p style=\"\">अत:, <strong>विकल्प 4</strong> सही उत्तर है।</p>\n\n<p style=\"\">&nbsp;</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "<p style=\"\">காகிதத்தை விரிக்கும் போது கிடைக்கும் படம்,</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0960ede819099093ea8d7cbabb64e7852cc399351e0a10fbe2832d102933baa8.png\" style=\"width: 337px; height: 82px;\" /></p>\n\n<p style=\"\">எனவே, <span style=\"font-weight: 700;\">விருப்பம் 4</span> சரியான பதில்.</p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Paper Folding and Cutting"], "concept": "Paper Folding/Cutting", "confidence": "high"}, {"qid": "61e55f7122fa82888caf7376", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>The sequence of folding a piece of paper and the manner in which the folded paper has cut is shown in the following figures. How would this paper look when unfolded ?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/49f8ef2fc5180b3f22ddc90d6df7a4a1e7afef33631c27979889b7fc78e9ae9b.png\" style=\"width: 568px; height: 110px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/d4fc6bb4e90d5c20ea7615c8ed0b0110462267ff93535e1c54d6ec13e41d40a0.png&quot; style=&quot;width: 126px; height: 110px;&quot; /&gt;&amp;nbsp;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/46041cefa100405b3e6d58ee0ef11ee1e5ab06b54a8dafabdb7d968e9d36f690.png&quot; style=&quot;width: 126px; height: 110px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/309cf9eb35e5895bd9610094f0d79432ba60e0ece8caed08a9d0464258c75c43.png&quot; style=&quot;width: 126px; height: 110px;&quot; /&gt;&amp;nbsp;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/f59517225a997871ef8fed1e8df56f8de01667f540f78925c30bcc311715199a.png&quot; style=&quot;width: 127px; height: 110px;&quot; /&gt;&amp;nbsp;&amp;nbsp;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>कागज के एक टुकड़े को मोड़ने का क्रम और मुड़े हुए कागज को काटने का तरीका निम्नलिखित आकृतियों में दिखाया गया है। खोलने होने पर यह कागज कैसा दिखेगा ?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/49f8ef2fc5180b3f22ddc90d6df7a4a1e7afef33631c27979889b7fc78e9ae9b.png\" style=\"width: 568px; height: 110px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/d4fc6bb4e90d5c20ea7615c8ed0b0110462267ff93535e1c54d6ec13e41d40a0.png&quot; style=&quot;width: 126px; height: 110px;&quot; /&gt;&amp;nbsp;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/46041cefa100405b3e6d58ee0ef11ee1e5ab06b54a8dafabdb7d968e9d36f690.png&quot; style=&quot;width: 126px; height: 110px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/309cf9eb35e5895bd9610094f0d79432ba60e0ece8caed08a9d0464258c75c43.png&quot; style=&quot;width: 126px; height: 110px;&quot; /&gt;&amp;nbsp;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/f59517225a997871ef8fed1e8df56f8de01667f540f78925c30bcc311715199a.png&quot; style=&quot;width: 127px; height: 110px;&quot; /&gt;&amp;nbsp;&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p style=\"\">The image obtained when the paper is unfolded is,</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/06a0e9531d31ea2fb13cb9a051571724491cae48a61ac801c7e1974b852b9387.png\" style=\"width: 496px; height: 112px;\" /></p>\n\n<p style=\"\">Hence,&nbsp;<span style=\"font-weight: 700;\">option 4</span>&nbsp;is the correct answer.</p>\n", "hn": "<p style=\"\"><span style=\"color: rgb(37, 37, 37);  \">कागज को खोलने पर प्राप्त छवि है,</span></p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/06a0e9531d31ea2fb13cb9a051571724491cae48a61ac801c7e1974b852b9387.png\" style=\" width: 496px; height: 112px;\" /></p>\n\n<p style=\"\"><span style=\"color: rgb(37, 37, 37);  \">अतः, <strong>विकल्प 4</strong> सही उत्तर है।</span></p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Paper Folding and Cutting"], "concept": "Paper Folding/Cutting", "confidence": "high"}, {"qid": "6144b3b36f7b7cf4734b3159", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>The sequence of folding a piece of paper and the manner in which the folded papers has been cut is shown in the following figures, How would this paper look when unfolded?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/bb5a80dfa515d9378f4f34a7dd7751625aec0ed55574a877c13498c87faf5010.png\" style=\"width: 271px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/5cb7459d6eb8adf51014062c2fa9e3ab634fd3827c845fdf1524eeb5195bf6ec.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/967bafed414a986a721b8b0195ad3c01731e15ab144d1b35610a11bd0b2f1be9.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/1435de27940ada6462b5b00129f17512fd5f5b087967363c4214ca8388c5df8f.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/c2ee39e9910e6750c88025492c16deffdb3134b3d10ea3a37a92d3951e64fb34.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>कागज के एक टुकड़े को मोड़ने का क्रम और जिस तरीके से मुड़े हुए कागजों को काटा गया है, उसे निम्नलिखित आकृतियों में दिखाया गया है, जब यह कागज खोला जायेगा तो यह कैसा दिखेगा?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/bb5a80dfa515d9378f4f34a7dd7751625aec0ed55574a877c13498c87faf5010.png\" style=\" width: 271px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/5cb7459d6eb8adf51014062c2fa9e3ab634fd3827c845fdf1524eeb5195bf6ec.png&quot; style=&quot;color: rgb(33, 37, 41); width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/967bafed414a986a721b8b0195ad3c01731e15ab144d1b35610a11bd0b2f1be9.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/1435de27940ada6462b5b00129f17512fd5f5b087967363c4214ca8388c5df8f.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/c2ee39e9910e6750c88025492c16deffdb3134b3d10ea3a37a92d3951e64fb34.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>કાગળના ટુકડાને ફોલ્ડ કરવાનો ક્રમ અને ફોલ્ડ કરેલા કાગળોને જે રીતે કાપવામાં આવ્યા છે તે નીચેના આકૃતિઓમાં દર્શાવવામાં આવ્યું છે, જ્યારે આ કાગળ ખોલવામાં આવે ત્યારે તે કેવો દેખાશે?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/bb5a80dfa515d9378f4f34a7dd7751625aec0ed55574a877c13498c87faf5010.png\" style=\"width: 271px; height: 82px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/5cb7459d6eb8adf51014062c2fa9e3ab634fd3827c845fdf1524eeb5195bf6ec.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/967bafed414a986a721b8b0195ad3c01731e15ab144d1b35610a11bd0b2f1be9.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/1435de27940ada6462b5b00129f17512fd5f5b087967363c4214ca8388c5df8f.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c2ee39e9910e6750c88025492c16deffdb3134b3d10ea3a37a92d3951e64fb34.png\" style=\"width: 81px; height: 81px;\" />"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>The paper when unfolded will appear as shown below:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c2e26e2989f80aa4828f2d6910fdc5673ca3e8763c3b3f1276a8f620e7aa9ddd.png\" style=\"width: 316px; height: 82px;\" /></p>\n\n<p>Hence, &lsquo;<strong>option 1</strong>&rsquo; is the correct answer.</p>\n", "hn": "<p>खोलने पर कागज नीचे दिखाए अनुसार दिखाई देगा:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c2e26e2989f80aa4828f2d6910fdc5673ca3e8763c3b3f1276a8f620e7aa9ddd.png\" style=\"color: rgb(33, 37, 41); width: 316px; height: 82px;\" /></p>\n\n<p>अतः, सही उत्तर <strong>&#39;विकल्प 1&#39;</strong> है।&nbsp;</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "<p>જ્યારે કાગળ ખુલશે ત્યારે નીચે બતાવ્યા પ્રમાણે દેખાશે:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c2e26e2989f80aa4828f2d6910fdc5673ca3e8763c3b3f1276a8f620e7aa9ddd.png\" style=\"width: 316px; height: 82px;\" /></p>\n\n<p>તેથી, ' <strong>વિકલ્પ 1</strong> ' સાચો જવાબ છે.</p>\n", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Paper Folding and Cutting"], "concept": "Paper Folding/Cutting", "confidence": "high"}, {"qid": "61e5359a7b6123e2d76bccae", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>The sequence of folding a piece of paper and the manner in which the folded paper has been cut is shown in the following figures. How would this paper look when unfolded?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/34213df721d2f722a2afe7290f562fb4fc64091f7bc5bddc6858cee8e991e41f.png\" style=\"width: 224px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/efef13a079720e9fb9f5af0c9cd7b430332f2a7dcdd1db7ba47baec77029b9fc.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/c4f267914968b03de880483e96342d62bff629c7fd179d35b431ab40752ee6b9.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/4faacc6ead3a9f72239cf24da1c9e51e80e749564050e0cf4620b2a6cc8e7b76.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/4d460e923902659c79003ffcf08d4295a097d557bf0baa89a464cc6bb8641e98.png&quot; style=&quot;width: 82px; height: 82px;&quot; /&gt;&lt;span style=&quot;display: none;&quot;&gt;&amp;nbsp;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>कागज के एक टुकड़े को मोड़ने का क्रम और जिस तरीके से मुड़े हुए कागज को काटा गया है, उसे निम्नलिखित आकृतियों में दिखाया गया है। मुड़ा न होने पर यह कागज कैसा दिखेगा?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/34213df721d2f722a2afe7290f562fb4fc64091f7bc5bddc6858cee8e991e41f.png\" style=\" width: 224px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/efef13a079720e9fb9f5af0c9cd7b430332f2a7dcdd1db7ba47baec77029b9fc.png&quot; style=&quot; width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/c4f267914968b03de880483e96342d62bff629c7fd179d35b431ab40752ee6b9.png&quot; style=&quot; width: 82px; height: 82px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/4faacc6ead3a9f72239cf24da1c9e51e80e749564050e0cf4620b2a6cc8e7b76.png&quot; style=&quot; width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/4d460e923902659c79003ffcf08d4295a097d557bf0baa89a464cc6bb8641e98.png&quot; style=&quot; width: 82px; height: 82px;&quot; /&gt;&lt;span style=&quot;display: none;&quot;&gt;&amp;nbsp;&lt;/span&gt;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>ఒక కాగితాన్ని మడతపెట్టే క్రమం మరియు మడతపెట్టిన కాగితాన్ని కత్తిరించే విధానం క్రింది బొమ్మలలో చూపబడ్డాయి. ఈ కాగితం విప్పినప్పుడు ఎలా కనిపిస్తుంది?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/34213df721d2f722a2afe7290f562fb4fc64091f7bc5bddc6858cee8e991e41f.png\" style=\"width: 224px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/efef13a079720e9fb9f5af0c9cd7b430332f2a7dcdd1db7ba47baec77029b9fc.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c4f267914968b03de880483e96342d62bff629c7fd179d35b431ab40752ee6b9.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4faacc6ead3a9f72239cf24da1c9e51e80e749564050e0cf4620b2a6cc8e7b76.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4d460e923902659c79003ffcf08d4295a097d557bf0baa89a464cc6bb8641e98.png\" style=\"width: 82px; height: 82px;\" /><span style=\"display: none;\">&nbsp;</span>"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p><span style=\"\">कागदाचा तुकडा घडी करण्याचा क्रम आणि घडी केलेला कागद कसा कापला गेला हे खालील आकृत्यांमध्ये दाखवले आहे. हा कागद उलगडल्यावर कसा दिसेल?</span><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/34213df721d2f722a2afe7290f562fb4fc64091f7bc5bddc6858cee8e991e41f.png\" style=\"width: 224px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/efef13a079720e9fb9f5af0c9cd7b430332f2a7dcdd1db7ba47baec77029b9fc.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c4f267914968b03de880483e96342d62bff629c7fd179d35b431ab40752ee6b9.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4faacc6ead3a9f72239cf24da1c9e51e80e749564050e0cf4620b2a6cc8e7b76.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4d460e923902659c79003ffcf08d4295a097d557bf0baa89a464cc6bb8641e98.png\" style=\"width: 82px; height: 82px;\" /><span style=\"display: none;\"> </span>"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>একটি কাগজের ভাঁজ করার ক্রম এবং ভাঁজ করা কাগজটি কীভাবে কাটা হয়েছে তা নিম্নলিখিত চিত্রগুলিতে দেখানো হয়েছে। কাগজটি খোলা অবস্থায় কেমন দেখাবে?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/34213df721d2f722a2afe7290f562fb4fc64091f7bc5bddc6858cee8e991e41f.png\" style=\"width: 224px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/efef13a079720e9fb9f5af0c9cd7b430332f2a7dcdd1db7ba47baec77029b9fc.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c4f267914968b03de880483e96342d62bff629c7fd179d35b431ab40752ee6b9.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4faacc6ead3a9f72239cf24da1c9e51e80e749564050e0cf4620b2a6cc8e7b76.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4d460e923902659c79003ffcf08d4295a097d557bf0baa89a464cc6bb8641e98.png\" style=\"width: 82px; height: 82px;\" /><span style=\"display: none;\"> </span>"}], "range": {"start": "", "end": ""}}, "gu": {"value": "<p>કાગળનો એક ટુકડો કેવી રીતે ફોલ્ડ કરવામાં આવે છે અને ફોલ્ડ કરેલા કાગળને કેવી રીતે કાપવામાં આવે છે તે નીચેના ચિત્રોમાં બતાવવામાં આવ્યું છે. આ કાગળ ખોલવામાં આવે ત્યારે કેવો દેખાશે?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/34213df721d2f722a2afe7290f562fb4fc64091f7bc5bddc6858cee8e991e41f.png\" style=\"width: 224px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/efef13a079720e9fb9f5af0c9cd7b430332f2a7dcdd1db7ba47baec77029b9fc.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c4f267914968b03de880483e96342d62bff629c7fd179d35b431ab40752ee6b9.png\" style=\"width: 82px; height: 82px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4faacc6ead3a9f72239cf24da1c9e51e80e749564050e0cf4620b2a6cc8e7b76.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4d460e923902659c79003ffcf08d4295a097d557bf0baa89a464cc6bb8641e98.png\" style=\"width: 82px; height: 82px;\" /><span style=\"display: none;\"> </span>"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Mistake Points</u></span></strong></span>&nbsp;Here, in the given question, the paper is unfolded in opposite direction, so you have to unfold the paper according to the given direction.</p>\n\n<p style=\"\">The logic followed&nbsp;here is:</p>\n\n<p style=\"\">The paper when unfolded will look like this:</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c282038f2ea741f438ab2dca54a92218559b477a08bd4d62009975ef0351c033.png\" style=\"width: 290px; height: 81px;\" /></p>\n\n<p style=\"\">Hence,&nbsp;<strong>option (4)&nbsp;</strong>is the correct answer.</p>\n", "hn": "<p style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Mistake Points</u></span></strong></span>&nbsp;</span> यहाँ दिए गए प्रश्न में कागज को विपरीत दिशा में खोला जाता है,", "te": "<p style=\"\"><span style=\"font-size:20px;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" style=\"color:  (33, 37, 41);\" width=\"26px\" /> <span style=\"font-weight: bolder;\"><span style=\"vertical-align: middle; \"><u>Mistake Points</u></span></span></span> ఇక్కడ, ఇచ్చిన ప్రశ్నలో, కాగితం వ్యతిరేక దిశలో విప్పబడి ఉంటుంది, కాబట్టి మీరు ఇచ్చిన దిశ ప్రకారం కాగితాన్ని విప్పాలి.</p>\n\n<p style=\"\">ఇక్కడ అనుసరించిన తర్కం:</p>\n\n<p style=\"\">కాగితం విప్పినప్పుడు ఇలా కనిపిస్తుంది:</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c282038f2ea741f438ab2dca54a92218559b477a08bd4d62009975ef0351c033.png\" style=\"width: 290px; height: 81px;\" /></p>\n\n<p style=\"\">కాబట్టి, <strong>ఎంపిక (4)</strong> సరైన సమాధానం.</p>\n", "mr": "<p style=\"\"><span style=\"font-size:20px;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" style=\"color:  (33, 37, 41);\" width=\"26px\" /> <span style=\"font-weight: bolder;\"><span style=\"vertical-align: middle; \"><u>Mistake Points</u></span></span></span></p>\n\n<p style=\"\">येथे, दिलेल्या प्रश्नात, कागद उलट दिशेने उलगडला आहे, म्हणून तुम्हाला दिलेल्या दिशेनुसार कागद उलगडावा लागेल.</p>\n\n<p style=\"\">येथे अनुसरण केलेला तर्क असा आहे:</p>\n\n<p style=\"\">कागद उलगडल्यानंतर असा दिसेल:</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c282038f2ea741f438ab2dca54a92218559b477a08bd4d62009975ef0351c033.png\" style=\"width: 290px; height: 81px;\" /></p>\n\n<p style=\"\">म्हणून, <strong>पर्याय (4)</strong> हे योग्य आहे.</p>\n", "bn": "<p style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" width=\"26px\" /><u style=\"font-size: 20px; font-family: var(--bs-body-font-family); text-align: var(--bs-body-text-align); font-weight: 700;\">Mistake Points</u></span> এখানে, প্রদত্ত প্রশ্নে, কাগজটি বিপরীত দিকে খোলা হয়েছে, তাই আপনাকে প্রদত্ত দিক অনুযায়ী কাগজটি খুলতে হবে।</p>\n\n<p style=\"\">এখানে অনুসৃত যুক্তি হল:</p>\n\n<p style=\"\">কাগজটি খোলা অবস্থায় এমন দেখাবে:</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c282038f2ea741f438ab2dca54a92218559b477a08bd4d62009975ef0351c033.png\" style=\"width: 290px; height: 81px;\" /></p>\n\n<p style=\"\">সুতরাং, <strong>বিকল্প (</strong><span style=\"font-weight: bolder;\">4</span><strong>)</strong> সঠিক উত্তর।</p>\n", "ml": "", "gu": "<p style=\"\"><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944b96fdb4c4077f5fba1bc2c24bc71.png\" width=\"26px\" /><span style=\"font-weight: bolder;\"><span style=\"vertical-align: middle; font-size: 21px;\"><u>Mistake Points</u></span></span></span> અહીં, આપેલા પ્રશ્નમાં, કાગળ વિરુદ્ધ દિશામાં ખોલવામાં આવે છે, તેથી તમારે આપેલી દિશા અનુસાર કાગળ ખોલવો પડશે.</p>\n\n<p style=\"\">અહીં અનુસરવામાં આવેલું તર્ક છે:</p>\n\n<p style=\"\">કાગળ ખોલવામાં આવે ત્યારે આ રીતે દેખાશે:</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/c282038f2ea741f438ab2dca54a92218559b477a08bd4d62009975ef0351c033.png\" style=\"width: 290px; height: 81px;\" /></p>\n\n<p style=\"\">તેથી, <strong>વિકલ્પ (4)</strong> સાચો જવાબ છે.</p>\n", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Paper Folding and Cutting"], "concept": "Paper Folding/Cutting", "confidence": "high"}, {"qid": "5fd897b0e9f63edef6df82c2", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>The sequence of folding a piece of paper and the manner in which the folded paper has been cut is shown in the following figures. How would this paper look when unfolded?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2c71a8ea3a91ae8c30a239be2b87bad4821c46680224d1b11645a84824c10265.png\" style=\"width: 418px; height: 96px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/04935debade2b3af57447f4b5fdda557c55ab85d4339f786bf049afcbfb274d8.png&quot; style=&quot;width: 99px; height: 96px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6c162959ff46c3317826dd43db399e769c64a455784da24825a28ed9ff85f194.png&quot; style=&quot;width: 99px; height: 97px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/ca9da364cbbcbfc62b128b56d1dc906f987ca880f5d3e54888b0a0a4e4a95d72.png&quot; style=&quot;width: 98px; height: 97px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6df24d3f1b7ef48cebc0f873dbac88b117d40417a2d1fc663e3773be0cab4f25.png&quot; style=&quot;width: 98px; height: 96px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>कागज के एक टुकड़े को मोड़ने का क्रम और जिस तरह से मुड़ा हुआ कागज काटा गया है, उसे निम्नलिखित आकृति&nbsp;में दिखाया गया है। कागज जब खोला जाता है तो&nbsp;वह&nbsp;कैसा दिखेगा?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2c71a8ea3a91ae8c30a239be2b87bad4821c46680224d1b11645a84824c10265.png\" style=\"width: 418px; height: 96px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/04935debade2b3af57447f4b5fdda557c55ab85d4339f786bf049afcbfb274d8.png&quot; style=&quot;width: 99px; height: 96px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6c162959ff46c3317826dd43db399e769c64a455784da24825a28ed9ff85f194.png&quot; style=&quot;width: 99px; height: 97px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/ca9da364cbbcbfc62b128b56d1dc906f987ca880f5d3e54888b0a0a4e4a95d72.png&quot; style=&quot;width: 98px; height: 97px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6df24d3f1b7ef48cebc0f873dbac88b117d40417a2d1fc663e3773be0cab4f25.png&quot; style=&quot;width: 98px; height: 96px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>ஒரு துண்டு காகிதத்தை மடிக்கும் வரிசை மற்றும் மடிந்த காகிதம் வெட்டப்பட்ட விதம் பின்வரும் புள்ளிவிவரங்களில் காட்டப்பட்டுள்ளது. இந்தக் காகிதத்தை விரிக்கும்போது எப்படி இருக்கும்?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2c71a8ea3a91ae8c30a239be2b87bad4821c46680224d1b11645a84824c10265.png\" style=\"width: 418px; height: 96px;\" /></p>\n", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/04935debade2b3af57447f4b5fdda557c55ab85d4339f786bf049afcbfb274d8.png\" style=\"width: 99px; height: 96px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6c162959ff46c3317826dd43db399e769c64a455784da24825a28ed9ff85f194.png\" style=\"width: 99px; height: 97px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ca9da364cbbcbfc62b128b56d1dc906f987ca880f5d3e54888b0a0a4e4a95d72.png\" style=\"width: 98px; height: 97px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6df24d3f1b7ef48cebc0f873dbac88b117d40417a2d1fc663e3773be0cab4f25.png\" style=\"width: 98px; height: 96px;\" />"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>Given,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2c71a8ea3a91ae8c30a239be2b87bad4821c46680224d1b11645a84824c10265.png\" style=\"width: 418px; height: 96px;\" /></p>\n\n<p>&nbsp;</p>\n\n<p>The paper is folded and cut as given in the above figure,</p>\n\n<p>So,</p>\n\n<p>&nbsp;</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/145ec2427ff8c082034b59f01d6f1868ae5677c3bacf6314af62054f14d7b8c4.png\" style=\"width: 313px; height: 100px;\" /></p>\n\n<p>&nbsp;</p>\n\n<p>&there4; The unfolded paper will look like&nbsp;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ca9da364cbbcbfc62b128b56d1dc906f987ca880f5d3e54888b0a0a4e4a95d72.png\" style=\"width: 98px; height: 97px;\" /></p>\n\n<p><strong>Hence, the correct answer is&nbsp;</strong><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ca9da364cbbcbfc62b128b56d1dc906f987ca880f5d3e54888b0a0a4e4a95d72.png\" style=\"width: 98px; height: 97px;\" /></p>\n", "hn": "\n<p>दिया गया है,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2c71a8ea3a91ae8c30a239be2b87bad4821c46680224d1b11645a84824c10265.png\" style=\"width: 418px; height: 96px;\" /></p>\n\n<p>&nbsp;</p>\n\n<p>उपरोक्त आकृति में दिए गए अनुसार कागज को मोड़ा और काटा जाता है,</p>\n\n<p>इसलिए,</p>\n\n<p>&nbsp;</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/145ec2427ff8c082034b59f01d6f1868ae5677c3bacf6314af62054f14d7b8c4.png\" style=\"width: 313px; height: 100px;\" /></p>\n\n<p>&nbsp;</p>\n\n<p><span style=\"font-weight: 700;\">&there4;</span>&nbsp;जब कागज को खोला जाता है तो वह ऐसा दिखाई देगा&nbsp;<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ca9da364cbbcbfc62b128b56d1dc906f987ca880f5d3e54888b0a0a4e4a95d72.png\" style=\"width: 98px; height: 97px;\" /></p>\n\n<p><strong>अतः, सही उत्तर</strong><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ca9da364cbbcbfc62b128b56d1dc906f987ca880f5d3e54888b0a0a4e4a95d72.png\" style=\"width: 98px; height: 97px;\" /><span style=\"font-weight: 700;\">&nbsp;</span><span style=\"font-weight: 700;\">है।</span></p>\n\n30:T45d,<p style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/e085a7f17645c801966c030eb44d69fae944", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "<p>கொடுக்கப்பட்டவை,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2c71a8ea3a91ae8c30a239be2b87bad4821c46680224d1b11645a84824c10265.png\" style=\"width: 418px; height: 96px;\" /></p>\n\n<p> </p>\n\n<p>மேலே உள்ள படத்தில் கொடுக்கப்பட்டுள்ளபடி காகிதம் மடித்து வெட்டப்பட்டது.</p>\n\n<p>அதனால்,</p>\n\n<p> </p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/145ec2427ff8c082034b59f01d6f1868ae5677c3bacf6314af62054f14d7b8c4.png\" style=\"width: 313px; height: 100px;\" /></p>\n\n<p> </p>\n\n<p>∴ விரிக்கப்பட்ட காகிதம் பின்வருமாறு இருக்கும் <img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ca9da364cbbcbfc62b128b56d1dc906f987ca880f5d3e54888b0a0a4e4a95d72.png\" style=\"width: 98px; height: 97px;\" /></p>\n\n<p><strong>எனவே, சரியான பதில்</strong><strong> </strong><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ca9da364cbbcbfc62b128b56d1dc906f987ca880f5d3e54888b0a0a4e4a95d72.png\" style=\"width: 98px; height: 97px;\" /></p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Paper Folding and Cutting"], "concept": "Paper Folding/Cutting", "confidence": "high"}, {"qid": "61eaa4c85540e91c06505ab2", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>The sequence of folding a piece of paper and the manner in which the folded paper has been cut is shown in the following figures. How would this paper look when unfolded?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aa0f65bd5356e12c014089f9cd4c9a45bafaf2d3cc2d8c11e81f2d05dc6ba8ed.png\" style=\"width: 368px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/68cf51d9139ce98a26b79a7cb47cd96f2cfb60963262d574504607c1bae3c31f.png&quot; style=&quot;width: 82px; height: 73px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/146a1f714447e78701adc7436206ceb6e4ce3d66a64affdba9bdefd699f43ffc.png&quot; style=&quot;width: 82px; height: 73px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/44d11e941126c45d4e86816ee23ac46a12229589fb8a30515b86c9eb40f78d60.png&quot; style=&quot;width: 82px; height: 73px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/56c39aa0399b87f7d78c4f269eff45bf024f6678a10dbaba3e45c0526ff426f2.png&quot; style=&quot;width: 82px; height: 73px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p style=\"\">कागज के एक टुकड़े को मोड़ने का क्रम और जिस तरीके से मुड़े हुए कागज को काटा जाता&nbsp;है, उसे निम्नलिखित आकृतियों में दिखाया गया है। खोले जाने पर यह कागज&nbsp;कैसा दिखेगा?</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/aa0f65bd5356e12c014089f9cd4c9a45bafaf2d3cc2d8c11e81f2d05dc6ba8ed.png\" style=\"width: 368px; height: 83px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/68cf51d9139ce98a26b79a7cb47cd96f2cfb60963262d574504607c1bae3c31f.png&quot; style=&quot; width: 82px; height: 73px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/146a1f714447e78701adc7436206ceb6e4ce3d66a64affdba9bdefd699f43ffc.png&quot; style=&quot; width: 82px; height: 73px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/44d11e941126c45d4e86816ee23ac46a12229589fb8a30515b86c9eb40f78d60.png&quot; style=&quot; width: 82px; height: 73px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/56c39aa0399b87f7d78c4f269eff45bf024f6678a10dbaba3e45c0526ff426f2.png&quot; style=&quot; width: 82px; height: 73px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p style=\"\">The logic followed&nbsp;here is:</p>\n\n<p style=\"\">The paper when unfolded will look like this:</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/da7450aefd4d076203d3a2102ee917b6a0e6f1ae59031a06faa2e29017a11d68.png\" style=\"width: 400px; height: 82px;\" /></p>\n\n<p style=\"\">Hence,&nbsp;<strong>option (1)&nbsp;</strong>is the correct answer.</p>\n", "hn": "<p style=\"\">यहाँ अनुसरण किया गया तर्क निम्नलिखित है:</p>\n\n<p style=\"\">खोले जाने पर यह कागज इस प्रकार दिखाई देगा:</p>\n\n<p style=\"\"><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/da7450aefd4d076203d3a2102ee917b6a0e6f1ae59031a06faa2e29017a11d68.png\" style=\"width: 400px; height: 82px;\" /></p>\n\n<p style=\"\">अत: <strong>विकल्प (1)</strong> सही उत्तर है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Paper Folding and Cutting"], "concept": "Paper Folding/Cutting", "confidence": "high"}, {"qid": "5fcc91e758d9247ac481fb6a", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>The sequence of folding a piece of paper and the manner in which the folded paper has been cut is shown in the question figure. Select the figure from the answer figures that would most closely resemble the unfolded paper.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0cefcf8a59001f83bc5b571ac423ceee8f010fc2cbf10c680d9279b6a11d8a83.png\" style=\"width: 280px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6cd964e582cdbdd47e6db61fe55adcef2aea8a3b225a3e15b648f5cc6c9d0160.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/000faa9b2a6da8d8ffbb2dad61ea02b73b4e3116d5310fd228f8968395ec8549.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/2abc0525b7ed150d93210c9670ec90ff5a274f308eb89c9280a9f796e227d953.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/65aeb5f776ca4be3ca5c976d4dcd2fb0adf497eb3f35653ac9ff0b0b4ced2abd.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>प्रश्न आकृति में कागज के एक टुकड़े को मोड़ने और जिस प्रकार काटा जाता है उसका क्रम दिया गया है। उत्तर आकृति से ऐसी आकृति का चयन कीजिये जो खुले हुए काग़ज़ के निकटतम रूप से मेल खाती हो।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0cefcf8a59001f83bc5b571ac423ceee8f010fc2cbf10c680d9279b6a11d8a83.png\" style=\"width: 280px; height: 81px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/6cd964e582cdbdd47e6db61fe55adcef2aea8a3b225a3e15b648f5cc6c9d0160.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/000faa9b2a6da8d8ffbb2dad61ea02b73b4e3116d5310fd228f8968395ec8549.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/2abc0525b7ed150d93210c9670ec90ff5a274f308eb89c9280a9f796e227d953.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/65aeb5f776ca4be3ca5c976d4dcd2fb0adf497eb3f35653ac9ff0b0b4ced2abd.png&quot; style=&quot;width: 81px; height: 81px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>ஒரு துண்டு காகிதத்தை மடிக்கும் வரிசை மற்றும் மடித்த காகிதம் வெட்டப்பட்ட விதம் கேள்வி படத்தில் காட்டப்பட்டுள்ளது. விடைப் புள்ளிகளில் இருந்து விரிக்கப்பட்ட காகிதத்தை மிக நெருக்கமாக ஒத்திருக்கும் உருவத்தைத் தேர்ந்தெடுக்கவும். </p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/0cefcf8a59001f83bc5b571ac423ceee8f010fc2cbf10c680d9279b6a11d8a83.png\" style=\"width: 280px; height: 81px;\" /></p>", "options": [{"prompt": "1", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cd964e582cdbdd47e6db61fe55adcef2aea8a3b225a3e15b648f5cc6c9d0160.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "2", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/000faa9b2a6da8d8ffbb2dad61ea02b73b4e3116d5310fd228f8968395ec8549.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "3", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2abc0525b7ed150d93210c9670ec90ff5a274f308eb89c9280a9f796e227d953.png\" style=\"width: 81px; height: 81px;\" />"}, {"prompt": "4", "value": "<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/65aeb5f776ca4be3ca5c976d4dcd2fb0adf497eb3f35653ac9ff0b0b4ced2abd.png\" style=\"width: 81px; height: 81px;\" />"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p>The unfolding of the paper will be shown below:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/95eadb0d6956bbaca3398d034574f75f02e08f96849a8d6e33d4097f5a709ba1.png\" /></p>\n\n<p>Hence, Option 2 is the correct unfolded pattern.</p>\n", "hn": "<p>काग़ज़ को खोलने की प्रक्रिया नीचे दिखाई जाएगी:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/95eadb0d6956bbaca3398d034574f75f02e08f96849a8d6e33d4097f5a709ba1.png\" /></p>\n\n<p>अतः, सही खुला स्वरुप विकल्प 2 है<span style=\"color: rgb(37, 37, 37);  \">।</span></p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "<p>காகிதத்தின் விரிவு கீழே காட்டப்படும்:</p><p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/95eadb0d6956bbaca3398d034574f75f02e08f96849a8d6e33d4097f5a709ba1.png\" /></p><p>எனவே, விருப்பம் 2 என்பது சரியான விரிக்கப்பட்ட வடிவமாகும்.</p>", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Paper Folding and Cutting"], "concept": "Paper Folding/Cutting", "confidence": "high"}, {"qid": "61a728114cc2cb65808b86bb", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>The sequence of folding a piece of paper and the manner in which the folded paper has been cut is shown in the following figures. How would this paper look when unfolded?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/30443556f1824d9e8e6b3908bb9a6b2b92f363f61fad5fc5ab6343870fc73d8b.png\" style=\"width: 196px; height: 107px;\" /><span style=\"display: none;\">&nbsp;</span></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/c8e5e016b8da67e622f6035cea98ca0af211387d127bb8f3c9cb7bc3f85a70f9.png&quot; style=&quot;width: 62px; height: 110px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/cc6afe310088327f9390acc631808dd0e4d00147bc2111146515a56f0db86e6c.png&quot; style=&quot;width: 61px; height: 109px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/959affa2e8ccca1e6b5c23331f750e40ab9cde360b94f02315190c16072eba1c.png&quot; style=&quot;width: 61px; height: 109px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/a4e7f982f5d2dd61d042af8c3ec248b8274be7a621c34b49292ac6b5f8fe7433.png&quot; style=&quot;width: 61px; height: 109px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p><span style=\"color: rgb(37, 37, 37);  \">कागज के एक टुकड़े को मोड़ने का क्रम और जिस तरीके से मुड़े हुए कागज को काटा गया है, उसे निम्नलिखित आकृतियों में दिखाया गया है। </span>खोले जाने<span style=\"color: rgb(37, 37, 37);  \"> पर यह कागज&nbsp;कैसा दिखेगा?</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/30443556f1824d9e8e6b3908bb9a6b2b92f363f61fad5fc5ab6343870fc73d8b.png\" style=\"width: 196px; height: 107px;\" /></p>\n", "options": [{"prompt": "1", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/c8e5e016b8da67e622f6035cea98ca0af211387d127bb8f3c9cb7bc3f85a70f9.png&quot; style=&quot;width: 62px; height: 110px;&quot; /&gt;"}, {"prompt": "2", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/cc6afe310088327f9390acc631808dd0e4d00147bc2111146515a56f0db86e6c.png&quot; style=&quot;width: 61px; height: 109px;&quot; /&gt;"}, {"prompt": "3", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/959affa2e8ccca1e6b5c23331f750e40ab9cde360b94f02315190c16072eba1c.png&quot; style=&quot;width: 61px; height: 109px;&quot; /&gt;"}, {"prompt": "4", "value": "&lt;img alt=&quot;&quot; src=&quot;https://cdn.repeatermock.com/tb/a4e7f982f5d2dd61d042af8c3ec248b8274be7a621c34b49292ac6b5f8fe7433.png&quot; style=&quot;width: 61px; height: 109px;&quot; /&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p>The logic followed&nbsp;here is:</p>\n\n<p>The paper when unfolded, will look like:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6760bb9823886e0221fb27a3f67ded9ee0253ca8ff5c456be88ac1c3e7e06eaa.png\" style=\"width: 367px; height: 113px;\" /></p>\n\n<p>Hence,&nbsp;<strong>option (4)&nbsp;</strong>is the correct answer.&nbsp;</p>\n", "hn": "<p>यहाँ अनुसरण किया गया तर्क है:</p>\n\n<p>खोले जाने पर कागज इस तरह दिखेगा:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6760bb9823886e0221fb27a3f67ded9ee0253ca8ff5c456be88ac1c3e7e06eaa.png\" style=\" width: 367px; height: 113px;\" /></p>\n\n<p>अत:, <strong>विकल्प (4)</strong> सही उत्तर है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Paper Folding and Cutting"], "concept": "Paper Folding/Cutting", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 8 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>

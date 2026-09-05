@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>High-Weightage Topic 14: Direction and Distance</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">High-Weightage Topic 14: Direction and Distance</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-chsl-previous</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">8 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">6901f6ad79552eca4be52491</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "6901f6ad79552eca4be52491", "title": "High-Weightage Topic 14: Direction and Distance", "series_slug": "ssc-chsl-previous", "duration_min": 8, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "67c6e826f66945a824ba8204", "section_name": "General Intelligence", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "5b6d1aeb4473350c450f88e2", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Akash leaves from his school at 5:30 a.m. He starts walking towards the south and covers a distance of 20 km. He turns left and walks 15 km to reach point A. He turns right and walks 14 km. He again turns right and walks 10 km. How far (in km) and in which direction is he now from point A?</p>\n", "options": [{"prompt": "1", "value": "3&lt;span class=&quot;math-tex&quot;&gt;\\(\\sqrt {43} \\)&lt;/span&gt;, South-West"}, {"prompt": "2", "value": "3&amp;nbsp;&lt;span class=&quot;math-tex&quot;&gt;\\(\\sqrt {43} \\)&lt;/span&gt;, South-East"}, {"prompt": "3", "value": "2&lt;span class=&quot;math-tex&quot;&gt;\\(\\sqrt {74} \\)&lt;/span&gt;, South-West"}, {"prompt": "4", "value": "2&lt;span class=&quot;math-tex&quot;&gt;\\(\\sqrt {74} \\)&lt;/span&gt;, South-East"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>आकाश 5:30 बजे अपने विद्यालय से निकलता है। वह दक्षिण की ओर चलना शुरू करता है और 20 किमी की दूरी तय करता है। वह बाएँ मुड़ता है और बिंदु A तक पहुंचने के लिए 15 किमी चलता है। वह दाएँ ओर मुड़ता है और 14 किमी चलता है। वह फिर से दाएँ ओर मुड़ता है और 10 किमी चलता है। वह अब बिंदु A से कितनी दूर (किमी में) और किस दिशा में है?</p>\n", "options": [{"prompt": "1", "value": "3&lt;span class=&quot;math-tex&quot;&gt;\\(\\sqrt {43} \\)&lt;/span&gt;, दक्षिण-पश्चिम"}, {"prompt": "2", "value": "3&amp;nbsp;&lt;span class=&quot;math-tex&quot;&gt;\\(\\sqrt {43} \\)&lt;/span&gt;, दक्षिण-पूर्व"}, {"prompt": "3", "value": "2&lt;span class=&quot;math-tex&quot;&gt;\\(\\sqrt {74} \\)&lt;/span&gt;, दक्षिण-पश्चिम"}, {"prompt": "4", "value": "2&lt;span class=&quot;math-tex&quot;&gt;\\(\\sqrt {74} \\)&lt;/span&gt;, दक्षिण-पूर्व"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/64514e0ce6b308f110803a0526d77ad802f49ac2501fe12aeee442038ad73c4d.png\" style=\"height:478px; width:515px\" /></p>\n\n<p>The distance of his endpoint from point A&nbsp;</p>\n\n<p>=&nbsp;<span class=\"math-tex\">\\(\\sqrt {{{10}^2} + {{14}^2}} \\)</span></p>\n\n<p>=&nbsp;<span class=\"math-tex\">\\(\\sqrt {100 + 196} \\)</span></p>\n\n<p>=&nbsp;<span class=\"math-tex\">\\(2\\sqrt {74} \\)</span></p>\n\n<p>Hence, the distance between Akash and Point A is <span class=\"math-tex\">\\(2\\sqrt {74} \\)</span>&nbsp;km and he is towards South - West from point A.</p>\n", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/64514e0ce6b308f110803a0526d77ad802f49ac2501fe12aeee442038ad73c4d.png\" style=\"height:478px; width:515px\" /></p>\n\n<p>बिंदु A से उसके अंत बिंदु तक दूरी,</p>\n\n<p>=&nbsp;<span class=\"math-tex\">\\(\\sqrt {{{10}^2} + {{14}^2}} \\)</span></p>\n\n<p>=&nbsp;<span class=\"math-tex\">\\(\\sqrt {100 + 196} \\)</span></p>\n\n<p>=&nbsp;<span class=\"math-tex\">\\(2\\sqrt {74} \\)</span></p>\n\n<p>इसलिए, आकाश और बिंदु A के बीच की दूरी <span class=\"math-tex\">\\(2\\sqrt {74} \\)</span>&nbsp;किमी है और वह बिंदु A के दक्षिण-पश्चिम में है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Direction Sense", "confidence": "high"}, {"qid": "5b5acfdcd6fcdd0c70f46ff7", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Two navy ships start from the same port. Ship A travels 23 km West, then turns to its left and travels 19 km. Ship B travels 19 km West, then turns North and travels 5 km, then turns to its left and travels 4 km. Where is ship A with respect to ship B?", "options": [{"prompt": "1", "value": "14 km South"}, {"prompt": "2", "value": "24 km North"}, {"prompt": "3", "value": "24 km South"}, {"prompt": "4", "value": "14 km North"}], "range": {"start": "", "end": ""}}, "hn": {"value": "दो नेवी नाव समान बन्दरगाह से चलते हैं। नाव A 23 किमी पश्चिम में चलती है, फिर वह बाएं मुड़ती है और 19 किमी चलती है। नाव B 19 किमी पश्चिम में चलती है, फिर उत्तर दिशा में मुड़ती है और 5 किमी चलती है, फिर बाएं मुड़ती है और 4 किमी चलती है। नाव B की तुलना में नाव A की स्थिति क्या है?", "options": [{"prompt": "1", "value": "14 किमी दक्षिण"}, {"prompt": "2", "value": "24 किमी उत्तर"}, {"prompt": "3", "value": "24 किमी दक्षिण"}, {"prompt": "4", "value": "14 किमी उत्तर"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6af981dd980da32cc62c6d1f60a632453d9012074dd200632e5c0e2d672e464b.png\" /></p>\n\n<p>Ship A is 24 Km south with respect to ship B.</p>\n", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6af981dd980da32cc62c6d1f60a632453d9012074dd200632e5c0e2d672e464b.png\" /></p>\n\n<p>नाव B की तुलना में नाव A की स्थिति 24 किमी दक्षिण में है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Direction Sense", "confidence": "high"}, {"qid": "5c29e164fdb8bb0d53c96a60", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "Two football players A and B from opposing teams start from the same corner. A runs 35 m East, then 15 m South, turns to his right and runs 60 m. Meanwhile, B runs 20 m North, then 25 m West, turns left and runs 20 m. What is the distance between B and A and what is the final position of B with respect to A?", "options": [{"prompt": "1", "value": "15 m North"}, {"prompt": "2", "value": "5 m North"}, {"prompt": "3", "value": "15 m South"}, {"prompt": "4", "value": "5 m South"}], "range": {"start": "", "end": ""}}, "hn": {"value": "विरोधी टीमों से दो फुटबाल के खिलाड़ी A और B एक ही छोर से आरम्भ करते हैं। A पूर्व की ओर 35 मीटर दौड़ता है, फिर दक्षिण की ओर 15 मीटर दौड़ता है, अपने दाएँ मुड़ता है और 60 मीटर दौड़ता है। इसी दौरान, B उत्तर की ओर 20 मीटर दौड़ता है, फिर पश्चिम की ओर 25 मीटर दौड़ता है, अपने बाएँ मुड़ता है और 20 मीटर दौड़ता है। B और A के बीच की दूरी कितनी है और A के संबंध में B की अंतिम स्थिति क्या है?", "options": [{"prompt": "1", "value": "15 मीटर उत्तर"}, {"prompt": "2", "value": "5 मीटर उत्तर"}, {"prompt": "3", "value": "15 मीटर दक्षिण"}, {"prompt": "4", "value": "5 मीटर दक्षिण"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The movement of the footballer A is shown below,</p>\n\n<p><span style=\"\">A runs 35 m East, then 15 m South, turns to his right and runs 60 m</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/56159f2359611e7a6a2ac8713cca68b32d7d09926d0c6bfd9fd268022e272483.png\" style=\"width: 293px; height: 112px;\" /></p>\n\n<p>The movement of footballer B is shown below,</p>\n\n<p><span style=\"\">B runs 20 m North, then 25 m West, turns left and runs 20 m&l", "hn": "<p>फुटबॉलर A की गति नीचे दिखाई गई है,</p>\n\n<p>A, 35 मीटर पूर्व की ओर, फिर 15 मीटर दक्षिण की ओर दौड़ता है, अपने दाहिनी ओर मुड़ता है और 60 मीटर दौड़ता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/56159f2359611e7a6a2ac8713cca68b32d7d09926d0c6bfd9fd268022e272483.png\" style=\" width: 293px; height: 112px;\" /></p>\n\n<p>फुटबॉलर B की गति नीचे दिखाई गई है,</p>\n\n<p>B, 20 मीटर उत्तर की ओर, फिर 25 मीटर पश्चिम की ओर दौड़ता है, बाएँ मुड़ता है और 20 मीटर दौड़ता है।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/33ade8da1681a36bcd2223135f0fa2bbf609f7688c47eaa3ecfc6d2e9a2c78ec.png\" style=\" width: 157px; height: 139px;\" /></p>\n\n<p>दोनों फुटबॉलरों की गति को एक ही प्रारंभिक बिंदु से मिलाने पर हमें प्राप्त होता है,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2399280f1be87a1e1bd5a9f69125e3a8a13cbd83a55e85ab3582e23f0d7e5f96.png\" style=\" width: 294px; height: 194px;\" /></p>\n\n<p>उपरोक्त आकृति से, हम यह निष्कर्ष निकाल सकते हैं कि B, A से उत्तर दिशा में 15 मीटर की दूरी पर है।</p>\n\n<p>अतः सही उत्तर <strong>&quot;15 मीटर उत्तर&quot;</strong> है।</p>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"High-Weightage Topic 14: Direction and Distance\",\"sections\":[{\"_id\":\"67c6e826f66945a824ba8204\",\"qCount\":10,\"title\":\"General Intelligence\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":0.5,\"posMarks\":2,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isPartialMarking\":false,\"_id\":\"5b6d1aeb4473350c450f88e2\",\"en\":{\"value\":\"<p>Akash leaves from his school at 5:30 a.m. He starts walking towards the south and covers a distance of 20 km. He turns left and walks 15 km to reach point A. He turns right and walks 14 km. He again turns right and walks 10 km. How far (in km) and in which direction is he now from point A?</p>\\", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Direction Sense", "confidence": "high"}, {"qid": "5c273ae4fdb8bb0d53c29440", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Two cruisers start from the same port. Cruiser A sails 50 miles South, then it turns right and sails 60 miles. In the meanwhile, cruiser B sails 105 miles West, then it turns left and sails 50 miles, then it turns West and sails 45 miles. Where is cruiser A with respect to cruiser B?</p>\n", "options": [{"prompt": "1", "value": "210 miles East"}, {"prompt": "2", "value": "90 miles East"}, {"prompt": "3", "value": "90 miles West"}, {"prompt": "4", "value": "210 miles West"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दो युद्धपोत एक ही बंदरगाह से चलना शुरू करते हैं। युद्धपोत A, 50 मील दक्षिण में जाता है, फिर दाएँ मुड़ता है और 60 मील चलता है। इस बीच युद्धपोत B, 105 मील पश्चिम की ओर चलता है, फिर यह बाएँ मुड़ 50 मील की दूरी तय करता है, फिर यह पश्चिम की ओर जाता है और 45 मील तय करता है। युद्धपोत B के संबंध में युद्धपोत B A कहां है?</p>\n", "options": [{"prompt": "1", "value": "210 मील पूर्व"}, {"prompt": "2", "value": "90 मील पूर्व"}, {"prompt": "3", "value": "90 मील पश्चिम"}, {"prompt": "4", "value": "210 मील पश्चिम"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ef277dbce9375bea4bd16bf3ba50d480c1dd85ad8d7a13aa7e0d5e162ab7e686.png\" style=\"width: 502px; height: 276px;\" /></p>\n\n<p>Hence, answer is &rsquo;90 miles East&rsquo;.</p>\n", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/ef277dbce9375bea4bd16bf3ba50d480c1dd85ad8d7a13aa7e0d5e162ab7e686.png\" style=\"width: 502px; height: 276px;\" /></p>\n\n<p>अतः उत्तर &rsquo;90 मील पूर्व है&rsquo;।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Direction Sense", "confidence": "high"}, {"qid": "5c1b3a6b917ed70c8607e9ae", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Ganga leaves from her college at 10:00 a.m. She starts walking towards north and covers a distance of 14 km. She turns right and walks 20 km to reach point K. She turns left and walk 16 km. She again turns left and walks 10 km. How far (in km) and in which direction is she now from point K?</p>\n", "options": [{"prompt": "1", "value": "3&amp;radic;33, North-West"}, {"prompt": "2", "value": "2&amp;radic;89, North-West"}, {"prompt": "3", "value": "3&amp;radic;33, North-East"}, {"prompt": "4", "value": "2&amp;radic;89, North-East"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>गंगा अपने कॉलेज से सुबह 10:00 बजे निकलती है। वह उत्तर के सम्मुख चलना शुरू करती है और 14 किमी की दूरी तय करती है। वह दाईं ओर मुड़ती है और बिंदु K पर पहुंचने के लिए 20 किमी चलती है।&nbsp;वह बाईं ओर मुड़ती है और 16&nbsp;किमी चलती है। वह फिर&nbsp;से बाईं ओर मुड़ती है और 10 किमी चलती है। वह अब बिंदु K से कितने दूर और किस दिशा में है?</p>\n", "options": [{"prompt": "1", "value": "3&amp;radic;33, उत्तर-पश्चिम"}, {"prompt": "2", "value": "2&amp;radic;89, उत्तर-पश्चिम"}, {"prompt": "3", "value": "3&amp;radic;33, उत्तर-पूर्व"}, {"prompt": "4", "value": "2&amp;radic;89, उत्तर-पूर्व"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8f5d708e0157ce98e82653e25784cd932129d20b1c29d6b603e44841c38ad023.png\" style=\"width: 490px; height: 397px;\" /></p>\n\n<p>Distance = <span class=\"math-tex\">\\(\\sqrt {{{10}^2} + {{16}^2}} \\)</span>&nbsp;km &rarr; <span class=\"math-tex\">\\(2\\sqrt {89\\;} \\)</span>&nbsp;km</p>\n\n<p>Hence, answer is 2&radic;89, North-West.</p>\n", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/8f5d708e0157ce98e82653e25784cd932129d20b1c29d6b603e44841c38ad023.png\" style=\"width: 490px; height: 397px;\" /></p>\n\n<p>दूरी = <span class=\"math-tex\">\\(\\sqrt {{{10}^2} + {{16}^2}} \\)</span>&nbsp;किमी &rarr; <span class=\"math-tex\">\\(2\\sqrt {89\\;} \\)</span>&nbsp;किमी</p>\n\n<p>अतः उत्तर 2&radic;89, उत्तर-पश्चिम है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Direction Sense", "confidence": "high"}, {"qid": "5b7192da09408b0c3c802a79", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "A woman starts from her home and walks 2km North, then she turns East and walks 9 km, then she turns South and walks 1 km, then she turns West and walks 2 km, then she turns to her left and walks 1 km to reach the well. Where is her home with respect to the well?", "options": [{"prompt": "1", "value": "11 km West"}, {"prompt": "2", "value": "7 km East"}, {"prompt": "3", "value": "7 km West"}, {"prompt": "4", "value": "11 km East"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>एक महिला अपने घर से चलना शुरू करती है और 2 किमी उत्तर की ओर जाती है, फिर वह पूर्व की ओर मुड़ती है और 9 किमी चलती है, फिर वह दक्षिण की ओर मुड़ती है और 1 किमी चलती है, फिर वह पश्चिम की ओर मुड़ती है और 2 किमी की दूरी तक चलती है, फिर वह अपने बाएं मुड़ती है और कुएँ तक पहुंचने के लिए 1 किमी चलती है। कुएं के संबंध में उसका घर किस दिशा में है?</p>\n", "options": [{"prompt": "1", "value": "11 किमी पश्चिम"}, {"prompt": "2", "value": "7 किमी पूर्व&amp;nbsp;"}, {"prompt": "3", "value": "7 किमी पश्चिम"}, {"prompt": "4", "value": "11 किमी पूर्व"}], "range": {"start": "", "end": ""}}, "te": {"value": "ఒక మహిళ తన ఇంటి నుండి బయలుదేరి 2 కి.మీ. ఉత్తరం వైపు నడిచి, తూర్పునకు తిరిగి 9 కి.మీ. నడిచి, ఆపై దక్షిణం వైపు తిరిగి 1 కి.మీ. నడిచి, తర్వాత పడమర వైపు తిరిగి 2 కి.మీ. నడిచి, ఆపై ఎడమవైపు తిరిగి 1 కి.మీ. నడిచి బావిని చేరుకుంటుంది. బావికి సంబంధించి ఆమె ఇల్లు ఎక్కడ ఉంది?", "options": [{"prompt": "1", "value": "11 కి.మీ. పడమర"}, {"prompt": "2", "value": "7 కి.మీ. తూర్పు"}, {"prompt": "3", "value": "7 కి.మీ. పడమర"}, {"prompt": "4", "value": "11 కి.మీ. తూర్పు"}], "range": {"start": "", "end": ""}}, "mr": {"value": "एक महिला तिच्या घरातून निघते आणि 2 किमी उत्तरेकडे चालते, नंतर ती पूर्वेकडे वळते आणि 9 किमी चालते, नंतर ती दक्षिणेकडे वळते आणि 1 किमी चालते, नंतर ती पश्चिमेकडे वळते आणि 2 किमी चालते, नंतर ती तिच्या डावीकडे वळते आणि विहिरीवर पोहोचण्यासाठी 1 किमी चालते. विहिरीच्या संदर्भात तिचे घर कुठे आहे?", "options": [{"prompt": "1", "value": "11 किमी पश्चिम"}, {"prompt": "2", "value": "7 किमी पूर्व"}, {"prompt": "3", "value": "7 किमी पश्चिम"}, {"prompt": "4", "value": "11 किमी पूर्व"}], "range": {"start": "", "end": ""}}, "bn": {"value": "একজন মহিলা তার বাড়ি থেকে 2 কিমি উত্তরে হাঁটা শুরু করেন, তারপর তিনি পূর্ব দিকে ঘুরে 9 কিমি হাঁটেন, তারপর তিনি দক্ষিণ দিকে ঘুরে 1 কিমি হাঁটেন, তারপর তিনি পশ্চিম দিকে ঘুরে 2 কিমি হাঁটেন, তারপর তিনি তার বাম দিকে ঘুরে 1 কিমি হেঁটে একটি কুয়োর কাছে পৌঁছান। কুয়োর সাপেক্ষে তার বাড়ি কোথায়?", "options": [{"prompt": "1", "value": "11 কিমি পশ্চিম"}, {"prompt": "2", "value": "7 কিমি পূর্ব"}, {"prompt": "3", "value": "7 কিমি পশ্চিম"}, {"prompt": "4", "value": "11 কিমি পূর্ব"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ಒಬ್ಬ ಮಹಿಳೆ ತನ್ನ ಮನೆಯಿಂದ ಹೊರಟು 2 ಕಿಮೀ ಉತ್ತರಕ್ಕೆ ನಡೆಯುತ್ತಾಳೆ, ನಂತರ ಅವಳು ಪೂರ್ವಕ್ಕೆ ತಿರುಗಿ 9 ಕಿಮೀ ನಡೆಯುತ್ತಾಳೆ, ನಂತರ ಅವಳು ದಕ್ಷಿಣಕ್ಕೆ ತಿರುಗಿ 1 ಕಿಮೀ ನಡೆಯುತ್ತಾಳೆ, ನಂತರ ಅವಳು ಪಶ್ಚಿಮಕ್ಕೆ ತಿರುಗಿ 2 ಕಿಮೀ ನಡೆಯುತ್ತಾಳೆ, ನಂತರ ಅವಳು ತನ್ನ ಎಡಕ್ಕೆ ತಿರುಗಿ 1 ಕಿಮೀ ನಡೆದು ಬಾವಿಯನ್ನು ತಲುಪುತ್ತಾಳೆ. ಬಾವಿಗೆ ಹೋಲಿಸಿದರೆ ಅವಳ ಮನೆ ಎಲ್ಲಿದೆ?", "options": [{"prompt": "1", "value": "11 ಕಿಮೀ ಪಶ್ಚಿಮ"}, {"prompt": "2", "value": "7 ಕಿಮೀ ಪೂರ್ವ"}, {"prompt": "3", "value": "7 ಕಿಮೀ ಪಶ್ಚಿಮ"}, {"prompt": "4", "value": "11 ಕಿಮೀ ಪೂರ್ವ"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ஒரு பெண் தன் வீட்டிலிருந்து புறப்பட்டு 2 கி.மீ வடக்கே நடக்கிறாள், பிறகு அவள் கிழக்கே திரும்பி 9 கி.மீ நடக்கிறாள், பிறகு அவள் தெற்கே திரும்பி 1 கி.மீ நடக்கிறாள், பிறகு அவள் மேற்கே திரும்பி 2 கி.மீ நடக்கிறாள், பிறகு அவள் இடதுபுறம் திரும்பி 1 கி.மீ நடந்து கிணற்றை அடைகிறாள். கிணற்றைப் பொறுத்து அவளின் வீடு எங்கு உள்ளது?", "options": [{"prompt": "1", "value": "11 கி.மீ மேற்கு"}, {"prompt": "2", "value": "7 கி.மீ கிழக்கு"}, {"prompt": "3", "value": "7 கி.மீ மேற்கு"}, {"prompt": "4", "value": "11 கி.மீ கிழக்கு"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>1) A woman starts from her home and walks 2 km North.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cd0f3213d2ccf3e787e6972a01de175b2bb3b7de97d4c12718b2b27b3c6d5be.png\" /></p>\n\n<p>2) Then she turns East and walks 9 km.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7fa0de33694eb659e8d33f1640929afafff1abfadfb337f87a286638b0345d57.png\" /></p>\n\n<p>3) Then she turns south and walks 1 km.</p>\n\n<p><img alt=\"\"", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4d697ccd0470d83bd4a368bca8d389d1d3f150636e5b3b4ea1390d947c841a86.png\" /></p>\n\n<p>स्पष्टतः, उसका घर कुएं&nbsp;से 7 किमी पश्चिम में है।</p>\n", "te": "<p>1) ఒక మహిళ తన ఇంటి నుండి బయలుదేరి 2 కి.మీ. ఉత్తరం వైపు నడుస్తుంది.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cd0f3213d2ccf3e787e6972a01de175b2bb3b7de97d4c12718b2b27b3c6d5be.png\" /></p>\n\n<p>2) ఆపై ఆమె తూర్పునకు తిరిగి 9 కి.మీ. నడుస్తుంది.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7fa0de33694eb659e8d33f1640929afafff1abfadfb337f87a286638b0345d57.png\" /></p>\n\n<p>3) ఆపై ఆమె దక్షిణం వైపు తిరిగి 1 కి.మీ. నడుస్తుంది.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3be1006e8c9adc10d529214e008ca782b6c30eba318d9d525ced4ad1212cfed8.png\" /></p>\n\n<p>4) ఆపై ఆమె పడమర వైపు తిరిగి 2 కి.మీ. నడుస్తుంది.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repea", "mr": "<p>1) एक महिला तिच्या घरातून निघते आणि 2 किमी उत्तरेकडे चालते.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cd0f3213d2ccf3e787e6972a01de175b2bb3b7de97d4c12718b2b27b3c6d5be.png\" /></p>\n\n<p>2) नंतर ती पूर्वेकडे वळते आणि 9 किमी चालते.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7fa0de33694eb659e8d33f1640929afafff1abfadfb337f87a286638b0345d57.png\" /></p>\n\n<p>3) नंतर ती दक्षिणेकडे वळते आणि 1 किमी चालते.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3be1006e8c9adc10d529214e008ca782b6c30eba318d9d525ced4ad1212cfed8.png\" /></p>\n\n<p>4) नंतर ती पश्चिमेकडे वळते आणि 2 किमी चालते.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/842788bc3de30af993e36fe", "bn": "<p>1) একজন মহিলা তার বাড়ি থেকে 2 কিমি উত্তরে হাঁটা শুরু করেন।</p>\n\n<p>2) তারপর তিনি পূর্ব দিকে ঘুরে 9 কিমি হাঁটেন।</p>\n\n<p>3) তারপর তিনি দক্ষিণ দিকে ঘুরে 1 কিমি হাঁটেন।</p>\n\n<p>4) তারপর তিনি পশ্চিম দিকে ঘুরে 2 কিমি হাঁটেন।</p>\n\n<p>5) তারপর তিনি তার বাম দিকে ঘুরে 1 কিমি হেঁটে কুয়োর কাছে পৌঁছান।</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/4d697ccd0470d83bd4a368bca8d389d1d3f150636e5b3b4ea1390d947c841a86.png\" style=\"color: rgb(33, 37, 41);\" /></p>\n\n<p>এখানে, আমরা দেখতে পাচ্ছি যে বাড়িটি কুয়ো থেকে 7 কিমি পশ্চিমে।</p>\n\n<p>অতএব, সঠিক উত্তর হল <strong>\"7 কিমি পশ্চিম\"</strong>।</p>\n", "ml": "", "gu": "", "kn": "<p>1) ಒಬ್ಬ ಮಹಿಳೆ ತನ್ನ ಮನೆಯಿಂದ ಹೊರಟು 2 ಕಿಮೀ ಉತ್ತರಕ್ಕೆ ನಡೆಯುತ್ತಾಳೆ.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cd0f3213d2ccf3e787e6972a01de175b2bb3b7de97d4c12718b2b27b3c6d5be.png\" /></p>\n\n<p>2) ನಂತರ ಅವಳು ಪೂರ್ವಕ್ಕೆ ತಿರುಗಿ 9 ಕಿಮೀ ನಡೆಯುತ್ತಾಳೆ.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7fa0de33694eb659e8d33f1640929afafff1abfadfb337f87a286638b0345d57.png\" /></p>\n\n<p>3) ನಂತರ ಅವಳು ದಕ್ಷಿಣಕ್ಕೆ ತಿರುಗಿ 1 ಕಿಮೀ ನಡೆಯುತ್ತಾಳೆ.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repea\ntermock.com/tb/3be1006e8c9adc10d529214e008ca782b6c30eba318d9d525ced4ad1212cfed8.png\" /></p>\n\n<p>4) ನಂತರ ಅವಳು ಪಶ್ಚಿಮಕ್ಕೆ ತಿರುಗಿ 2 ಕಿಮೀ ನಡೆಯುತ್ತಾಳೆ.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/842788bc3de30af993e36fef3abfb6162e65a517c83c935d2a866776066ce632.png\" /></p>\n\n<p>5) ನಂತರ ಅವಳು ತನ್ನ ಎಡಕ್ಕೆ ತಿರುಗಿ 1 ಕಿಮೀ ನಡೆದು ಬಾವಿಯನ್ನು ತಲುಪುತ್ತಾಳೆ.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f4ee071a8dec60a52904fd0afb622e16602d758988abafea3a6aa8d1ba0a4b8d.png\" /></p>\n\n<p>ಇಲ್ಲಿ, ನಾವು ಮನೆಯು ಬಾವಿಯಿಂದ 7 ಕಿಮೀ ಪಶ್ಚಿಮಕ್ಕೆ ಇದೆ ಎಂದು ನೋಡಬಹುದು.</p>\n\n<p>ಆದ್ದರಿಂದ, ಸರಿಯಾದ ಉತ್ತರ <strong>\" 7 ಕಿಮೀ ಪಶ್ಚಿಮ \"</strong>.</p>\n33:T6bb,<p>1) ஒரு பெண் தன் வீட்டிலிருந்து புறப்பட்டு 2 கி.மீ வடக்கே நடக்கிறாள்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cd0f3213d2ccf3e787e6972a01de175b2bb3b7de97d4c12718b2b27b3c6d5be.png\" /></p>\n\n<p>2) பிறகு அவள் கிழக்கே திரும்பி 9 கி.மீ நடக்கிறாள்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7fa0de33694eb659e8d33f1640929afafff1abfadfb337f87a286638b0345d57.png\" /></p>\n\n<p>3) பிறகு அவள் தெற்கே திரும்பி 1 கி.மீ நடக்கிறாள்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3be1006e8c9adc10d529214e008ca782b6c30eba318d9d525ced4ad1212cfed8.png\" /></p>\n\n<p>", "ta": "<p>1) ஒரு பெண் தன் வீட்டிலிருந்து புறப்பட்டு 2 கி.மீ வடக்கே நடக்கிறாள்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/6cd0f3213d2ccf3e787e6972a01de175b2bb3b7de97d4c12718b2b27b3c6d5be.png\" /></p>\n\n<p>2) பிறகு அவள் கிழக்கே திரும்பி 9 கி.மீ நடக்கிறாள்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/7fa0de33694eb659e8d33f1640929afafff1abfadfb337f87a286638b0345d57.png\" /></p>\n\n<p>3) பிறகு அவள் தெற்கே திரும்பி 1 கி.மீ நடக்கிறாள்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/3be1006e8c9adc10d529214e008ca782b6c30eba318d9d525ced4ad1212cfed8.png\" /></p>\n\n<p>4) பிறகு அவள் மேற்கே திரும்பி 2 கி.மீ நடக்கிறாள்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/842788bc3de30af993e36fef3abfb6162e65a517c83c935d2a866776066ce632.png\" /></p>\n\n<p>5) பிறகு அவள் இடதுபுறம் திரும்பி 1 கி.மீ நடந்து கிணற்றை அடைகிறாள்.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f4ee071a8dec60a52904fd0afb622e16602d758988abafea3a6aa8d1ba0a4b8d.png\" /></p>\n\n<p>இங்கே, கிணற்றிலிருந்து வீடு 7 கி.மீ மேற்கில் உள்ளது என்பதை நாம் காணலாம்.</p>\n\n<p>ஆகவே, சரியான பதில் <strong>\"7 கி.மீ மேற்கு\"</strong>.</p>\n34:T592,\n<p>According to the given information,</p>\n\n<p>1) A cycles 3.5 km west.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f2405fc4f49d598c13f586245bab276350c50d33228783ddd4e8ebf94f5c392c.png\" /></p>\n\n<p>2) Then turns to her right and cycles 7 km.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/521f70f1e60452d2e84538a492c50644533360a19cfa507366b1cd9a45a82b85.png\" /></p>\n\n<p>3) B cycles 1 km East.</p>\n\n<p><img alt=\"\" src=\"https:/", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Direction Sense", "confidence": "high"}, {"qid": "5b98fbc210d8a5320a6824ba", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Two cargo ships A and B start from the same port. Ship A sails 35 miles West, then it turns right and sails 75 miles. In the meanwhile Ship B sails 105 miles North, then it turns left and sails 35 miles, then it turns North and sails 45 miles. Where is ship A with respect to ship B?</p>\n", "options": [{"prompt": "1", "value": "225 miles South"}, {"prompt": "2", "value": "75 miles North"}, {"prompt": "3", "value": "75 miles South"}, {"prompt": "4", "value": "225 miles North"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दो कार्गो जहाज A और B एक ही बंदरगाह से शुरू होते हैं। जहाज A 35 मील पश्चिम की ओर जाकर दाईं ओर 75 मील की दूरी पर जाता है। इस बीच जहाज B 105 मील उत्तर में जाता है, फिर यह 35 मील की दूरी पर बायीं ओर जाता है, फिर यह उत्तर की ओर 45 मील की दूरी पर जाता है। जहाज B के संबंध में जहाज A कहां है?</p>\n", "options": [{"prompt": "1", "value": "225 मील दक्षिण"}, {"prompt": "2", "value": "75 मील उत्तर"}, {"prompt": "3", "value": "75 मील दक्षिण"}, {"prompt": "4", "value": "225 मील उत्तर"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>The diagram below shows the route taken by two cargo ships A and B starting from the same port,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/59bc36bedb074a96bbb7ea5bbed518adbc879e18bae7d749e28cd14af546265a.png\" style=\"height:399px; width:501px\" /></p>\n\n<p>Clearly, we can see that the ship A is 45 + 30 = 75 miles in South direction from ship B.</p>\n", "hn": "<p>नीचे दिया गया आरेख उसी पोर्ट से शुरू होने वाले दो कार्गो जहाजों A और B द्वारा लिया गया मार्ग दर्शाता है,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/59bc36bedb074a96bbb7ea5bbed518adbc879e18bae7d749e28cd14af546265a.png\" style=\"height:399px; width:501px\" /></p>\n\n<p>स्पष्ट है कि, हम देख सकते हैं कि जहाज A, जहाज B से 45 + 30 = 75 मील दक्षिण दिशा में है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Direction Sense", "confidence": "high"}, {"qid": "5b6018c0678ec0789e5f768d", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Rajan walks 24 metres towards east. Then turns right and walk another 24 metres. Then turn right and walks for 31 metres to reach shop A. He again turns to his right and walks for 24 metres. What is the straight line distance (in metres) between the starting point and shop A?</p>\n", "options": [{"prompt": "1", "value": "14&amp;radic;2"}, {"prompt": "2", "value": "15&amp;radic;2"}, {"prompt": "3", "value": "25"}, {"prompt": "4", "value": "26"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>राजन पूर्व की ओर 24 मीटर चलता है। फिर दायीं ओर मुड़ता है और अतिरिक्त 24 मीटर चलता है। फिर दायीं ओर मुड़ता है और दुकान A तक पहुँचने के लिए 31 मीटर चलता है। वह पुनः अपने दायीं ओर मुड़ता है और 24 मीटर चलता है। प्रारम्भिक बिन्दु और दुकान A के बीच सीधी रेखा पर दूरी (मीटर में) क्या है?</p>\n", "options": [{"prompt": "1", "value": "14&amp;radic;2"}, {"prompt": "2", "value": "15&amp;radic;2"}, {"prompt": "3", "value": "25"}, {"prompt": "4", "value": "26"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>The Figure is as follows:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2588480bd3f4e61308dcceb76f3fe0175d04a8b76c9b8be07514b4bffe3eb894.png\" style=\"height:424px; width:468px\" /></p>\n\n<p>Clearly we see a ∆ABC</p>\n\n<p>∆ABC,</p>\n\n<p>AB = 24 M, BC = (31 &ndash; 24 = 7) M, AC = ?</p>\n\n<p>AC<sup>2&l", "hn": "<p>&nbsp;</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/2588480bd3f4e61308dcceb76f3fe0175d04a8b76c9b8be07514b4bffe3eb894.png\" style=\"height:424px; width:468px\" /></p>\n\n<p>स्पष्ट रूप से हम ∆ABC देखते हैं।</p>\n\n<p>∆ABC,</p>\n\n<p>AB = 24 M, BC = (31 &ndash; 24 = 7) M, AC = ?</p>\n\n<p>AC<sup>2</sup> = AB<sup>2</sup> + BC<sup>2</sup></p>\n\n<p>AC<sup>2</sup> = (24<sup>2</sup> + 7<sup>2</sup>) M</p>\n\n<p>AC<sup>2</sup> = (576 + 49) M</p>\n\n<p>AC<sup>2</sup> = 625 M</p>\n\n<p>AC = <span class=\"math-tex\">\\(\\sqrt {625M} \\)</span></p>\n\n<p>AC = 25 M</p>\n\n<p>अतः प्रारम्भिक बिन्दु और दुकान A के बीच की दूरी (मीटर में) 25 मीटर है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Direction Sense", "confidence": "high"}, {"qid": "5c3320abfdb8bb30b4c37d11", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>A river connects two towns A and B. It flows 37 miles South from town A, then it turns West and flows 23 miles, then it turns North and flows 40 miles, then it turns to its right and flows 23 miles to reach town B. Where is town A with respect to town B?</p>\n", "options": [{"prompt": "1", "value": "3 miles South"}, {"prompt": "2", "value": "13 miles South"}, {"prompt": "3", "value": "3 miles North"}, {"prompt": "4", "value": "13 miles North"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>एक नदी दो शहरों A और B को जोड़ती है। यह नदी शहर A से दक्षिण की ओर 37 मील दूर बहती है, फिर पश्चिम की ओर मुड़ती है और 23 मील बहती है, फिर यह उत्तर की ओर मुड़ती है और 40 मील बहती है, फिर यह अपने दायीं ओर मुड़ती है और शहर B तक पहुँचने के लिए 23 मील बहती है। शहर B के संबंध में शहर A कहाँ है?</p>\n", "options": [{"prompt": "1", "value": "3 मील दक्षिण में"}, {"prompt": "2", "value": "13 मील दक्षिण में"}, {"prompt": "3", "value": "3 मील उत्तर में"}, {"prompt": "4", "value": "13 मील उत्तर में"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p>The flow of river from town A to to town B is shown below,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/9958162d1e87eaeb8a12f672b77c8d7605208684c44e87ac0afe3bd56e6a3472.png\" /></p>\n\n<p>Thus, town A is 3 miles South with respect to town B.</p>\n\n<p>Hence, the correct answer is <strong>&quot;<span style=\"\">3 miles South</span>&quot;.</strong></p>\n", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/9958162d1e87eaeb8a12f672b77c8d7605208684c44e87ac0afe3bd56e6a3472.png\" /></p>\n\n<p>अतः शहर B के संबंध में शहर A दक्षिण दिशा में 3 मील की दूरी पर है।</p>\n", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Direction Sense", "confidence": "high"}, {"qid": "5c1b3ee13405d167cc79544d", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Two lady cyclists A and B start from the same point. A cycles 3.5 km West, then turns to her right and cycles 7 km. B cycles 1 km East, then turns North and cycles 7 km, then turns to her left and cycles 2 km. Where is B with respect to A now?</p>\n", "options": [{"prompt": "1", "value": "5.5 km, East"}, {"prompt": "2", "value": "2.5 km, West"}, {"prompt": "3", "value": "2.5 km, East"}, {"prompt": "4", "value": "5.5 km, West"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दो महिला साइकिल सवार A और B एक ही बिंदु से चलना शुरू करती हैं। A, 3.5 किमी पश्चिम की ओर साइकिल चलाती है, फिर अपने दाहिने ओर मुड़ जाती है और 7 किमी साइकिल चलाती है। B, 1 किमी पूर्व की ओर साइकिल चलाती है, फिर उत्तर की ओर मुड़ जाती है और 7 किमी साइकिल चलाती है, फिर अपनी बायीं ओर मुड़ जाती है और 2 किमी साइकिल चलाती है। A के सन्दर्भ में B की स्थिति क्या है?</p>\n", "options": [{"prompt": "1", "value": "5.5 किमी, पूर्व"}, {"prompt": "2", "value": "2.5 किमी, पश्चिम"}, {"prompt": "3", "value": "2.5 किमी, पूर्व"}, {"prompt": "4", "value": "5.5 किमी, पश्चिम"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>According to the given information,</p>\n\n<p>1) A cycles 3.5 km west.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f2405fc4f49d598c13f586245bab276350c50d33228783ddd4e8ebf94f5c392c.png\" /></p>\n\n<p>2) Then turns to her right and cycles 7 km.</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/521f70f1e60452d2e84538a492c50644533360a19cfa507366b1cd9a45a82b85.png\" /></p>\n\n<p>3) B cycles 1 km East.</p>\n\n<p><img alt=\"\" src=\"htt", "hn": "\n<p>दी गई जानकारी के अनुसार,</p>\n\n<p>1)&nbsp;A, 3.5 किमी पश्चिम की ओर साइकिल चलाती है,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f2405fc4f49d598c13f586245bab276350c50d33228783ddd4e8ebf94f5c392c.png\" /></p>\n\n<p>2) &nbsp;फिर अपने दाहिने ओर मुड़ जाती है और 7 किमी साइकिल चलाती है।&nbsp;</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/521f70f1e60452d2e84538a492c50644533360a19cfa507366b1cd9a45a82b85.png\" /></p>\n\n<p>3) B, 1 किमी पूर्व की ओर साइकिल चलाती है,</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/44df37900b62f0b2146fd4045aa6620e4b5e1e83c8525de7ac2ce8a63073cff1.png\" /></p>\n\n<p>4) फिर उत्तर की ओर मुड़ जाती है और 7 किमी साइकिल चलाती है, फिर अपनी बायीं ओर मुड़ जाती है और 2 किमी साइकिल चलाती है।&nbsp;</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/bb2816ff74eab3b0b23428a270bb00b22d8b072679a078147b4406e221b36f38.png\" /></p>\n\n<p>दोनों साइकिल सवारों A और B की दूरी और घुमावों को मिलाकर, हम निम्न आरेख प्राप्त होता हैं:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/11f24b2cfc376523d4202713e6b8b5a493f03934dd5bf5d366aed7543ac165de.png\" /></p>\n\n<p>यहाँ, हम देख सकते हैं कि B, A से 2.5 किमी पूर्व दिशा में है।</p>\n\n<p>अतः, सही उत्तर <strong>&quot;2.5 किमी पूर्व&quot;</strong> है।</p>\n\n36:T583,\n<p>The movement of the footballer A is shown below,</p>\n\n<p><span style=\"\">A runs 35 m East, then 15 m South, turns to his right and runs 60 m</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/56159f2359611e7a6a2ac8713cca68b32d7d09926d0c6bfd9fd268022e272483.png\" style=\"width: 293px; height: 112px;\" /></p>\n\n<p>The movement of footballer B is shown below,</p>\n\n<p><span style=\"\">B runs 20 m North, then 25 m West, turns left and runs 20 m</span></p>\n\n<p><img alt=\"\" src=\"ht", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Direction Sense", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 8 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
