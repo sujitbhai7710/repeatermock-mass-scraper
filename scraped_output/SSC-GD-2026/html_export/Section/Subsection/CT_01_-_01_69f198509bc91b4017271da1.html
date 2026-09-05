@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CT 01: प्रशासनिक शब्दावली - 01</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">CT 01: प्रशासनिक शब्दावली - 01</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-gd-constable</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">20</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">12 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">40.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.25</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">69f198509bc91b4017271da1</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "69f198509bc91b4017271da1", "title": "CT 01: प्रशासनिक शब्दावली - 01", "series_slug": "ssc-gd-constable", "duration_min": 12, "max_marks": 40.0, "languages": ["Hindi"], "sections": [{"section_id": "635bb7a2e2e9f5c20bd70a9c", "section_name": "हिंदी", "q_count": 20, "max_marks": 40.0, "questions": [{"qid": "602d5168b37a496b91634399", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p style=\"margin: 0in 0in 7.5pt; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\"><b><span style=\"  background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\">&lsquo;Facsimile&rsquo;</span></b><span style=\"  background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\"> </span><span lang=\"HI\" style=\"  background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\">अंग्रेजी शब्द का हिन्दी पारिभाषिक शब्द बताइए।</span><span style=\"  background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\"><o:p></o:p></span></p>\n2f:T4b4,<p style=\"margin: 0in 0in 7.5pt; background-image: initial; ba", "options": [{"prompt": "1", "value": "आकृति&amp;nbsp;"}, {"prompt": "2", "value": "सुकृति&amp;nbsp;"}, {"prompt": "3", "value": "प्रकृति&amp;nbsp;"}, {"prompt": "4", "value": "प्रतिकृति&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>दिए गये शब्द <span style=\"font-weight: 700;\">Facsimile</span>&rsquo; का अर्थ है &lsquo;प्रतिकृति &rsquo;। इस संदर्भ में सबसे उपयुक्त शब्द प्रतिकृति है। अतिरिक्त विकल्पों के अर्थ भिन्न हैं।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>ज्ञान की किसी विशेष विधा (कार्य क्षेत्र) में प्रयोग किये जाने वाले शब्दों की उनकी परिभाषा सहित सूची पारिभाषिक शब्दावली या पारिभाषिक शब्दकोश कहलाती है।</li>\n\t<li>पारिभाषिक शब्दों का प्रयोग जटिल विचारों की अभिव्यक्ति को सुचारु बनाता है।</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\"><font color=\"#58595b\"><span style=\"font-size: 14px;\">शब्द</span></font></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\"><font color=\"#58595b\"><span style=\"font-size: 14px;\">अर्थ</span></font></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\"><font color=\"#58595b\"><span style=\"font-size: 14px;\">आकृति</span></font></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\"><font color=\"#58595b\"><span style=\"font-size: 14px;\">Shape</span></font></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\"><font color=\"#58595b\"><span style=\"font-size: 14px;\">सुकृति </span></font></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\">Virtue</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\"><font color=\"#58595b\"><span style=\"font-size: 14px;\">प्रकृति</span></font></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\"><font color=\"#58595b\"><span style=\"font-size: 14px;\">Nature</span></font></p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n38:Tc5f,\n<p>दिए गये शब्द &lsquo;<span style=\"font-weight: 700;\">Grant</span> का अर्थ है &lsquo;अनुदान&rsquo;।&nbsp;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "602c9c7fa9a76a628028d088", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;सहमति&#39; का अंग्रेजी में पारिभाषिक शब्द क्या होगा?", "options": [{"prompt": "1", "value": "Concise"}, {"prompt": "2", "value": "Concurrence"}, {"prompt": "3", "value": "Condition"}, {"prompt": "4", "value": "Condone"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><span style=\" line-height: 115%; \">Solution :</span><span style=\" line-height: 115%; \"> </span><span lang=\"AR-SA\" style=\" line-height: 115%; \">दिए गए विकल्पों में सही उत्तर</span><span style=\" line-height: 115%; \">&nbsp;</span><b><span lang=\"AR-SA\" style=\" line-height: 115%; \">विकल्प</span><span style=\" line-height: 115%; \">&nbsp;2</span></b><span style=\" line-height: 115%; \">&nbsp;<b>&lsquo;</b></span><strong>Concurrence​</strong><span style=\" line-height: 115%; \"><strong>&rsquo;</strong>&nbsp;</span><span lang=\"AR-SA\" style=\" line-height: 115%; \">है। अन्य विकल्प इसके अनुचित उत्तर हैं।</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/cc04f1d6220b131258f5ba720acfe410ac589b148f9e5998cd15d264a98e4263.png\" /></p>\n\n<ul>\n\t<li>Concise का हिन्दी में अर्थ - संक्षिप्त</li>\n\t<li>Concurrence का हिन्दी में अर्थ- सहमति</li>\n\t<li>Condition का हिन्दी में अर्थ- शर्त</li>\n\t<li>Condone का हिन्दी में अर्थ- माफ करना</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<div>\n<ul>\n\t<li>ज्ञान की किसी विशेष विधा<span dir=\"RTL\">&nbsp;(</span>कार्य क्षेत्र<span dir=\"RTL\">)&nbsp;</span>में प्रयोग किए जाने वाले शब्दों की उनकी परिभाषा सहित सूची पारिभाषिक शब्दावली या पारिभाषिक शब्दकोश कहलाती है।</li>\n\t<li>पारिभाषिक शब्दों का प्रयोग जटिल विचारों की अभिव्यक्ति को सुचारु बनाता है।</li>\n</ul>\n</div>\n\n36:Tf24,\n<p>दिए गए विकल्पों में से सही उत्तर&nbsp;विकल्प 4<strong>&nbsp;&lsquo;Balance-sheet&rsquo;&nbsp;</strong>है। <strong>&lsquo;</strong>Balance-sheet<strong>&rsquo;</strong> का अर्थ है &ndash; <span style=\"background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\">&lsquo;तुलन-पत्र</span><span lang=\"HI\" style=\"background-image: initial; background-position: initial; background-size: initial; backgro", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "67614b7eb4f677de8191355c", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Assign के लिए सही पारिभाषिक शब्द नहीं है ?", "options": [{"prompt": "1", "value": "नियत करना"}, {"prompt": "2", "value": "सौंपना"}, {"prompt": "3", "value": "समनुदेशित करना"}, {"prompt": "4", "value": "ग्रहण करना"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>Assign के लिए सही पारिभाषिक शब्द <strong><u>नहीं</u></strong> है -&nbsp;<strong><u><span style=\"color: rgb(33, 37, 41);\">ग्रहण करना</span></u></strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Assign</strong> शब्द के लिए पारिभाषिक शब्द हैं -\n\n\t<ul>\n\t\t<li>समनुदेशित करना, सौंपना, नियत करना, और सुपर्द करना।</li>\n\t</ul>\n\t</li>\n\t<li><strong>receive, take, adopt <", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "63ba6430b21431424a846f8a", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;Assignment&#39; शब्द के लिए हिन्दी भाषा में उचित पारिभाषिक शब्दावली का चयन करें।", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;कार्यालय कार्य&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;समनुदेशन&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;काम-काज&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;घर का कार्य&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><span style=\"\"><strong>&#39;Assignment&#39;</strong> शब्द के लिए हिन्दी भाषा में उचित पारिभाषिक शब्दावली है<strong>- &#39;समनुदेशन&#39;</strong></span></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><font color=\"#4d5156\">Office work <strong>-&nbsp;</strong></font><strong><span style=\"\">कार्यालय कार्य</span></strong></li>\n\t<li>Chores <strong>-&nbsp;काम-काज</strong></li>\n\t<li>Homework<strong> -&nbsp;<span style=\"\">घर का कार्य</span></strong></li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span><span style=\"font-weight: 700;\">कुछ अन्य&nbsp;अंग्रेजी&nbsp;शब्द का हिंदी पर्याय है:-</span></p>\n\n<ul style=\"\">\n\t<li><span style=\"font-weight: 700;\">converted -&nbsp;</span>परिवर्तित</li>\n\t<li><span style=\"font-weight: 700;\">Resignation -&nbsp;</span>पदत्याग</li>\n\t<li><span style=\"font-weight: 700;\">Adjustment -&nbsp;</span>समायोजन</li>\n\t<li><span style=\"font-weight: 700;\">Scheme -&nbsp;</span>योजना</li>\n\t<li><span style=\"font-weight: 700;\">disposal -&nbsp;</span>निस्तारण</li>\n\t<li><span style=\"font-weight: 700;\">Contentment -&nbsp;</span>समाधान</li>\n\t<li><span style=\"font-weight: 700;\">Integrity -&nbsp;</span>अखण्डता</li>\n\t<li><span style=\"font-weight: 700;\">upgrade -&nbsp;</span>उन्नयन</li>\n</ul>\n\n3f:Ta0a,\n<p>&lsquo;Allocation&#39; शब्द का हिन्दी पारिभाषिक शब्द है:- <strong>&#39;<span style=\"\">नियतन&#39;</span>&nbsp;</strong></p>\n\n<p><span style=\"\">अन्य विकल्प&nbsp;Allocation के&nbsp;</span>सही अर्थ&nbsp;नहीं&nbsp;<spa", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "69858b0408f316a049b9291f", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;Record&#39; का सही पारिभाषिक नहीं है", "options": [{"prompt": "1", "value": "अभिलेख"}, {"prompt": "2", "value": "कीर्तिमान"}, {"prompt": "3", "value": "दर्ज करना"}, {"prompt": "4", "value": "सूचित करना"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>&#39;Record&#39; का सही पारिभाषिक नहीं है -&nbsp;<strong><u><span style=\"color: rgb(33, 37, 41);\">सूचित करना</span></u></strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>सूचित करना : </strong>यह <strong>&#39;Inform&#39;</strong> या<strong> &#39;Notify&#39; </strong>का हिंदी पारिभाषिक है।</li>\n\t<li><strong>रिकॉर्ड </strong>का अर्थ जानकारी को सहेजना है, जबकि सूचित करने का अर्थ जानकारी को दूसरों तक पहुँचाना है।</li>\n</ul>\n\n<p><strong>अन्य विकल्प -</strong></p>\n\n<ul>\n\t<li><strong>अभिलेख : </strong>संज्ञा के रूप में, भविष्य के संदर्भ के लिए सुरक्षित रखे गए\n\n\t<ul>\n\t\t<li>आधिकारिक दस्तावेज़ों को<strong> &#39;Record&#39; </strong>कहा जाता है। उदाहरण: <strong>&#39;Office Records&#39;</strong> (कार्यालय अभिलेख)।</li>\n\t</ul>\n\t</li>\n\t<li><strong>कीर्तिमान : </strong>खेलकूद या किसी असाधारण उपलब्धि के क्षेत्र में स्थापित सर्वोच्च स्तर को<stro", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "6767eda2cb48ebda5cbda0fc", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "PROBATION के लिए सही हिन्दी पारिभाषिक शब्द है-", "options": [{"prompt": "1", "value": "परीक्षा"}, {"prompt": "2", "value": "प्रक्रिया"}, {"prompt": "3", "value": "परिवीक्षा"}, {"prompt": "4", "value": "कार्यवाही"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>PROBATION के लिए सही हिन्दी पारिभाषिक शब्द है-&nbsp;<strong><u><span style=\"color: rgb(33, 37, 41);\">परिवीक्षा</span></u></strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>PROBATION -&nbsp;<strong><span style=\"color: rgb(33, 37, 41);\">परिवीक्षा</span></strong></li>\n</ul>\n\n<p><strong>अन्य विकल्प -</strong></p>\n\n<ul>\n\t<li><span style=\"color: rgb(33, 37, 41);\">Exam - परीक्षा</span></li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">​</span><span style=\"color: rgb(33, 37, 41);\">Process - प्रक्रिया</span></li>\n\t<li>Proceeding&nbsp;-&nbsp;<span style=\"color: rgb(33, 37, 41);\">कार्यवाही</span></li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span><span style=\"font-weight: bolder;\">कुछ अन्य&nbsp;अंग्रेजी शब्द का हिन्दी अनुवाद -</span></p>\n\n<ul>\n\t<li>​Superstition &ndash; अन्धविश्वास</li>\n\t<li>Fictional &ndash; काल्पनिक</li>\n\t<li>Discrimination &ndash; भेदभाव</li>\n\t<li>Conventional &ndash; पारंपरिक</li>\n\t<li>Desperation &ndash; बेचैनी</li>\n\t<li>Fascinated &ndash; आकर्षित</li>\n\t<li>Ruinous &ndash; वेनाश्कारी</li>\n\t<li>Genuine &ndash; वास्तविक</li>\n\t<li>Gloomy &ndash; निराशाजनक</li>\n\t<li>Prudent &ndash; समझदार</li>\n\t<li>Novice &ndash; नौसिखिया</li>\n</ul>\n\n43:T996,\n<p>&#39;SUMMON&#39; अंग्रेजी शब्द के लिए हिन्दी पारिभाषिक शब्द है-&nbsp;<strong><u><span style=\"color: rgb(33, 37, 41);\">बुलाना</span></u></strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece418609", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "5b769c41a4323d4f1b4aba8f", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p><strong>&#39;Acquaintance&#39;</strong> का हिंदी पारिभाषिक शब्द क्या है?</p>\n", "options": [{"prompt": "1", "value": "जान-पहचान"}, {"prompt": "2", "value": "परिचय"}, {"prompt": "3", "value": "धुन्धलापन"}, {"prompt": "4", "value": "विस्थापित"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p><strong>&lsquo;</strong><strong>Acquaintance</strong><strong>&rsquo;</strong> का हिंदी अनुवाद <strong>&lsquo;</strong><strong>जान</strong><strong>-</strong><strong>पहचान</strong><strong>&rsquo;</strong> है। अतः सही विकल्प <strong>&lsquo;</strong><strong>Acquaintance</strong><strong>&rsquo;</strong> है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Acquaintance =&nbsp;</strong>&nbsp;जान-पहचान</li>\n\t<li><strong><span target=\"_blank\">Pronunciation</span>&nbsp;=</strong>acquaintance</li>\n\t<li><strong>Acquaintance&nbsp;in Hindi:&nbsp;</strong>अक्वैन्टन्स</li>\n\t<li><strong>Part&nbsp;of speech:</strong>&nbsp;<span target=\"_blank\">noun</span></li>\n\t<li><strong>Plural:</strong>&nbsp;Acquaintances(&nbsp;अक्वैन्टन्सस)</li>\n\t<li><strong>Definition in English:</strong>&nbsp;a person one knows slightly, but who is not a close&nbsp;<span target=\"_blank\">friend</span>.</li>\n\t<li><strong>Definition in Hindi:</strong>&nbsp;वो इंसान या चीज़ जिसे थोड़ा-बहुत जानते हो , पर&nbsp;करीबी मित्र ना हो&nbsp;</li>\n\t<li><span style=\"font-weight: 700;\">Examples in English:</span></li>\n</ul>\n\n<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; I may meet some old&nbsp;acquaintance today&nbsp;.</p>\n\n<ul>\n\t<li><span style=\"font-weight: 700;\">Examples in Hindi:</span></li>\n</ul>\n\n<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;जान पहचान होनी चाहिए ।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<p><span style=\"font-weight: 700;\"><u>अन्य</u></span>&nbsp;<span style=\"font-weight: 700;\"><u>विकल्प</u></span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: rgb(255, 255, 255);\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width: 159px; height: 18px;\">\n\t\t\t<p align=\"center\"><span style=\"font-weight: 700;\">शब्द</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 159px; height: 18px;\">\n\t\t\t<p align=\"center\"><span style=\"font-weight: 700;\">अनुवाद</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 159px; height: 18px;\">\n\t\t\t<p align=\"center\"><span style=\"font-weight: 700;\">परिचय</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 159px; height: 18px;\">\n\t\t\t<p align=\"center\">introduction</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 159px; height: 18px;\">\n\t\t\t<p align=\"center\"><span style=\"font-weight: 700;\">धुन्धलापन</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 159px; height: 18px;\">\n\t\t\t<p align=\"center\">blur</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width: 159px; height: 18px;\">\n\t\t\t<p align=\"center\"><span style=\"font-weight: 700;\">विस्थापित</span></p>\n\t\t\t</td>\n\t\t\t<td style=\"width: 159px; height: 18px;\">\n\t\t\t<p align=\"center\">Displaced</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p>&nbsp;<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/4f750a2730aad0987b5e719f277ddc90129c657928205c4d3b5aa23049023fa5.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Important Points</u></span></strong></span></p>\n\n<p><strong>Synonyms for Acquaintance</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:282px;\" width=\"282\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:93px;height:82px;\">\n\t\t\t<p style=\"text-align: center;\"><strong>Synonyms in Hindi</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:189px;height:82px;\">\n\t\t\t<p style=\"text-align: center;\">जानकारी, ज्ञान, परिचय,</p>\n\n\t\t\t<p style=\"text-align: center;\">परिचित, पहचान, मुलाकाती</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:93px;height:71px;\">\n\t\t\t<p style=\"text-align: center;\"><strong>Synonyms in English</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:189px;height:71px;\">\n\t\t\t<p style=\"text-align: center;\">familiarity,<span target=\"_blank\">friend</span>,companion,</p>\n\n\t\t\t<p style=\"text-align: center;\">knowledge,</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p><strong>Antonyms for Acquaintance</strong></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:420px;\" width=\"420\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:36px;height:41px;\">\n\t\t\t<p style=\"text-align: center;\"><strong>in Hindi</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:384px;height:41px;\">\n\t\t\t<p style=\"text-align: center;\">अजनबी</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:36px;height:57px;\">\n\t\t\t<p style=\"text-align: center;\"><strong>in English</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:384px;height:57px;\">\n\t\t\t<p style=\"text-align: center;\">stranger. unfamiliarity, enemy, ignorance, unknown</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p>&nbsp;</p>\n\n32:Tcbd,\n<p>दिए गए विकल्पों में सही उत्तर <strong>विकल्प 2 </strong><strong>&lsquo;</strong><strong>विभाग</strong><strong>&rsquo; </strong>है। अन्य विकल्प इसके अनुचित उत्तर हैं।</p>\n\n<p>दिए गए विकल्पों में से &lsquo;PORTFOLIO&rsquo; का सही हिंदी शब्द है &lsquo;विभाग&rsquo;। &lsquo;PORTFOLIO&rsquo; के अन्य संबन्धित अर्थ हैं- छायाचित्र, आ", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "602d5c55b761ecf59b5cd35d", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p style=\"margin: 0in 0in 7.5pt; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\"><b><span style=\"  background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\">&lsquo;Grant&#39;&nbsp;</span></b><span lang=\"HI\" style=\"  background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\">अंग्रेजी शब्द का हिन्दी पारिभाषिक शब्द बताइए।</span><span style=\"  background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\"><o:p></o:p></span></p>\n30:T4e6,<p style=\"margin: 0in 0in 7.5pt; background-image: initial; ba", "options": [{"prompt": "1", "value": "प्रधान&amp;nbsp;"}, {"prompt": "2", "value": "मूल&amp;nbsp;"}, {"prompt": "3", "value": "अनुदान&amp;nbsp;"}, {"prompt": "4", "value": "सिद्धांत&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>दिए गये शब्द &lsquo;<span style=\"font-weight: 700;\">Grant</span> का अर्थ है &lsquo;अनुदान&rsquo;।&nbsp;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>ज्ञान की किसी विशेष विधा (कार्य क्षेत्र) में प्रयोग किये जाने वाले शब्दों की उनकी परिभाषा सहित सूची पारिभाषिक शब्दावली या पारिभाषिक शब्दकोश कहलाती है।</li>\n\t<li>पारिभाषिक शब्दों का प्रयोग जटिल विचारों की अभिव्यक्ति को सुचारु बनाता है।</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\"><strong>शब्द</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\"><strong>अर्थ</strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\">प्रधान&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\"><span style=\"\">principal</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\">मूल&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\"><span style=\"\">Original</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\">सिद्धांत&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\"><span style=\"\">principle</span></p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n39:Tb7d,\n<p>दिए गए विकल्पों में से सही उत्तर&nbsp;<span style=\"font-weight: 700;\">विकल्प 2&nbsp;&nbsp;&#39;कार्यसूची&rsquo;</span>&nbsp;है। अन्य विकल्प इसके गलत उत्तर हैं।&nbsp;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "633fc415cfed22ae6b30028c", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;Temporary appointment(टेम्पररी अपोइंटमेंट)&#39; का हिंदी पर्याय कौन-सा है?&nbsp;", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;अस्थायी व्यवस्था&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;अस्थायी रिक्ति&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;अस्थायी पद&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;अस्थायी नियुक्ति&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>Temporary appointment -----&gt;&nbsp;अस्थायी नियुक्ति</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span><strong>अन्य विकल्प -</strong>&nbsp;</p>\n\n<ul>\n\t<li>अस्थायी व्यवस्था&nbsp; -------&gt;&nbsp;temporary arrangement</li>\n\t<li>अस्थायी रिक्ति&nbsp; ---------&gt;&nbsp;temporary vacancy</li>\n\t<li>अस्थायी पद&nbsp; --------&gt;&nbsp;temporary position</li>\n</ul>\n\n<p><span style=\"", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "676ad205bec7adf4cfa9bba4", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;SUMMON&#39; अंग्रेजी शब्द के लिए हिन्दी पारिभाषिक शब्द है", "options": [{"prompt": "1", "value": "विसर्जित करना"}, {"prompt": "2", "value": "स्थगित करना"}, {"prompt": "3", "value": "भंग करना"}, {"prompt": "4", "value": "बुलाना"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>&#39;SUMMON&#39; अंग्रेजी शब्द के लिए हिन्दी पारिभाषिक शब्द है-&nbsp;<strong><u><span style=\"color: rgb(33, 37, 41);\">बुलाना</span></u></strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>&nbsp;SUMMON -&nbsp;<strong>बुलाना</strong></li>\n</ul>\n\n<p><strong>अन्य विकल्प -</strong></p>\n\n<ul>\n\t<li>Dissolve,&nbsp;disperse -&nbsp;विसर्जन करना,&nbsp;<span style=\"color: rgb(33, 37, 41);\">भंग करना</span></li>\n\t&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "62f8dcac44b4be3185d20ab3", "qs_no": 11, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<div><span style=\"\">&#39;Arbitrator&#39; का हिंदी पारिभाषिक शब्द है:</span></div>\n", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;केंद्रक&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;मध्यस्थ&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;संधारक&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;नाभिक&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\nसही उत्तर है - &lsquo;<strong>मध्यस्थ</strong>&rsquo;।\n\n<ul>\n\t<li>&lsquo;<strong>Arbitrator</strong>&rsquo;&nbsp;का हिंदी पारिभाषिक शब्द &lsquo;<strong>मध्यस्थ</strong>&rsquo; है।</li>\n\t<li><strong>मध्यस्थ </strong>:&nbsp;बीच का।</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span><strong>अन्य विकल्प :</strong></p>\n\n<ul>\n\t<li>&lsquo;<strong>Nucleus</strong>&rsquo; का हिंदी पारिभाषिक शब्द&nbsp;&lsquo;<strong>नाभिक</strong>&rsquo; और&nbsp;&lsquo;<u><strong>केंद्रक</strong></u>&rsquo; है।</li>\n\t<li>&lsquo;<strong>Conductor</strong>&rsquo;&nbsp;का हिंदी पारिभाषिक शब्द &lsquo;<u><strong>संधारक</strong></u>&rsquo; है।</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span><strong>अन्य उदाहरण :</strong></p>\n\n<ul>\n\t<li>&lsquo;<strong>Representative</strong>&rsquo; का हिंदी पारिभाषिक शब्द &lsquo;<strong>प्रतिनिधि</strong>&rsquo; है।</li>\n\t<li>&lsquo;<strong>vested rights</strong>&rsquo; का हिंदी पारिभाषिक शब्द &lsquo;<strong>निहित अधिकार</strong>&rsquo; है।</li>\n</ul>\n\n3c:Td2d,\n<p>Archive&#39; का हिंदी पारिभाषिक शब्द &quot;अभिलेखागार&quot; है।&nbsp;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "602d2c25abe81b68ac3f17ab", "qs_no": 12, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p style=\"margin: 0in 0in 7.5pt; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\"><strong><span style=\"  background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\">&lsquo;तुलन-पत्र</span></strong><span lang=\"HI\" style=\"  background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\"><strong>&rsquo;</strong> शब्द का अंग्रेजी &zwj;पारिभाषिक शब्द क्या होगा?</span><span style=\"  background-image: initial; background-po\nsition: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\"><o:p></o:p></span></p>\n31:T1e2b,\n<p><strong>&lsquo;</strong><strong>Acquaintance", "options": [{"prompt": "1", "value": "Borrowed"}, {"prompt": "2", "value": "Bull"}, {"prompt": "3", "value": "Boom"}, {"prompt": "4", "value": "Balance-sheet"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>दिए गए विकल्पों में से सही उत्तर&nbsp;विकल्प 4<strong>&nbsp;&lsquo;Balance-sheet&rsquo;&nbsp;</strong>है। <strong>&lsquo;</strong>Balance-sheet<strong>&rsquo;</strong> का अर्थ है &ndash; <span style=\"background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\">&lsquo;तुलन-पत्र</span><span lang=\"HI\" style=\"background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;\">&rsquo; है&nbsp;</span>। अन्य विकल्प इसके गलत उत्तर हैं।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>ज्ञान की किसी विशेष विधा (कार्य क्षेत्र) में प्रयोग किये जाने वाले शब्दों की उनकी परिभाषा सहित सूची पारिभाषिक शब्दावली या पारिभाषिक शब्दकोश कहलाती है।</li>\n\t<li>पारिभाषिक शब्दों का प्रयोग जटिल विचारों की अभिव्यक्ति को सुचारु बनाता है।</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\"><strong>शब्द</strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\"><strong>अर्थ</strong></p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\">जमानती-रुक्का&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\">Borrowed</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\">तेजडिया&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\">Bull</p>\n\t\t\t</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"width:102px;\">\n\t\t\t<p align=\"center\">तेजी&nbsp;</p>\n\t\t\t</td>\n\t\t\t<td style=\"width:174px;\">\n\t\t\t<p align=\"center\">Boom</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p>&nbsp;</p>\n\n37:Tf68,\n<p>दिए गये शब्द <span style=\"font-weight: 700;\">Facsimile</span>&rsquo; का अर्थ है &lsquo;प्रतिकृति &rsquo;। इस संदर्भ में सबसे उपयुक्त शब्द प्रतिकृति है। अतिरिक्त विकल्पों के अर्थ भिन्न हैं।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "61f3aaaaa9e241ea5be95edd", "qs_no": 13, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;Revival&#39; का अर्थ है:&nbsp;", "options": [{"prompt": "1", "value": "पुनः प्रवर्तन"}, {"prompt": "2", "value": "पुनरपि&amp;nbsp;"}, {"prompt": "3", "value": "पुनः आगमन&amp;nbsp;"}, {"prompt": "4", "value": "पुनरावृति"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n&#39;Revival&#39; का अर्थ है<strong>-पुनः प्रवर्तन।</strong>&nbsp;&nbsp;<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Point</u></span></strong></span>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:250px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td><strong>प्रवर्तन -&nbsp;</strong>\n\n\t\t\t<ul>\n\t\t\t\t<li>परिभाषा - बरामद होने या खोई हुई, चोरी गई या न मिलती हुई चीज के मिल जाने की क्रिया।</li>\n\t\t\t\t<li>वाक्य में प्रयोग - पुलिस से चोरी गए लाखों के जेवरात की बरामदगी का समाचार मिला है ।</li>\n\t\t\t\t<li>समानार्थी शब्द - बरामदगी&nbsp;।</li>\n\t\t\t</ul>\n\n\t\t\t<p><strong>आगमन&nbsp;</strong></p>\n\n\t\t\t<ul>\n\t\t\t\t<li>परिभाषा - किसी के कहीं से आकर पहुँचने की क्रिया या भाव।</li>\n\t\t\t\t<li>वाक्य में प्रयोग - अँग्रेज़ों के भारत आगमन का उद्देश्य वाणिज्य था । / बाजार में मौसमी फलों की आवक शुरू हो गई है ।</li>\n\t\t\t\t<li>समानार्थी शब्द - आना , आवक , आमद , अवाई।</li>\n\t\t\t\t<li>विलोम शब्द - गमन , प्रस्थान।</li>\n\t\t\t\t<li>लिंग - पुल्लिंग।</li>\n\t\t\t\t<li>मूल शब्द - गमन।</li>\n\t\t\t\t<li>उपसर्ग - आ।</li>\n\t\t\t</ul>\n\n\t\t\t<p><strong>पुनः</strong></p>\n\n\t\t\t<ul>\n\t\t\t\t<li>परिभाषा - एक बार हो चुकने पर फिर दूसरी बार।</li>\n\t\t\t\t<li>वाक्य में प्रयोग - अब यह काम मुझे पुनः करना पड़ेगा।</li>\n\t\t\t\t<li>समानार्थी शब्द - फिर से , दुबारा , दोबारा , वापस।</li>\n\t\t\t\t<li>क्रिया विशेषण के प्रकार - रीतिवाचक।</li>\n\t\t\t</ul>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n3b:Ta25,\nसही उत्तर है - &lsquo;<strong>मध्यस्थ</strong>&rsquo;।\n\n<ul>\n\t<li>&lsquo;<strong>Arbitrator</strong>&rsquo;&nbsp;का हिंदी पारिभाषिक शब्द &lsquo;<strong>मध्यस्थ</strong>&rsquo; है।</li>\n\t<li><strong>मध्यस्थ </strong>:&nbsp;बीच का।</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span><strong>अन्य विकल्प :</strong></p>\n\n<ul>\n\t<li>&lsquo;<strong>Nucleus</strong>&rsquo; का हिंदी पारिभाषिक शब्द&nbsp;&lsquo;<strong>नाभिक</strong>&rsquo; और&nbsp;&lsquo;<u><strong>केंद्र", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "62fa503410657fdb426a2032", "qs_no": 14, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;Archive&#39; का हिंदी पारिभाषिक शब्द है :", "options": [{"prompt": "1", "value": "अभिलेखागार&amp;nbsp;"}, {"prompt": "2", "value": "दक्षता&amp;nbsp;"}, {"prompt": "3", "value": "स्थापत्य&amp;nbsp;"}, {"prompt": "4", "value": "आदिम&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>Archive&#39; का हिंदी पारिभाषिक शब्द &quot;अभिलेखागार&quot; है।&nbsp;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span><strong>अन्य विकल्प:</strong></p>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:200px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td>दक्षता</td>\n\t\t\t<td>efficiency</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>स्थापत्य</td>\n\t\t\t<td>architecture</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>आदिम</td>\n\t\t\t<td>primitive</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span><strong>पारिभाषिक शब्द:</strong></p>\n\n<p>पारिभाषिक शब्द उन्हे कहा जाता है जो सामान्य व्यवहार या बोलचाल की भाषा के शब्द न होकर ज्ञान के विभिन्न क्षेत्रों से जुडे होते हैं ।</p>\n\n<p>जैसे समाजशास्त्र, भौतिकशास्त्र, रसायनशास्त्र,वनस्पति विज्ञान,जीवविज्ञान,दर्शन,मनोविज्ञान,अर्थशास्त्र,राजनितिशास्त्र,तर्कशास्त्र, गणित आदि।</p>\n\n<p><strong>पारिभाषिक शब्दावली:&nbsp;</strong><br />\nहिन्दी व्याकरण परिभाषित शब्दावली प्रशासन से संबंधित अंग्रेजी शब्दों के समकक्ष हिन्दी शब्दों के महत्वपूर्ण शब्दों का समावेश किया गया है&nbsp;</p>\n\n<p><strong>जैसे -&nbsp;</strong></p>\n\n<ul>\n\t<li>परित्याग -&nbsp;abandon</li>\n\t<li>अभियोग - accuse</li>\n\t<li>जमानत - bail</li>\n\t<li>परिषद -&nbsp;council</li>\n\t<li>पोषण -&nbsp;nutrition</li>\n\t<li>अधिशेष -surplus</li>\n\t<li>अंचल - zone</li>\n</ul>\n\n3d:T891,\n<p>Temporary appointment -----&gt;&nbsp;अस्थायी नियुक्ति</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span><strong>अन्य विकल्प -</strong>&nbsp;</p>\n\n<ul>\n\t<li>अस्थायी व्यवस्था&nbsp; -------&gt;&nbsp;temporary arrangement</li>\n\t<li>अस्थायी रिक्ति&nbsp; ---------&gt;&nbsp;temporary vacancy</li>\n\t<li>अस्थायी पद&nbsp; --------&gt;&nbsp;temporary position</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;&quo", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "63bd085d03434db98d4bceae", "qs_no": 15, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<span style=\"\">किस विकल्प में &lsquo;Allocation&#39; शब्द का हिन्दी पारिभाषिक शब्द सही है?</span>", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;निष्ठा&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;समायोजन&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;संबंधन&lt;/span&gt;"}, {"prompt": "4", "value": "नियतन"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>&lsquo;Allocation&#39; शब्द का हिन्दी पारिभाषिक शब्द है:- <strong>&#39;<span style=\"\">नियतन&#39;</span>&nbsp;</strong></p>\n\n<p><span style=\"\">अन्य विकल्प&nbsp;Allocation के&nbsp;</span>सही अर्थ&nbsp;नहीं&nbsp;<span style=\"\">हैं।&nbsp;</span></p>\n\n<p><span style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></p>\n\n<p><strong>अन्&zwj;य विकल्&zwj;प-&nbsp;</strong></p>\n\n<ul>\n\t<li>समायोजन-&nbsp;Adjustment&nbsp;</li>\n\t<li><span style=\"\">निष्ठा-&nbsp;Ligeance</span></li>\n\t<li>संबंधन-&nbsp;Colligation</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span>पारिभाषिक शब्द ऐसे शब्दों को कहते हैं जो सामान्य व्यवहार की भाषा के शब्द न होकर भौतिकी, रसायन, प्राणिविज्ञान, दर्शन, गणित, इंजीनियरी, विधि, वाणिज्य, अर्थशास्त्र, मनोविज्ञान, भूगोल आदि ज्ञान-विज्ञान के विभिन्न क्षेत्रों के विशिष्ट शब्द होते हैं और जिनकी अर्थ सीमा सुनिश्चित और परिभाषित होती है।&nbsp;</p>\n\n40:T1443,\n<p>अंग्रेजी के &#39;Grace&#39; के लिए हिन्दी शब्द&nbsp;<strong><span style=\"color: rgb(33, 37, 41);\">अनुग्रह</span></strong> का प्रयोग किया जाता है।</p>\n\n<p>अत: <strong>विकल्प 2</strong> सही उत्तर है, अन्य सभी विकल्प असंगत है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-s", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "65e46436274450bd9d6707e1", "qs_no": 16, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "अंग्रेजी के &#39;Grace&#39; के लिए हिन्दी के जिस शब्द का प्रयोग किया जाता है, उसका चयन&nbsp;कीजिए ।", "options": [{"prompt": "1", "value": "शिकायत"}, {"prompt": "2", "value": "अनुग्रह"}, {"prompt": "3", "value": "सलाह"}, {"prompt": "4", "value": "विदाय"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>अंग्रेजी के &#39;Grace&#39; के लिए हिन्दी शब्द&nbsp;<strong><span style=\"color: rgb(33, 37, 41);\">अनुग्रह</span></strong> का प्रयोग किया जाता है।</p>\n\n<p>अत: <strong>विकल्प 2</strong> सही उत्तर है, अन्य सभी विकल्प असंगत है।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Grace का अर्थ:- <strong>अनुग्रह</strong> है।</li>\n\t<li>जिसका अर्थ होता है:- कृपा, दया आदि।</li>\n\t<li><strong>अन्य विकल्प:-</strong></li>\n</ul>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:200px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><strong>हिन्दी शब्द</strong></td>\n\t\t\t<td style=\"text-align: center;\"><strong>अंग्रेजी अर्थ&nbsp;</strong></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style=\"text-align: center;\"><span style=\"color: rgb(33", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "5fdded3e4b5bded51b536532", "qs_no": 17, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&lsquo;PORTFOLIO&rsquo; का सही हिंदी शब्द है।&nbsp;", "options": [{"prompt": "1", "value": "ज्ञापन&amp;nbsp;"}, {"prompt": "2", "value": "विभाग &amp;nbsp;"}, {"prompt": "3", "value": "सारलेख&amp;nbsp;"}, {"prompt": "4", "value": "कार्मिक&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>दिए गए विकल्पों में सही उत्तर <strong>विकल्प 2 </strong><strong>&lsquo;</strong><strong>विभाग</strong><strong>&rsquo; </strong>है। अन्य विकल्प इसके अनुचित उत्तर हैं।</p>\n\n<p>दिए गए विकल्पों में से &lsquo;PORTFOLIO&rsquo; का सही हिंदी शब्द है &lsquo;विभाग&rsquo;। &lsquo;PORTFOLIO&rsquo; के अन्य संबन्धित अर्थ हैं- छायाचित्र, आरेख, काग़ज़ात आदि का संग्रह जो रोज़गार के लिए आवेदन करते समय पूर्व अनुभव को दर्शाने के लिए प्रयुक्त होता है।</p>\n\n<p><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>&nbsp;</span></strong><br />\n1. ज्ञापन - &nbsp;MEMO</p>\n\n<p>2. सारलेख &ndash; PRECIS</p>\n\n<p>3. कार्मिक &ndash; PERSONNEL</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<table border=\"1\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color: rgb(255, 255, 255);\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style=\"width:98px;\">\n\t\t\t<p style=\"text-align: center;\"><strong>पारिभाषिक शब्दावली </strong></p>\n\t\t\t</td>\n\t\t\t<td style=\"width:366px;\">\n\t\t\t<p style=\"text-align: center;\">पारिभाषिक शब्दावली से तात्पर्य उन शब्दों से है, जिनका प्रयोग सभी केन्द्रीय व राज्य मंत्रालयों, सरकारी कार्यालयों, स्वायत्त निकायों, सरकारी उपक्रमों आदि में किया जाता है। जैसे- पोल- मतदान, Act- अधिनियम आदि।</p>\n\t\t\t</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p>&nbsp;</p>\n\n33:Ta98,\n<p>दिए गए विकल्पों में से सही उत्तर<span style=\"font-weight: 700;\">&nbsp;&lsquo;</span>अपराध<span style=\"font-weight: 700;\">&rsquo;</span>&nbsp;है।</p>\n\n<p>&nbsp;<span style=\"font-weight: 700;\">&lsquo;</span>अपराध<span style=\"font-weight: 700;\">&rsquo;</span>&nbsp;का अर्थ है &ndash; जुर्म।&nbsp;अन्य विकल्प इसके गलत उत्तर हैं।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "602a4adda6893e701df92cee", "qs_no": 18, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<span style=\"  letter-spacing: 0.425px;\"><strong>OFFENCE</strong> का पारिभाषिक शब्द क्या है?&nbsp;</span>", "options": [{"prompt": "1", "value": "घोषणापत्र&amp;nbsp;"}, {"prompt": "2", "value": "अपराध&amp;nbsp;"}, {"prompt": "3", "value": "अधिसूचना&amp;nbsp;"}, {"prompt": "4", "value": "शपथ&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>दिए गए विकल्पों में से सही उत्तर<span style=\"font-weight: 700;\">&nbsp;&lsquo;</span>अपराध<span style=\"font-weight: 700;\">&rsquo;</span>&nbsp;है।</p>\n\n<p>&nbsp;<span style=\"font-weight: 700;\">&lsquo;</span>अपराध<span style=\"font-weight: 700;\">&rsquo;</span>&nbsp;का अर्थ है &ndash; जुर्म।&nbsp;अन्य विकल्प इसके गलत उत्तर हैं।</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<p><span style=\"font-weight: 700;\"><u>अन्य विकल्प</u></span></p>\n\n<ul>\n\t<li><span style=\"  letter-spacing: 0.425px;\">MANIFESTO</span>&nbsp; &ndash;&nbsp; घोषणापत्र</li>\n\t<li>NOTIFICATION&nbsp; &ndash;&nbsp; अधिसूचना&nbsp;&nbsp;</li>\n\t<li>OATH&nbsp; &nbsp; &ndash;&nbsp; शपथ&nbsp; &nbsp;&nbsp;</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>ज्ञान की किसी विशेष विधा (कार्य क्षेत्र) में प्रयोग किये जाने वाले शब्दों की उनकी परिभाषा सहित सूची पारिभाषिक शब्दावली या पारिभाषिक शब्दकोश कहलाती है।</li>\n\t<li>पारिभाषिक शब्दों का प्रयोग जटिल विचारों की अभिव्यक्ति को सुचारु बनाता है।</li>\n</ul>\n\n34:T14cd,\n<p>दिए गए विकल्पों में से सही उत्तर<span style=\"font-weight: 700;\">&nbsp;&lsquo;</span>अवधि<span style=\"font-weight: 700;\">&rsquo;</span>&nbsp;है।&nbsp;<br />\n<span style=\"font-weight: 700;\">&lsquo;</span>अवधि<span style=\"font-weight: 700;\">&rsquo;</span>&nbsp;का अर्थ है &ndash;&nbsp;&nbsp;काल, समय आदि।&nbsp;अन्य विकल्प इसके गलत उत्तर हैं।</p>\n\n<p><span style=\"font-weight: 700;\"><u><span st", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "6082c310b7545c5269e4f2d3", "qs_no": 19, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;Agenda&#39; शब्द का सही हिंदी पर्याय है-", "options": [{"prompt": "1", "value": "कार्यवृत्त"}, {"prompt": "2", "value": "कार्यसूची"}, {"prompt": "3", "value": "कार्यकारी"}, {"prompt": "4", "value": "कार्यकाल"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>दिए गए विकल्पों में से सही उत्तर&nbsp;<span style=\"font-weight: 700;\">विकल्प 2&nbsp;&nbsp;&#39;कार्यसूची&rsquo;</span>&nbsp;है। अन्य विकल्प इसके गलत उत्तर हैं।&nbsp;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>दिए गए शब्दों में से &#39;Agenda&#39; शब्द का हिन्दी पर्याय &#39;कार्यसूची&#39; है।</li>\n\t<li>कार्यसूची -&nbsp;&nbsp;किसी सभा, समिति आदि की बैठक के लिए उन विषयों की सूची जिन पर चर्चा या निर्णय करना हो।&nbsp;</li>\n\t<li>अन्य विकल्प इसके अनुचित उत्तर हैं।&nbsp;</li>\n</ul>\n\n<p><strong>अन्य विकल्प:</strong>&nbsp;</p>\n\n<ul>\n\t<li>कार्यवृत्त - P<span style=\"color: rgb(32, 33, 36);  \">rotocols</span></li>\n\t<li>कार्यकारी - Executive&nbsp;</li>\n\t<li>कार्यकाल - Tenure</li>\n</ul>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>ज्ञान की किसी विशेष विधा (कार्य क्षेत्र) में प्रयोग किये जाने वाले शब्दों की उनकी परिभाषा सहित सूची पारिभाषिक शब्दावली या पारिभाषिक शब्दकोश कहलाती है।</li>\n\t<li>पारिभाषिक शब्दों का प्रयोग जटिल विचारों की अभिव्यक्ति को सुचारु बनाता है।</li>\n</ul>\n\n3a:Tbfb,\n&#39;Revival&#39; का अर्थ है<strong>-पुनः प्रवर्तन।</strong>&nbsp;&nbsp;<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Point</u></span></strong></span>\n\n<table border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width:250px;\">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td><strong>प्रवर्तन -&nbsp;</strong>\n\n\t\t\t<ul>\n\t\t\t\t<li>परिभाषा - बरामद होने या खोई हुई, चोरी गई या न मिलती हुई चीज के मिल जाने की क्रिया।</li>\n\t\t\t\t<li>वाक्य में प्रयोग - पु", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}, {"qid": "602a55c1383be31f4c6878e8", "qs_no": 20, "pos_marks": 2.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "&#39;TENURE&#39; का पारिभाषिक शब्द क्या है?&nbsp;", "options": [{"prompt": "1", "value": "अवधि&amp;nbsp;"}, {"prompt": "2", "value": "प्रशासन&amp;nbsp;"}, {"prompt": "3", "value": "प्रतिवेदन&amp;nbsp;"}, {"prompt": "4", "value": "खोज करना&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>दिए गए विकल्पों में से सही उत्तर<span style=\"font-weight: 700;\">&nbsp;&lsquo;</span>अवधि<span style=\"font-weight: 700;\">&rsquo;</span>&nbsp;है।&nbsp;<br />\n<span style=\"font-weight: 700;\">&lsquo;</span>अवधि<span style=\"font-weight: 700;\">&rsquo;</span>&nbsp;का अर्थ है &ndash;&nbsp;&nbsp;काल, समय आदि।&nbsp;अन्य विकल्प इसके गलत उत्तर हैं।</p>\n\n<p><span style=\"font-weight: 700;\"><u><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></u></span></p>\n\n<table style=\"background-color: rgb(255, 255, 255); border-color: rgb(0, 0, 0); border-style: solid; box-sizing: inherit; letter-spacing: 0.425px; line-height: 2; margin-bottom: 40px; width: 400px; word-break: break-word;\" width=\"100%\">\n\t<tbody style=\"box-sizing: inherit; border-bottom: 1px solid rgb(238, 238, 238);\">\n\t\t<tr style=\"box-sizing: inherit; border-style: solid; border-color: rgb(0, 0, 0);\">\n\t\t\t<td style=\"box-sizing: inherit; border-top: 1px solid rgb(0, 0, 0); padding-top: 6px; padding-right: 6px; padding-bottom: 6px; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-right-color: rgb(0, 0, 0); border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); text-align: center;\" width=\"50%\">&nbsp;ADMINISTRATION</td>\n\t\t\t<td style=\"box-sizing: inherit; border-top: 1px solid rgb(0, 0, 0); padding: 6px; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-right-color: rgb(0, 0, 0); border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); text-align: center;\" width=\"50%\">प्रशासन</td>\n\t\t</tr>\n\t\t<tr style=\"box-sizing: inherit; border-style: solid; border-color: rgb(0, 0, 0);\">\n\t\t\t<td style=\"box-sizing: inherit; border-top: 1px solid rgb(0, 0, 0); padding-top: 6px; padding-right: 6px; padding-bottom: 6px; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-right-color: rgb(0, 0, 0); border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); text-align: center;\" width=\"50%\">&nbsp;INVESTIGATION</td>\n\t\t\t<td style=\"box-sizing: inherit; border-top: 1px solid rgb(0, 0, 0); padding: 6px; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-right-color: rgb(0, 0, 0); border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); text-align: center;\" width=\"50%\">खोज करना</td>\n\t\t</tr>\n\t\t<tr style=\"box-sizing: inherit; border-style: solid; border-color: rgb(0, 0, 0);\">\n\t\t\t<td style=\"box-sizing: inherit; border-top: 1px solid rgb(0, 0, 0); padding-top: 6px; padding-right: 6px; padding-bottom: 6px; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-right-color: rgb(0, 0, 0); border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); text-align: center;\" width=\"50%\">&nbsp;REPORT</td>\n\t\t\t<td style=\"box-sizing: inherit; border-top: 1px solid rgb(0, 0, 0); padding: 6px; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-right-color: rgb(0, 0, 0); border-bottom-color: rgb(0, 0, 0); border-left-color: rgb(0, 0, 0); text-align: center;\" width=\"50%\">प्रतिवेदन/सूचन</td>\n\t\t</tr>\n\t</tbody>\n</table>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>ज्ञान की किसी विशेष विधा (कार्य क्षेत्र) में प्रयोग किये जाने वाले शब्दों की उनकी परिभाषा सहित सूची पारिभाषिक शब्दावली या पारिभाषिक शब्दकोश कहलाती है।</li>\n\t<li>पारिभाषिक शब्दों का प्रयोग जटिल विचारों की अभिव्यक्ति को सुचारु बनाता है।</li>\n</ul>\n\n35:Tb3e,\n<p><span style=\" line-height: 115%; \">Solution :</span><span style=\" line-height: 115%; \"> </span><span lang=\"AR-SA\" style=\" line-height: 115%; \">दिए गए विकल्पों में सही उत्तर</span><span style=\" line-height: 115%; \">&nbsp;</span><b><span lang=\"AR-SA\" style=\" line-height: 115%; \">विकल्प</span><span style=\" line-height: 115%; \">&nbsp;2</span></b><span style=\" line-height: 115%; \">&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["पारिभाषिक शब्द"], "concept": "पारिभाषिक शब्द", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 20;
+const DURATION_SEC = 12 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
