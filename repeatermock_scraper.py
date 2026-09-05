@@ -1003,24 +1003,41 @@ class Worker:
                 if fetch_attempt < 2:
                     print(f"  [worker {self.worker_id}]   → retrying with longer wait...")
                     continue
-            # 5. Extract HTML in chunks (Bug #1 fix: increased cap from 5 MB to 20 MB)
-            # Playwright's page.evaluate() has ~1 MB serialization limit per call.
-            # Using 500 KB chunks × 40 chunks = 20 MB max (was 100 KB × 50 = 5 MB)
+            # 5. Extract HTML in chunks — CRITICAL FIX for Playwright serialization limit
+            #
+            # BUG: Playwright's page.evaluate() has a ~500KB return value limit.
+            # Previous code used 500KB chunks → Playwright truncated to ~499,996 bytes
+            # → `len(chunk) < chunk_size` triggered early break → only got first 500KB
+            # → testData/answersData at END of HTML was never extracted → "missing testData"
+            #
+            # FIX: Use 200KB chunks (well under Playwright's limit) + get actual HTML
+            # length first so we know EXACTLY when we're done (no early break).
             chunks = []
-            chunk_size = 500000  # 500 KB per chunk (was 100 KB)
-            for i in range(40):  # max 40 chunks = 20 MB (was 50 chunks = 5 MB)
+            chunk_size = 200000  # 200 KB per chunk (was 500KB — too big, caused truncation)
+            # First, get the ACTUAL HTML length
+            js_len = "(function(){var h = window.__HTML__ || ''; return h.length;})()"
+            total_html_len = await self.eval_js(js_len, timeout=15)
+            if not isinstance(total_html_len, int) or total_html_len == 0:
+                total_html_len = len(html) if html else 0  # fallback
+            # Calculate how many chunks we need
+            num_chunks = (total_html_len // chunk_size) + 1
+            # Cap at 100 chunks = 20 MB max (was 40 chunks = 20 MB, but with 200KB chunks)
+            num_chunks = min(num_chunks, 100)
+            for i in range(num_chunks):
                 start = i * chunk_size
+                if start >= total_html_len:
+                    break  # Reached the actual end of HTML
                 js_chunk = f"(function(){{var h = window.__HTML__ || ''; if ({start} >= h.length) return null; return h.slice({start}, {start + chunk_size});}})()"
                 chunk = await self.eval_js(js_chunk, timeout=30)
                 if chunk is None:
                     break
                 chunks.append(chunk)
-                if len(chunk) < chunk_size:
-                    break
+                # Don't break early on short chunks — we know the actual length
+                # and Playwright might return slightly different sizes due to encoding
             html = "".join(chunks)
             if html and "testData" in html and "answersData" in html:
                 break  # Success — have full flight data
-            print(f"  [worker {self.worker_id}] HTML missing testData/answersData after chunk extraction (attempt {fetch_attempt+1}/3, len={len(html)}, max=20MB)")
+            print(f"  [worker {self.worker_id}] HTML missing testData/answersData after chunk extraction (attempt {fetch_attempt+1}/3, got={len(html)}, expected={total_html_len}, max=20MB)")
             if fetch_attempt < 2:
                 print(f"  [worker {self.worker_id}]   → retrying with longer wait...")
                 continue
