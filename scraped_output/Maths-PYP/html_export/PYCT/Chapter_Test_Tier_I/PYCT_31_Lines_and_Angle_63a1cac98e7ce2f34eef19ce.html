@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 31: Lines and Angle</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 31: Lines and Angle</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-maths-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">8 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">63a1cac98e7ce2f34eef19ce</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "63a1cac98e7ce2f34eef19ce", "title": "PYCT 31: Lines and Angle", "series_slug": "ssc-maths-previous-year-questions", "duration_min": 8, "max_marks": 20.0, "languages": ["English", "Hindi"], "sections": [{"section_id": "628542a7f87f5ae63c94033e", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "5fcc7be18a1c3eec30510560", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "The ratio of three angles of a triangle is 1 : 3 : 5. Which is the measure of the greatest angle?", "options": [{"prompt": "1", "value": "80&amp;deg;"}, {"prompt": "2", "value": "100​&amp;deg;"}, {"prompt": "3", "value": "60​&amp;deg;"}, {"prompt": "4", "value": "120​&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "त्रिभुज के तीन कोणों का अनुपात 1 : 3 : 5 है, सबसे बड़े कोण की माप क्या है?", "options": [{"prompt": "1", "value": "80&amp;deg;"}, {"prompt": "2", "value": "100​&amp;deg;"}, {"prompt": "3", "value": "60​&amp;deg;"}, {"prompt": "4", "value": "120​&amp;deg;"}], "range": {"start": "", "end": ""}}, "te": {"value": "త్రిభుజం యొక్క మూడు కోణాల నిష్పత్తి 1: 3: 5. గరిష్ట కోణం యొక్క కొలత ?", "options": [{"prompt": "1", "value": "80&deg;"}, {"prompt": "2", "value": "100​&deg;"}, {"prompt": "3", "value": "60​&deg;"}, {"prompt": "4", "value": "120​&deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>The ratio of three angles of a triangle is 1 : 3 : 5.</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>In triangle,</p>\n\n<p>Sum of all angles = 180<sup>&deg;&nbsp;</sup></p>\n\n<p><strong>Explanation:</strong></p>\n\n<p>Let be the proportional value = x</p>\n\n<p>x + 3x + 5x = 180<sup>&deg;&nbsp;</sup></p>\n\n<p>&rArr; 9x = 180<sup>&deg;&nbsp;</sup></p>\n\n<p>&rArr; x = 20<sup>&deg;&nbsp;</sup></p>\n\n<p>The greatest angle = 5x&nbsp;</p>\n\n<p>&rArr; 5&nbsp;&times; 20<sup>&deg;&nbsp;</sup>= 100<sup>&deg;&nbsp;</sup></p>\n\n<p><strong>&there4; The measure of the greatest angle is 100<sup>&deg;&nbsp;</sup>.</strong></p>\n", "hn": "<p><strong>दिया है:</strong></p>\n\n<p>त्रिभुज के तीन कोणों का अनुपात 1 : 3 : 5 है।</p>\n\n<p><strong>सिद्धांत:</strong></p>\n\n<p>त्रिभुज में,</p>\n\n<p>सभी कोणों का योग = 180<sup>&deg;&nbsp;</sup></p>\n\n<p><strong>गणना:</strong></p>\n\n<p>माना आनुपातिक मूल्य = x</p>\n\n<p>x + 3x + 5x = 180<sup>&deg;&nbsp;</sup></p>\n\n<p>&rArr; 9x = 180<sup>&deg;&nbsp;</sup></p>\n\n<p>&rArr; x = 20<sup>&deg;&nbsp;</sup></p>\n\n<p>सबसे बड़ा कोण = 5x&nbsp;</p>\n\n<p>&rArr; 5&nbsp;&times; 20<sup>&deg;&nbsp;</sup>= 100<sup>&deg;&nbsp;</sup></p>\n\n<p><strong>&there4; सबसे बड़े कोण की माप 100<sup>&deg; </sup>है।&nbsp;<sup> </sup></strong></p>\n", "te": "<p><strong>ఇచ్చినది:</strong></p>\n\n<p>త్రిభుజం యొక్క మూడు కోణాల నిష్పత్తి 1: 3: 5.</p>\n\n<p><strong>ఉపయోగించిన భావన:</strong></p>\n\n<p>త్రిభుజంలో,</p>\n\n<p>అన్ని కోణాల మొత్తం = 180<sup>°</sup></p>\n\n<p><strong>వివరణ:</strong></p>\n\n<p>అనుపాత విలువ = x గా ఉండనివ్వండి</p>\n\n<p>x + 3x + 5x = 180<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">° </span></p>\n\n<p>⇒ 9x = 180<span style=\"position: relative;  line-height: 0; vertical-align: baseline; top: -0.5em;font-size:10.5px;\">°&nbs", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Lines and Angles"], "concept": "Lines and Angles", "confidence": "high"}, {"qid": "5d9de0f5f60d5d491f9e0f26", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In &Delta;ABC, D is a point on AC such that AB = BD = DC, if &ang;BAD = 70&deg;, then the measure of &ang;B is:", "options": [{"prompt": "1", "value": "80&amp;deg;"}, {"prompt": "2", "value": "75&amp;deg;"}, {"prompt": "3", "value": "85&amp;deg;"}, {"prompt": "4", "value": "70&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "&Delta;ABC में, D, AC पर कोई बिंदु इस प्रकार है कि AB = BD = DC है, यदि &ang;BAD = 70&deg; है, तो &ang;B की माप है :", "options": [{"prompt": "1", "value": "80&amp;deg;"}, {"prompt": "2", "value": "75&amp;deg;"}, {"prompt": "3", "value": "85&amp;deg;"}, {"prompt": "4", "value": "70&amp;deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b2fca8cbba9c8540730f1789bb3d8eca414c7a61b57fc3d33b298e5ff23a0cbd.png\" style=\"width: 183px; height: 173px;\" /></p>\n\n<p>Given, AB = BD = DC</p>\n\n<p>And &ang;BAD = 70&deg;</p>\n\n<p>In &Delta;ABD,</p>\n\n<p>&rArr; &ang;BAD = &ang;BDA = 70&deg; [∵ AB = BD]</p>\n\n<p>&rArr; &ang;ABD + &ang;BAD + &ang;BDA = 180&deg;</p>\n\n<p>&rArr; &ang;ABD = 180&deg; &ndash; 70&deg; &ndash; 70&deg; = 40&deg;</p>\n\n<p>&rArr; &ang;BDC = 180&deg; &ndash; &ang;BDA = 180&deg; &ndash; 70&deg; = 110&deg;</p>\n\n<p>In &Delta;BDC,</p>\n\n<p>&rArr; &ang;DBC = &ang;DCB [∵ BD = DC]</p>\n\n<p>&rArr; &ang;DBC + &ang;BDC + &ang;DCB = 180&deg;</p>\n\n<p>&rArr; 2&ang;DBC = 180&deg; &ndash; 110&deg; = 70&deg;</p>\n\n<p>&rArr; &ang;DBC = 35&deg;</p>\n\n<p>&rArr; &ang;ABC = &ang;ABD + &ang;DBC = 40&deg; + 35&deg; = 75&deg;</p>\n31:T", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b2fca8cbba9c8540730f1789bb3d8eca414c7a61b57fc3d33b298e5ff23a0cbd.png\" style=\"width: 183px; height: 173px;\" /></p>\n\n<p>दिया गया है, AB = BD = DC</p>\n\n<p>और &ang;BAD = 70&deg;</p>\n\n<p>&Delta;ABD में,</p>\n\n<p>&rArr; &ang;BAD = &ang;BDA = 70&deg; [∵ AB = BD]</p>\n\n<p>&rArr; &ang;ABD + &ang;BAD + &ang;BDA = 180&deg;</p>\n\n<p>&rArr; &ang;ABD = 180&deg; &ndash; 70&deg; &ndash; 70&deg; = 40&deg;</p>\n\n<p>&rArr; &ang;BDC = 180&deg; &ndash; &ang;BDA = 180&deg; &ndash; 70&deg; = 110&deg;</p>\n\n<p>&Delta;BDC में,</p>\n\n<p>&rArr; &ang;DBC = &ang;DCB [∵ BD = DC]</p>\n\n<p>&rArr; &ang;DBC + &ang;BDC + &ang;DCB = 180&deg;</p>\n\n<p>&rArr; 2&ang;DBC = 180&deg; &ndash; 110&deg; = 70&deg;</p>\n\n<p>&rArr; &ang;DBC = 35&deg;</p>\n\n<p>&rArr; &ang;ABC = &ang;ABD + &ang;DBC = 40&deg; + 35&deg; = 75&deg;</p>\n32:T4fb,<p><img alt=\"&qu", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Lines and Angles"], "concept": "Lines and Angles", "confidence": "high"}, {"qid": "5fbbe64865f0bad534b30454", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In the given figure BD perpendicular to AC then what be the measure of angle AEB?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/507bb7bcf7cdcec1b52447e4fd3cd0513fd1fc928b8c4e0775068d2a3aa1e36b.png\" style=\"width: 235px; height: 220px;\" /></p>\n", "options": [{"prompt": "1", "value": "60&amp;deg;&amp;nbsp;"}, {"prompt": "2", "value": "80&amp;deg;"}, {"prompt": "3", "value": "45&amp;deg;"}, {"prompt": "4", "value": "100&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दी गई आकृति में, BD, AC के लंबवत है, तो कोण AEB की माप क्या होगी?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/507bb7bcf7cdcec1b52447e4fd3cd0513fd1fc928b8c4e0775068d2a3aa1e36b.png\" style=\"width: 235px; height: 220px;\" /></p>\n", "options": [{"prompt": "1", "value": "60&amp;deg;&amp;nbsp;"}, {"prompt": "2", "value": "80&amp;deg;"}, {"prompt": "3", "value": "45&amp;deg;"}, {"prompt": "4", "value": "100&amp;deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p><strong>Formula used:</strong></p>\n\n<p>Sum of all the angles of the triangle is 180&deg;&nbsp;</p>\n\n<p><strong>Concept used:</strong></p>\n\n<p>Vertical opposite angle is same&nbsp;</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Considering the intersection point of the BD and AE is O then,<br />\n<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/edda0def822a791d2f2a38fb525cb5bc61e61d4394b2927e1ca070760412403a.png\" style=\"width: 194px; height: 200px;\" /></p>\n\n<p>In&nbsp;&Delta;ADO,</p>\n\n<p>&ang;ADO +&nbsp;&ang;DAO +&nbsp;&ang;DOA = 180&deg;&nbsp;</p>\n\n<", "hn": "\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n\n<p>त्रिभुज के सभी कोणों का योग 180&deg; है</p>\n\n<p><strong>प्रयुक्त सूत्र:</strong></p>\n\n<p>ऊर्ध्वाधर सम्मुख कोण समान है</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>यह मानते हुए कि BD और AE का प्रतिच्छेद बिंदु O है।<img alt=\"\" src=\"https://cdn.repeatermock.com/tb/edda0def822a791d2f2a38fb525cb5bc61e61d4394b2927e1ca070760412403a.png\" style=\"color: rgb(33, 37, 41); width: 194px; height: 200px;\" /></p>\n\n<p>&Delta;ADO में,</p>\n\n<p>&ang;ADO +&nbsp;&ang;DAO +&nbsp;&ang;DOA = 180&deg;&nbsp;</p>\n\n<p>&rArr; 90&deg; + 35&deg;&nbsp;+&nbsp;&ang;DOA = 180&deg;&", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Lines and Angles"], "concept": "Lines and Angles", "confidence": "high"}, {"qid": "5eb63928f60d5d2d18920b71", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In the triangle, if AB = AC and &ang;ABC = 72&deg;, then &ang;BAC is:&nbsp;", "options": [{"prompt": "1", "value": "54&amp;deg;"}, {"prompt": "2", "value": "18&amp;deg;"}, {"prompt": "3", "value": "30&amp;deg;"}, {"prompt": "4", "value": "36&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "त्रिभुज में, यदि AB = AC और &ang;ABC = 72&deg;, तो &ang;BAC है:&nbsp;", "options": [{"prompt": "1", "value": "54&amp;deg;"}, {"prompt": "2", "value": "18&amp;deg;"}, {"prompt": "3", "value": "30&amp;deg;"}, {"prompt": "4", "value": "36&amp;deg;"}], "range": {"start": "", "end": ""}}, "bn": {"value": "ত্রিভুজে, যদি AB = AC এবং ∠ABC = 72°, তাহলে ∠BAC হল:", "options": [{"prompt": "1", "value": "54&deg;"}, {"prompt": "2", "value": "18&deg;"}, {"prompt": "3", "value": "30&deg;"}, {"prompt": "4", "value": "36&deg;"}], "range": {"start": "", "end": ""}}, "gu": {"value": "ત્રિકોણમાં, જો AB = AC અને ∠ABC = 72° હોય, તો ∠BAC કેટલા ડિગ્રીનો છે?", "options": [{"prompt": "1", "value": "54&deg;"}, {"prompt": "2", "value": "18&deg;"}, {"prompt": "3", "value": "30&deg;"}, {"prompt": "4", "value": "36&deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/5ef430a5554a9f86ed2684746aca5c4ffc118493a6058d821aa9e3fa024e7026.png\" /></p>\n\n<p>&ang;ABC = 72&deg;</p>\n\n<p>&ang;ABC = &ang;ACB = 72&deg; [AB = AC]</p>\n\n<p>In &Delta;ABC</p>\n\n<p>&ang;ABC + &ang;ACB + &ang;BAC = 180&deg;</p>\n\n<p>&rArr; 72&deg; + 72&deg; + &ang;BAC = 180&deg;</p>\n\n<p>&rArr; &ang;BAC = 180&deg; - 144&deg; = 36&deg;</p>\n", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/5ef430a5554a9f86ed2684746aca5c4ffc118493a6058d821aa9e3fa024e7026.png\" /></p>\n\n<p>&ang;ABC = 72&deg;</p>\n\n<p>&ang;ABC = &ang;ACB = 72&deg; [AB = AC]</p>\n\n<p>&Delta;ABC&nbsp;</p>\n\n<p>&ang;ABC + &ang;ACB + &ang;BAC = 180&deg;</p>\n\n<p>&rArr; 72&deg; + 72&deg; + &ang;BAC = 180&deg;</p>\n\n<p>&rArr; &ang;BAC = 180&deg; - 144&deg; = 36&deg;</p>\n", "te": "", "mr": "", "bn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/5ef430a5554a9f86ed2684746aca5c4ffc118493a6058d821aa9e3fa024e7026.png\" /></p>\n\n<p>∠ABC = 72°</p>\n\n<p>∠ABC = ∠ACB = 72° [AB = AC]</p>\n\n<p>△ABC তে</p>\n\n<p>∠ABC + ∠ACB + ∠BAC = 180°</p>\n\n<p>⇒ 72° + 72° + ∠BAC = 180°</p>\n\n<p>⇒ ∠BAC = 180° - 144° = 36°</p>\n", "ml": "", "gu": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/5ef430a5554a9f86ed2684746aca5c4ffc118493a6058d821aa9e3fa024e7026.png\" /></p>\n\n<p>∠ABC = 72°</p>\n\n<p>∠ABC = ∠ACB = 72° [AB = AC]</p>\n\n<p>ΔABC માં</p>\n\n<p>∠ABC + ∠ACB + ∠BAC = 180°</p>\n\n<p>⇒ 72° + 72° + ∠BAC = 180°</p>\n\n<p>⇒ ∠BAC = 180° - 144° = 36°</p>\n", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Lines and Angles"], "concept": "Lines and Angles", "confidence": "high"}, {"qid": "5ea80534f60d5d3d1dc24b4e", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In the given figure, the measure of &ang;BAC is:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/308b34cc272aa8f38912acf7bafebcefc69923ab38e636af85ab0fabce951177.png\" style=\"width: 222px; height: 143px;\" /></p>\n", "options": [{"prompt": "1", "value": "56&amp;deg;"}, {"prompt": "2", "value": "58&amp;deg;"}, {"prompt": "3", "value": "62&amp;deg;"}, {"prompt": "4", "value": "48&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दी गयी आकृति में, &ang;BAC का मान है:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/308b34cc272aa8f38912acf7bafebcefc69923ab38e636af85ab0fabce951177.png\" style=\"width: 222px; height: 143px;\" /></p>\n", "options": [{"prompt": "1", "value": "56&amp;deg;"}, {"prompt": "2", "value": "58&amp;deg;"}, {"prompt": "3", "value": "62&amp;deg;"}, {"prompt": "4", "value": "48&amp;deg;"}], "range": {"start": "", "end": ""}}, "te": {"value": "<p>ఇచ్చిన ఆకృతిలో, ∠BAC కోణం విలువని కనుక్కోండి:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/308b34cc272aa8f38912acf7bafebcefc69923ab38e636af85ab0fabce951177.png\" style=\"width: 222px; height: 143px;\" /></p>\n", "options": [{"prompt": "1", "value": "56&deg;"}, {"prompt": "2", "value": "58&deg;"}, {"prompt": "3", "value": "62&deg;"}, {"prompt": "4", "value": "48&deg;"}], "range": {"start": "", "end": ""}}, "mr": {"value": "<p>दिलेल्या आकृतीमध्ये, ∠BAC चे माप:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/308b34cc272aa8f38912acf7bafebcefc69923ab38e636af85ab0fabce951177.png\" style=\"width: 222px; height: 143px;\" /></p>\n", "options": [{"prompt": "1", "value": "56&deg;"}, {"prompt": "2", "value": "58&deg;"}, {"prompt": "3", "value": "62&deg;"}, {"prompt": "4", "value": "48&deg;"}], "range": {"start": "", "end": ""}}, "bn": {"value": "<p>প্রদত্ত চিত্রটিতে, ∠BAC এর মান নির্ণয় করুন</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/308b34cc272aa8f38912acf7bafebcefc69923ab38e636af85ab0fabce951177.png\" style=\"width: 222px; height: 143px;\" /></p>\n", "options": [{"prompt": "1", "value": "56 &deg;"}, {"prompt": "2", "value": "58 &deg;"}, {"prompt": "3", "value": "62 &deg;"}, {"prompt": "4", "value": "48 &deg;"}], "range": {"start": "", "end": ""}}, "ta": {"value": "<p>கொடுக்கப்பட்ட படத்தில், ∠BAC இன் அளவு:</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/308b34cc272aa8f38912acf7bafebcefc69923ab38e636af85ab0fabce951177.png\" style=\"width: 222px; height: 143px;\" /></p>\n", "options": [{"prompt": "1", "value": "56&deg;"}, {"prompt": "2", "value": "58&deg;"}, {"prompt": "3", "value": "62&deg;"}, {"prompt": "4", "value": "48&deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><strong>Concept used:</strong></p>\n\n<p>Sum of two opposite angle is equal to external angle</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>AS we know,</p>\n\n<p>&ang;ABC + &ang;BAC = &ang;ACD</p>\n\n<p>&rArr; 62 + &ang;BAC = 110</p>\n\n<p>&rArr; &ang;BAC = 110 &ndash; 62 = 48</p>\n", "hn": "<p><strong>उपयोग की गई अवधारणा: </strong></p>\n\n<p>दो विपरीत कोणों का योग बाहरी कोण के बराबर होता है</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>&nbsp;</p>\n\n<p>जैसा कि हम जानते हैं,</p>\n\n<p>&ang;ABC + &ang;BAC = &ang;ACD</p>\n\n<p>&rArr; 62 + &ang;BAC = 110</p>\n\n<p>&rArr; &ang;BAC = 110 &ndash; 62 = 48</p>\n", "te": "<p><strong>వాడిన కాన్సెప్ట్:</strong></p>\n\n<p>రెండు ఎదురుకోణాల మొత్తం బాహ్య కోణానికి సమానం అవుతుంది.</p>\n\n<p><strong>లెక్క:</strong></p>\n\n<p>మనకి తెలుసు,</p>\n\n<p>∠ABC + ∠BAC = ∠ACD</p>\n\n<p>⇒ 62 + ∠BAC = 110</p>\n\n<p>⇒ ∠BAC = 110 – 62 = 48</p>\n", "mr": "<p><strong>वापरलेली संकल्पना:</strong></p>\n\n<p>दोन विरुद्ध कोनांची बेरीज ही त्यांच्या बाह्यकोनाच्या समान असते.</p>\n\n<p><strong>गणना:</strong></p>\n\n<p>जसे आपल्याला माहित आहे की,</p>\n\n<p>∠ABC + ∠BAC = ∠ACD</p>\n\n<p>⇒ 62 + ∠BAC = 110</p>\n\n<p>⇒ ∠BAC = 110 – 62 = 48</p>\n", "bn": "<p><strong>অনুসৃত ধারণা:</strong></p>\n\n<p>দুটি বিপরীত কোণের যোগফল বহিঃকোণের সমান</p>\n\n<p><strong>গণনা:</strong></p>\n\n<p>আমরা জানি যে,</p>\n\n<p>∠ABC + ∠BAC = ∠ACD</p>\n\n<p>⇒ 62 + ∠BAC = 110</p>\n\n<p>⇒ ∠BAC = 110 – 62 = 48</p>\n", "ml": "", "gu": "", "kn": "", "ta": "<p><strong>பயன்படுத்தப்பட்ட கருத்து:</strong></p>\n\n<p>இரண்டு எதிர் கோணத்தின் தொகை வெளிப்புற கோணத்திற்கு சமம்</p>\n\n<p><strong>கணக்கீடு:</strong></p>\n\n<p>எங்களுக்குத் தெரியும்,</p>\n\n<p>∠ABC + ∠BAC = ∠ACD</p>\n\n<p>⇒ 62 + ∠BAC = 110</p>\n\n<p>⇒ ∠BAC = 110 – 62 = 48</p>\n", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Lines and Angles"], "concept": "Lines and Angles", "confidence": "high"}, {"qid": "5e997ed2f60d5d51cf417841", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In ∆ABC, &ang;B = 72&deg; and &ang;C = 44&deg;, Side BC is produced to D. The bisectors of &ang;B and &ang;ACD meet at E. what is the measure of &ang;BEC?", "options": [{"prompt": "1", "value": "36&amp;deg;"}, {"prompt": "2", "value": "32&amp;deg;"}, {"prompt": "3", "value": "46&amp;deg;"}, {"prompt": "4", "value": "58&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "∆ABC में &ang;B = 72&deg; और &ang;C = 44&deg; है, भुजा BC को D तक बढ़ाया गया है। &ang;B और &ang;ACD के द्विभाजक E पर मिलते हैं। तो &ang;BEC का माप क्या है?", "options": [{"prompt": "1", "value": "36&amp;deg;"}, {"prompt": "2", "value": "32&amp;deg;"}, {"prompt": "3", "value": "46&amp;deg;"}, {"prompt": "4", "value": "58&amp;deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/50d418a7a6e3a7617fe8264eae844efae1b2927e865cb324586de4426f8ffefc.png\" style=\"width: 206px; height: 132px;\" /></p>\n\n<p><strong>Short trick:</strong></p>\n\n<p>&ang;B = 72&deg; and &ang;C = 44&deg;</p>\n\n<p>&ang;A = 180&deg; &ndash; 72&deg; &ndash; 44&deg; = 64&deg;</p>\n\n<p>&ang;BEC = &ang;A/2 = 64&deg;/2 = 32&deg;</p>\n\n<p><strong>Detailed Method:</strong></p>\n\n<p>&rArr; &ang;ACD = 180&deg; &ndash; &ang;C = 180&deg; &ndash; 44&deg; = 136&deg;</p>\n\n<p>&rArr; &ang;ACE = &ang;ACD/2 = 136&deg;/2 = 68&deg;</p>\n\n<p>&rArr; &ang;BCE = &ang;BCA + &ang;ACE = 44&deg; + 68&deg; = 112&deg;</p>\n\n<p>&rArr; &ang;EBC = &ang;B/2 = 72&deg;/2 = 36&deg;</p>\n\n<p>In &Delta;BCE,</p>\n\n<p>&ang;EBC + &ang;BCE + &ang;BEC = 180&deg;</p>\n\n<p>&rArr; &ang;BEC = 180&deg; &ndash; 36&deg; &ndash; 112&deg; = 32&deg;</p>\n", "hn": "<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/50d418a7a6e3a7617fe8264eae844efae1b2927e865cb324586de4426f8ffefc.png\" style=\"width: 206px; height: 132px;\" /></p>\n\n<p><strong>ल\nघु विधि:</strong></p>\n\n<p>&ang;B = 72&deg; and &ang;C = 44&deg;</p>\n\n<p>&ang;A = 180&deg; &ndash; 72&deg; &ndash; 44&deg; = 64&deg;</p>\n\n<p>&ang;BEC = &ang;A/2 = 64&deg;/2 = 32&a", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Lines and Angles"], "concept": "Lines and Angles", "confidence": "high"}, {"qid": "5de4de90f60d5d59b90efca6", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In a &Delta;ABC, the bisectors of &ang;B and &ang;C meet at O within the triangle. If &ang;A = 110&deg;, then the measure of &ang;BOC is:", "options": [{"prompt": "1", "value": "145&amp;deg;"}, {"prompt": "2", "value": "84&amp;deg;"}, {"prompt": "3", "value": "110&amp;deg;"}, {"prompt": "4", "value": "55&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "&Delta;ABC में &ang;B और &ang;C के द्विभाजक त्रिभुज में O पर मिलते हैं। यदि &ang;A = 110&deg; है, तो &ang;BOC का माप क्या है?<span style=\"display: none;\">&nbsp;</span>", "options": [{"prompt": "1", "value": "145&amp;deg;"}, {"prompt": "2", "value": "84&amp;deg;"}, {"prompt": "3", "value": "110&amp;deg;"}, {"prompt": "4", "value": "55&amp;deg;"}], "range": {"start": "", "end": ""}}, "te": {"value": "ఒక ΔABC లో, ∠B మరియు ∠C ల కోణ ద్విఖండనరేఖలు త్రిభుజం లోపల O వద్ద కలుస్తాయి. ∠A = 110° అయితే, ∠BOC కొలత:", "options": [{"prompt": "1", "value": "145&deg;"}, {"prompt": "2", "value": "84&deg;"}, {"prompt": "3", "value": "110&deg;"}, {"prompt": "4", "value": "55&deg;"}], "range": {"start": "", "end": ""}}, "mr": {"value": "ΔABC मध्ये, ∠B आणि ∠C चे द्विभाजक त्रिकोणाच्या आत O बिंदूत भेटतात. जर ∠A = 110° असेल, तर ∠BOC चे माप शोधा:", "options": [{"prompt": "1", "value": "145&deg;"}, {"prompt": "2", "value": "84&deg;"}, {"prompt": "3", "value": "110&deg;"}, {"prompt": "4", "value": "55&deg;"}], "range": {"start": "", "end": ""}}, "bn": {"value": "একটি ΔABC, ∠B এবং ∠C এর সমদ্বিখণ্ডক O বিন্দুতে ত্রিভুজের ভেতরে মিলিত হয়। যদি ∠A = 110° হয়, তাহলে ∠BOC এর পরিমাপ হল:", "options": [{"prompt": "1", "value": "145&deg;"}, {"prompt": "2", "value": "84&deg;"}, {"prompt": "3", "value": "110&deg;"}, {"prompt": "4", "value": "55&deg;"}], "range": {"start": "", "end": ""}}, "gu": {"value": "ત્રિકોણ ABC માં, ∠B અને ∠C ના દ્વિભાજકો ત્રિકોણની અંદર O બિંદુએ મળે છે. જો ∠A = 110° હોય, તો ∠BOC નું માપ શું છે?", "options": [{"prompt": "1", "value": "145&deg;"}, {"prompt": "2", "value": "84&deg;"}, {"prompt": "3", "value": "110&deg;"}, {"prompt": "4", "value": "55&deg;"}], "range": {"start": "", "end": ""}}, "kn": {"value": "ಒಂದು ΔABC ಯಲ್ಲಿ, ∠B ಮತ್ತು ∠C ಯ ಕೋನಾರ್ಧಕಗಳು ತ್ರಿಕೋನದೊಳಗೆ O ನಲ್ಲಿ ಸಂಧಿಸುತ್ತವೆ. ∠A = 110° ಆಗಿದ್ದರೆ, ∠BOC ಯ ಅಳತೆ ಹೀಗಿರುತ್ತದೆ:", "options": [{"prompt": "1", "value": "145&deg;"}, {"prompt": "2", "value": "84&deg;"}, {"prompt": "3", "value": "110&deg;"}, {"prompt": "4", "value": "55&deg;"}], "range": {"start": "", "end": ""}}, "ta": {"value": "ΔABC இல், ∠B மற்றும் ∠C இன் இருசமவேட்டிகள்  முக்கோணத்திற்குள் O இல் சந்திக்கின்றன. ∠A = 110° எனில், ∠BOC இன் அளவு என்ன ?", "options": [{"prompt": "1", "value": "145&deg;"}, {"prompt": "2", "value": "84&deg;"}, {"prompt": "3", "value": "110&deg;"}, {"prompt": "4", "value": "55&deg;"}], "range": {"start": "", "end": ""}}, "or": {"value": "ଏକ ΔABC ରେ, ∠B ଏବଂ ∠C ର ଦ୍ୱିଖଣ୍ଡକ ତ୍ରିକୋଣ ମଧ୍ୟରେ O ରେ ମିଳିତ ହୁଅନ୍ତି | ଯଦି ∠A = 110° ତେବେ ∠BOC ର ମାପ କେତେ?", "options": [{"prompt": "1", "value": "145&deg;"}, {"prompt": "2", "value": "84&deg;"}, {"prompt": "3", "value": "110&deg;"}, {"prompt": "4", "value": "55&deg;"}], "range": {"start": "", "end": ""}}, "pa": {"value": "ਇੱਕ ΔABC ਵਿੱਚ, ∠B ਅਤੇ ∠C ਦੇ ਬਾਈਸੈਕਟਰ ਤਿਕੋਣ ਦੇ ਅੰਦਰ O 'ਤੇ ਮਿਲਦੇ ਹਨ। ਜੇਕਰ ∠A = 110° ਹੈ, ਤਾਂ ∠BOC ਦਾ ਮਾਪ ਹੈ:", "options": [{"prompt": "1", "value": "145&deg;"}, {"prompt": "2", "value": "84&deg;"}, {"prompt": "3", "value": "110&deg;"}, {"prompt": "4", "value": "55&deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "<p><strong>Calculation:</strong></p>\n\n<p>By the bisector theorem,</p>\n\n<p>&ang;BOC = &ang;A/2 + 90&deg;</p>\n\n<p>&rArr; &ang;BOC = 110/2 + 90</p>\n\n<p><strong>&there4; <span style=\"\">&ang;BOC =&nbsp;</span>145&deg;</strong></p>\n", "hn": "<p><strong>गणना:</strong></p>\n\n<p>द्विभाजक प्रमेय से,</p>\n\n<p style=\"color: rgb(33, 37, 41);\">&ang;BOC = &ang;A/2 + 90&deg;</p>\n\n<p style=\"color: rgb(33, 37, 41);\">&rArr; &ang;BOC = 110/2 + 90</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">&there4;&nbsp;&ang;BOC =&nbsp;145&deg;</span></p>\n", "te": "<p><strong>గణన:</strong></p>\n\n<p>ద్విఖండనరేఖ సిద్ధాంతం ప్రకారం,</p>\n\n<p>∠BOC = ∠A/2 + 90°</p>\n\n<p>⇒ ∠BOC = 110/2 + 90</p>\n\n<p><strong>∴ <span style=\"\">∠BOC = </span>145°</strong></p>\n", "mr": "<p><strong>गणना:</strong></p>\n\n<p>द्विभाजक प्रमेयानुसार,</p>\n\n<p style=\"color: rgb(33, 37, 41);\">∠BOC = ∠A/2 + 90°</p>\n\n<p style=\"color: rgb(33, 37, 41);\">⇒ ∠BOC = 110/2 + 90</p>\n\n<p style=\"color: rgb(33, 37, 41);\"><span style=\"font-weight: bolder;\">∴ ∠BOC = 145°</span></p>\n", "bn": "<p><strong>গণনা:</strong></p>\n\n<p>সমদ্বিখণ্ডক উপপাদ্য অনুসারে,</p>\n\n<p>∠BOC = ∠A/2 + 90°</p>\n\n<p>⇒ ∠BOC = 110/2 + 90</p>\n\n<p><strong>∴ <span style=\"\">∠BOC = </span>145°</strong></p>\n", "ml": "", "gu": "<p><strong>ગણતરી:</strong></p>\n\n<p>દ્વિભાજક પ્રમેય દ્વારા,</p>\n\n<p>∠BOC = ∠A/2 + 90°</p>\n\n<p>⇒ ∠BOC = 110/2 + 90</p>\n\n<p><strong>∴ <span style=\"\">∠BOC = </span>145°</strong></p>\n", "kn": "<p><strong>ಲೆಕ್ಕಾಚಾರ:</strong></p>\n\n<p>ಕೋನಾರ್ಧಕ ಪ್ರಮೇಯದ ಪ್ರಕಾರ,</p>\n\n<p>∠BOC = ∠A/2 + 90°</p>\n\n<p>⇒ ∠BOC = 110/2 + 90</p>\n\n<p><strong>∴ <span style=\"\">∠BOC = </span>145°</strong></p>\n", "ta": "<p><strong>கணக்கீடு:</strong></p>\n\n<p>இருவகை தேற்றத்தால்,</p>\n\n<p>∠BOC = ∠A/2 + 90°</p>\n\n<p>⇒ ∠BOC = 110/2 + 90</p>\n\n<p><strong>∴ <span style=\"\">∠BOC =</span> 145°</strong></p>\n", "or": "<p><strong>ଗଣନା:</strong></p>\n\n<p>ଦ୍ୱିଖଣ୍ଡକ ଉପପାଦ୍ୟ ଅନୁସାରେ,</p>\n\n<p>∠BOC = ∠A/2 + 90°</p>\n\n<p>⇒ ∠BOC = 110/2 + 90</p>\n\n<p><strong>∴ <span style=\"\">∠BOC = </span>145°</strong></p>\n", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "<p><strong>ਗਣਨਾ:</strong></p>\n\n<p>ਬਾਈਸੈਕਟਰ ਥਿਓਰਮ ਅਨੁਸਾਰ,</p>\n\n<p>∠BOC = ∠A/2 + 90°</p>\n\n<p>⇒ ∠BOC = 110/2 + 90</p>\n\n<p><strong>∴ <span style=\"\">∠BOC = </span>145°</strong></p>\n", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Lines and Angles"], "concept": "Lines and Angles", "confidence": "high"}, {"qid": "5b3b6679d6ae883f1e3a4db7", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>In the given figure ST || RP, then what is the value (in degree) of supplementary angle of y?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/99085df39a13e1f98579ffe628b839eb36fd5475fc1bf1d8f0433695bd434ae1.png\" style=\"height: 174px; width: 223px;\" /></p>\n", "options": [{"prompt": "1", "value": "10"}, {"prompt": "2", "value": "60"}, {"prompt": "3", "value": "100"}, {"prompt": "4", "value": "170"}], "range": {"start": "", "end": ""}}, "hn": {"value": "<p>दी गई आकृति में ST || RP है, तो y के&nbsp;सम्मपूरक कोण का मान (डिग्री में) क्या है?</p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/99085df39a13e1f98579ffe628b839eb36fd5475fc1bf1d8f0433695bd434ae1.png\" style=\"height: 174px; width: 223px;\" /></p>\n", "options": [{"prompt": "1", "value": "10"}, {"prompt": "2", "value": "60"}, {"prompt": "3", "value": "100"}, {"prompt": "4", "value": "170"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p><strong>Calculation:</strong></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f1ce9a528b6254a3cef7e8436624735295f9449a62a3bfc140a2fe0e7abbfee2.png\" style=\"height: 174px; width: 223px;\" /></p>\n\n<p>Using angle sum property in triangle PQR</p>\n\n<p>&rArr; 3x + 2x + 4x = 180</p>\n\n<p>&rArr; 9x = 180</p>\n\n<p>&a", "hn": "\n<p><span style=\"font-weight: 700;\">गणना :</span></p>\n\n<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/f1ce9a528b6254a3cef7e8436624735295f9449a62a3bfc140a2fe0e7abbfee2.png\" style=\"color: rgb(33, 37, 41); height: 174px; width: 223px;\" /></p>\n\n<p>त्रिभुज PQR में कोण योग गुणधर्म का उपयोग करने पर</p>\n\n<p>&rArr; 3x + 2x + 4x = 180</p>\n\n<p>&rArr; 9x = 180</p>\n\n<p>&rArr; x = 20</p>\n\n<p>माना वह बिंदु जहां PQ, TS को प्रतिच्छेदित करती है, वह A है।</p>\n\n<p>&ang;(QAS) = &ang;(RPQ) (∵ PR || TS)</p>\n\n<p>त्रिभुज QSA में कोण योग गुणधर्म का उपयोग करने पर</p>\n\n<p>&rArr; 3x + y + 2x = 180</p>\n\n<p style=\"color: rgb(33, 37, 41);\">&rArr; y = 180 - 5x</p>\n\n<p style=\"color: rgb(33, 37, 41);\">&rArr; y =&nbsp;180 - 100 = 80</p>\n\n<p>y का&nbsp;<span style=\"color: rgb(37, 37, 37); font-family: Roboto, arial, sans-serif;\">सम्मपूरक</span> कोण = <span style=\"color: rgb(33, 37, 41);\">180 - 80 =</span><span style=\"color: rgb(33, 37, 41);\">&nbsp;100</span></p>\n\n<p>&there4; y के&nbsp;<span style=\"color: rgb(37, 37, 37); font-family: Roboto, arial, sans-serif;\">सम्मपूरक</span> कोण का माप 100 है।</p>\n\n30:T4e5,<p><img alt=\"\" src=\"https://cdn.repeatermock.com/tb/b2fca8cbba9c8540730f1789bb3d8eca414c7a61b57fc3d33b298e5ff23a0cbd.png\" style=\"width: 183px; height: 173px;\" /></p>\n\n<p>Given, AB = BD = DC</p>\n\n<p>And &ang;BAD = 70&de", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Lines and Angles"], "concept": "Lines and Angles", "confidence": "high"}, {"qid": "5b2d0149deaf7441195ff877", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "In ∆ABC, &ang;A : &ang;B : &ang;C = 5 : 4 : 1. What is the value (in degrees) of &ang;B + &ang;C?", "options": [{"prompt": "1", "value": "50"}, {"prompt": "2", "value": "70"}, {"prompt": "3", "value": "90"}, {"prompt": "4", "value": "100"}], "range": {"start": "", "end": ""}}, "hn": {"value": "∆ABC में, &ang;A : &ang;B : &ang;C = 5 : 4 : 1 है∣ &ang;B + &ang;C का मान (डिग्री में) क्या है?", "options": [{"prompt": "1", "value": "50"}, {"prompt": "2", "value": "70"}, {"prompt": "3", "value": "90"}, {"prompt": "4", "value": "100"}], "range": {"start": "", "end": ""}}, "te": {"value": "∆ABCలో, ∠A : ∠B : ∠C = 5 : 4 : 1. ∠B + ∠C విలువ (డిగ్రీలలో) ఎంత?", "options": [{"prompt": "1", "value": "50"}, {"prompt": "2", "value": "70"}, {"prompt": "3", "value": "90"}, {"prompt": "4", "value": "100"}], "range": {"start": "", "end": ""}}, "bn": {"value": "∆ABC তে, ∠A : ∠B : ∠C = 5 : 4 : 1; ∠B + ∠C এর মান (ডিগ্রীতে) কত?", "options": [{"prompt": "1", "value": "50"}, {"prompt": "2", "value": "70"}, {"prompt": "3", "value": "90"}, {"prompt": "4", "value": "100"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "<p>&ang;A : &ang;B : &ang;C = 5 : 4 : 1</p>\n\n<p>Let, &ang;A = 5x&deg;, &ang;B = 4x&deg; and &ang;C = x&deg;</p>\n\n<p>According to problem,</p>\n\n<p>&rArr; 5x + 4x + x = 180</p>\n\n<p>&rArr; 10x = 180</p>\n\n<p>&rArr; x = 18</p>\n\n<p>&there4; &ang;B + &ang;C</p>\n\n<p>&rArr; 4x&deg; + x&deg;</p>\n\n<p>&rArr; 72 +&nbsp;18&deg;</p>\n&rArr; 90&deg;", "hn": "<p>&ang;A : &ang;B : &ang;C = 5 : 4 : 1</p>\n\n<p>माना कि, &ang;A = 5x&deg;, &ang;B = 4x&deg; और &ang;C = x&deg;</p>\n\n<p>प्रश्नानुसार,</p>\n\n<p>&rArr; 5x + 4x + x = 180</p>\n\n<p>&rArr; 10x = 180</p>\n\n<p>&rArr; x = 18</p>\n\n<p>&there4; &ang;B + &ang;C</p>\n\n<p>&rArr; 4x&deg; + x&deg;</p>\n\n<p>&rArr; 72 +&nbsp;18&deg;</p>\n&rArr; 90&deg;", "te": "<p>∠A : ∠B : ∠C = 5 : 4 : 1</p>\n\n<p>∠A = 5x°, ∠B = 4x° మరియు ∠C = x° అనుకుందాం </p>\n\n<p>సమస్య ప్రకారం,</p>\n\n<p>⇒ 5x + 4x + x = 180</p>\n\n<p>⇒ 10x = 180</p>\n\n<p>⇒ x = 18</p>\n\n<p>∴ ∠B + ∠C</p>\n\n<p>⇒ 4x° + x°</p>\n\n<p>⇒ 72 + 18°</p>\n⇒ 90°", "mr": "", "bn": "<p>∠A : ∠B : ∠C = 5 : 4 : 1</p>\n\n<p>ধরি, ∠A = 5x°, ∠B = 4x° এবং ∠C = x°</p>\n\n<p>প্রশ্ন অনুযায়ী,</p>\n\n<p>⇒ 5x + 4x + x = 180</p>\n\n<p>⇒ 10x = 180</p>\n\n<p>⇒ x = 18</p>\n\n<p>∴ ∠B + ∠C</p>\n\n<p>⇒ 4x° + x°</p>\n\n<p>⇒ 72 + 18°</p>\n⇒ 90°", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Lines and Angles"], "concept": "Lines and Angles", "confidence": "high"}, {"qid": "5bd2d8eb2e047c0c67eae082", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "The smallest angle of a triangle is 40&deg; less than the largest angle. If the largest angle is 80&deg;, then find the third angle of the triangle.", "options": [{"prompt": "1", "value": "40&amp;deg;"}, {"prompt": "2", "value": "90&amp;deg;"}, {"prompt": "3", "value": "80&amp;deg;"}, {"prompt": "4", "value": "60&amp;deg;"}], "range": {"start": "", "end": ""}}, "hn": {"value": "एक त्रिभुज का सबसे छोटा कोण सबसे बड़े कोण से 40&deg; कम है। यदि सबसे बड़ा कोण 80&deg; है, तो त्रिभुज का तीसरा कोण ज्ञात कीजिये।", "options": [{"prompt": "1", "value": "40&amp;deg;"}, {"prompt": "2", "value": "90&amp;deg;"}, {"prompt": "3", "value": "80&amp;deg;"}, {"prompt": "4", "value": "60&amp;deg;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "<p><strong>Given:</strong></p>\n\n<p>largest angle = 80&deg;</p>\n\n<p><strong>Calculation:</strong></p>\n\n<p>Smallest angle = Largest angle - 40&deg; = 80&deg; - 40&deg; = 40&deg;</p>\n\n<p>We know that the sum of angles of a triangle = 180&deg;</p>\n\n<p>Third angle = 180&deg; - (Sum of largest and smallest angle) = 180&deg; - (80&deg; + 40&deg;) = 180&deg; - 120&deg; = 60&deg;</p>\n&there4; Third angle = 60&deg;", "hn": "<p><span style=\"font-weight: 700; \">दिया है:</span></p>\n\n<p>सबसे बड़ा कोण = 80&deg;</p>\n\n<p><span style=\"font-weight: 700; \">गणना:</span></p>\n\n<p>सबसे छोटा कोण = सबसे बड़ा कोण - 40&deg; = 80&deg; - 40&deg; = 40&deg;</p>\n\n<p>हम जानते हैं कि एक त्रिभुज के कोणों का योग = 180&deg;</p>\n\n<p>तीसरा कोण = 180&deg; - (सबसे बड़े और सबसे छोटे कोण का योग) = 180&deg; - (80&deg; + 40&deg;) = 180&deg; - 120&deg; = 60&deg;</p>\n&there4; तीसरा कोण = 60&deg;", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Lines and Angles"], "concept": "Lines and Angles", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 8 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
