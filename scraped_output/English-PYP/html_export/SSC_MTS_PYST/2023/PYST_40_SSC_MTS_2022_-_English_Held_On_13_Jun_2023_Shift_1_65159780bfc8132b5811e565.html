@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYST 40: SSC MTS 2022 - English (Held On: 13 Jun, 2023 Shift 1)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYST 40: SSC MTS 2022 - English (Held On: 13 Jun, 2023 Shift 1)</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-english-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">25</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">15 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">75.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+3.0 / -1.0</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">65159780bfc8132b5811e565</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "65159780bfc8132b5811e565", "title": "PYST 40: SSC MTS 2022 - English (Held On: 13 Jun, 2023 Shift 1)", "series_slug": "ssc-english-previous-year-questions", "duration_min": 15, "max_marks": 75.0, "languages": ["English"], "sections": [{"section_id": "63c901ead8980edbdae7c05a", "section_name": "Test", "q_count": 25, "max_marks": 75.0, "questions": [{"qid": "64a41ffebbbff3a87caf0823", "qs_no": 1, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction:&nbsp;Select the appropriate synonym for the underlined word.</strong></p>\n\n<p>Don&#39;t sound so&nbsp;<strong><u>excited</u></strong>.</p>\n", "options": [{"prompt": "1", "value": "casual"}, {"prompt": "2", "value": "composed"}, {"prompt": "3", "value": "eager"}, {"prompt": "4", "value": "tired"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;eager.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Excited&quot;</strong> means feeling or showing enthusiasm and eagerness. (उत्साह और उत्सुकता महसूस करना या दिखाना)\n\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>I am very <u><strong>excited</strong></u> for tomorrow.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Eager&quot;</strong> means having or showing keen interest or intense desire for something. (किसी चीज़ के प्रति गहरी रुचि या तीव्र इच्छा होना या प्रदर्शित होना)\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>The man was <u><strong>eager</strong></u> to please me.</em></li>\n\t</ul>\n\t</li>\n\t<li>Synonym of <strong>excited</strong> is <strong>eager</strong>.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 3.</span></li>\n</ul>\n\n<p><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>Option 1 -<strong> casual</strong>: Relaxed and unconcerned; not showing much interest or care. (निश्चिंत और बेपरवाह; ज्यादा दिलचस्पी या परवाह नहीं दिखाना)</li>\n\t<li>Option 2 - <strong>composed</strong>: Calm and in control of one&#39;s emotions; not easily agitated or disturbed. (शांत और अपनी भावनाओं पर नियंत्रण रखना; आसानी से उत्तेजित या परेशान नहीं होना)</li>\n\t<li>Option 4 - <strong>tired</strong>: Feeling or showing the need for sleep or rest; lacking in energy or enthusiasm. (नींद या आराम की आवश्यकता महसूस करना या दिखाना; ऊर्जा या उत्साह की कमी)</li>\n</ul>\n\n2f:Tc7f,\n<p>The correct answer is <strong>&quot;I got selected in D category.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /> <strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points<", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "64a42031a9f7dd4b1ff70749", "qs_no": 2, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<strong>Direction: Four sentences are given, out of which three have spelling errors. Choose the sentence with all correctly spelt words.</strong>", "options": [{"prompt": "1", "value": "What was the begining of the dispute?"}, {"prompt": "2", "value": "There is no comparision between the two books."}, {"prompt": "3", "value": "She handlled the situation cooly."}, {"prompt": "4", "value": "I got selected in D category."}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;I got selected in D category.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /> <strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Option 4 is the only sentence that has all words spelled correctly.</li>\n\t<li>The words <strong>&quot;selected&quot;</strong> and<strong> &quot;category&quot; </strong>are<strong> </strong>spelled correctly.</li>\n\t<li><strong>Selected</strong>: <span style=\"color:  (32, 33, 36); \">carefully choose as being the best or most suitable. (</span>सर्वोत्तम या सर्वाधिक उपयुक्त का चयन सावधानी से करें)</li>\n\t<li>Category: a class or division of people or things regarded as having particular shared characteristics. (लोगों या चीज़ों का एक वर्ग या विभाजन जिसे विशेष साझा विशेषताओं वाला माना जाता है)</li>\n\t<li><span style=\"color:  (33, 37, 41);\">The correct answer is Option 4.</span></li>\n</ul>\n\n<p><span><span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></p>\n\n<ul style=\"color:  (33, 37, 41);\">\n\t<li>The word<span style=\"font-weight: bolder;\"> &quot;beginning&quot; </span>is misspelled in option 1. It should be spelled with two<span style=\"font-weight: bolder;\"> &quot;n&quot;s</span>.</li>\n\t<li>The word <span style=\"font-weight: bolder;\">&quot;comparison&quot;</span> is misspelled in option 2. It should be spelled with one <span style=\"font-weight: bolder;\">&quot;r&quot;</span> and two<span style=\"font-weight: bolder;\"> &quot;s&quot;s</span>.</li>\n\t<li>The word <span style=\"font-weight: bolder;\">&quot;handled&quot;</span> is misspelled in option 3. It should be spelled with one <span style=\"font-weight: bolder;\">&quot;l&quot; </span>and one<span style=\"font-weight: bolder;\"> &quot;d.&quot;</span></li>\n</ul>\n\n30:Tafd,\n<p>The correct answer is <strong>&quot;blissful.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=&qu", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Sentence"], "concept": "Error Detection", "confidence": "high"}, {"qid": "64a42065a9f7dd4b1ff70eeb", "qs_no": 3, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Select the appropriate synonym for the underlined word.</strong></p>\n\n<p>You look around and you see green,&nbsp;<strong><u>happy</u></strong>&nbsp;plants.</p>\n", "options": [{"prompt": "1", "value": "mourning"}, {"prompt": "2", "value": "nascent"}, {"prompt": "3", "value": "blissful"}, {"prompt": "4", "value": "gloomy"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;blissful.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Happy&quot; </strong>means&nbsp;feeling or showing pleasure; pleased. (आनंद का अनुभव करने या उसे व्&zwj;यक्त करने वाला; प्रसन्&zwj;न, प्रफुल्&zwj;ल)\n\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>She is very happy.</em></li>\n\t</ul>\n\t</li>\n\t<li>Synonyms of <strong>happy&nbsp;</strong>include ecstatic, blissful, elated, and euphoric.</li>\n\t<li><strong>&quot;Blissful&quot;</strong> means extremely happy or joyful. (सुखद, आनंदमय, चरम सुख)\n\t<ul>\n\t\t<li><span style=\"color: rgb(33, 37, 41);\"><strong>Example</strong>: <em>After receiving the good news, she felt <u><strong>blissful</strong></u> and couldn&#39;t stop smiling.</em></span></li>\n\t</ul>\n\t</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 3.</span></li>\n</ul>\n\n<p><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>Option 1 (<strong>mourning)</strong> means feeling or expressing sorrow or grief, usually due to a loss. (शोकमग्&zwj;न, दुखी)</li>\n\t<li>Option 2 (<strong>nascent</strong>) means just beginning to exist or develop. (आरंभिक अवस्था, उदीयमान; विकासशील)</li>\n\t<li>Option 4 (<strong>gloomy</strong>) means dark or dim, often used to describe a sad or depressing atmosphere. (ऐसा गहरा कि उदास कर दे)</li>\n</ul>\n\n31:T778,\n<p>Here, the erroneous part is<strong> &quot;bewitched there trunks to fly downstairs to.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\">", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Synonym", "confidence": "high"}, {"qid": "64a420b9d145f0e3fb79c8a8", "qs_no": 4, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Identify the segment that contains a grammatical error. If there is no error, select &#39;No error&#39;.</strong></p>\n\n<p>Fred and George had / bewitched there trunks to fly downstairs to / save the bother of carrying them.</p>\n", "options": [{"prompt": "1", "value": "bewitched there trunks to fly downstairs to"}, {"prompt": "2", "value": "save the bother of carrying them."}, {"prompt": "3", "value": "Fred and George had"}, {"prompt": "4", "value": "No error"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>Here, the erroneous part is<strong> &quot;bewitched there trunks to fly downstairs to.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&#39;there&#39;</strong> is incorrect in this sentence, it should be <strong>&#39;their.&#39;</strong></li>\n\t", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Error Spotting"], "concept": "Error Detection", "confidence": "high"}, {"qid": "64a420dfa9f7dd4b1ff71ee1", "qs_no": 5, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Select the most appropriate word for the given group of words.</strong></p>\n\n<p>Information, especially of a biased or misleading nature, used to promote a political cause or point of view</p>\n", "options": [{"prompt": "1", "value": "Welter"}, {"prompt": "2", "value": "Propaganda"}, {"prompt": "3", "value": "Potable"}, {"prompt": "4", "value": "Orchard"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is<strong> &quot;Propaganda.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Propaganda&quot;</strong> means information, especially of a biased or misleading nature, used to promote a political cause or point of view. ((राजनीतिक नेता, दल आदि के लिए समर्थन जुटाने में प्रयुक्त) असत्&zwj;य या अतिशयोक्तिपूर्ण जानकारी और विचार; मतप्रचार, दुष्&zwj;प्रचार)\n\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>At school we were fed communist/right-wing <u><strong>propaganda</strong></u>.</em></li>\n\t</ul>\n\t</li>\n\t<li>It is derived from the Latin word<strong> &#39;propagare&#39; </strong>which means to propagate or spread.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is option 2.</span></li>\n</ul>\n\n<p><span><span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></p>\n\n<ul>\n\t<li><strong>Welter</strong> means a large number of items in no order or confusion. (बिना किसी क्रम या भ्रम के बड़ी संख्या में आइटम)</li>\n\t<li><strong>Potable</strong> means fit for drinking. ((पानी) पीने के लिए सुरक्षित)</li>\n\t<li><strong>Orchard</strong> means a piece of land planted with fruit trees. (फलों का बाग़, फलोद्यान)</li>\n</ul>\n\n33:T6df,\n<p>Here, the erroneous part is <strong>&quot;everyone were up and buzzing.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "64a422844200a5a8f88a9168", "qs_no": 6, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Identify the segment that contains a grammatical error. If there is no error, select &#39;No error&#39;.</strong></p>\n\n<p>Although people had been on watch and / the watchkeepers were very, very tired,&nbsp;/ everyone were up and buzzing.</p>\n", "options": [{"prompt": "1", "value": "everyone were up and buzzing."}, {"prompt": "2", "value": "No Error"}, {"prompt": "3", "value": "Although people had been on watch and"}, {"prompt": "4", "value": "the watchkeepers were very, very tired,"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>Here, the erroneous part is <strong>&quot;everyone were up and buzzing.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The subject <strong>&quot;everyone&quot;</strong> is singular, but the verb <strong>&quot;were&quot;</strong> is incorrect as it is the past tense of <strong>&quot;be&quot;</strong> and should be replaced with<strong> &quot;was&quot; </strong>to agree with the singular<strong> &quot;everyone.&quot;</strong></li>\n\t<li><strong>&ldquo;Everyone&rdquo;</strong> is treated as singular pronoun, so it&#39;s always used with a singular verb form.\n\t<ul>\n\t\t<li><strong>Example: </strong><em><u><strong>Everyone is</strong></u> responsible for this failure.</em></li>\n\t</ul>\n\t</li>\n\t<li>The correct sentence would be <em>&quot;Although people had been on watch and the watchkeepers were very, very tired, <u><strong>everyone was up and buzzing</strong></u>.&quot;</em></li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 1.</span></li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Error Spotting"], "concept": "Error Detection", "confidence": "high"}, {"qid": "64a422bdd145f0e3fb7a1b5d", "qs_no": 7, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Identify the segment that contains a grammatical error. If there is no error, select &#39;No error.&#39;</strong></p>\n\n<p>Your body will respond by/ getting more muscular and/ strong before you know it.</p>\n", "options": [{"prompt": "1", "value": "strong before you know it."}, {"prompt": "2", "value": "No error"}, {"prompt": "3", "value": "Your body will respond by"}, {"prompt": "4", "value": "getting more muscular and"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>Here, the erroneous part is<strong> &quot;strong before you know it.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The error lies in the part <strong>&quot;strong before you know it&quot; </strong>of the sentence.</li>\n\t<li>In this sentence, we can see the use of <strong>&quot;more muscular&quot;</strong> which is a comparative degree.</li>\n\t<li>So, to maintain the uniformity, we have to write <strong>&quot;strong&quot;</strong> in comparative degree.</li>\n\t<li>The comparative form of the adjective<strong> &#39;strong&#39;</strong> is <strong>&#39;stronger.&#39;</strong></li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 1.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span style=\"color: rgb(33, 37, 41);\"><strong>Correct sentence</strong>:&nbsp;</span><em>Your body will respond by getting more muscular and <u><strong>stronger before you know it</strong></u>.</em></p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Error Spotting"], "concept": "Error Detection", "confidence": "high"}, {"qid": "64a422de764648c9077580ff", "qs_no": 8, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Select the most appropriate antonym of the given word.</strong></p>\n\n<p>Crude</p>\n", "options": [{"prompt": "1", "value": "Beastly"}, {"prompt": "2", "value": "Ripe"}, {"prompt": "3", "value": "Stubble"}, {"prompt": "4", "value": "Intense"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;Ripe.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Crude&quot;</strong> means something that is in a natural or raw state, lacking refinement or sophistication. (सरल और बुनियादी; अपरिष्&zwj;कृत)\n\n\t<ul>\n\t\t<li><strong>Example</strong>:<em>&nbsp;The method was <u><strong>crude</strong></u> but very effective.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Ripe&quot;</strong> means something that is fully developed or matured, ready for use or consumption. ((फल, अनाज आदि) पका हुआ)\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>Those bananas aren&#39;t <u><strong>ripe</strong></u> yet - they&#39;re still green.</em></li>\n\t</ul>\n\t</li>\n\t<li>The antonym of <strong>Crude</strong> is <strong>Ripe</strong>.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 2.</span></li>\n</ul>\n\n<p><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Option 1 - Beastly</strong> means something that is unpleasant or offensive, resembling a beast or animal-like. (कोई ऐसी चीज़ जो अप्रिय या आपत्तिजनक हो, किसी जानवर या जानवर जैसी हो)</li>\n\t<li><strong>Option 3 - Stubble</strong> means short, rough hair or bristles on a person&#39;s face or chin, or on a plant after being cut or grazed. (मक्&zwj;का, गेहूँ आदि की फ़सल काट लिए जाने पर खेत में खड़ी नीचे की खूँटी)</li>\n\t<li><strong>Option 4 - Intense</strong> means something that is strong or extreme in degree or intensity, highly concentrated or focused. (बहुत अधिक, उग्र या गंभीर)</li>\n</ul>\n\n36:Ta84,\n<p>The correct answer is <strong>&quot;pretty.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e74", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Antonym", "confidence": "high"}, {"qid": "64a4231df28c80a81c0b3bd4", "qs_no": 9, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Fill in the blank with the most appropriate option.</strong></p>\n\n<p>&#39;Well, that was ______ good,&#39; said Harper.</p>\n", "options": [{"prompt": "1", "value": "pleasing"}, {"prompt": "2", "value": "gorgeous"}, {"prompt": "3", "value": "beautiful"}, {"prompt": "4", "value": "pretty"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;pretty.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Pretty&quot;</strong>&nbsp;is an adverb which means quite; fairly. (काफ़ी; बहुत कुछ)\n\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>The film was <u><strong>pretty</strong></u> good.</em></li>\n\t</ul>\n\t</li>\n\t<li>The word<strong> &quot;pretty&quot; </strong>is modifying the adjective <strong>&quot;good.&quot;</strong></li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 4.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span style=\"color: rgb(33, 37, 41);\"><strong>Correct sentence</strong>:&nbsp;</span><em>&#39;Well, that was <u><strong>pretty</strong></u> good,&#39; said Harper.</em><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Option 1: &quot;Pleasing&quot;</strong>&nbsp;means&nbsp;giving you pleasure and satisfaction. (सुखकर और संतोषप्रद)</li>\n\t<li><strong>Option 2: &quot;Gorgeous&quot; </strong>means extremely pleasant or attractive. (अत्&zwj;यंत प्रीतिकर या आकर्षक, भव्&zwj;य, शानदार)</li>\n\t<li><strong>Option 3: &quot;Beautiful&quot;</strong> means&nbsp;very pretty or attractive; giving pleasure to the senses. (सुंदर, ख़ूबसूरत, आकर्षक; रमणीय, प्रियकर)</li>\n</ul>\n\n37:Tc54,\n<p>The correct answer is <strong>&quot;generous.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items:", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fill in the Blanks"], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "64a42345f28c80a81c0b4094", "qs_no": 10, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Select the most appropriate option to fill in the blank.</strong></p>\n\n<p>She has a large, ______ sympathy and absolute fairness of temper.</p>\n", "options": [{"prompt": "1", "value": "mean"}, {"prompt": "2", "value": "sparing"}, {"prompt": "3", "value": "generous"}, {"prompt": "4", "value": "&lt;span style=&quot;color: rgb(32, 33, 36);  font-variant-ligatures: none; letter-spacing: 0.2px; white-space-collapse: preserve;&quot;&gt;thrifty&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;generous.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Generous&quot;</strong> is the most appropriate word to fill in the blank.</li>\n\t<li>It means that the person has a large amount of sympathy and is fair. (असामान्&zwj;य या अप्रत्&zwj;याशित रूप से धन, सहायता आदि देने में प्रसन्&zwj;नता अनुभव करने वाला; उदार)\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>It was very <u><strong>generous</strong></u> of your parents to lend us all that money.</em></li>\n\t</ul>\n\t</li>\n\t<li>The word is used to describe someone who is giving and kind.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 3.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span style=\"color: rgb(33, 37, 41);\"><strong>Correct sentence</strong>:&nbsp;</span><em>She has a large, <u><strong>generous</strong></u> sympathy and absolute fairness of temper.</em><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Option 1) mean</strong>: This word means unkind or cruel and does not fit the context of the sentence. (धन आदि स्वयं के लिए रखना न कि दूसरों को देना; कंजूस, स्&zwj;वार्थी)</li>\n\t<li><strong>Option 2) sparing</strong>: This word means to use or give very little and does not fit the context of the sentence. (किसी वस्&zwj;तु के अल्&zwj;प अंश का प्रयोग करते हुए; सावधानीपूर्ण)</li>\n\t<li><strong>Option 4) thrifty</strong>: This word means to be careful with money and does not fit the context of the sentence. (कमख़र्च, किफ़ायती, किफ़ायतशार, मितव्&zwj;ययी)</li>\n</ul>\n\n38:Tb3c,\n<p>The correct answer is <strong>&quot;after a driver.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nb", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fill in the Blanks"], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "64a5254651476f8c3d5f78bf", "qs_no": 11, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Select the word segment that substitutes (replaces) the bracketed word segment correctly and completes the sentence meaningfully. Select the option &#39;no correction required&#39; if the sentence is correct as given.</strong></p>\n\n<p>He lost his temper (<strong>by a driver</strong>) flashed her headlights as he overtook.</p>\n", "options": [{"prompt": "1", "value": "afterwards a driver"}, {"prompt": "2", "value": "No correction required"}, {"prompt": "3", "value": "considering a driver"}, {"prompt": "4", "value": "after a driver"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;after a driver.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The original sentence is grammatically incorrect because<strong> &quot;by a driver&quot;</strong> is not a correct prepositional phrase to use in this context.</li>\n\t<li>The preposition &quot;after&quot; means later than something; at a later time. (पश्&zwj;चात; बाद में)\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>He came <u><strong>after</strong></u> the train left.</em></li>\n\t</ul>\n\t</li>\n\t<li>The correct preposition to use in this context is <strong>&quot;after&quot;,</strong> which indicates that the driver flashing her headlights caused the speaker to lose his temper.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 4.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span style=\"color: rgb(33, 37, 41);\"><strong>Correct sentence</strong>:&nbsp;</span><em>He lost his temper <u><strong>after a driver</strong></u> flashed her headlights as he overtook.</em></p>\n\n<p><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Option 1: &quot;Afterwards&quot;</strong>&nbsp;means at a later time. (बाद में, पश्&zwj;चात)</li>\n\t<li><strong>Option 3: &quot;Considering&quot;</strong> means&nbsp;(used for introducing a surprising fact) when you think about or remember something. ((किसी आश्&zwj;यचर्जनक तथ्&zwj;य को प्रस्&zwj;तुत करने के लिए प्रयुक्त) (इस बात को) ध्यान में रखते हुए)</li>\n</ul>\n\n39:Td6a,\n<p>The correct answer is <strong>&quot;grace.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: ce", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Phrase Replacement"], "concept": "Sentence Improvement", "confidence": "high"}, {"qid": "64a525836826b88c3e2d53ad", "qs_no": 12, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Fill in the blank with the most appropriate option.</strong></p>\n\n<p>Sulochana, whose ______ I had so admired during the festival, seemed a different person.</p>\n", "options": [{"prompt": "1", "value": "polish"}, {"prompt": "2", "value": "crudeness"}, {"prompt": "3", "value": "grace"}, {"prompt": "4", "value": "shadow"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;grace.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The sentence is talking about Sulochana&#39;s quality that the speaker had admired during the festival.</li>\n\t<li><strong>Grace</strong> means&nbsp;the ability to move in a smooth and controlled way. (व्यवस्थित तथा अनुशासित चेष्&zwj;टा-क्षमता; लालित्&zwj;य)<br />\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>Joanna has natural <u><strong>grace</strong></u> and elegance.</em></li>\n\t</ul>\n\t</li>\n\t<li>The word that fits the blank should be a positive quality that can change someone&#39;s impression.</li>\n\t<li>Out of the given options,<strong> &quot;grace&quot;</strong> is the most appropriate word that can fit the context.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 3.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span style=\"color: rgb(33, 37, 41);\"><strong>Correct sentence</strong>:&nbsp;</span><em>Sulochana, whose <u><strong>grace</strong></u> I had so admired during the festival, seemed a different person.</em></p>\n\n<p><span><span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></p>\n\n<ul>\n\t<li><strong>Option 1 (polish)</strong> means smoothness or refinement, but it doesn&#39;t necessarily convey a change in personality. (जूते आदि को चमकाने की क्रीम, द्रव वस्&zwj;तु; पॉलिश)</li>\n\t<li><strong>Option 2 (crudeness)</strong> means roughness or lack of manners, which is the opposite of what the sentence is implying. (खुरदरापन या शिष्टाचार की कमी, जो वाक्य के अर्थ के विपरीत है)</li>\n\t<li><strong>Option 4 (shadow)</strong>&nbsp;means&nbsp;a dark shape on a surface that is caused by something being between the light and that surface. (परछाई (प्रकाश और सतह के बीच में किसी के आने से सतह पर बनी उसकी धुँधली आकृति), साया)</li>\n</ul>\n\n3a:Ta75,\n<p>The correct answer is <strong>&quot;Honestly.&quot;</strong></p>\n\n<p><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=&quo", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fill in the Blanks"], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "64a525bfdb7d5e39855bbd35", "qs_no": 13, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: In the following question, out of the given four alternatives, select the alternative which best expresses the meaning of&nbsp;the Idiom/Phrase.</strong></p>\n\n<p>Fairly and squarely</p>\n", "options": [{"prompt": "1", "value": "Suddenly"}, {"prompt": "2", "value": "Rigorously"}, {"prompt": "3", "value": "Wholly"}, {"prompt": "4", "value": "Honestly"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;Honestly.&quot;</strong></p>\n\n<p><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><u style=\"font-size: 21px; font-family: var(--bs-body-font-family); font-weight: var(--bs-body-font-weight); text-align: var(--bs-body-text-align);\">Key Points</u></span></strong></p>\n\n<ul>\n\t<li><strong>&quot;Fairly and squarely&quot;</strong> means honestly and justly. (ईमानदारी से और न्यायपूर्वक)\n\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>She lays the blame for the recession <u><strong>fairly and squarely</strong></u> on the government.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Honestly&quot; </strong>means&nbsp;in an honest way. (ईमानदारी से, सत्&zwj;यनिष्&zwj;ठ भाव से)\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>He tried to answer the lawyer&rsquo;s questions <u><strong>honestly</strong></u>.</em></li>\n\t</ul>\n\t</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 4.</span></li>\n</ul>\n\n<p><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Option 1: &quot;Suddenly&quot; </strong>means happening quickly and unexpectedly. (एकाएक, अचानक)</li>\n\t<li><strong>Option 2: &quot;Rigorously&quot;</strong> means with great care and attention to detail. (परिशुद्घता के साथ)<br />\n\t</li>\n\t<li><strong>Option 3: &quot;Wholly&quot;</strong> means completely or entirely. (पूरी तरह, पूर्णतया; सर्वथा)<br />\n\t</li>\n</ul>\n\n3b:Td21,\n<p>The correct answer is<strong> &quot;affects.&quot;&nbsp;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-i", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Phrase or Idiom Meaning"], "concept": "Idioms", "confidence": "high"}, {"qid": "64a525e7e9effac9b649e593", "qs_no": 14, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: A sentence has been given with a blank to be filled with an appropriate option. Choose the correct alternative.</strong></p>\n\n<p>Your presence ______&nbsp;both my brother and sister.</p>\n", "options": [{"prompt": "1", "value": "affecting"}, {"prompt": "2", "value": "effect"}, {"prompt": "3", "value": "effects"}, {"prompt": "4", "value": "&lt;span style=&quot;color: rgb(33, 37, 41);&quot;&gt;affects&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is<strong> &quot;affects.&quot;&nbsp;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Affects&quot;</strong> is the correct verb form to use in this sentence, as it is the third person singular present tense form of the verb <strong>&quot;affect.&quot; </strong></li>\n\t<li><strong>&quot;Affect&quot;</strong> means to have an influence on or cause a change in something or someone. (किसी वस्&zwj;तु या व्&zwj;यक्ति के व्&zwj;यवहार को प्रभावित करना; असर डालना)\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>Her personal problems seem to be <u><strong>affecting</strong></u> her work.</em></li>\n\t</ul>\n\t</li>\n\t<li>In this sentence, the subject <strong>&quot;your presence&quot;</strong> is the cause of the effect on both the brother and sister.</li>\n\t<li>The verb <strong>&quot;affects&quot; </strong>agrees with the singular subject <strong>&quot;presence.&quot;</strong></li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 4.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span style=\"color: rgb(33, 37, 41);\"><strong>Correct sentence</strong>:&nbsp;</span><em>Your presence <u><strong>affects</strong></u> both my brother and sister.</em><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Option 1, &quot;affecting&quot;</strong>, is a present participle form of the verb and would require a helping verb (such as &quot;is&quot; or &quot;was&quot;) to make a complete sentence.</li>\n\t<li><strong>Option 2, &quot;effect&quot;</strong>, is a noun and means&nbsp;a change that is caused by something; a result. (प्रभाव; परिणाम)<br />\n\t</li>\n\t<li><strong>Option 3, &quot;effects&quot;,</strong> is the plural form of the noun <strong>&quot;effect&quot;</strong> and does not agree with the singular subject <strong>&quot;presence.&quot;</strong></li>\n</ul>\n\n3c:T9ad,\n<p>The correct answer is <strong>&quot;Hive.&quot;</strong><br />\n<br />\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Fill in the Blanks"], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "64a526326826b88c3e2d6ec0", "qs_no": 15, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Choose the word that can substitute the given group of words.</strong></p>\n\n<p>A container for housing honeybees</p>\n", "options": [{"prompt": "1", "value": "Colonies"}, {"prompt": "2", "value": "Hive"}, {"prompt": "3", "value": "Pack"}, {"prompt": "4", "value": "Shoal"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;Hive.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Hive&quot;</strong> is a noun that means a structure for housing honeybees. (मधुमक्खियों के आवास के लिए एक संरचना)\n\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>Bees naturally attack anything entering their <u><strong>hives</strong></u>.</em></li>\n\t</ul>\n\t</li>\n\t<li>It is a commonly used term in beekeeping and agriculture.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 2.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span><span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></p>\n\n<ul>\n\t<li><strong>Colonies</strong>: A group of honeybees living together. (मधुमक्खियों का एक समूह जो एक साथ रहता है)</li>\n\t<li><strong>Pack</strong>: A group of animals, especially wolves, living and hunting together. (जानवरों का एक समूह, विशेषकर भेड़िये, जो एक साथ रहते हैं और शिकार करते हैं)</li>\n\t<li><strong>Shoal</strong>: A large group of fish swimming together. (मछलियों का एक बड़ा समूह एक साथ तैर रहा है)</li>\n</ul>\n\n3d:T6c0,\n<p>The correct answer is <strong>&quot;There are many good tunes.&quot;</strong></p>\n\n<p><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["One Word Substitution"], "concept": "OWS", "confidence": "high"}, {"qid": "64a52685b1c12816cd3f3efe", "qs_no": 16, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Select the most appropriate option to substitute the bracketed segment in the given sentence. If there is no need to&nbsp;substitute it, select &#39;no substitution required&#39;.</strong></p>\n\n<p>(There&#39;s many a good tunes) played on an old violin.</p>\n", "options": [{"prompt": "1", "value": "No substitution required"}, {"prompt": "2", "value": "There are many a good tunes"}, {"prompt": "3", "value": "There&amp;#39;s many good tune"}, {"prompt": "4", "value": "There are many good tunes"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;There are many good tunes.&quot;</strong></p>\n\n<p><strong><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><u style=\"font-size: 21px; font-family: var(--bs-body-font-family); font-weight: var(--bs-body-font-weight); text-align: var(--bs-body-text-align);\">Key Points</u></span></strong></p>\n\n<ul>\n\t<li>The original sentence has a subject-verb disagreement as &#39;<strong>There&#39;s&#39; (contraction of &#39;there is&#39;)</strong> is singular while <strong>&#39;many&#39;</strong> is plural.</li>\n\t<li>We need to replace<strong> &quot;there&#39;s&quot;</strong> with <strong>&quot;there&#39;re.&quot;</strong></li>\n\t<li>The corrected sentence uses the plural form of the verb <strong>&#39;are&#39; </strong>to match with the plural subject <strong>&#39;many good tunes.&#39;</strong></li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 4.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span style=\"color: rgb(33, 37, 41);\"><strong>Correct sentence</strong>:&nbsp;</span><em><u><strong>There are&nbsp;many good tunes</strong></u> played on an old violin.</em></p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Phrase Replacement"], "concept": "Sentence Improvement", "confidence": "high"}, {"qid": "64a526a6d31bed79cce7b1ad", "qs_no": 17, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<strong>Direction: Choose the incorrectly spelt word.</strong>", "options": [{"prompt": "1", "value": "Grave"}, {"prompt": "2", "value": "Staringg"}, {"prompt": "3", "value": "Leaf"}, {"prompt": "4", "value": "Blame"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;Staringg.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The correct spelling of the word is <strong>&quot;Staring&quot;</strong> with only one <strong>&quot;g&quot;</strong> at the end.</li>\n\t<li>The extra <strong>&quot;g&quot; </strong>in option 2 makes it the incorrectly spelled word.</li>\n\t<li>The word <strong>&quot;staring&quot; </strong>means to look at somebody or something for a long time because you are surprised, shocked, etc. ((आश्&zwj;चर्य, विक्षोभ आदि के कारण) किसी को देर तक देखते रहना; घूरना, टकटकी लगा कर देखना)\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>Robin sat <u><strong>staring</strong></u> into space, her mind numb.</em></li>\n\t</ul>\n\t</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 2.</span></li>\n</ul>\n\n<p><br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Grave</strong>: a noun meaning a place of burial for a dead body. (क़ब्र)\n\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>He visited his grandfather&#39;s <u><strong>grave</strong></u>.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>Leaf</strong>: a noun meaning the flattened structure of a plant that is attached to a stem or branch. (पौधे या वृक्ष का पत्ता)\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>The tree&#39;s <u><strong>leaves</strong></u> turned yellow in the fall.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>Blame</strong>: a verb meaning to assign responsibility for a fault or wrong. (किसी व्&zwj;यक्ति या वस्&zwj;तु को ग़लती का ज़िम्&zwj;मेदार या दोषी ठहराना)\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>She didn&#39;t want to <u><strong>blame</strong></u> anyone for the accident.</em></li>\n\t</ul>\n\t</li>\n</ul>\n\n3f:T69b,\n<p>The correct answer is <strong>&quot;times of natural.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeater", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Error Spotting"], "concept": "Error Detection", "confidence": "high"}, {"qid": "64a5272eb6dcc50276fcd30c", "qs_no": 18, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Improve the underlined part of the sentence. Choose &#39;No improvement&#39; as an answer if the sentence is grammatically&nbsp;correct.</strong></p>\n\n<p>Even in <strong><u>time of natural</u></strong> disasters, the farmers had to pay their share of taxes.</p>\n", "options": [{"prompt": "1", "value": "times of natural"}, {"prompt": "2", "value": "timer of natural"}, {"prompt": "3", "value": "times of naturally"}, {"prompt": "4", "value": "No improvement"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;times of natural.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Time</strong> refers to the amount of seconds, minutes, hours, days, weeks, years, decades, centuries, millennia and so on. This noun is uncountable.</li>\n\t<li><strong>Times</strong> refers to the number of occurrences.&nbsp;\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>I know her from college <u><strong>times</strong></u>.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>&#39;Natural&#39;</strong> is an adjective modifying<strong> &#39;disasters&#39;</strong> and does not need any modification.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 1.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span style=\"color: rgb(33, 37, 41);\"><strong>Correct sentence</strong>:&nbsp;</span><em>Even in <u><strong>times of natural</strong></u> disasters, the farmers had to pay their share of taxes.</em></p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Phrase Replacement"], "concept": "Sentence Improvement", "confidence": "high"}, {"qid": "64a5276ae9effac9b64a2233", "qs_no": 19, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Select the most appropriate antonym to substitute the bracketed word in the given sentence.</strong></p>\n\n<p>Similarly Sirius, the most (<strong>luminous</strong>) star in all the heavens, actually has a faint companion.</p>\n", "options": [{"prompt": "1", "value": "excited"}, {"prompt": "2", "value": "miserable"}, {"prompt": "3", "value": "serious"}, {"prompt": "4", "value": "gloomy"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;gloomy.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The given sentence describes Sirius as the most luminous star in all the heavens.</li>\n\t<li><strong>&quot;Luminous&quot;</strong> means emitting light or shining brightly. (अँधेरे में चमकने वाला)\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>This is <u><strong>luminous</strong></u> watch.</em></li>\n\t</ul>\n\t</li>\n\t<li>The antonym of <strong>luminous</strong> is <strong>gloomy.</strong></li>\n\t<li>It means <strong>dark or dim</strong>. (ऐसा गहरा कि उदास कर दे)\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>This dark paint makes the room very <u><strong>gloomy</strong></u>.</em></li>\n\t</ul>\n\t</li>\n\t<li>Therefore, the most appropriate antonym to substitute the word<strong> &#39;luminous&#39;</strong> in the given sentence is <strong>gloomy</strong>.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 4.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span><span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></p>\n\n<ul>\n\t<li><strong>Option 1, excited</strong>: This word means feeling or showing happiness and enthusiasm. It is not an antonym of luminous. (उत्तेजित, व्&zwj;यग्र; अधीर)</li>\n\t<li><strong>Option 2, miserable</strong>: This word means feeling or showing extreme unhappiness. It is not an antonym of luminous. (बहुत उदास, दयनीय)</li>\n\t<li><strong>Option 3, serious</strong>: This word means showing deep thought or concern. It is not an antonym of luminous. 9दुर्दशाग्रस्&zwj;त; बुरी हालत या ख़तरनाक या चिंताजनक)</li>\n</ul>\n\n41:Tce5,\n<p>The correct answer is <strong>&quot;crossed the Rubicon.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\">&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Synonyms or Antonyms"], "concept": "Antonym", "confidence": "high"}, {"qid": "64a527af1eac9bdf4367efbe", "qs_no": 20, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: The statement below has been given with bracketed text. Select the option with correct Idiom for the bracketed text.</strong></p>\n\n<p>He (<strong>made an irreversible change, that will greatly impact his life</strong>) when he got that huge tattoo on his back!</p>\n", "options": [{"prompt": "1", "value": "beat the dead horse"}, {"prompt": "2", "value": "became the devil&amp;#39;s advocate"}, {"prompt": "3", "value": "crossed the Rubicon"}, {"prompt": "4", "value": "put a rose on his nose"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;crossed the Rubicon.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Crossed the Rubicon&quot;</strong> is an idiom that means to take an action that cannot be undone, and which will have significant consequences. (ऐसा कार्य करना जिसे पूर्ववत नहीं किया जा सकता और जिसके महत्वपूर्ण परिणाम होंगे)\n\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>When he quit his job to start his own company, he knew he was <u><strong>crossing the Rubicon</strong></u>.</em></li>\n\t</ul>\n\t</li>\n\t<li>The phrase comes from Julius Caesar&#39;s decision to cross the Rubicon river, which marked the beginning of a civil war in ancient Rome.</li>\n\t<li>In the given sentence, the speaker is saying that the person&#39;s decision to get a huge tattoo on their back is a major, irreversible change that will have a big impact on their life.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 3.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p><span><span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></p>\n\n<ul>\n\t<li><strong>&quot;Beat the dead horse&quot;</strong> means to continue to talk about a topic that has already been discussed and resolved. (किसी ऐसे विषय पर बात करना जारी रखना जिस पर पहले ही चर्चा हो चुकी है और समाधान हो चुका है)</li>\n\t<li><strong>&quot;Became the devil&#39;s advocate&quot; </strong>means to argue in favor of the opposite viewpoint, even if you don&#39;t actually believe it yourself. (विपरीत दृष्टिकोण के पक्ष में बहस करना, भले ही आप वास्तव में स्वयं इस पर विश्वास न करें)</li>\n\t<li><strong>&quot;Put a rose on his nose&quot;</strong> is not a commonly used idiom and does not have a clear meaning. It may be a made-up phrase.</li>\n</ul>\n\n42:Tb88,\n<p>The correct answer is <strong>&quot;opened.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Phrase or Idiom Meaning"], "concept": "Idioms", "confidence": "high"}, {"qid": "64a52ef8b1c12816cd404470", "qs_no": 21, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "Select the most appropriate option to fill in the blank No. 1.", "options": [{"prompt": "1", "value": "expanded"}, {"prompt": "2", "value": "open"}, {"prompt": "3", "value": "close"}, {"prompt": "4", "value": "opened"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;opened.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><span style=\"font-weight: bolder;\">&quot;Open&quot;</span>&nbsp;means to move something or part of something so that it is no longer closed; to move so as to be no longer closed. (किसी बंद वस्&zwj;तु (दरवाजे़ आदि) को खोलना; खोलने के लिए खिसकाना)\n\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>This window will not&nbsp;<u><span style=\"font-weight: bolder;\">open.</span></u></em></li>\n\t</ul>\n\t</li>\n\t<li><strong>&quot;Opened&quot;</strong> is the correct past tense form of the verb <strong>&quot;open&quot;</strong> to fill in the blank.</li>\n\t<li>The sentence is in the past tense, so it requires a verb form that indicates a past action.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 4.</span></li>\n\t<li><span style=\"color: rgb(33, 37, 41);\"><strong>Correct passage</strong>:</span></li>\n</ul>\n\n<p>He <u><strong>opened</strong></u> his eyes. Moonlight was shining ______ (2) ______ the bars on the window. And ______ (3)&nbsp;_______&nbsp;was goggling&nbsp;through the ______ (4)&nbsp;______ at him: a freckle-faced, red-haired, long-nosed someone. Ron Weasley was outside Harry&#39;s ______ (5)&nbsp;_______.​<br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Expanded&quot;</strong> means to increase in size or scope. (फैलना या फैलाना)</li>\n\t<li><strong>&quot;Close&quot;</strong> means to shut or block access to something. (बंद करना या होना)</li>\n</ul>\n\n43:Tee8,\n<p>The correct answer is <strong>&quot;through.&quot;</strong><br />\n<br />\n<span style=\"", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "64a52ef8b1c12816cd404471", "qs_no": 22, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "Select the most appropriate option to fill in the blank No. 2.", "options": [{"prompt": "1", "value": "complete"}, {"prompt": "2", "value": "though"}, {"prompt": "3", "value": "through"}, {"prompt": "4", "value": "in"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;through.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>&quot;Through&quot;</strong> means to go from one side of something to the other side. ((किसी वस्&zwj;तु के) इस पार से उस पार; आर-पार)</li>\n\t<li>It can also mean to finish something completely.</li>\n\t<li>In this context, <strong>&quot;through&quot;</strong> is the correct option as it fits the sentence structure and makes sense in the given sentence.\n\t<ul>\n\t\t<li><strong>Example</strong>:&nbsp;<em>I&#39;ve got some work to do but I should be <u><strong>through</strong></u> in an hour if you can wait.</em></li>\n\t</ul>\n\t</li>\n\t<li><span style=\"color:  (33, 37, 41);\">The correct answer is Option 3.</span></li>\n\t<li><span style=\"font-weight: bolder;\">Correct passage</span>:</li>\n</ul>\n\n<p style=\"color:  (33, 37, 41);\">He&nbsp;<u><span style=\"font-weight: bolder;\">opened</span></u>&nbsp;his eyes. Moonlight was shining&nbsp;<u><span style=\"font-weight: bolder;\">through</span></u>&nbsp;the bars on the window. And ______ (3)&nbsp;_______&nbsp;was goggling&nbsp;through the ______ (4)&nbsp;______ at him: a freckle-faced, red-haired, long-nosed someone. Ron Weasley was outside Harry&#39;s ______ (5)&nbsp;_______.​<br />\n<br />\n<span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></p>\n\n<ul style=\"color:  (33, 37, 41);\">\n\t<li><strong>&quot;Complete&quot;</strong> means to finish something or make it whole. It is not the correct option in this context as it doesn&#39;t fit the sentence structure. (संपूर्ण; सर्वांशपूर्ण, सारा)</li>\n\t<li><strong>&quot;Though&quot;</strong> is a conjunction used to introduce a statement that contrasts with or seems to contradict the previous statement. It is not the correct option in this context as it doesn&#39;t fit the sentence structure. (किसी बात के बावजूद; यद्यपि, हालाँकि)</li>\n\t<li><strong>&quot;In&quot; </strong>is a preposition used to indicate location or position within something. It is not the correct option in this context as it doesn&#39;t fit the sentence structure. ((पूर्वसर्ग) (स्&zwj;थान का निर्देश) अंदर या किसी क्षेत्र या वस्&zwj;तु के भीतर कोई स्थिति में, के अंदर)</li>\n</ul>\n\n44:Tcde,\nThe correct answer is <strong>&quot;someone.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "64a52ef8b1c12816cd404472", "qs_no": 23, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "Select the most appropriate option to fill in the blank No. 3.", "options": [{"prompt": "1", "value": "sometimes"}, {"prompt": "2", "value": "somewhere"}, {"prompt": "3", "value": "someone"}, {"prompt": "4", "value": "somewhat"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\nThe correct answer is <strong>&quot;someone.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>\n\n<ul>\n\t<li><strong>&quot;Someone&quot;</strong>&nbsp;refers to an unspecified or unknown person. (एक अनिर्दिष्ट या अज्ञात व्यक्ति)\\\n\n\t<ul>\n\t\t<li><span style=\"color: rgb(33, 37, 41);\"><strong>Example</strong>: <em><u><strong>Someone</strong></u> left their bag on the bus.</em></span></li>\n\t</ul>\n\t</li>\n\t<li>It is used when referring to a person whose identity is not known or specified.</li>\n\t<li>The word is a pronoun and can be used in place of a name or noun referring to a person.</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 3.</span></li>\n\t<li><span style=\"font-weight: bolder;\">Correct passage</span>:</li>\n</ul>\n\n<p style=\"color: rgb(33, 37, 41);\">He&nbsp;<u><span style=\"font-weight: bolder;\">opened</span></u>&nbsp;his eyes. Moonlight was shining&nbsp;<u><span style=\"font-weight: bolder;\">through</span></u>&nbsp;the bars on the window. And <u><strong>someone</strong></u> was goggling&nbsp;through the ______ (4)&nbsp;______ at him: a freckle-faced, red-haired, long-nosed someone. Ron Weasley was outside Harry&#39;s ______ (5)&nbsp;_______.​</p>\n\n<p><span><span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></p>\n\n<ul>\n\t<li><strong>Option 1, &quot;sometimes&quot;</strong>, refers to a frequency of occurrence, meaning &quot;at times&quot;. (कुछ मौकों पर; कभी-कभी)</li>\n\t<li><strong>Option 2, &quot;somewhere&quot;,</strong> refers to a location that is unspecified or unknown. (स्&zwj;थान पर/में/(को) जो आपको नहीं मालूम या जिसका नाम आप नहीं बताते; कहीं)</li>\n\t<li><strong>Option 4, &quot;somewhat&quot;</strong>, means to a moderate extent or degree. (किसी हद तक; कुछ-कुछ)</li>\n</ul>\n\n45:Tdd4,\n<p>The correct answer is <strong>&quot;bars.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26p", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "64a52ef8b1c12816cd404473", "qs_no": 24, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "Select the most appropriate option to fill in the blank No. 4.", "options": [{"prompt": "1", "value": "bars"}, {"prompt": "2", "value": "verticals"}, {"prompt": "3", "value": "grills"}, {"prompt": "4", "value": "horizontals"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;bars.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /> <strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word <strong>&quot;bars&quot;</strong> refers to long, narrow pieces of metal or wood that are used as a barrier or for support. (धातु या लकड़ी के लंबे, संकीर्ण टुकड़े जिनका उपयोग बाधा के रूप में या समर्थन के लिए किया जाता है)\n\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>The gorilla rattled the <u>bars</u> of its cage.</em></li>\n\t</ul>\n\t</li>\n\t<li>In the context of the question, <strong>bars</strong> would be the most appropriate option to fill in the blank.</li>\n\t<li>So, the correct answer is Option 1.</li>\n\t<li><span style=\"font-weight: bolder;\">Correct passage</span>:</li>\n</ul>\n\n<p style=\"color:  (33, 37, 41);\">He <u><span style=\"font-weight: bolder;\">opened</span></u> his eyes. Moonlight was shining <u><span style=\"font-weight: bolder;\">through</span></u> the bars on the window. And <u><span style=\"font-weight: bolder;\">someone</span></u> was goggling through the <u><span style=\"font-weight: bolder;\">bars</span></u> at him: a freckle-faced, red-haired, long-nosed someone. Ron Weasley was outside Harry&#39;s ______ (5) _______.​</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul style=\"color:  (33, 37, 41);\">\n\t<li><strong>Option 2, &quot;verticals,&quot;</strong> refers to something oriented in a vertical position, but it is not specific enough for the given context. (ऊर्ध्वाधर स्थिति में उन्मुख कुछ)</li>\n\t<li><strong>Option 3, &quot;grills,&quot;</strong> refers to a cooking apparatus or a decorative screen with parallel bars, but it is not relevant to the given context. (खाना पकाने का एक उपकरण या समानांतर पट्टियों वाली एक सजावटी स्क्रीन)</li>\n\t<li><strong>Option 4, &quot;horizontals,&quot;</strong> refers to something oriented in a horizontal position, but it is not specific enough for the given context. (क्षैतिज स्थिति में उन्मुख कुछ)</li>\n</ul>\n\n46:Tfc5,\n<p>The correct answer is <strong>&quot;window.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px&qu", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "64a52ef8b1c12816cd404474", "qs_no": 25, "pos_marks": 3.0, "neg_marks": 1.0, "type": "mcq", "langs": {"en": {"value": "Select the most appropriate option to fill in the blank No. 5.", "options": [{"prompt": "1", "value": "suitcase"}, {"prompt": "2", "value": "toilet"}, {"prompt": "3", "value": "window"}, {"prompt": "4", "value": "cupboard"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is <strong>&quot;window.&quot;</strong><br />\n<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" />&nbsp;<strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The blank is asking for a noun that fits in the context of the sentence.</li>\n\t<li>A <strong>suitcase, toilet, and cupboard</strong> are all objects that could potentially fit in a room, but they don&#39;t make sense in the context of the sentence.</li>\n\t<li>A <strong>window</strong>, on the other hand, is an object that is commonly found in a room and fits in the context of the sentence.</li>\n\t<li><strong>&quot;Window&quot;</strong> means&nbsp;the opening in a building, car, etc. that you can see through and that lets light in. A window usually has glass in it. ((इमारत, कार आदि की) खिड़की)\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>She is peeking from the <u><strong>window</strong></u>.</em></li>\n\t</ul>\n\t</li>\n\t<li><span style=\"color: rgb(33, 37, 41);\">The correct answer is Option 3.</span></li>\n\t<li><span style=\"font-weight: bolder;\">Correct passage</span>:</li>\n</ul>\n\n<p style=\"color: rgb(33, 37, 41);\">He&nbsp;<u><span style=\"font-weight: bolder;\">opened</span></u>&nbsp;his eyes. Moonlight was shining&nbsp;<u><span style=\"font-weight: bolder;\">through</span></u>&nbsp;the bars on the window. And&nbsp;<u><span style=\"font-weight: bolder;\">someone</span></u>&nbsp;was goggling&nbsp;through the&nbsp;<u><span style=\"font-weight: bolder;\">bars</span></u>&nbsp;at him: a freckle-faced, red-haired, long-nosed someone. Ron Weasley was outside Harry&#39;s&nbsp;<u><span style=\"font-weight: bolder;\">window</span></u>.​</p>\n\n<p><span><span><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></p>\n\n<ul style=\"color: rgb(33, 37, 41);\">\n\t<li><strong>Option 1 (suitcase)</strong> is a type of luggage used for carrying clothes and personal belongings. (बक्&zwj;सा (यात्रा के दौरान कपड़े आदि ले जाने के लिए प्रयुक्त); सूटकेस)</li>\n\t<li><strong>Option 2 (toilet)</strong> is a fixture used for urination and defecation. ((मल-विसर्जन के पात्र आदि वाला) शौचस्&zwj;थल; शौचगृह, शौचालय)</li>\n\t<li><strong>Option 4 (cupboard)</strong> is a piece of furniture used for storing items, typically with shelves or drawers. (<span style=\"color: rgb(32, 33, 36); \">भोजन, वस्&zwj;त्रों आदि को संभालकर रखने की दरवाज़ोंवाली अलमारी)</span></li>\n</ul>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYST 40: SSC MTS 2022 - English (Held On: 13 Jun, 2023 Shift 1)\",\"sections\":[{\"_id\":\"63c901ead8980edbdae7c05a\",\"qCount\":25,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":1,\"posMarks\":3,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isPartial", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": [], "concept": "Fill in the Blanks", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 25;
+const DURATION_SEC = 15 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>

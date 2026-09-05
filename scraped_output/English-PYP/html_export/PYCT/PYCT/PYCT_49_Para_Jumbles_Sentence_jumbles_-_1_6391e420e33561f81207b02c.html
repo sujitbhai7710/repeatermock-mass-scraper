@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 49: Para Jumbles/Sentence jumbles - 1</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 49: Para Jumbles/Sentence jumbles - 1</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-english-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">6 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">6391e420e33561f81207b02c</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "6391e420e33561f81207b02c", "title": "PYCT 49: Para Jumbles/Sentence jumbles - 1", "series_slug": "ssc-english-previous-year-questions", "duration_min": 6, "max_marks": 20.0, "languages": ["English"], "sections": [{"section_id": "6391e2d73bde1f85141e9ce9", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "63a75da506a5fdf8f23212b7", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p>Rearrange the parts of the sentence in the correct order.</p>\n\n<p>P : Paris has for centuries been regarded</p>\n\n<p>Q : world, a magnet for artists and intellectuals</p>\n\n<p>R : and a place where new ideas originate and art reigns supreme</p>\n\n<p>S : as the main cultural powerhouse of the Western</p>\n", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;PQSR&amp;nbsp;&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;QRSP&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;RSPQ&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;PSQR&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is<strong> &#39;PSQR&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>First statement is <strong>P </strong>because it is introductory statement.</li>\n\t<li>Second statement is <strong>S</strong> because it tells us about the characteristic of Paris.</li>\n\t<li>Third statement is <strong>Q</strong> because in it western world are interconnected.</li>\n\t<li>Fourth statement is <strong>R</strong>&nbsp; lastly.</li>\n</ul>\n\n<p>Therefore, the correct answer is<strong> &#39;Option 4&#39;.</strong></p>\n\n<p><b>The correct sequence is -&nbsp;</b><span style=\"\">Paris has for centuries been regarded&nbsp;as the main cultural powerhouse of the Western&nbsp;world, a magnet for artists and intellectuals&nbsp;and a place where new ideas originate and art reigns supreme.</span></p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "63a6ef33f3d7cdceaa797720", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>The question below consists of a set of labeled sentences. Out of the four options given, select the most logical order of the sentences to form a coherent paragraph.</strong></p>\n\n<p>P. They are on the market already but they are costly.</p>\n\n<p>Q. Their cost depends on the sort you install and the size of your home.</p>\n\n<p>R. These devices extract warmth from the air or the ground, or from water - a bit like a fridge operating in reverse.</p>\n\n<p>S. Climate advisers anticipate that most homes in future will be warmed by heat pumps.</p>\n", "options": [{"prompt": "1", "value": "RQPS"}, {"prompt": "2", "value": "SQRP"}, {"prompt": "3", "value": "SRPQ"}, {"prompt": "4", "value": "PRSQ"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"font-variant-numeric: normal; font-variant-east-asian: normal; background-color: transparent; list-style-type: disc; vertical-align: baseline; white-space: pre;\">The correct answer is&nbsp;<span style=\"font-weight: 700;\">option 3) i.e. &quot;SRPQ.&quot;</span>&nbsp;<br />\n<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul style=\"\">\n\t<li>In the above-mentioned paragraph, there is a chronological sequence of the sentences.</li>\n\t<li><span style=\"font-weight: 700;\">Sentence S</span>&nbsp;is&nbsp;the first sentence as it begins with the noun <strong>&#39;<span style=\"\">Climate advisers</span>&#39; </strong>and&nbsp;<span style=\"font-variant-numeric: normal; font-variant-east-asian: normal; vertical-align: baseline; white-space: pre-wrap;\">mentions c</span>limate experts predict that in the future, heat pumps will be used to heat the majority of homes.</li>\n\t<li><span style=\"font-weight: 700;\">Sentence R&nbsp;</span>is the second sentence&nbsp;as it&nbsp;begins with the pronoun <strong&g", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "63a6f3c84bdefb475c59112b", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>The question below consists of a set of labeled sentences. Out of the four options given, select the most logical order of the sentences to form a coherent paragraph.</strong></p>\n\n<p>P. The demand for fish has increased.</p>\n\n<p>Q. However, adequate fish is not available in the lake.</p>\n\n<p>R. This is mainly because the migratory fish from Chindwin-Irrawaddy river system to Manipur river system have declined steadily after the barrage came up.</p>\n\n<p>S. At least two lakh people are directly dependent on the lake for fishing.</p>\n", "options": [{"prompt": "1", "value": "SPQR"}, {"prompt": "2", "value": "RPSQ"}, {"prompt": "3", "value": "QRPS"}, {"prompt": "4", "value": "RQSP"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p style=\"font-variant-numeric: normal; font-variant-east-asian: normal; background-color: transparent; list-style-type: disc; vertical-align: baseline; white-space: pre;\">The correct answer is&nbsp;<span style=\"font-weight: 700;\">option 1) i.e. &quot;SPQR.&quot;</span>&nbsp;<br />\n&nbsp;<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul style=\"\">\n\t<li>In the abovementioned paragraph, there is a chronological sequence of the sentences.</li>\n\t<li><span style=\"font-weight: 700;\">Sentence S</span>&nbsp;is&nb", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Narration", "confidence": "high"}, {"qid": "628b903ea9e28134669cab47", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Given below are four jumbled sentences. Select the option that gives their correct order.</strong></p>\n\n<p><strong>A) </strong>Each month in the modern <span>Gregorian calendar</span> consists of at least 28 days.</p>\n\n<p><strong>B) </strong>To fully sync the calendar with the lunar year, the Roman king <span>Numa Pompilius</span> added January and February to the original 10 months.</p>\n\n<p><strong>C) </strong>That number would be a nicely rounded 30 were it not for <span>February</span>.</p>\n\n<p><strong>D)</strong> It was altered after Numa&rsquo;s addition including the shortening of February at certain intervals, and the addition of a leap day. February&rsquo;s 28-day length has stuck.</p>\n", "options": [{"prompt": "1", "value": "ADBC"}, {"prompt": "2", "value": "BDCA"}, {"prompt": "3", "value": "ACBD"}, {"prompt": "4", "value": "CDBA"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is &quot;<strong>ACBD</strong>&quot;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the correct sequence of the passage.</li>\n\t<li><strong>Statement A </strong>is the opening sentence as it starts with a<strong> general fact</strong>. Each month in the modern <span>Gregorian calendar</span> consists of at least 28 days.</li>\n\t<li><strong>Statement C</strong> is the next sentence as it mentions that <strong>February is the only exception</strong> to the fact given in the previous sentence.</li>\n\t<li><strong>Statement B </strong>is the next sentence as it mentions that in the past <strong>Roman ruler added two months</strong>, January and February to the original 10 months.</li>\n\t<li><strong>Statement D </strong>is the final sentence while ruler Numa made some additions <strong>some changes were retained like that of the modern leap day</strong>. This explains the <strong>exception of February consisting of 28</strong> days mentioned in the second statement.</li>\n</ul>\n\n<p>Hence, the correct sequence is <strong>ACBD.</strong></p>\n\n<p><strong>The correct passage is: <em>A) </em></strong><em>Each month in the modern <span>Gregorian calendar</span> consists of at least 28 days. <strong>C) </strong>That number would be a nicely rounded 30 were it not for <span>February</span>. <strong>B) </strong>To fully sync the calendar with the lunar year, the Roman king <span>Numa Pompilius</span> added January and February to the original 10 months. <strong>D)</strong> It was altered after Numa&rsquo;s addition including the shortening of February at certain intervals, and the addition of a leap day. February&rsquo;s 28-day length has stuck.</em></p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "628b927fc6385a4610a4b224", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Given below are four jumbled sentences. Select the option that gives their correct order.</strong></p>\n\n<p><strong>A) </strong>The phrasing was retained even after pants were made into one complete garment.</p>\n\n<p><strong>B) </strong>Calling them a pair of pants, as they were eventually known, made sense when there were two components.</p>\n\n<p><strong>C) </strong>They were put on one at a time and then secured around the waist.</p>\n\n<p><strong>D) </strong>According to some, the phrase &ldquo;pair of pants&rdquo; harkens back to the days when what constituted pants meant separate items, one for each leg.</p>\n", "options": [{"prompt": "1", "value": "ABCD"}, {"prompt": "2", "value": "DCBA"}, {"prompt": "3", "value": "BDCA"}, {"prompt": "4", "value": "CDAB"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is &quot;<strong>DCBA</strong>&quot;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the correct sequence of the passage.</li>\n\t<li><strong>Statement D </strong>is the first sentence of the passage as it mentions the phrase &quot;<strong>pair of pants</strong>&quot; harkens back to the days when what constituted pants meant separate items, <strong>one for each leg</strong>. The theme of the passage is the phrase &quot;<strong>pair of pants</strong>&quot;.</li>\n\t<li><strong>Statement C </strong>is the second sentence of the passage as it mentions that in the past <strong>pants were put on one at a time</strong> and then secured around the <strong>waist</strong>. This explains the phrase &quot;pair of pants&quot; in the opening sentence.</li>\n\t<li><strong>Statement B </strong>is the third sentence of the passage as it mentions that in the past the phrase made sense as pants were worn in that way. They were two components one for each leg like a pair of shoes.</li>\n\t<li><strong>Statement A </strong>is the final sentence of the passage as it mentions that the <strong>phrasing was retained even after they were made into one complete garment</strong>.</li>\n</ul>\n\n<p>Hence, the correct sequence is <strong>DCBA</strong>.</p>\n\n<p><strong>The correct passage is: <em>D) </em></strong><em>According to some, the phrase &ldquo;pair of pants&rdquo; harkens back to the days when what constituted pants meant separate items, one for each leg. <strong>C) </strong>They were put on one at a time and then secured around the waist. <strong>B) </strong>Calling them a pair of pants, as they were eventually known, made sense when there were two components. <strong>A) </strong>The phrasing was retained even after pants were made into one complete garment.</em></p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "628b950e2773c86bfaa2e369", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Given below are four jumbled sentences. Select the option that gives their correct order.</strong></p>\n\n<p><strong>A) </strong>Yams are members of the genus <em>Dioscorea</em> and are in their own special family, Dioscoreaceae.</p>\n\n<p><strong>B) </strong>Yams and sweet potatoes are totally different plants and are not even closely related.</p>\n\n<p><strong>C) </strong>Sweet potatoes, on the other hand, come from the species <em>Ipomoea batatas</em>, in the morning glory family, Convolvulaceae.</p>\n\n<p><strong>D) </strong>In fact, these tasty starchy veggies are actually in two different plant families entirely.</p>\n", "options": [{"prompt": "1", "value": "BDAC"}, {"prompt": "2", "value": "CDAB"}, {"prompt": "3", "value": "ADBC"}, {"prompt": "4", "value": "DCBA"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is &quot;<strong>BDAC</strong>&quot;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /> <strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the correct sequence of the passage.</li>\n\t<li><strong>Statement B </strong>is the first sentence of the passage as it introduces the theme of the passage that <strong>yams and sweet potatoes are totally different plants.</strong></li>\n\t<li><strong>Statement D </strong>is<strong> </strong>the<strong>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "61efc14d57559ff8bc1c8673", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Directions: Sentences of a paragraph are given below in jumbled order. Arrange the sentences in the right order to form a meaningful and coherent paragraph.</strong></p>\n\n<p>A. This cooled off into the darkness after a few million years.</p>\n\n<p>B. The first time was when the universe began its existence as a glowing fireball.</p>\n\n<p>C. In the modern scientific story, the light was created not once but twice.</p>\n\n<p>D. The second time was when the cold material condensed into dense nuggets and ignited to become the first stars.</p>\n", "options": [{"prompt": "1", "value": "ABCD"}, {"prompt": "2", "value": "DBAC"}, {"prompt": "3", "value": "BADC"}, {"prompt": "4", "value": "CBAD"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p style=\"\">The correct answer is&nbsp;<span style=\"font-weight: 700;\">&#39;CBAD</span>.<span style=\"font-weight: 700;\">&#39;</span></p>\n\n<p style=\"\"><span style=\"font-weight: 700;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></span></span></span></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>The sentence &#39;<span style=\"font-weight: 700;\">C</span>&#39;&nbsp;is&nbsp;<span style=\"font-weight: 700;\">independent</span>&nbsp;of any other sentence as it is giving general information about&nbsp;&quot;<span style=\"font-weight: 700;\">the creation of the light</span>&quot;. Hence, &#39;<span style=\"font-weight: 700;\">C</span>&#39; is the&nbsp;<span style=\"font-weight: 700;\">first part</span>.</li>\n\t<li>Sentence&nbsp;<span style=\"font-weight: 700;\">B&nbsp;</span>will come after&nbsp;<span style=\"font-weight: 700;\">C</span><span style=\"font-weight: 700;\">&nbsp;</span>as&nbsp;<span style=\"font-weight: 700;\">it is giving information about the first time creation of the light </span>(when the universe began its existence as a glowing fireball).</li>\n\t<li>Sentence&nbsp;<span style=\"font-weight: 700;\">A&nbsp;</span>will come after&nbsp;<span style=\"font-weight: 700;\">B&nbsp;</span>as&nbsp;<span style=\"font-weight: 700;\">it is giving the reason </span><span style=\"\">(this&nbsp;</span><span style=\"\">cooled off into the darkness after a few million years</span><span style=\"\">)&nbsp;</span><span style=\"font-weight: 700;\">behind the need for the creation of the light for the second time</span><span style=\"\">.</span></li>\n\t<li>The sentence &#39;<span style=\"font-weight: 700;\">D</span>&#39;&nbsp;is the&nbsp;<span style=\"font-weight: 700;\">concluding</span>&nbsp;<span style=\"font-weight: 700;\">part</span>&nbsp;<span style=\"\">as&nbsp;</span><span style=\" font-weight: 700;\">it is giving information about&nbsp;the second time creation of the light&nbsp;</span><span style=\"\">(</span><span style=\"\">when the cold material is condensed into dense nuggets and ignited to become the first stars</span><span style=\"\">​</span><span style=\"\">)</span><span style=\"\">.</span><br />\n\t&nbsp;</li>\n</ul>\n\n<p style=\"\"><u style=\"font-weight: 700;\">Paragraph after rearranging the sentences</u><span style=\"font-weight: 700;\">:&nbsp;</span><em>In the modern scientific story, the light was created not once but twice.&nbsp;The first time was when the universe began its existence as a glowing fireball.&nbsp;This cooled off into the darkness after a few million years.&nbsp;The second time was when the cold material condensed into dense nuggets and ignited to become the first stars.</em></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/0a6c2db12945bba9d674d33112fce66b07f00093d75dae93749f9bdb7bd34e7a.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Hint</u></span></strong></span></span></span></span></span></span></span></span></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li><span style=\"font-weight: 700;\"><u>Important Rules to Solve the Para Jumbles</u>:</span>\n\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">Read the sentences</span>&nbsp;attentively and try to&nbsp;<span style=\"font-weight: 700;\">comprehend the idea or theme of the sentence&nbsp;</span>and&nbsp;<span style=\"font-weight: 700;\">eliminate the irrelevant&nbsp;</span><span style=\"font-weight: 700;\">options.</span></li>\n\t\t<li>Try to&nbsp;<span style=\"font-weight: 700;\">identify the opening&nbsp;</span>(independent sentence)<span style=\"font-weight: 700;\">&nbsp;and closing sentences&nbsp;</span>(concluding sentence)<span style=\"font-weight: 700;\">.</span></li>\n\t\t<li>Try to&nbsp;<span style=\"font-weight: 700;\">identify the mandatory pairs</span>. Two sentences can be connected through various connectors and other determinants.<br />\n\t\t&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/51867102c7c2f369f6e29d2efe025e3b3367c68261ec20262828d84ca5c8f854.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Hinglish</u></span></strong></span></span></span></span></span></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>वाक्य<span style=\"font-weight: 700;\">&nbsp;&#39;C&#39;&nbsp;</span>किसी अन्य वाक्य से स्वतंत्र है क्योंकि यह &quot;प्रकाश के निर्माण&quot;&nbsp;के बारे में सामान्य जानकारी दे रहा है। अतः &#39;<span style=\"font-weight: 700;\">C</span>&#39; पहला भाग है।</li>\n\t<li>वाक्य&nbsp;<span style=\"font-weight: 700;\">B</span>, C के बाद आएगा क्योंकि यह पहली बार प्रकाश के निर्माण के बारे में जानकारी दे रहा है (जब ब्रह्मांड ने एक चमकदार आग के गोले के रूप में अपना अस्तित्व शुरू किया)।</li>\n\t<li>वाक्य&nbsp;<span style=\"font-weight: 700;\">A</span>, B के बाद आएगा क्योंकि यह दूसरी बार प्रकाश के निर्माण की आवश्यकता के पीछे का कारण बता रहा है (यह कुछ मिलियन वर्षों के बाद अंधेरे में ठंडा हो गया)।</li>\n\t<li>वाक्य &#39;<span style=\"font-weight: 700;\">D</span>&#39; समापन भाग है क्योंकि यह दूसरी बार प्रकाश के निर्माण के बारे में जानकारी दे रहा है (जब ठंडी सामग्री घनी डली में संघनित होती है और पहले सितारे बनने के लिए प्रज्वलित होती है)।</li>\n</ul>\n\n32:T9ac,\n<p>The correct answer is &quot;<strong>ACBD</strong>&quot;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the correct sequence of the passage.</li>\n\t<li><strong>Statement A </strong>is the opening sentence as it starts with a<strong> general fact</strong>. Each month in the modern <span>Gregorian calendar</span> consists of at least 28 days.</li>\n\t<li><strong>Statement C</strong> is the next sentence as it mentions that", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "61a0715ba8580d61bec5508b", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Given below are six sentences. A and F are the first and the last sentences. The rest of the sentences namely B, C, D and E are jumbled. Select the option that gives their correct order.</strong></p>\n\n<p>A. From a very early age I knew that when I grew up I would be writer.</p>\n\n<p>B. For this or the other reasons, I was somewhat lonely.</p>\n\n<p>C. I was the middle child among the three.</p>\n\n<p>D. And I barely saw my father, who was a soldier, till I was eight.</p>\n\n<p>E. But there was a gap of five years on either side.</p>\n\n<p>F. I had the lonely child&rsquo;s habit of making up stories and holding conversations with imaginary persons.</p>\n", "options": [{"prompt": "1", "value": "ABCDEF"}, {"prompt": "2", "value": "ACDEBF"}, {"prompt": "3", "value": "ADECBF"}, {"prompt": "4", "value": "ACEBDF"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is&nbsp;<strong><span style=\"font-weight: 700;\">&#39;</span>ACEBDF<span style=\"font-weight: 700;\">.&#39;</span></strong></p>\n\n<p><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></p>\n\n<ul>\n\t<li>While arranging the parts of the passage&nbsp;given in options, we have to&nbsp;<u>find some grammatical or contextual connections between them</u>, so let&rsquo;s find out.&nbsp;&nbsp;\n\n\t<ul>\n\t\t<li>The opener will be <b>A</b>&nbsp;as it introduces the context of the paragraph.</li>\n\t\t<li>After this, <b>C</b>&nbsp;will come as it adds information about the age<span style=\"font-weight: 700;\">.</span></li>\n\t\t<li>After this, <b>E</b>&nbsp;will come as it is talking about <strong>ages</strong>&nbsp;which is&nbsp;mentioned in <strong>C</strong>.</li>\n\t\t<li><strong>B follows E </strong>as B talks about loneliness.</li>\n\t\t<li>The&nbsp;last sentence will be F<span style=\"font-weight: 700;\">&nbsp;</span>as it is providing a conclusion to the context.</li>\n\t</ul>\n\t</li>\n\t<li>Thus, the correct answer&nbsp;is<span style=\"font-weight: 700;&q", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "62ba145fc99d2f7387cf6e7a", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Sentences of a paragraph are given below in jumbled order. Arrange the sentences in the correct order to form a meaningful and coherent paragraph.</strong></p>\n\n<p><b>&nbsp;A)&nbsp;</b><span style=\"color: ;   \">Although we all obviously have different personalities and talents, there&rsquo;s no reason to believe these differences can be explained by the dominance of one half of the brain over the other half.</span></p>\n\n<p><b>&nbsp;B)&nbsp;</b><span style=\"color: ;   \">One of the myth&rsquo;s fatal flaws is that it relies on vague conceptions of the abilities it purports to explain.</span></p>\n\n<p><b>&nbsp;C)&nbsp;</b><span style=\"color: ;   \">&nbsp;Recent research</span><span style=\"font-;   \">&nbsp;using brain imaging technology hasn&rsquo;t found any evidence of right or left dominance.</span></p>\n\n<p><b>&nbsp;D)&nbsp;</b><span style=\"font;   \">The idea that there are right-brained and left-brained people is a myth.</span></p>\n", "options": [{"prompt": "1", "value": "CBAD"}, {"prompt": "2", "value": "DACB"}, {"prompt": "3", "value": "ACDB"}, {"prompt": "4", "value": "BDAC"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is &quot;<strong>DACB</strong>&quot;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the correct sequence of the passage.</li>\n\t<li><strong>Statement D&nbsp;</strong>is the opening sentence of the passage as it begins by mentioning <strong>a myth</strong>. The myth is that&nbsp;<span style=\"\">there are right-brained and left-brained people.</span></li>\n\t<li><strong><span style=\"\">Statement A&nbsp;</span></strong><span style=\"\">is the second sentence of the passage as it begins with the <strong>conjunction </strong>&quot;<strong>although</strong>&quot;. We use &quot;although&quot; as a <strong>contrasting </strong>idea in the main sentence to the second clause.</span></li>\n\t<li><span style=\"\"><strong>Statement C</strong> is the third sentence of the passage as it <strong>debunks the myth</strong> by stating that recent research</span><span style=\"\">&nbsp;using brain imaging technology hasn&rsquo;t found any evidence of right or left dominance.</span></li>\n\t<li><span style=\"\"><strong>Statement B</strong> is the final sentence of the passage as it is a conclusion based on the previous sentences. We can see the logical flow of the sentences to arrive at a conclusion from the <strong>myth </strong>to the <strong>truth</strong>.</span></li>\n</ul>\n\n<p><span style=\"\">​Hence, the correct sequence is &quot;<strong>DACB</strong>&quot;.</span></p>\n\n<p><strong>The complete passage is</strong>:&nbsp;<span style=\"font-weight: 700; \">&nbsp;D)&nbsp;</span><span style=\"\">The idea that there are right-brained and left-brained people is a myth.</span><span style=\"font-weight: 700;\">&nbsp;A)&nbsp;</span>Although we all obviously have different personalities and talents, there&rsquo;s no reason to believe these differences can be explained by the dominance of one half of the brain over the other half.&nbsp;<span style=\"font-weight: 700;\">C)&nbsp;</span>Recent research&nbsp;using brain imaging technology hasn&rsquo;t found any evidence of right or left dominance.&nbsp;<span style=\" font-weight: 700;\">B)&nbsp;</span><span style=\"\">One of the myth&rsquo;s fatal flaws is that it relies on vague conceptions of the abilities it purports to explain.&nbsp;</span></p>\n\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "62ba3c2bc99d2f7387d15285", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "\n<p><strong>Sentences of a paragraph are given below in jumbled order. Arrange the sentences in the correct order to form a meaningful and coherent paragraph.</strong></p>\n\n<p><strong>A)&nbsp;</strong><span style=\"color: ;   \">The word&nbsp;</span><em style=\"color: ;   \">pente</em><span style=\"color: ;   \">, in Greek, means &ldquo;five,&rdquo; while&nbsp;</span><em style=\"color: ;   \">-athlon</em><span style=\"color: ;   \">&nbsp;means &ldquo;contest,&rdquo; conveying that the sport comprises five different events in one.</span></p>\n\n<p><strong>B)&nbsp;</strong><span style=\"font-;   \">The purpose behind the pentathlon dates back to the ancient Olympic Games as originally&nbsp;it was developed as a sporting event to determine the most-skilled athlete and the perfect soldier.</span></p>\n\n<p><strong>C)&nbsp;</strong><span style=\"font-;   \">The five events in the modern pentathlon&mdash;fencing, swimming, horse riding, pistol shooting, and running&mdash;were chosen to reflect skills that cavalry soldiers of the 19th-century ought to possess and refine.</span></p>\n\n<p><strong>D)&nbsp;</strong><span style=\"color: ;   \">An event since the&nbsp;</span><span class=\"md-crosslink\" style=\"color: ;   \">1912 Olympics</span><span style=\"color: ;   \">, the modern pentathlon is often forgotten and has a name that might turn off potential spectators.</span></p>", "options": [{"prompt": "1", "value": "DBCA"}, {"prompt": "2", "value": "CABD"}, {"prompt": "3", "value": "DABC"}, {"prompt": "4", "value": "ACBD"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is &quot;<b>DABC</b><span style=\"\">&quot;</span></p>\n\n<p><span style=\"\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the correct sequence of the given passage.</li>\n\t<li><strong>Statement D&nbsp;</strong>is the first sentence of the paragraph as it begins by mentioned the date at which the modern pentathlon started in Olympics. It is stated that&nbsp;<span style=\"\">An event since the&nbsp;</span><span class=\"md-crosslink\" style=\"\">1912 Olympics</span><span style=\"\">, the modern pentathlon is often forgotten and has a name that might turn off potential spectators.</span></li>\n\t<li><strong><span style=\"font-;\">Statement A&nbsp;</span></strong><span style=\"font;\">is the ", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 6 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
