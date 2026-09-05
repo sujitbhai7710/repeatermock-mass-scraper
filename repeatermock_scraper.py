@@ -2362,12 +2362,35 @@ def _subscript(s):
 
 
 def extract_images_from_html(html_text: str) -> List[dict]:
-    """Extract image URLs from HTML."""
+    """Extract image URLs from HTML.
+    
+    Handles both `"` and `&quot;` as attribute terminators.
+    Bug fix: previous regex captured trailing HTML attributes (like `&quot; style=`)
+    as part of the URL because `[^"]+` matches `&`, `q`, `u`, `o`, `t`, `;` individually.
+    
+    New approach: lazy match `[^"]+?` with lookahead `(?:"|&quot;)` — stops at the
+    FIRST occurrence of either `"` or `&quot;` after the URL.
+    """
     if not html_text:
         return []
     imgs = []
-    for m in re.finditer(r'<img[^>]+src="([^"]+)"[^>]*/?>', html_text):
-        imgs.append({"url": m.group(1), "alt": ""})
+    # Match src="..." where ... ends at the FIRST " OR &quot;
+    # Uses lazy `[^"]+?` + lookahead `(?:"|&quot;)` to stop correctly
+    for m in re.finditer(r'<img[^>]+src="([^"]+?)(?:"|&quot;)', html_text):
+        url = m.group(1)
+        # Defensive: stop at first space, quote, or HTML entity (in case regex missed)
+        for stop_str in [' ', '"', '&quot;', '<', '>']:
+            idx = url.find(stop_str)
+            if idx > 0:
+                url = url[:idx]
+        url = url.strip()
+        if url:
+            imgs.append({"url": url, "alt": ""})
+    # Also match src=&quot;...&quot; (HTML-entity-encoded quotes throughout)
+    for m in re.finditer(r'<img[^>]+src=&quot;([^&]+?)&quot;', html_text):
+        url = m.group(1).strip()
+        if url and url not in [i["url"] for i in imgs]:
+            imgs.append({"url": url, "alt": ""})
     return imgs
 
 
@@ -2480,9 +2503,16 @@ class ImageDownloader:
         - Control characters in URL (Bug #1)
         - Wikipedia thumbnail size 400 (Bug #2)
         - Google image hosts 403 (Bug #3) — needs Referer header
+        
+        NEW: Auto-retry transient errors (timeout, DNS, 5xx, 429) up to 3 times.
+        NEW: Follow 301/302 redirects (some sites redirect to CDN).
+        NEW: HTML parser regex fix prevents URL corruption (extract_images_from_html).
         """
         if not cdn_url or not cdn_url.startswith("http"):
             return None
+        # Skip malformed URLs (https:https://... pattern)
+        if cdn_url.startswith("https:https://") or cdn_url.startswith("http:http://"):
+            cdn_url = cdn_url[cdn_url.index("://", 5):]  # take from second ://
         # Skip if already in manifest (already downloaded)
         if cdn_url in self.manifest:
             return self.manifest[cdn_url]
@@ -2493,69 +2523,96 @@ class ImageDownloader:
             self.manifest[cdn_url] = rel_path
             return rel_path
         
-        # Sanitize URL (fixes Bug #1 and #2)
+        # Sanitize URL (fixes Bug #1 control chars + Bug #2 Wikipedia thumbnail)
         clean_url = self._sanitize_url(cdn_url)
         
         # Bug #3: Google image hosts require specific Referer + full browser UA
-        # Otherwise they return 403 Forbidden
         is_google_host = any(h in cdn_url for h in [
             'googleusercontent.com', 'gstatic.com', 'google.com',
         ])
         is_wikipedia = any(h in cdn_url for h in ['wikipedia.org', 'wikimedia.org'])
+        is_repeatermock_cdn = 'cdn.repeatermock.com' in cdn_url
         
         if is_google_host:
             referer = "https://repeatermock.com/"
             user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
         elif is_wikipedia:
-            # Wikipedia requires a User-Agent that identifies the bot
             referer = "https://repeatermock.com/"
             user_agent = "RepeaterMockScraper/1.0 (https://github.com/sujitbhai7710/repeatermock-mass-scraper; educational use)"
         else:
             referer = WEB_BASE
             user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
         
-        try:
-            import urllib.request as ur
-            req = ur.Request(clean_url, headers={
-                "User-Agent": user_agent,
-                "Referer": referer,
-                "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
-                "Accept-Language": "en-US,en;q=0.9",
-            })
-            with ur.urlopen(req, timeout=20) as resp:
-                if resp.status != 200:
-                    raise Exception(f"HTTP {resp.status}")
-                data = resp.read()
-            # GitHub file size limit: 100 MB. Skip if >95 MB (safety margin).
-            if len(data) > 95 * 1024 * 1024:
-                raise Exception(f"Image too large for GitHub: {len(data)} bytes")
-            # Verify it's actually an image (check magic bytes)
-            if len(data) < 4:
-                raise Exception("Response too short to be an image")
-            # Check for HTML error pages (some sites return 200 + HTML for 404s)
-            if data[:9].lower().startswith(b'<!doctype') or data[:5].lower().startswith(b'<html'):
-                raise Exception("Response is HTML, not image (likely error page)")
-            # Atomic write: tmp file + rename
-            tmp_path = abs_path + ".tmp"
-            with open(tmp_path, "wb") as f:
-                f.write(data)
-            os.rename(tmp_path, abs_path)
-            # Update manifest
-            async with self._lock:
-                self.manifest[cdn_url] = rel_path
-            return rel_path
-        except Exception as e:
-            # Record failure for later retry
-            async with self._lock:
-                self.failures.append({
-                    "cdn_url": cdn_url,
-                    "test_id": test_id,
-                    "qid": qid,
-                    "error": str(e)[:200],
-                    "retry_count": 0,
-                    "last_attempt": datetime.now(timezone.utc).isoformat(),
+        # Our CDN gets a longer timeout (30s vs 20s default)
+        timeout = 30 if is_repeatermock_cdn else 20
+        
+        # Transient errors that warrant a retry
+        TRANSIENT_ERRORS = [
+            'timed out', 'timeout', 'Temporary failure', 'Name or service',
+            'Connection reset', 'Connection refused', 'no host',
+            'Errno 104', 'Errno 111', 'Errno -2', 'Errno -3', 'Errno -5',
+            'SSL: CERTIFICATE_VERIFY', 'SSL: UNEXPECTED_EOF',
+            'HTTP 429', 'HTTP 500', 'HTTP 502', 'HTTP 503', 'HTTP 504',
+            'HTTP 301', 'HTTP 302', 'HTTP 303', 'HTTP 307',  # redirects (shouldn't happen with redirect handler, but just in case)
+        ]
+        
+        MAX_IMAGE_RETRIES = 3
+        last_error = ""
+        for retry in range(MAX_IMAGE_RETRIES):
+            try:
+                import urllib.request as ur
+                # Use opener that follows redirects automatically
+                opener = ur.build_opener(ur.HTTPRedirectHandler)
+                req = ur.Request(clean_url, headers={
+                    "User-Agent": user_agent,
+                    "Referer": referer,
+                    "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+                    "Accept-Language": "en-US,en;q=0.9",
                 })
-            return None
+                with opener.open(req, timeout=timeout) as resp:
+                    if resp.status != 200:
+                        raise Exception(f"HTTP {resp.status}")
+                    data = resp.read()
+                # GitHub file size limit: 100 MB. Skip if >95 MB (safety margin).
+                if len(data) > 95 * 1024 * 1024:
+                    raise Exception(f"Image too large for GitHub: {len(data)} bytes")
+                # Verify it's actually an image (check magic bytes)
+                if len(data) < 4:
+                    raise Exception("Response too short to be an image")
+                # Check for HTML error pages (some sites return 200 + HTML for 404s)
+                if data[:9].lower().startswith(b'<!doctype') or data[:5].lower().startswith(b'<html'):
+                    raise Exception("Response is HTML, not image (likely error page)")
+                # Atomic write: tmp file + rename
+                tmp_path = abs_path + ".tmp"
+                with open(tmp_path, "wb") as f:
+                    f.write(data)
+                os.rename(tmp_path, abs_path)
+                # Update manifest
+                async with self._lock:
+                    self.manifest[cdn_url] = rel_path
+                return rel_path
+            except Exception as e:
+                last_error = str(e)[:200]
+                # Check if this is a transient error worth retrying
+                is_transient = any(te in last_error for te in TRANSIENT_ERRORS)
+                if is_transient and retry < MAX_IMAGE_RETRIES - 1:
+                    # Wait before retry (exponential backoff: 2s, 4s)
+                    await asyncio.sleep(2 ** (retry + 1))
+                    continue
+                # Non-transient error (404, 403, 400, etc.) — don't retry, record failure
+                break
+        
+        # Record failure for later retry (by image_retry.py script)
+        async with self._lock:
+            self.failures.append({
+                "cdn_url": cdn_url,
+                "test_id": test_id,
+                "qid": qid,
+                "error": last_error,
+                "retry_count": 0,
+                "last_attempt": datetime.now(timezone.utc).isoformat(),
+            })
+        return None
 
     async def download_batch(self, image_urls: List[Tuple[str, str, str]]) -> Dict[str, Optional[str]]:
         """Download multiple images in parallel. Returns {cdn_url: local_path_or_None}.
@@ -2606,16 +2663,6 @@ class ImageDownloader:
             "images_downloaded": len(self.manifest),
             "image_failures": len(self.failures),
         }
-
-
-def extract_images_from_html(html_text: str) -> List[dict]:
-    """Extract image URLs from HTML (DUPLICATE — kept for backward compat)."""
-    if not html_text:
-        return []
-    imgs = []
-    for m in re.finditer(r'<img[^>]+src="([^"]+)"[^>]*/?>', html_text):
-        imgs.append({"url": m.group(1), "alt": ""})
-    return imgs
 
 
 def render_ai_export(test: TestData, test_ref: TestRef) -> dict:
@@ -2815,7 +2862,7 @@ async def run_scraper(test_urls: List[str], series_urls: List[str], output_dir: 
             print(f"    {series_slug:30s}: {count} discovered (was {already}, remaining before this run: {remaining_before})")
 
         # Filter out already-scraped tests (if resume=True)
-        MAX_FAILURE_ATTEMPTS = 5  # Bug #3 fix: don't retry tests that failed 5+ times
+        MAX_FAILURE_ATTEMPTS = 10  # Increased from 5 to 10 — give failed tests more chances
         if resume:
             before = len(all_test_refs)
             kept = []
