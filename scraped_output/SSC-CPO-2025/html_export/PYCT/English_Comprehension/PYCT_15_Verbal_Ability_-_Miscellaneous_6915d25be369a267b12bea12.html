@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 15: Verbal Ability - Miscellaneous</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 15: Verbal Ability - Miscellaneous</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-cpo-previous</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">25</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">15 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">25.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+1.0 / -0.25</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">6915d25be369a267b12bea12</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "6915d25be369a267b12bea12", "title": "PYCT 15: Verbal Ability - Miscellaneous", "series_slug": "ssc-cpo-previous", "duration_min": 15, "max_marks": 25.0, "languages": ["English"], "sections": [{"section_id": "6915cdba80e7dce1b661ccd8", "section_name": "Test", "q_count": 25, "max_marks": 25.0, "questions": [{"qid": "669fe0c23aedac836f63c77b", "qs_no": 1, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are six sentences of a paragraph.</p>\n\n<p>Sentence A is the beginning whereas sentence F is the last sentence of the para. The middle four sentences are jumbled up. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. It was midday.</p>\n\n<p>B. Voldyrev, a tall country gentleman with a cropped head and prominent eyes, took off his overcoat, mopped his brow with his handkerchief, and went into the government office.</p>\n\n<p>C. &quot;Where can I make an inquiry here?&quot; he said, addressing a porter who was bringing a trayful of glasses from the furthest recesses of the office.</p>\n\n<p>D. Voldyrev coughed and went towards the window.</p>\n\n<p>E. &quot;To that one sitting near the window!&quot; said the porter, indicating with the tray the furthest window.</p>\n\n<p>F. There, at a green table spotted like typhus, was sitting a young man with his hair standing up in four tufts on his head, with a long pimply nose, and a long faded uniform.</p>\n", "options": [{"prompt": "1", "value": "BCED"}, {"prompt": "2", "value": "BDEC"}, {"prompt": "3", "value": "ECDB"}, {"prompt": "4", "value": "CBED"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p style=\"\">The correct answer is <b>Option 1)</b></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>Sentence B introduces Voldyrev and describes his actions upon arriving at the government office, making it the logical continuation after sentence A.</li>\n\t<li>Sentence C follows B as it details Voldyrev&#39;s interaction with the porter, asking where he can make an inquiry.</li>\n\t<li>Sentence E logically comes after C as it contains the porter&#39;s response, indicating where Voldyrev should go.</li>\n\t<li>Sentence D follows E as Voldyrev coughs and moves towards the indicated window.</li>\n\t<li>Sentence F is the concluding sentence, describing the person Voldyrev sees at the window, tying the paragraph together.</li>\n</ul>\n\n<p style=\"\">Hence, the <strong>correct order is BCED</strong></p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669fe11e77c48ac900e15603", "qs_no": 2, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are four jumbled sentences. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. A fine carriage with rubber tyres, a fat coachman, and velvet on the seats, rolled up to the house of a landowner called Gryabov.</p>\n\n<p>B. A drowsy footman met him in the hall</p>\n\n<p>C. &quot;Are the family at home?&quot; asked the Marshal.</p>\n\n<p>D. Fyodor Andreitch Otsov, the district Marshal, jumped out of the carriage.</p>\n", "options": [{"prompt": "1", "value": "ADBC"}, {"prompt": "2", "value": "DBAC"}, {"prompt": "3", "value": "ACBD"}, {"prompt": "4", "value": "CBAD"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p style=\"\">The correct answer is <b>Option 1)</b><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>First, the scene is set with the <strong>arrival of a fine carriage (A).</strong></li>\n\t<li>Next, the district Marshal, <strong>Fyodor Andreitch Otsov,</strong> is introduced as he jumps out of the carriage<strong> (D).</strong></li>\n\t<li>Then, the <strong>drowsy footman</strong> who meets him in the hall is mentioned (<strong>B)</strong>.</li>\n\t<li>Finally, the <strong>Marshal asks if the family is at home</strong> <strong>(C).</strong></li>\n</ul>\n\n<p style=\"\">Hence, the correct order is<strong> ADBC</strong><br />\n<span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>The order of sentences in a paragraph should follow a logical sequence to ensure coherence and clarity.</li>\n\t<li>Introducing the scene and characters first helps set the context for the reader.</li>\n\t<li>Actions and dialogues should follow logically to maintain the flow of the narrative.</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669fe3d6aa5dafbbf217fd19", "qs_no": 3, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are six sentences of a paragraph.</p>\n\n<p>Sentence A is the beginning whereas sentence F is the last sentence of the para. The middle four sentences are jumbled up. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. We soon ran into a nomad&#39;s tent, where we were well received and allowed to graze our yak to his heart&#39;s content.</p>\n\n<p>B. She quickly made us cups of butter tea, and for the first time I drank this brew with relish.</p>\n\n<p>C. This time our hostess was a young woman.</p>\n\n<p>D. Only then did we notice what a picturesque figure our young hostess made.</p>\n\n<p>E. The warmth ran through our frozen bodies and brought us to life again.</p>\n\n<p>F. She wore a sheepskin cloak reaching down to the ground and in her long black pigtail she wore mussel shells, silver coins, and various cheap ornaments imported from abroad.</p>\n", "options": [{"prompt": "1", "value": "CBED"}, {"prompt": "2", "value": "CBDE"}, {"prompt": "3", "value": "BDEC"}, {"prompt": "4", "value": "ECDB"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p style=\"\">The correct answer is <strong>Option 1)</strong></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li><strong>Sentence A</strong> sets the scene, where they ran into a nomad&#39;s tent and were received well.</li>\n\t<li><strong>Sentence C</strong> introduces the hostess as a young woman.</li>\n\t<li><strong>Sentence B</strong> describes her hospitality by mentioning how she made them cups of butter tea.</li>\n\t<li><strong>Sentence E</strong> mentions the effect of the warmth from the tea, which brings them back to life.</li>\n\t<li><strong>Sentence D</strong> highlights the picturesque figure of the young hostess that they notice afterward.</li>\n\t<li><strong>Sentence F</strong> provides details about her appearance, completing the description.</li>\n</ul>\n\n<p style=\"\">Hence, the correct order is <span style=\"font-weight: 700;\">CBED.</span></p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">Correct sequence:</span> <em>A. We soon ran into a nomad&#39;s tent, where we were well received and allowed to graze our yak to his heart&#39;s content.</em><br />\n<em>C. This time our hostess was a young woman.</em><br />\n<em>B. She quickly made us cups of butter tea, and for the first time I drank this brew with relish.</em><br />\n<em>E. The warmth ran through our frozen bodies and brought us to life again.</em><br />\n<em>D. Only then did we notice what a picturesque figure our young hostess made.</em><br />\n<em>F. She wore a sheepskin cloak reaching down to the ground and in her long black pigtail she wore mussel shells, silver coins, and various cheap ornaments imported from abroad.</em><br />\n<br />\n<span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>When arranging sentences in a logical sequence, it&#39;s crucial to identify introductory sentences, supporting details, and concluding remarks to form a coherent paragraph.</li>\n\t<li>Look for contextual clues, such as pronouns, connectors, and repeated nouns, to establish the proper sequence of sentences.</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669fe626beab397474be22f7", "qs_no": 4, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are six sentences of a paragraph.</p>\n\n<p>Sentence A is the beginning whereas sentence F is the last sentence of the para. The middle four sentences are jumbled up. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. When Tarun failed in his terminal examinations, his father was very angry with him.</p>\n\n<p>B. It was a day he wanted to erase from his life and so he took to running.</p>\n\n<p>C. His friends too made fun of him.</p>\n\n<p>D. The sun beat down to check his rage but nothing could stop Tarun.</p>\n\n<p>E. He ran all around the park.</p>\n\n<p>F. After about an hour, he was fully exhausted and his fury having subsided, he threw himself on a bench and started to pant.</p>\n", "options": [{"prompt": "1", "value": "BDEC"}, {"prompt": "2", "value": "CEBD"}, {"prompt": "3", "value": "CBED"}, {"prompt": "4", "value": "ECDB"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"\">The correct answer is <b>Option 3)</b></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li><strong>Sentence A</strong> sets the context with Tarun failing in his exams and", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669fe0f28d717967d258c54f", "qs_no": 5, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are four jumbled sentences. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. &ldquo;Your cauldron gave birth,&rdquo; replied the Hodja.</p>\n\n<p>B. &ldquo;What&rsquo;s this?&rdquo; asked the neighbour, pointing to the pot.</p>\n\n<p>C. One day Nasreddin Hodja borrowed a cauldron from his neighbour.</p>\n\n<p>D. A few days later, when he had finished with it, he sent it back with a pot inside it.</p>\n", "options": [{"prompt": "1", "value": "ACBD"}, {"prompt": "2", "value": "BDAC"}, {"prompt": "3", "value": "CBAD"}, {"prompt": "4", "value": "CDBA"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p style=\"\">The correct answer is <strong>Option 4)</strong></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>Nasreddin Hodja borrowed a cauldron from his neighbour and later returned it with a pot inside, leading to a humorous exchange.</li>\n\t<li>The correct order is<strong> CDBA </strong>as it<strong> logically follows the sequence of borrowing, returning, questioning, and then giving a humorous explanation.</strong></li>\n\t<li>Given the story&#39;s context, the sequence <strong>CDBA </strong>forms a coherent and meaningful paragraph.</li>\n</ul>\n\n<p style=\"\">Hence, the correct order is <strong>CDBA</strong></p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669fe63bbeab397474be2458", "qs_no": 6, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are four sentences. Pick the option that gives the correct order.</p>\n\n<p>A. The invention of the airplane was no exception.</p>\n\n<p>B. However, the idea of flying an aircraft was quite repulsive to some people.</p>\n\n<p>C. Many great inventions are initially greeted with ridicule and disbelief.</p>\n\n<p>D. Most people who heard about the first powered flight on December 17, 1903 were excited and impressed.</p>\n", "options": [{"prompt": "1", "value": "DABC"}, {"prompt": "2", "value": "DBCA"}, {"prompt": "3", "value": "CDAB"}, {"prompt": "4", "value": "CADB"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p style=\"\">The correct answer is <strong>Option 4)</strong></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li><strong>Sentence C introduces </strong>the general idea that many great inventions are initially met with ridicule and disbelief.</li>\n\t<li><strong>Sentence A</strong> <strong>provides </strong>an example of this by mentioning the invention of the airplane.</li>\n\t<li><strong>Sentence D</strong> <strong>describes</strong> the initial excitement and impression that the first powered flight on December 17, 1903, elicited in most people.</li>\n\t<li><strong>Sentence B</strong> <strong>contrasts</strong> this excitement by highlighting that flying an aircraft was repulsive to some people.</li>\n</ul>\n\n<p style=\"\">Hence, the correct order is <span style=\"font-weight: 700;\">CADB</span></p>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "652953b01e0a2e7a98265366", "qs_no": 7, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Which is the best description of the tone of the passage?", "options": [{"prompt": "1", "value": "Technical"}, {"prompt": "2", "value": "Sarcastic"}, {"prompt": "3", "value": "Dogmatic"}, {"prompt": "4", "value": "Humanistic"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>Option (4).</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The passage describes initiatives aiming at reducing pollution and preserving natural habitats, focusing <strong>on human welfare</strong> and societal betterment.</li>\n\t<li>References to collaborations between governments, NGOs, and communities underscore <strong>a collective human effort</strong> to solve environmental issues, illustrating a humanistic approach.</li>\n\t<li>The emphasis on the potential impact of these efforts on future generations highlights <strong>a concern for human values</strong> and the long-term well-being of humanity.</li>\n</ul>\n\n<p>Therefore, the correct answer is &quot;<strong>Humanistic</strong>&quot;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Technical: </strong>Not suitable as the passage, while informative, does not prioritize technical details, data, or specific methodologies.</li>\n\t<li><strong>Sarcastic: </strong>Inappropriate because the passage&#39;s tone is sincere and aims to promote positive change rather than employing irony or mocking.</li>\n\t<li><strong>Dogmatic:</strong> Incorrect because the passage does not assert opinions inflexibly or authoritatively; it focuses more on collaborative and hopeful efforts for change.\n\t<ul>\n\t\t<li><strong>Technical</strong> - Relating to specific subjects or techniques.</li>\n\t\t<li><strong>Sarcastic </strong>- Using irony to mock or convey contempt.</li>\n\t\t<li><strong>Dogmatic </strong>- Asserting opinions as undeniably true.</li>\n\t\t<li><strong>Humanistic </strong>- Focusing on human values and concerns.</li>\n\t</ul>\n\t</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "652953b01e0a2e7a98265367", "qs_no": 8, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Which of the following most accurately states the central idea of the passage?", "options": [{"prompt": "1", "value": "United Nations"}, {"prompt": "2", "value": "Pollution free planet"}, {"prompt": "3", "value": "Population explosion"}, {"prompt": "4", "value": "Population growth"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is <strong>Option (2).</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The passage focuses on the<strong> global issue of pollution,</strong> highlighting its effects on health and the environment, as seen in the discussion about how pollution impacts our air, water, and food.</li>\n\t<li>It mentions the significant increase in waste production by cities and identifies <strong>pollution as a manageable problem,</strong> thereby emphasizing the goal of achieving a pollution-free planet.</li>\n\t<li>The UN Environment Programme&#39;s task of implementing <strong>a global plan to eradicate all forms of pollution </strong>by 2030 further underscores the central theme of combating pollution for a cleaner planet.</li>\n</ul>\n\n<p>Therefore, the correct answer is <strong>&quot;Pollution free planet&quot;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>The United Nations: </strong>Mentioned in the context of the UN Environment Programme&#39;s efforts to fight pollution, but not the main focus.</li>\n\t<li><strong>Population explosion: </strong>Referenced as contributing to pollution, but not the central theme.</li>\n\t<li><strong>Population growth: </strong>Similar to population explosion, it&#39;s discussed as a factor in pollution challenges, not the core subject.</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "652953b01e0a2e7a98265368", "qs_no": 9, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Which of the following represents the structure of the passage?&nbsp;", "options": [{"prompt": "1", "value": "Definition"}, {"prompt": "2", "value": "Cause - effect"}, {"prompt": "3", "value": "Critique"}, {"prompt": "4", "value": "Chronology"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is<strong> Option (2).</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The passage outlines the <strong>cause </strong>(<strong>population growth and intensive resource use</strong>) and its <strong>effect </strong>(<strong>increased pollution and its impact on health and the environment</strong>), demonstrating a cause-effect structure.<br />\n\tIt discusses increased waste production as a consequence, aligning with cause-effect.<br />\n\tThe mention of the UN Environment Programme&#39;s efforts underscores responses to pollution, maintaining the cause-effect narrative.</li>\n</ul>\n\n<p>Therefore, the correct answer is <strong>&quot;Cause - effect&quot;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Definition:</strong> The passage doesn&#39;t merely define concepts or phenomena; it discusses a global issue and responses to it.</li>\n\t<li><strong>Critique: </strong>Unlike a critique that involves detailed analysis and evaluation, the passage describes a problem and mentions efforts to address it without critically evaluating them.</li>\n\t<li><strong>Chronology: </strong>The passage does not present information in a sequential time order, focusing instead on the discussion of a problem.</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "652953b01e0a2e7a98265369", "qs_no": 10, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "What is the ANTONYM for the word &lsquo;pervasive&rsquo; from the passage?&nbsp;", "options": [{"prompt": "1", "value": "Clear"}, {"prompt": "2", "value": "Emotional"}, {"prompt": "3", "value": "Limited"}, {"prompt": "4", "value": "Offensive"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is Option 3 i.e. &quot;<strong>Limited</strong>&quot;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Pervasive</strong>: (व्यापक) - Spreading widely throughout an area or a group of people.\n\n\t<ul>\n\t\t<li><strong>Example</strong>: Air pollution is a pervasive problem in urban areas.</li>\n\t</ul>\n\t</li>\n\t<", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "652953b01e0a2e7a9826536a", "qs_no": 11, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "What is the ANTONYM for the word &lsquo;priority&rsquo; from the passage?", "options": [{"prompt": "1", "value": "Factor"}, {"prompt": "2", "value": "Last"}, {"prompt": "3", "value": "Part"}, {"prompt": "4", "value": "Task"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is Option 2 i.e. <strong>&quot;Last&quot;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Priority</strong>: (प्राथमिकता) - The fact or condition of being regarded or treated as more important.\n\n\t<ul>\n\t\t<li><strong>Example</strong>: His first priority is his family.</li>\n\t</ul>\n\t</li>\n\t<li><strong>Last</strong>: (अंतिम) - Coming after all others in time or order; final.\n\t<ul>\n\t\t<li><strong>Example</strong>: He was the last to arrive at the meeting.</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p>Therefore, the correct answer is <strong>&quot;Last&quot;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Factor</strong>: (कारक) - A circumstance, fact, or influence that contributes to a result.&nbsp;</li>\n\t<li><strong>Part</strong>: (भाग) - A piece or segment of something such as an object, activity.</li>\n\t<li><strong>Task</strong>: (कार्य) - A piece of work to be done or undertaken.</li>\n</ul>\n\n3a:T90e,\n<p>The correct answer is &#39;<", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "669fe1bc8ec0846c3ef45f05", "qs_no": 12, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Sentences of a paragraph are given below. While the first (1) and the last(6) sentences are in the correct order, the sentences in between (A-D) are jumbled up. Arrange the sentences in the correct order to form a meaningful and coherent paragraph.</p>\n\n<p>1. A vacation is looked forward to as a time to relax.</p>\n\n<p>A. But, destiny had other plans for me.</p>\n\n<p>B. I was very excited to go on a vacation to Goa.</p>\n\n<p>C. My bags were packed and I decided to retire early for the night.</p>\n\n<p>D. It is a welcome break from the daily routine which is often monotonous.</p>\n\n<p>6. I fell off the bed and fractured my foot!</p>\n", "options": [{"prompt": "1", "value": "DBCA"}, {"prompt": "2", "value": "ABDC"}, {"prompt": "3", "value": "BCDA"}, {"prompt": "4", "value": "CBAD"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p style=\"\">The correct answer is <strong>Option 1)</strong></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>The first sentence introduces the general idea of a vacation as a break from routine, which is often monotonous, making sentence D the logical continuation.</li>\n\t<li>Sentence B follows naturally as it talks about the excitement of going on a vacation, building on the idea of looking forward to a break.</li>\n\t<li>Sentence C logically follows B as it describes the actions taken in preparation for the vacation.</li>\n\t<li>Sentence A then introduces an unexpected twist, setting up the final sentence.</li>\n\t<li>Therefore, the correct order of the sentences is DBCA.</li>\n</ul>\n\n<p style=\"\">Hence, the correct answer is&nbsp;<span style=\"font-weight: 700;\">option 1</span>.</p>\n\n<p style=\"font-weight: 700;\">Correct order of sentences:</p>\n<em>1. A vacation is looked forward to as a time to relax.</em><br />\n<em>D. It is a welcome break from the daily routine which is often monotonous.</em><br />\n<em>B. I was very excited to go on a vacation to Goa.</em><br />\n<em>C. My bags were packed and I decided to retire early for the night.</em><br />\n<em>A. But, destiny had other plans for me.</em><br />\n<em>6. I fell off the bed and fractured my foot!</em><br />\n<br />\n<span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></span></span>\n\n<p>&nbsp;</p>\n\n<ul style=\"\">\n\t<li>The structure of the paragraph follows a logical sequence that starts with a general idea, builds on it with specific details, introduces an unexpected twist, and concludes with the outcome.</li>\n\t<li>This kind of structure is common in narrative writing, where the flow of events is crucial for maintaining coherence and interest.</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669fe9c817f40a0e49c1afdf", "qs_no": 13, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are four sentences. Pick the option that gives the correct order.</p>\n\n<p>A. She was a busy person and had no time to visit her mother.</p>\n\n<p>B. It was Mothers&rsquo; Day.</p>\n\n<p>C. She thought her mother would be pleased to receive the flowers.</p>\n\n<p>D. A woman stopped at a flower shop to order some flowers to be sent to her mother.&nbsp;</p>\n", "options": [{"prompt": "1", "value": "BCDA"}, {"prompt": "2", "value": "BDAC"}, {"prompt": "3", "value": "DABC"}, {"prompt": "4", "value": "CADB"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is <strong>&#39;BDAC&#39; .</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The sequence begins with B. &quot;It was Mothers&rsquo; Day&quot; sets the context and event around which the actions revolve.</li>\n\t<li>D follows next. &quot;A woman stopped at a flower shop to order some flowers to be sent to her mother.&quot; This establishes the main action of the woman buying flowers for the occasion mentioned in B.</li>\n\t<li>A should come third. &quot;She was a busy person and had no time to visit her mother.&quot; This provides a reason for why she decided to order flowers instead of visiting.</li>\n\t<li>C concludes the sequence. &quot;She thought her mother would be pleased to receive the flowers.&quot; This gives insight into the woman&rsquo;s thoughts and her motivation for the action described in D.</li>\n</ul>\n\n<p>Therefore, the correct answer is <strong>&#39;Option 2&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>Option 1: &quot;BCDA&quot; - Incorrect because the sequence does not logically flow from the event to the action.</li>\n\t<li>Option 3: &quot;DABC&quot; - Incorrect because it does not immediately set the context (Mother&#39;s Day) before the action.</li>\n\t<li>Option 4: &quot;CADB&quot; - Incorrect as it starts with her thoughts, leaving the context and action unspecified until later.</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "669fec5a20353bd40f6b1518", "qs_no": 14, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are four jumbled sentences. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. My mother, Vimala Kulkarni, told me similar words when I got married.</p>\n\n<p>B. They were usually like: &lsquo;You must adjust to your new house and in-laws, try to learn how they eat and cook their food, go out of your way to be friendly and helpful to everybody,&rsquo; etc.</p>\n\n<p>C. When I was young, before a girl got married, her mother would give her some words of advice.</p>\n\n<p>D. But along with this, she said something which helped me immensely in later life.</p>\n", "options": [{"prompt": "1", "value": "BDAC"}, {"prompt": "2", "value": "CBAD"}, {"prompt": "3", "value": "CDBA"}, {"prompt": "4", "value": "ACBD"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p style=\"\">The correct answer is &quot;<strong>CBAD&quot;.</strong></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul>\n\t<li>Sentence C: - This is a general statement introducing the idea of advice given by mothers before marriage. It serves as a natural opening sentence.</li>\n\t<li>Sentence B: -&nbsp;This elaborates on what kind of advice mothers would give, logically following Sentence C.<br />\n\t</li>\n\t<li>Sentence A: -&nbsp;This transitions to the author&rsquo;s personal experience, following the general description in C and B.</li>\n\t<li>Sentence D: -&nbsp;This reflects on the impact of the advice and serves as a conclusion.</li>\n</ul>\n\n<p style=\"\">Hence, the <strong>correct answer </strong>is&nbsp;<span style=\"font-weight: 700;\">option 2</span>.<span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></span></span></p>\n\n<ul>\n\t<li style=\"\"><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>​</u></span></strong><span style=\"font-family: var(--bs-body-font-family); font-size: var(--bs-body-font-size); font-weight: var(--bs-body-font-weight); text-align: var(--bs-body-text-align);\"><strong>BDAC (Incorrect)</strong>:&nbsp;</span>Starts with B, but there is no context given for the advice. Sentence C should introduce the idea before B elaborates on it.</li>\n\t<li style=\"\"><strong>CDBA (Incorrect):</strong>&nbsp;After introducing the idea (C), it jumps to D, which reflects on something not yet discussed. The transition from C to D feels abrupt, breaking coherence.</li>\n\t<li style=\"\"><strong>ACBD (Incorrect):</strong>&nbsp;Starts with A, which discusses the author&rsquo;s mother directly. However, the context for her advice (given in C and B) is missing, making the start feel disjointed.</li>\n</ul>\n\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669febcaaa5dafbbf218dafe", "qs_no": 15, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are six sentences of a paragraph.</p>\n\n<p>Sentence A is the beginning whereas sentence F is the last sentence of the para. The middle four sentences are jumbled up. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. The month was January.</p>\n\n<p>B. On the first morning of the festival the mejhi would be set alight invoking the blessings of Agni, the god of fire.</p>\n\n<p>C. There would be much feasting and merriment during the festival.</p>\n\n<p>D. Each household would build a mejhi - a pile of firewood stacked neatly together in their backyard.</p>\n\n<p>E. The Bihu festival was fast approaching.</p>\n\n<p>F. &ldquo;Let&rsquo;s build a champion mejhi this year.&rdquo; Ricky suggested a few days before the festival.</p>\n", "options": [{"prompt": "1", "value": "CBDE"}, {"prompt": "2", "value": "CBED"}, {"prompt": "3", "value": "ECDB"}, {"prompt": "4", "value": "EDBC"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"\">The correct answer is <span style=\"font-weight: 700;\">Option 3)</span><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>The sequence of the sentences should logically follow the flow of ideas and maintain the coherence of the content.</li>\n\t<li>Sentence<strong> A introduces </strong>the time of the year, January.</li>\n\t<li>Sentence <strong>E</strong> <strong>mentions </strong>the approach of the Bihu festival, which aligns with the time of January described in Sentence A.</li>\n\t<li>Sentence <strong>C</strong> <strong>adds</strong> information about the festivities during the festival days.</li>\n\t<li>Sentence <strong>D</strong> <strong>follows</strong> logically by explaining an action associated with the festival: building a mejhi.</li>\n\t<li>Sentence<strong> B provides</strong> more context about the festival, detailing the specific ritual involving the mejhi.</li>\n\t<li>Sentence<strong> F concludes</strong> with Ricky&#39;s suggestion, tying back to the preparation for the mejhi mentioned earlier.</li>\n</ul>\n\n<p style=\"\">Hence, the correct order is <span style=\"font-weight: 700;\">A, E, C, D, B, F</span></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>When arranging sentences to form a coherent paragraph, pay attention to the sequence of events and the logical flow of ideas.</li>\n\t<li>Ensure each sentence adds to the narrative and builds on the information provided in the previous ones.</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669fe9b36ce9d88665493a07", "qs_no": 16, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are six sentences of a paragraph. Sentence A is the beginning whereas sentence F is the last sentence of the para. The middle four sentences are jumbled up. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. The first hour passed off quietly.</p>\n\n<p>B. In the second, they had Arithmetic.</p>\n\n<p>C. Swaminathan was terribly bored.</p>\n\n<p>D. Vedanayagam went out and returned in a fewminutes in the role of an Arithmetic teacher.</p>\n\n<p>E. He droned on monotonously.</p>\n\n<p>F. His teacher&rsquo;s voice was beginning to get on his nerves.</p>\n", "options": [{"prompt": "1", "value": "BCDE"}, {"prompt": "2", "value": "ECDB"}, {"prompt": "3", "value": "BDEC"}, {"prompt": "4", "value": "CBED"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"\">The correct answer is <strong>Option 3)</strong></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>The paragraph starts with an introduction of the situation, which is provided by <strong>sentence A</strong>: <strong>&quot;The first hour passed off quietly.&quot;</strong></li>\n\t<li>Next, <strong>sentence B </strong>logically follows as it introduces the subject of the second hour: &quot;In the second, they had Arithmetic.&quot;</li>\n\t<li>Then, <strong>sentence D</strong> follows as it introduces Vedanayagam taking on the role of the Arithmetic teacher: &quot;Vedanayagam went out and returned in a few minutes in the role of an Arithmetic teacher.&quot;</li>\n\t<li><strong>Sentence E</strong> comes next as it describes Vedanayagam&#39;s teaching style: &quot;He droned on monotonously.&quot;</li>\n\t<li><strong>Sentence C</strong> follows as it indicates Swaminathan&#39;s reaction to the monotonous teaching: &quot;Swaminathan was terribly bored.&quot;</li>\n\t<li>Finally, the paragraph concludes with<strong> sentence F</strong>: &quot;His teacher&rsquo;s voice was beginning to get on his nerves.&quot;</li>\n</ul>\n\n<p style=\"\">Hence, the correct Order of the sentence is&nbsp; = <strong>A, B, D, E, C, F. (BDEC)</strong><br />\n<span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>When arranging sentences to form a coherent paragraph, look for logical and chronological clues within the sentences.</li>\n\t<li>Pay attention to pronouns and definite articles, as they often refer back to something mentioned in a previous sentence.</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669fe2daeffc66da5f76ac2b", "qs_no": 17, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are six sentences of a paragraph.</p>\n\n<p>Sentence A is the beginning whereas sentence F is the last sentence of the para. The middle four sentences are jumbled up. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. When I studied Engineering thirty-five years back, I was the only girl in the course.</p>\n\n<p>B. People often ask me how I managed.</p>\n\n<p>C. I could only see boys and more boys everywhere.</p>\n\n<p>D. But when I look back I feel it was not very difficult.</p>\n\n<p>E. Having a girl in the class was unusual for the boys, and initially I was the target for a lot of teasing.</p>\n\n<p>F. But over a period of time they became my best friends.</p>\n", "options": [{"prompt": "1", "value": "ECDB"}, {"prompt": "2", "value": "CBDE"}, {"prompt": "3", "value": "BDEC"}, {"prompt": "4", "value": "CBED"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p style=\"\">The correct answer is<strong> Option 2)</strong></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>The paragraph starts with an introduction to the situation: &quot;<strong>When I studied Engineering thirty-five years back, I was the only girl in the course.&quot;</strong></li>\n\t<li>The next logical sequence is&nbsp;<strong>&quot;I could only see boys and more boys everywhere</strong>.&quot;</li>\n\t<li>This is followed by the explanation: <strong>&quot;But when I look back I feel it was not very difficult.</strong>&quot;</li>\n\t<li>Finally&nbsp;the transformation over time is described:&nbsp;&quot;<strong>Having a girl in the class was unusual for the boys, and initially I was the target for a lot of teasing.&quot;</strong></li>\n\t<li>This leads naturally to the conclusion that &quot;<strong>But&nbsp;over a period of time they became my best friends.&quot;</strong></li>\n\t<li>Therefore, the correct order of the sentences is <strong>CBDE</strong></li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669fe108f9f8640297687993", "qs_no": 18, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are four sentences. Pick the option that gives the correct order.</p>\n\n<p>A. The Egyptians believed that the body and soul were important to human existence, in life and in death.</p>\n\n<p>B. This ensured the soul&#39;s return to the body so that the deceased would live happily ever after.</p>\n\n<p>C. Their funerary practices, such as mummification and burial in tombs, were designed to assist the deceased find their way in the after world.</p>\n\n<p>D. The tombs were thus, filled with food, tools, domestic wares, treasures -- all the necessities of life.</p>\n", "options": [{"prompt": "1", "value": "ADCB"}, {"prompt": "2", "value": "ABCD"}, {"prompt": "3", "value": "ACDB"}, {"prompt": "4", "value": "ABDC"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"\">The correct answer is <b>Option 3)</b></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: mid", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Fill in the Blanks", "confidence": "high"}, {"qid": "669fe76d2497fa30faf33a37", "qs_no": 19, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are six sentences of a paragraph.</p>\n\n<p>Sentence A is the beginning whereas sentence F is the last sentence of the para. The middle four sentences are jumbled up. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. In the course of my education at MIT, three teachers shaped my thinking.</p>\n\n&", "options": [{"prompt": "1", "value": "CBED"}, {"prompt": "2", "value": "BCED"}, {"prompt": "3", "value": "BDEC"}, {"prompt": "4", "value": "ECDB"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"\">The correct answer is <strong>Option 3)</strong></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li><strong>Sentence B</strong>&nbsp;enumerates&nbsp;the description by discussing their combined contributions to the professional career of the author.</li>\n\t<li><strong>Sentence D</strong>&nbsp;describes the three teachers being referenced in sentence A.</li>\n\t<li><strong>Sentence E</strong> elaborates on the common qualities shared by these three teachers.</li>\n\t<li><strong>Sentence C</strong> starts detailing the specific role of each teacher, beginning with Prof. Sponder.</li>\n</ul>\n\n<p style=\"\">Hence, the correct order is <strong>BDEC</strong></p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">Correct sequence:</span></p>\n\n<ul>\n\t<li style=\"\"><span style=\"font-weight: 700;\">A.</span> In the course of my education at MIT, three teachers shaped my thinking.</li>\n\t<li style=\"\"><strong>B.</strong> Their combined contributions formed the foundation on which I later built my professional career.</li>\n\t<li style=\"\"><span style=\"font-weight: 700;\">D.</span> These three teachers were Prof. Sponder, Prof. KAV Pandalai and Prof. Narasingha Rao.</li>\n\t<li style=\"\"><span style=\"font-weight: 700;\">E.</span> Each one of them had very distinct personalities, but they shared a common impulse&mdash; the capacity to feed their students&rsquo; intellectual hunger by sheer brilliance and untiring zeal.</li>\n\t<li style=\"\"><strong>C</strong>. Prof. Sponder taught me technical aerodynamics.</li>\n\t<li style=\"\"><strong>F. </strong>He was an Austrian with rich practical experience in aeronautical engineering.</li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "669fe170effc66da5f768b12", "qs_no": 20, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "<p>Given below are four jumbled sentences. Select the option that gives their correct order forming a meaningful and coherent paragraph.</p>\n\n<p>A. I have seen a great many houses in my time, little and big, new and old, built of stone and of wood, but of one house I have kept a very vivid memory.</p>\n\n<p>B. It was, properly speaking, rather a cottage than a house -- a tiny cottage of one story, with three windows, looking extraordinarily like a little old hunchback woman with a cap on.</p>\n\n<p>C. The cottage was lost to sight among the mulberry-trees, acacias, and poplars planted by the grandfathers and great-grandfathers of its present occupants</p>\n\n<p>D. It had white stucco walls, tiled roof, and a dilapidated chimney.</p>\n", "options": [{"prompt": "1", "value": "BDAC"}, {"prompt": "2", "value": "ACBD"}, {"prompt": "3", "value": "ABDC"}, {"prompt": "4", "value": "CDBA"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n```html\n<p style=\"\">The correct answer is <span style=\"font-weight: 700;\">'3</span><span style=\"font-weight: 700;\">' </span><span style=\"font-weight: 700;\">i.e.</span><span style=\"font-weight: 700;\"> ABDC</span> <span style=\"font-weight: 700;\">is the correct order</span>.</p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n<li>The first statement A introduces the author’s experience with various houses and highlights one particular house.</li>\n<li>The second statement B describes the house in more detail, comparing it to a tiny cottage.</li>\n<li>The third statement D continues the description, mentioning its white stucco walls, tiled roof, and dilapidated chimney.</li>\n<li>The fourth statement C concludes by describing the surrounding environment of the cottage.</li>\n</ul>\n\n<p style=\"\">Hence, the correct answer is <span style=\"font-weight: 700;\">option 3</span>.</p>\n\n<p style=\"\"><span style=\"font-weight: 700;\">Correct order:</span> <em>A. I have seen a great many houses in my time, little and big, new and old, built of stone and of wood, but of one house I have kept a very vivid memory.</em><br />\n<em>B. It was, properly speaking, rather a cottage than a house -- a tiny cottage of one story, with three windows, looking extraordinarily like a little old hunchback woman with a cap on.</em><br />\n<em>D. It had white stucco walls, tiled roof, and a dilapidated chimney.</em><br />\n<em>C. The cottage was lost to sight among the mulberry-trees, acacias, and poplars planted by the grandfathers and great-grandfathers of its present occupants.</em></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></span></span></span></p>\n\n<ul style=\"\">\n<li>While forming a coherent paragraph, ensure that the statements logically follow one another and provide a clear and comprehensive description or narrative.</li>\n</ul>\n```\n", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Para Jumbles", "confidence": "high"}, {"qid": "652a4d72bcb85a4162136173", "qs_no": 21, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "What is the ANTONYM for the word &lsquo;diversity&rsquo; from the passage?&nbsp;&nbsp;", "options": [{"prompt": "1", "value": "Block&amp;nbsp;"}, {"prompt": "2", "value": "Dilemma&amp;nbsp;"}, {"prompt": "3", "value": "Uniformity&amp;nbsp;"}, {"prompt": "4", "value": "Heritage"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p>The correct answer is &#39;<strong>Uniformity</strong>&#39;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The antonym for the word &quot;<strong>diversity</strong>&quot; from the passage is: <strong>Uniformity</strong>.</li>\n\t<li>Explanation:&nbsp;</li>\n\t<li><strong>Diversity</strong> refers<strong><em> to the state of being diverse or varied, encompassing differences in characteristics or qualities.</em></strong></li>\n\t<li><strong>Uniformity</strong>, on the other hand, refers<strong><em> to the state or quality of being uniform or consistent, lacking variation or diversity</em></strong>. In the context of the passage, &quot;<strong>diversity</strong>&quot; is used to describe the wide range of cultural diversity among people adapted to the challenges of mountain life.</li>\n\t<li>Therefore, the <strong>opposite</strong> of diversity would <strong>be uniformity, indicating a lack of variation or diversity among the people in these regions.</strong></li>\n\t<li>Meanings of the other options:\n\t<ul>\n\t\t<li><strong>Block</strong> - a solid piece of something, or an obstacle; unrelated to the concept of diversity.</li>\n\t\t<li><strong>Dilemma</strong> - a difficult situation or problem requiring a choice between options; unrelated to the concept of diversity.</li>\n\t\t<li><strong>Heritage</strong> - refers to something that is inherited from the past, such as traditions, beliefs, or practices; unrelated to the concept of diversity.</li>\n\t</ul>\n\t</li>\n\t<li>Therefore, the correct answer is <strong>3) Uniformity.</strong></li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "652a4d72bcb85a4162136174", "qs_no": 22, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "What is the ANTONYM for the word &lsquo;migrate&rsquo; from the passage?&nbsp;&nbsp;", "options": [{"prompt": "1", "value": "Stay&amp;nbsp;"}, {"prompt": "2", "value": "Run&amp;nbsp;"}, {"prompt": "3", "value": "Die&amp;nbsp;"}, {"prompt": "4", "value": "Assume&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "1", "solution_html": {"en": "\n<p>The correct answer is &#39;<strong>Stay</strong>&#39;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The antonym for the word &quot;<strong>migrate</strong>&quot; from the passage is: <strong>Stay</strong>.</li>\n\t<li>Explanation:&nbsp;\n\t<ul>\n\t\t<li><strong>Migrate</strong> means to move from one place to another", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "652a4d72bcb85a4162136175", "qs_no": 23, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Which is the best description of the tone of the passage?&nbsp;&nbsp;", "options": [{"prompt": "1", "value": "Laudatory&amp;nbsp;"}, {"prompt": "2", "value": "Emotional&amp;nbsp;"}, {"prompt": "3", "value": "Biased&amp;nbsp;"}, {"prompt": "4", "value": "Humanistic"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is &#39;<strong>Humanistic</strong>&#39;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The best description of the tone of the passage is: <strong>Humanistic</strong>.</li>\n\t<li>Explanation:\n\t<ul>\n\t\t<li>The passage <strong>discusses the importance of mountains, </strong>highlighting <strong>their significant role in supplying fresh wa", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "652a4d72bcb85a4162136176", "qs_no": 24, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Which of the following represents the structure of the passage?&nbsp;&nbsp;", "options": [{"prompt": "1", "value": "Chronological&amp;nbsp;"}, {"prompt": "2", "value": "Definition&amp;nbsp;"}, {"prompt": "3", "value": "Compare and contrast"}, {"prompt": "4", "value": "Cause-effect"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is <strong>&#39;Cause-effect&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The structure of the passage is best described as:&nbsp;<strong>Cause-effect.</strong></li>\n\t<li>Explanation:\n\t<ul>\n\t\t<li>The passage <strong>discusses the impact of human pressures and climate change </strong>on mountain regions and their ecosystems.</li>\n\t\t<li>It outlines <strong>various causes of degradation in mountain regions, such as the clearing of forests, erosion, pollution, and climate change.</strong></li>\n\t\t<li>It then <strong>explains the effects or consequences</strong> of these causes, including serious soil erosion, loss of habitat, harm to water quality, and threats to water supplies due to climate change.</li>\n\t\t<li>The passage <strong>highlights</strong> how <strong>these factors are forcing mountain species, ecosystems, and human populations to adapt or migrate.</strong></li>\n\t\t<li>Overall, the passage presents<strong> a cause-effect structure by discussing the causes of degradation in mountain regions</strong> <strong>and their subsequent effects</strong> <strong>on ecosystems and human populations.</strong></li>\n\t</ul>\n\t</li>\n\t<li>Therefore, the correct answer is <strong>4) Cause-effect.</strong></li>\n</ul>", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}, {"qid": "652a4d72bcb85a4162136177", "qs_no": 25, "pos_marks": 1.0, "neg_marks": 0.25, "type": "mcq", "langs": {"en": {"value": "Which of the following most accurately states the central idea of the passage?&nbsp;&nbsp;", "options": [{"prompt": "1", "value": "Pollution"}, {"prompt": "2", "value": "Mountain ecosystem"}, {"prompt": "3", "value": "Biodegradation"}, {"prompt": "4", "value": "Climate change&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is <strong>&#39;Mountain ecosystem&#39;.</strong></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The most accurate central idea of the passage is:<strong>&nbsp;Mountain ecosystem.</strong></li>\n\t<li>Explanation:\n\t<ul>\n\t\t<li>While <strong>the passage discusses various interconnected topics </strong>such as <strong>human pressures, climate change", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Verbal Ability"], "concept": "Verbal Ability", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 25;
+const DURATION_SEC = 15 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
