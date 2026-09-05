@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PYCT 31: Antonyms - 4</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f3f4f6;color:#1f2937;line-height:1.6;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);position:sticky;top:0;z-index:100;}
+.brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;}
+.brand-light{color:#1f2937;}
+.brand-mark{color:#1fbad6;}
+.test-title{font-size:14px;color:#4b5563;font-weight:500;text-align:center;flex:1;padding:0 24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.timer{background:#1f2937;color:#fff;padding:8px 16px;border-radius:6px;font-family:"SF Mono",Monaco,monospace;font-size:16px;font-weight:600;min-width:110px;text-align:center;}
+.timer.warning{background:#f59e0b;}
+.timer.danger{background:#ef4444;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
+.header-btn{background:#1fbad6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;}
+.header-btn:hover{background:#1999b3;}
+.submit-btn{background:#ef4444;}
+.submit-btn:hover{background:#dc2626;}
+.meta-bar{background:#fff;padding:12px 24px;border-bottom:1px solid #e5e7eb;display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;}
+.meta-item{display:flex;flex-direction:column;gap:2px;}
+.meta-label{color:#6b7280;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;}
+.meta-value{color:#1f2937;font-size:14px;font-weight:600;}
+.test-container{display:flex;max-width:1400px;margin:0 auto;gap:16px;padding:16px;}
+.question-area{flex:1;min-width:0;}
+.section-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.section-tab{background:#fff;border:1px solid #e5e7eb;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:#4b5563;}
+.section-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.question-card{background:#fff;border-radius:8px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f3f4f6;}
+.q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.q-marks{display:flex;gap:8px;font-size:12px;align-items:center;flex-wrap:wrap;}
+.q-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.q-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.conf-high{background:#d1fae5;color:#065f46;}
+.conf-unidentified{background:#fef3c7;color:#92400e;}
+.q-id{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;}
+.result-concept{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-confidence{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.result-qid{background:#f3f4f6;color:#4b5563;padding:2px 8px;border-radius:4px;font-size:11px;font-family:monospace;margin-left:auto;}
+.mark-pos{color:#10b981;font-weight:600;}
+.mark-neg{color:#ef4444;font-weight:600;}
+.q-lang-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;}
+.q-lang-tab{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+.q-lang-tab.active{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.q-text{font-size:15px;margin-bottom:16px;}
+.q-text p{margin:8px 0;}
+.q-text img{max-width:100%;height:auto;border-radius:4px;}
+.options-list{list-style:none;}
+.option-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all .15s;font-size:14px;}
+.option-item:hover{background:#f9fafb;border-color:#d1d5db;}
+.option-item.selected{background:#dbeafe;border-color:#3b82f6;}
+.option-item.correct{background:#d1fae5;border-color:#10b981;}
+.option-item.wrong{background:#fee2e2;border-color:#ef4444;}
+.option-label{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;background:#1f2937;color:#fff;border-radius:4px;font-size:12px;font-weight:600;flex-shrink:0;}
+.option-item.selected .option-label{background:#3b82f6;}
+.option-item.correct .option-label{background:#10b981;}
+.option-item.wrong .option-label{background:#ef4444;}
+.option-item.correct::after{content:" ✓ Correct";color:#10b981;font-weight:700;margin-left:auto;}
+.option-item.wrong::after{content:" ✗ Wrong";color:#ef4444;font-weight:700;margin-left:auto;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.action-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.action-btn:hover{background:#f9fafb;}
+.action-btn.save-next{background:#1fbad6;color:#fff;border-color:#1fbad6;}
+.action-btn.save-next:hover{background:#1999b3;}
+.action-btn.mark-review{background:#fef3c7;color:#92400e;border-color:#f59e0b;}
+.prev-next{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid #f3f4f6;}
+.nav-btn{padding:8px 16px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:#4b5563;}
+.nav-btn:hover{background:#f9fafb;}
+.palette-sidebar{width:280px;flex-shrink:0;position:sticky;top:90px;align-self:flex-start;background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;max-height:calc(100vh - 110px);overflow-y:auto;}
+.palette-header{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
+.palette-legend{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:10px;color:#6b7280;margin-bottom:12px;}
+.legend-item{display:flex;align-items:center;gap:3px;}
+.legend-dot{width:12px;height:12px;border-radius:2px;}
+.legend-dot.answered{background:#10b981;}
+.legend-dot.notanswered{background:#ef4444;}
+.legend-dot.marked{background:#a855f7;}
+.legend-dot.notvisited{background:#e5e7eb;}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+.palette-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;font-weight:600;color:#4b5563;cursor:pointer;transition:all .15s;background:#f3f4f6;}
+.palette-cell:hover{transform:scale(1.1);}
+.palette-cell.answered{background:#10b981;color:#fff;border-color:#10b981;}
+.palette-cell.notanswered{background:#ef4444;color:#fff;border-color:#ef4444;}
+.palette-cell.marked{background:#a855f7;color:#fff;border-color:#a855f7;}
+.palette-cell.marked-answered{background:#a855f7;color:#fff;border-color:#a855f7;position:relative;}
+.palette-cell.marked-answered::after{content:"•";position:absolute;top:-2px;right:2px;color:#10b981;font-size:14px;}
+.palette-cell.notvisited{background:#fff;color:#9ca3af;}
+.palette-cell.current{outline:3px solid #1fbad6;outline-offset:1px;}
+.palette-stats{margin-top:12px;padding-top:12px;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;color:#6b7280;}
+.palette-stats div{display:flex;justify-content:space-between;}
+.palette-stats strong{color:#1f2937;font-size:13px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:24px;}
+.modal-overlay.open{display:flex;}
+.modal-content{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-content h2{font-size:20px;color:#1f2937;margin-bottom:12px;}
+.modal-content p{font-size:14px;color:#4b5563;margin-bottom:16px;}
+.submit-summary{background:#f9fafb;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;}
+.submit-summary div{display:flex;justify-content:space-between;margin-bottom:4px;}
+.submit-summary strong{color:#1f2937;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-btn.cancel{background:#f3f4f6;color:#4b5563;}
+.modal-btn.cancel:hover{background:#e5e7eb;}
+.modal-btn.submit{background:#ef4444;color:#fff;}
+.modal-btn.submit:hover{background:#dc2626;}
+.results-view{max-width:1000px;margin:0 auto;padding:24px;}
+.results-header{text-align:center;margin-bottom:32px;}
+.results-header h1{font-size:28px;color:#1f2937;margin-bottom:16px;}
+.score-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;display:inline-block;min-width:300px;margin-bottom:16px;}
+.score-card .score{font-size:48px;font-weight:800;color:#1fbad6;}
+.score-card .total{font-size:20px;color:#6b7280;}
+.score-card .rank{font-size:14px;color:#4b5563;margin-top:8px;}
+.results-actions{display:flex;gap:8px;justify-content:center;}
+.results-questions{display:grid;gap:16px;}
+.result-card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);border:1px solid #e5e7eb;}
+.result-card.correct{border-left:4px solid #10b981;}
+.result-card.wrong{border-left:4px solid #ef4444;}
+.result-card.skipped{border-left:4px solid #9ca3af;}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.result-q-num{background:#1fbad6;color:#fff;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;}
+.result-status{font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.result-status.correct{background:#d1fae5;color:#065f46;}
+.result-status.wrong{background:#fee2e2;color:#991b1b;}
+.result-status.skipped{background:#f3f4f6;color:#4b5563;}
+.result-text{font-size:14px;margin-bottom:12px;}
+.result-text p{margin:6px 0;}
+.result-options{list-style:none;margin-bottom:12px;}
+.result-option{padding:8px 12px;margin-bottom:4px;border:1px solid #e5e7eb;border-radius:4px;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+.result-option.correct{background:#d1fae5;border-color:#10b981;font-weight:600;}
+.result-option.selected{background:#dbeafe;border-color:#3b82f6;}
+.result-option.correct.selected{background:#a7f3d0;}
+.result-option-label{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;background:#1f2937;color:#fff;border-radius:3px;font-size:11px;font-weight:600;}
+.result-option.correct .result-option-label{background:#10b981;}
+.result-solution{background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;padding:12px;font-size:13px;color:#1f2937;}
+.result-solution-title{font-weight:700;color:#92400e;margin-bottom:6px;font-size:12px;}
+.result-solution p{margin:6px 0;}
+.result-solution img{max-width:100%;height:auto;border-radius:4px;}
+@media (max-width:1024px){.palette-sidebar{width:220px;}.palette-grid{grid-template-columns:repeat(5,1fr);}}
+@media (max-width:768px){.test-container{flex-direction:column;}.palette-sidebar{width:100%;position:static;max-height:none;}.palette-grid{grid-template-columns:repeat(10,1fr);}}
+@media print{.top-bar,.palette-sidebar,.actions,.prev-next,.section-tabs,.q-lang-tabs,.meta-bar,.results-actions{display:none;}.test-container,.results-view{display:block;}.result-card{page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<!-- Header -->
+<header class="top-bar">
+  <div class="brand"><span class="brand-light">Repeater</span><span class="brand-mark">Mock</span></div>
+  <div class="test-title" id="testTitle">PYCT 31: Antonyms - 4</div>
+  <div class="header-right">
+    <div class="timer" id="timer">00:00:00</div>
+    <button class="header-btn submit-btn" onclick="openSubmitModal()">Submit Test</button>
+  </div>
+</header>
+
+<!-- Meta bar -->
+<div class="meta-bar">
+  <div class="meta-item"><span class="meta-label">Series</span><span class="meta-value">ssc-english-previous-year-questions</span></div>
+  <div class="meta-item"><span class="meta-label">Questions</span><span class="meta-value">10</span></div>
+  <div class="meta-item"><span class="meta-label">Duration</span><span class="meta-value">6 min</span></div>
+  <div class="meta-item"><span class="meta-label">Max Marks</span><span class="meta-value">20.0</span></div>
+  <div class="meta-item"><span class="meta-label">Marking</span><span class="meta-value">+2.0 / -0.5</span></div>
+  <div class="meta-item"><span class="meta-label">Test ID</span><span class="meta-value">6391e412b169e450773f2679</span></div>
+</div>
+
+<!-- Test mode -->
+<div id="testMode" class="test-container">
+  <main class="question-area">
+    <div class="section-tabs" id="sectionTabs"></div>
+    <div class="question-card" id="questionCard">
+      <div class="q-header">
+        <span class="q-num" id="qNum">Q1</span>
+        <span class="q-marks" id="qMarks"></span>
+      </div>
+      <div class="q-lang-tabs" id="qLangTabs"></div>
+      <div class="q-text" id="qText"></div>
+      <div class="options-list" id="optionsList"></div>
+      <div class="actions">
+        <button class="action-btn mark-review" onclick="markReviewNext()">Mark for Review &amp; Next</button>
+        <button class="action-btn clear-response" onclick="clearResponse()">Clear Response</button>
+        <button class="action-btn save-next" onclick="saveNext()">Save &amp; Next →</button>
+      </div>
+      <div class="prev-next">
+        <button class="nav-btn" onclick="prevQuestion()">← Previous</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </main>
+  <aside class="palette-sidebar">
+    <div class="palette-header">
+      <span id="currentSectionLabel">Test</span>
+    </div>
+    <div class="palette-legend">
+      <span class="legend-item"><span class="legend-dot answered"></span>Answered</span>
+      <span class="legend-item"><span class="legend-dot notanswered"></span>Not Answered</span>
+      <span class="legend-item"><span class="legend-dot marked"></span>Marked</span>
+      <span class="legend-item"><span class="legend-dot notvisited"></span>Not Visited</span>
+    </div>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div class="palette-stats" id="paletteStats"></div>
+  </aside>
+</div>
+
+<!-- Submit modal -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeSubmitModal()">
+  <div class="modal-content">
+    <h2>Submit Test?</h2>
+    <p>Are you sure you want to submit? You won't be able to change your answers after this.</p>
+    <div class="submit-summary" id="submitSummary"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSubmitModal()">Cancel</button>
+      <button class="modal-btn submit" onclick="submitTest()">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results view (hidden until submit) -->
+<div id="resultsView" class="results-view" style="display:none;">
+  <div class="results-header">
+    <h1>Test Submitted</h1>
+    <div class="score-card" id="scoreCard"></div>
+    <div class="results-actions">
+      <button class="header-btn" onclick="showAllQuestions()">View All Questions &amp; Solutions</button>
+      <button class="header-btn" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+  <div class="results-questions" id="resultsQuestions"></div>
+</div>
+
+<!-- Test data embedded as JSON -->
+<script type="application/json" id="test-data">{"test_id": "6391e412b169e450773f2679", "title": "PYCT 31: Antonyms - 4", "series_slug": "ssc-english-previous-year-questions", "duration_min": 6, "max_marks": 20.0, "languages": ["English"], "sections": [{"section_id": "6391e2d73bde1f85141e9ce9", "section_name": "Test", "q_count": 10, "max_marks": 20.0, "questions": [{"qid": "62f25b56025ae129b3a92e8d", "qs_no": 1, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>DIRECTIONS: A sentence with an underlined word is given below. Find the word which is opposite to the highlighted word from the given options.</strong></p>\n\n<p>It was&nbsp;<u>generous</u>&nbsp;of you to lend me the money.</p>\n", "options": [{"prompt": "1", "value": "virtuous"}, {"prompt": "2", "value": "stingy"}, {"prompt": "3", "value": "kind"}, {"prompt": "4", "value": "selfless"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p>The correct answer is &#39;<strong>stingy</strong>&#39;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The most appropriate antonym for &#39;<strong>generous</strong>&#39; is &#39;<strong>stingy</strong>&#39;.</li>\n\t<li><strong>Generous</strong>:&nbsp;happy to give more money, help, etc. than is usual or expected. (असामान्&zwj;य या अप्रत्&zwj;याशित रूप से धन, सहायता आदि देने में प्रसन्&zwj;नता अनुभव करने वाला; उदार)\n\t<ul>\n\t\t<li><em>Example:&nbsp;It was very <strong>generous</strong> of your parents to lend us all that money.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>Stingy</strong>:&nbsp;not generous, unwilling to give, especially money. (कंजूस)\n\t<ul>\n\t\t<li><em>Example:&nbsp;Don&rsquo;t be <strong>stingy</strong> with friends.</em><br />\n\t\t&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong><u>Correct Answer:</u></strong>&nbsp;<em>stingy.</em></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the meaning of other words:\n\t<ul>\n\t\t<li><strong>virtuous</strong>:&nbsp;behaving in a morally good way. (सदाचारी, सद्&zwnj;गुणी, गुणवान)</li>\n\t\t<li><strong>kind</strong>:&nbsp;a group whose members all have the same qualities. (समान गुणों वाले व्यक्तियों का समूह; वर्ग)</li>\n\t\t<li><strong>selfless</strong>:&nbsp;thinking more about other people&rsquo;s needs or wishes than your own. (निःस्&zwj;वार्थ)&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n32:Tb26,\n<p>The correct answer is &#39;<strong>Dim</strong>&#39;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece418", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Antonym", "confidence": "high"}, {"qid": "63aac561812a1cd3f8851c5c", "qs_no": 2, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Choose the correct antonym for the below given word.</strong></p>\n\n<p>Surplus</p>\n", "options": [{"prompt": "1", "value": "Absence"}, {"prompt": "2", "value": "Excess"}, {"prompt": "3", "value": "Shortage"}, {"prompt": "4", "value": "Want"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"\">The correct answer is<span style=\"font-weight: 700;\">&nbsp;&#39;Shortage.&#39;<br />\n<br />\n<span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>&nbsp;</span></span></span>&nbsp;</span></span>&nbsp;</span></span></span></p>\n\n<ul style=\"\">\n\t<li>Let us see the meaning of<span style=\"font-weight: 700;\">&nbsp;</span><span style=\"font-weight: 700;\">Surplus</span><span style=\"font-weight: 700;\">:</span>\n\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">Surplus:&nbsp;</span>an amount that is extra or more than you need. (ज़रूरत से अधिक या अतिरिक्त मात्रा; बेशी)\n\n\t\t<ul>\n\t\t\t<li><span style=\"font-weight: 700;\">Example:&nbsp;</span><em>The world is now producing large food <u><strong>surpluses</strong></u>.​</em></li>\n\t\t</ul>\n\t\t</li>\n\t</ul>\n\t</li>\n\t<li>Let us see the&nbsp;<span style=\"font-weight: 700;\">meanings&nbsp;</span>of the given options:\n\t<ul>\n\t\t<li><b>Absence:&nbsp;</b>a time when somebody is away from somewhere; the fact of being away from somewhere. (किसी स्&zwj;थान पर अनुपस्थित रहने का समय; किसी स्&zwj;थान से दूर रहने की बात)</li>\n\t\t<li><b>Excess:&nbsp;</b>more of something than is necessary or usual; too much of something. (ज़रूरत या सामान्&zwj;य से अधिक; अत्&zwj;यधिक)</li>\n\t\t<li><b>Shortage:&nbsp;</b>a situation where there is not enough of something. (किसी वस्&zwj;तु की कमी या अपर्याप्तता)</li>\n\t\t<li><strong>Want:&nbsp;</strong>something you need or want. (आवश्&zwj;यकता, ज़रूरत या इच्&zwj;छा; चाहत)</li>\n\t</ul>\n\t</li>\n</ul>\n\n<ul style=\"\">\n\t<li>From the&nbsp;meanings of the given words, we can say that&nbsp;the correct antonym for the below given word is<span style=\"font-weight: 700;\">&nbsp;&#39;Shortage</span><span style=\"font-weight: 700;\">.&#39;</span></li>\n\t<li>Hence, the correct answer is&nbsp;<span style=\"font-weight: 700;\">Option 3.</span></li>\n</ul>\n\n35:Tddb,\n<p style=\"\">The correct answer is<span style=\"font-weight: 700;\">&nbsp;&#39;Spurious.&#39;<br />\n<br />\n<span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\">&", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Antonym", "confidence": "high"}, {"qid": "62a1a405d59ca4b9ebcbaee8", "qs_no": 3, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><u style=\"\"><span style=\"font-weight: 700;\">Direction</span></u><span style=\" font-weight: 700;\">:</span><span style=\"\">&nbsp;</span><span style=\" font-weight: 700;\">Select the option that is opposite&nbsp;in meaning to the given word and mark your response accordingly.</span></p>\n\n<p>The analysis is clearly written and renders these sometimes quite <strong><u>abstruse</u></strong> theories more accessible.</p>\n", "options": [{"prompt": "1", "value": "Complex"}, {"prompt": "2", "value": "Clear"}, {"prompt": "3", "value": "Profound"}, {"prompt": "4", "value": "Scholarly"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\nThe correct answer is- <strong>&#39;Clear&#39;</strong>\n<p style=\"\"><span style=\"font-weight: 700;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"vertical-align: middle;\"><u><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></span></u></span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>let&#39;s look at the meaning of the&nbsp;<span style=\"font-weight: 700;\">given word</span>&nbsp;and the&nbsp;<span style=\"font-weight: 700;\">correct answer.</span></li>\n\t<li><strong>Abstruse</strong>(adjective): not known or understood by many people. (बहुत से लोगों द्वारा जाना या समझा नहीं गया।)\n\t<ul>\n\t\t<li><span style=\"color: rgb(48, 51, 54); font-variant-ligatures: no-common-ligatures; letter-spacing: 0.2px;\">​</span><span style=\"font-weight: 700;\">Example</span><span style=\"color: rgb(48, 51, 54); font-variant-ligatures: no-common-ligatures; letter-spacing: 0.2px;\"><span style=\"font-weight: 700;\">:&nbsp;</span></span><em>an <strong>abstruse </strong>philosophical essay.<span style=\"color: rgb(48, 51, 54); font-variant-ligatures: no-common-ligatures; letter-spacing: 0.2px;\"><span style=\"font-weight: 700;\">&nbsp;</span></span></em></li>\n\t</ul>\n\t</li>\n\t<li><b>Clear</b>(adjective)<span style=\"color: rgb(32, 33, 36);\">:</span>&nbsp;easy to understand, hear, read, or see. (समझने, सुनने, पढ़ने या देखने में आसान।)\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">Example:<em>&nbsp;</em></span><em>Can we make the sound any <strong>clearer</strong>?</em><br />\n\t\t&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p style=\"\">Hence, the word&nbsp;<span style=\"font-weight: 700;\">Clear&nbsp;</span>is the most appropriate antonym for&nbsp;<span style=\"font-weight: 700;\">Abstruse.<span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></span></p>\n\n<ul style=\"\">\n\t<li>Let&#39;s explore the meaning of other options:</li>\n\t<li><strong><span style=\"\">Complex</span></strong>(adjective):&nbsp;involving a lot of different but related parts. (बहुत सारे अलग-अलग लेकिन संबंधित भागों को शामिल करना।)\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">Example:&nbsp;</span><em>The company has a <strong>complex </strong>organizational structure.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong><span style=\"\">Profound</span></strong>(adjective): felt or experienced very strongly or in an extreme way. (बहुत दृढ़ता से या अत्यधिक तरीके से महसूस या अनुभव किया।)\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">Example:</span><em>&nbsp;His mother&#39;s death when he was aged six had a very <strong>profound </strong>effect on him.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>Scholarly</strong>(<span style=\"\">adjective</span>): containing a serious, detailed study of a subject. (किसी विषय का गंभीर, विस्तृत अध्ययन युक्त।)\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">Example:&nbsp;</span><em>a <strong>scholarly</strong> young woman.</em></li>\n\t</ul>\n\t</li>\n</ul>\n\n31:Tb50,\n<p>The correct answer is &#39;<strong>stingy</strong>&#39;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><stro", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Antonym", "confidence": "high"}, {"qid": "6299e814d67ef781724d2a90", "qs_no": 4, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the most appropriate ANTONYM of the given word.</strong></p>\n\n<p>GREGARIOUS</p>\n", "options": [{"prompt": "1", "value": "Sociable"}, {"prompt": "2", "value": "Affable"}, {"prompt": "3", "value": "Talkative"}, {"prompt": "4", "value": "Reserved"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is&nbsp;<strong>Reserved</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The word&nbsp;<strong>Gregarious&nbsp;</strong><span style=\"\">(adjective)</span>&nbsp;generally means tending to associate with others of one&#39;s kind; being social&nbsp;<strong><span style=\"\">(&nbsp;</span><span style=\"color: rgb(32, 33, 36);  \">लोगों से मिलना-जुलना पंसद करने वाला; मिलनसार&nbsp;</span><span style=\"\">)</span></strong>\n\n\t<ul>\n\t\t<li><strong><span style=\"\">​</span></strong><strong>Ex:</s", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Antonym", "confidence": "high"}, {"qid": "63c67a6aef049e8785c4c7d4", "qs_no": 5, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><span style=\"font-weight: 700; \">Directions: Select a word or the group of words that is the most opposite in meaning to the underlined word in the given sentence.</span></p>\n\n<p>He was subjected to the most vicious <u>calumny</u>, but he never complained and never sued.</p>\n", "options": [{"prompt": "1", "value": "dreadful"}, {"prompt": "2", "value": "defamation"}, {"prompt": "3", "value": "rabid"}, {"prompt": "4", "value": "acclaim"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is &quot;<strong>acclaim</strong>.&quot;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Calumny</strong> is a malicious and false statement intended to damage someone&#39;s reputation. (बदनामी एक दुर्भावनापूर्ण और झूठा बयान है जिसका उद्देश्य किसी की प्रतिष्ठा को नुकसान पहुंचाना है।)&nbsp;\n\n\t<ul>\n\t\t<li><strong>Example</strong>: &quot;<em>The rumors spread about her were nothing but calumny&quot;.&nbsp;</em></li>\n\t</ul>\n\t</li>\n\t<li>The opposite meaning to the underlined word<strong> &quot;calumny&quot; (a false statement that harms someone&#39;s reputation) is &quot;acclaim&quot; (enthusiastic and public praise).</strong></li>\n</ul>\n\n<p><u><strong>Let&#39;s see the meanings of the given words.</strong></u></p>\n\n<ul>\n\t<li><strong>Dreadful</strong> - This word means causing great fear or distress. (इस शब्द का अर्थ है बहुत अधिक भय या संकट पैदा करना।)</li>\n\t<li><strong>Example</strong>: <em>The storm was so <strong>dreadful</strong> that people were afraid to leave their homes.</em></li>\n\t<li><strong>Defamation</strong> - This word means the act of making a false statement that harms someone&#39;s reputation. (इस शब्द का अर्थ है झूठा बयान देने का कार्य जो किसी की प्रतिष्ठा को नुकसान पहुंचाता है।)\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>The newspaper was sued for <strong>defamation</strong> after publishing false accusations about the politician.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>Rabid</strong> - This word means having or showing excessive enthusiasm or intense feelings. (इस शब्द का अर्थ अत्यधिक उत्साह या तीव्र भावनाओं का होना।)\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>The fans were so <strong>rabid</strong> about their team that they were shouting and cheering for hours.</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>Acclaim</strong> - This word means enthusiastic and public praise. (इस शब्द का अर्थ है उत्साही और सार्वजनिक प्रशंसा।)\n\t<ul>\n\t\t<li><strong>Example</strong>: <em>The singer received <strong>acclaim</strong> from critics and fans alike for her powerful performance.</em></li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong>According to the meanings of the given words,</strong> <em>the correct answer is <strong>Option 4, i.e., acclaim.</strong></em></p>\n\ne:[\"$\",\"$L2d\",null,{\"testData\":{\"title\":\"PYCT 31: Antonyms - 4\",\"sections\":[{\"_id\":\"6391e2d73bde1f85141e9ce9\",\"qCount\":10,\"title\":\"Test\",\"time\":0,\"questions\":[{\"isNum\":false,\"type\":\"mcq\",\"negMarks\":0.5,\"posMarks\":2,\"skipMarks\":0,\"partialMarks\":{\"type\":\"\",\"marks\":0},\"isPartialMarking\":false,\"_id\":\"62f25b56025ae129b3a92e8d\",\"en\":{\"value\":\"<p><strong>DIRECTIONS: A sentence with an underlined word is given below. Find the word which is opposite to the highlighted word from the given options.</strong></p>\\n\\n<p>It was", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Antonym", "confidence": "high"}, {"qid": "62fbd1b5bc8e5489843cfbe6", "qs_no": 6, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><span style=\"  font-weight: 700; white-space-collapse: preserve;\">Directions: Each item in this section consists of sentences with an underlined word followed by four words or group of words. Select the option that is opposite in meaning to the underlined word and mark your response on the answer sheet accordingly.</span></p>\n\n<p>The audience burst into <u>boisterous</u> laughter.</p>\n", "options": [{"prompt": "1", "value": "clamorous"}, {"prompt": "2", "value": "uncontrolled"}, {"prompt": "3", "value": "calm"}, {"prompt": "4", "value": "rowdy"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"\">The correct answer is&nbsp;<span style=\"font-weight: 700;\">&#39;calm.&#39;</span></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></span></span></p>\n\n<ul style=\"\">\n\t<li>The meaning of the word<span style=\"font-weight: 700;\">&nbsp;&#39;boisterous&#39;</span>&nbsp;is&nbsp;noisy and not controlled. (<span style=\"font-weight: 700;\">&#39;Boisterous&#39;</span>&nbsp;शब्द का अर्थ (व्&zwj;यक्ति या उसका व्&zwj;यवहार) ऊधमी, शोरगुल मचाने वाला किंतु प्रसन्&zwj;नचित्त है।)&nbsp;\n\n\t<", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Antonym", "confidence": "high"}, {"qid": "6294eed7f406913aaaf3efe4", "qs_no": 7, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Direction: Select the most appropriate ANTONYM of the underlined word to fill in the blank.</strong></p>\n\n<p>All the students were <u>permitted</u> to enter the hall, but Mary was _________ as she was not in uniform.</p>\n", "options": [{"prompt": "1", "value": "allowed"}, {"prompt": "2", "value": "prohibited"}, {"prompt": "3", "value": "preserved"}, {"prompt": "4", "value": "terminated"}], "range": {"start": "", "end": ""}}}, "correct_option": "2", "solution_html": {"en": "\n<p style=\"\">The correct answer is<strong>&nbsp;<span style=\"font-weight: 700;\">&#39;</span>prohibited​</strong><span style=\"font-weight: 700;\"><strong>.&#39;</strong><br />\n<br />\n<span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>&nbsp;</span></span></span></span></span></p>\n\n<ul style=\"\">\n\t<li>The word&nbsp;<span style=\"font-weight: 700;\">&#39;permitted&#39;</span>&nbsp;means&nbsp;to allow somebody to do something or to allow something to happen.&nbsp;</li>\n\t<li>(<span style=\"font-weight: 700;\">&#39;Permitted&#39;</span>&nbsp;शब्द का अर्थ है किसी बात की अनुमति देना या कोई बात होने देना।)<em>&nbsp;</em>\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">Example:<em>&nbsp;</em></span><em>You are not <u><strong>permitted</strong></u> to smoke in the hospital.</em></li>\n\t</ul>\n\t</li>\n\t<li>​​Let us see the <strong>meanings </strong>of the given options:\n\t<ul>\n\t\t<li><strong>Allowed:&nbsp;</strong>to give permission for somebody/something to do something or for something to happen. (कुछ करने की अनुमति देना, कुछ होने देना)</li>\n\t\t<li><strong>Prohibited:&nbsp;</strong>to prevent a particular activity by making it impossible. (किसी विशेष गतिविधि को असंभव बनाकर रोक<span style=\"\">ना;&nbsp;</span>निषिद्ध<span style=\"\">)</span>\n\t\t<ul>\n\t\t\t<li><span style=\"\"><strong>Example</strong>:&nbsp;</span><em>The loudness of the music <u><strong>prohibited</strong></u> serious conversation in most nightclubs.</em></li>\n\t\t</ul>\n\t\t</li>\n\t\t<li><strong>Preserved:&nbsp;</strong>to keep something safe or in good condition. (किसी वस्&zwj;तु को सुरक्षित या अच्&zwj;छी हालत में रखना)</li>\n\t\t<li><strong>Terminated:&nbsp;</strong>to end or to make something end. (समाप्&zwj;त होना या करना)</li>\n\t</ul>\n\t</li>\n\t<li>From the&nbsp;<span style=\"font-weight: 700;\">meanings</span>&nbsp;of the given words, we can say that the most appropriate ANTONYM of the underlined word<strong> &quot;permitted&quot;</strong> to fill in the blank is <strong>&quot;prohibited.&quot;<br />\n\t​</strong></li>\n</ul>\n\n<p><strong>Correct sentence:&nbsp;</strong><em>All the students were permitted to enter the hall, but Mary was <u><strong>prohibited</strong></u> as she was not in uniform.</em></p>\n\n2f:T1140,\n<p>The correct answer is&nbsp;<strong>Reserved</strong>.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary", "Vocabulary"], "concept": "Antonym", "confidence": "high"}, {"qid": "63b7f9e4d64b9d1afbfe3978", "qs_no": 8, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong><span style=\"\">Direction: Choose the word opposite in meaning to the words given in capital letters</span></strong></p>\n\n<p><span style=\"\">AUTHENTIC&nbsp;</span></p>\n", "options": [{"prompt": "1", "value": "&lt;span style=&quot;&quot;&gt;Real&lt;/span&gt;"}, {"prompt": "2", "value": "&lt;span style=&quot;&quot;&gt;Dependable&amp;nbsp;&lt;/span&gt;"}, {"prompt": "3", "value": "&lt;span style=&quot;&quot;&gt;Spurious&lt;/span&gt;"}, {"prompt": "4", "value": "&lt;span style=&quot;&quot;&gt;Unpleasant&lt;/span&gt;"}], "range": {"start": "", "end": ""}}}, "correct_option": "3", "solution_html": {"en": "\n<p style=\"\">The correct answer is<span style=\"font-weight: 700;\">&nbsp;&#39;Spurious.&#39;<br />\n<br />\n<span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span>&nbsp;</span>&nbsp;</span>&nbsp;</span></span></span>&nbsp;</span></span></span>&nbsp;</span></span></span></p>\n\n<ul style=\"\">\n\t<li>Let us see the meaning of&nbsp;<span style=\"font-weight: 700;\">AUTHENTIC</span><span style=\"font-weight: 700;\">:</span>\n\n\t<ul>\n\t\t<li><span style=\"font-weight: 700;\">AUTHENTIC:&nbsp;</span>that you know is real or genuine,&nbsp;true or accurate. (प्रामाणिक, असली,&nbsp;सच्&zwj;चा, सही)</li>\n\t</ul>\n\t</li>\n\t<li>Let us see the&nbsp;<span style=\"font-weight: 700;\">meanings&nbsp;</span>of the given options:\n\t<ul>\n\t\t<li><b>Real:&nbsp;</b>actually true; not only what people think is true. (वस्&zwj;तुतः सत्&zwj;य; वास्तविक)</li>\n\t\t<li><b>Dependable:&nbsp;</b>that can be trusted. (भरोसेमंद, विश्&zwj;वसनीय, भरोसे लायक़)</li>\n\t\t<li><b>Spurious:&nbsp;</b>false, although seeming to be genuine. (बनावटी यद्यपि देखने में सच्चा लगता हो; अवैध; जाली; नक़ली)</li>\n\t\t<li><b>Unpleasant:&nbsp;</b>causing you to have a bad feeling; not nice. (कटु भाव उत्&zwj;पन्&zwj;न करने वाला; अप्रिय, अरुचिकर)</li>\n\t</ul>\n\t</li>\n\t<li>From the&nbsp;meanings of the given words, we can say that&nbsp;the word opposite in meaning to the word&nbsp;given in capital letters&nbsp;is&nbsp;<span style=\"font-weight: 700;\">&#39;Spurious</span><span style=\"font-weight: 700;\">.&#39;</span></li>\n\t<li>Hence, the correct answer is&nbsp;<span style=\"font-weight: 700;\">Option 3.</span></li>\n</ul>\n\n36:T1446,\n<p>The correct answer is &quot;<strong>careless</strong>&quot;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afc", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Antonym", "confidence": "high"}, {"qid": "63bebeb0d6444c80e2ec8cb7", "qs_no": 9, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><span style=\"font-weight: 700; \">Directions: Select the word that is OPPOSITE in meaning to the word given in the sentence:</span></p>\n\n<p>They are very good assistants, very <strong><u>discreet</u></strong>&nbsp;they wouldn&#39;t go talking to the press.</p>\n", "options": [{"prompt": "1", "value": "worthy"}, {"prompt": "2", "value": "arrogant"}, {"prompt": "3", "value": "honest"}, {"prompt": "4", "value": "careless&amp;nbsp;"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is &quot;<strong>careless</strong>&quot;</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li><strong>Discreet</strong> refers to something or someone that is careful, circumspect, or prudent in their actions, speech, or behavior, often so as to avoid attracting attention or causing offense.&nbsp; (डिस्क्रीट का मतलब किसी ऐसी चीज या व्यक्ति से है जो अक्सर ध्यान आकर्षित करने या अपराध करने से बचने के लिए अपने कार्यों, भाषण या व्यवहार में सावधान, चौकस या विवेकपूर्ण होता है।)&nbsp;&nbsp;\n\n\t<ul>\n\t\t<li><em><strong>Example</strong>: A <strong>discreet</strong> gesture, such as a nod or a wink, which is done in a subtle and unobtrusive manner.</em></li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><u><strong>Let&#39;s see the meanings of the given words</strong></u></p>\n\n<ul>\n\t<li><strong>Worthy</strong> refers to something or someone that is deserv", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Antonym", "confidence": "high"}, {"qid": "62f7c6d77ddaad84b7495c3f", "qs_no": 10, "pos_marks": 2.0, "neg_marks": 0.5, "type": "mcq", "langs": {"en": {"value": "<p><strong>Select the most appropriate ANTONYM of the given word.</strong></p>\n\n<p>Luminous</p>\n", "options": [{"prompt": "1", "value": "Hunched"}, {"prompt": "2", "value": "Homespun"}, {"prompt": "3", "value": "Simple"}, {"prompt": "4", "value": "Dim"}], "range": {"start": "", "end": ""}}}, "correct_option": "4", "solution_html": {"en": "\n<p>The correct answer is &#39;<strong>Dim</strong>&#39;.</p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/36f36cd5ece4186095afcf2ffbfb7b80cc04b6c2e3226e7477a419a9fbc96f85.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Key Points</u></span></strong></span></p>\n\n<ul>\n\t<li>The most appropriate <strong>antonym</strong> of the&nbsp;word &#39;<strong>Luminous</strong>&#39; is &#39;<strong>Dim</strong>&#39;.</li>\n\t<li><strong>Luminous</strong>:&nbsp;that shines in the dark. (अँधेरे में चमकने वाला)&nbsp;\n\t<ul>\n\t\t<li><em>Example:&nbsp;a <strong>luminous </strong>watch...</em></li>\n\t</ul>\n\t</li>\n\t<li><strong>Dim</strong>:&nbsp;not bright or easy to see; not clear. (मंद, धुँधला, अस्&zwj;पष्&zwj;ट)\n\t<ul>\n\t\t<li><em>Example:&nbsp;The light was too <strong>dim</strong> to read.</em><br />\n\t\t&nbsp;</li>\n\t</ul>\n\t</li>\n</ul>\n\n<p><strong><u>Correct Answer:</u></strong>&nbsp;<i>Dim.</i></p>\n\n<p><span style=\"display: flex;gap: 6px;align-items: center;\"><img height=\"26px\" src=\"https://cdn.repeatermock.com/tb/f13e2ad6582c16aa62a83672e2547ad20a01fddb61962a1acce42eb9a1a99caa.png\" width=\"26px\" /><strong><span style=\"vertical-align: middle;font-size: 21px;\"><u>Additional Information</u></span></strong></span></p>\n\n<ul>\n\t<li>Let&#39;s look at the meaning of other words:\n\t<ul>\n\t\t<li><strong>Hunched</strong>:&nbsp;to bend your back and shoulders forward into a round shape. (पीठ और कंधों को गोलाकार आगे की ओर झुकाना, कूबड़ निकालकर चलना या बैठना)</li>\n\t\t<li><strong>Simple</strong>:&nbsp;easy to understand, do or use; not difficult or complicated. (समझने, करने या प्रयोग करने में आसान, सुबोध, सुकर; कठिन या जटिल नहीं, सरल)</li>\n\t\t<li><strong>Homespun</strong>:&nbsp;simple and unsophisticated. (सरल और अपरिष्कृत)</li>\n\t</ul>\n\t</li>\n</ul>\n\n33:T1219,\n<p style=\"\">The correct answer is&nbsp;<span style=\"font-weight: 700;\">&#39;calm.&#39;</span></p>\n\n<p style=\"\"><span style=\"display: flex; gap: 6px; align-items: center;\"><span style=\"display: flex; gap: ", "hn": "", "te": "", "mr": "", "bn": "", "ml": "", "gu": "", "kn": "", "ta": "", "or": "", "as": "", "ks": "", "kok": "", "mni": "", "ne": "", "pa": "", "sd": "", "ur": "", "sat": "", "mai": "", "brx": "", "doi": "", "sa": "", "grt": "", "kha": "", "lus": "", "bo": "", "trp": ""}, "tags": ["Vocabulary"], "concept": "Antonym", "confidence": "high"}]}]}</script>
+<script>
+const TEST_DATA = JSON.parse(document.getElementById('test-data').textContent);
+const TOTAL_Q = 10;
+const DURATION_SEC = 6 * 60;
+
+// State
+let currentSectionIdx = 0;
+let currentQIdx = 0;  // global across sections
+let currentLang = 'en';
+let answers = {};  // qid -> selected option prompt
+let marked = {};   // qid -> true
+let visited = new Set();
+let submitted = false;
+let timeLeft = DURATION_SEC;
+let timerInterval = null;
+
+// Flatten all questions for easy indexing
+const allQuestions = [];
+TEST_DATA.sections.forEach((s, sIdx) => {
+  s.questions.forEach(q => {
+    allQuestions.push({...q, sectionIdx: sIdx, sectionName: s.section_name});
+  });
+});
+
+function init() {
+  // Render section tabs
+  const sectionTabs = document.getElementById('sectionTabs');
+  TEST_DATA.sections.forEach((s, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'section-tab' + (i === 0 ? ' active' : '');
+    tab.textContent = s.section_name + ' (' + s.questions.length + ')';
+    tab.onclick = () => switchSection(i);
+    sectionTabs.appendChild(tab);
+  });
+  // Render palette
+  renderPalette();
+  // Render first question
+  renderQuestion();
+  // Start timer
+  startTimer();
+  // Update stats
+  updateStats();
+}
+
+function startTimer() {
+  if (DURATION_SEC <= 0) {
+    // No time limit — show "No Limit" instead of a countdown
+    document.getElementById('timer').textContent = 'No Limit';
+    document.getElementById('timer').classList.add('no-limit');
+    return;
+  }
+  timerInterval = setInterval(() => {
+    if (submitted) return;
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitTest();
+    }
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timeLeft / 3600);
+  const m = Math.floor((timeLeft % 3600) / 60);
+  const s = timeLeft % 60;
+  const display = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = display;
+  if (timeLeft < 60) {
+    timerEl.className = 'timer danger';
+  } else if (timeLeft < 300) {
+    timerEl.className = 'timer warning';
+  }
+}
+
+function renderQuestion() {
+  const q = allQuestions[currentQIdx];
+  if (!q) return;
+  visited.add(q.qid);
+  // Update section tab
+  currentSectionIdx = q.sectionIdx;
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === currentSectionIdx);
+  });
+  document.getElementById('currentSectionLabel').textContent = q.sectionName;
+  // Question header — includes Q number, marks, concept, confidence, and question ID
+  document.getElementById('qNum').textContent = 'Q' + (currentQIdx + 1);
+  let headerExtras = '<span class="mark-pos">+' + q.pos_marks + '</span><span class="mark-neg">-' + q.neg_marks + '</span>';
+  // Concept + confidence (from AI classifier — same as AI JSON)
+  const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+  const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+  const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+  headerExtras += '<span class="q-concept" title="Concept category">🎯 ' + concept + '</span>';
+  headerExtras += '<span class="q-confidence ' + confClass + '" title="Classifier confidence">conf: ' + confidence + '</span>';
+  // Question ID (unique per question, useful for cross-test matching)
+  headerExtras += '<span class="q-id" title="Question ID (unique across all tests)">ID: ' + q.qid + '</span>';
+  document.getElementById('qMarks').innerHTML = headerExtras;
+  // Language tabs
+  const langTabs = document.getElementById('qLangTabs');
+  langTabs.innerHTML = '';
+  const availableLangs = Object.keys(q.langs);
+  const showLangs = ['en','hn','te','mr','bn','ml','gu','kn','ta','or'].filter(l => availableLangs.includes(l));
+  if (showLangs.length > 1) {
+    showLangs.forEach((l, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'q-lang-tab' + (l === currentLang ? ' active' : '');
+      btn.textContent = {en:'English',hn:'Hindi',te:'Telugu',mr:'Marathi',bn:'Bengali',ml:'Malayalam',gu:'Gujarati',kn:'Kannada',ta:'Tamil',or:'Odia'}[l] || l;
+      btn.onclick = () => { currentLang = l; renderQuestion(); };
+      langTabs.appendChild(btn);
+    });
+  }
+  // Question text
+  const langData = q.langs[currentLang] || q.langs[availableLangs[0]] || {};
+  document.getElementById('qText').innerHTML = langData.value || '(no question text)';
+  // Options
+  const optsList = document.getElementById('optionsList');
+  optsList.innerHTML = '';
+  (langData.options || []).forEach(opt => {
+    const li = document.createElement('li');
+    li.className = 'option-item' + (answers[q.qid] === opt.prompt ? ' selected' : '');
+    li.innerHTML = '<span class="option-label">' + opt.prompt + '</span><span class="option-text">' + opt.value + '</span>';
+    li.onclick = () => selectOption(q.qid, opt.prompt);
+    optsList.appendChild(li);
+  });
+  // Update palette
+  renderPalette();
+  updateStats();
+}
+
+function selectOption(qid, prompt) {
+  if (submitted) return;
+  if (answers[qid] === prompt) {
+    delete answers[qid];
+  } else {
+    answers[qid] = prompt;
+  }
+  renderQuestion();
+}
+
+function saveNext() {
+  nextQuestion();
+}
+
+function markReviewNext() {
+  const q = allQuestions[currentQIdx];
+  marked[q.qid] = true;
+  nextQuestion();
+}
+
+function clearResponse() {
+  const q = allQuestions[currentQIdx];
+  delete answers[q.qid];
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIdx < allQuestions.length - 1) {
+    currentQIdx++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIdx > 0) {
+    currentQIdx--;
+    renderQuestion();
+  }
+}
+
+function jumpTo(idx) {
+  currentQIdx = idx;
+  renderQuestion();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function switchSection(idx) {
+  currentSectionIdx = idx;
+  // Find first question in this section
+  const qIdx = allQuestions.findIndex(q => q.sectionIdx === idx);
+  if (qIdx >= 0) {
+    currentQIdx = qIdx;
+    renderQuestion();
+  }
+}
+
+function renderPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const cell = document.createElement('div');
+    let cls = 'palette-cell ';
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) cls += 'marked-answered';
+    else if (isMarked) cls += 'marked';
+    else if (isAnswered) cls += 'answered';
+    else if (isVisited) cls += 'notanswered';
+    else cls += 'notvisited';
+    if (i === currentQIdx) cls += ' current';
+    cell.className = cls;
+    cell.textContent = (i + 1);
+    cell.onclick = () => jumpTo(i);
+    grid.appendChild(cell);
+  });
+}
+
+function updateStats() {
+  let answered = 0, notAnswered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    const isAnswered = answers[q.qid] !== undefined;
+    const isMarked = marked[q.qid];
+    const isVisited = visited.has(q.qid);
+    if (isMarked && isAnswered) marked++;
+    else if (isMarked) marked++;
+    else if (isAnswered) answered++;
+    else if (isVisited) notAnswered++;
+    else notVisited++;
+  });
+  document.getElementById('paletteStats').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${notAnswered}</strong></div>
+    <div><span>Marked:</span><strong>${marked}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+  `;
+}
+
+function openSubmitModal() {
+  let answered = 0, marked = 0, notVisited = 0;
+  allQuestions.forEach((q, i) => {
+    if (answers[q.qid] !== undefined) answered++;
+    else if (marked[q.qid]) marked++;
+    else if (!visited.has(q.qid)) notVisited++;
+  });
+  document.getElementById('submitSummary').innerHTML = `
+    <div><span>Answered:</span><strong>${answered}</strong></div>
+    <div><span>Not Answered:</span><strong>${TOTAL_Q - answered - notVisited}</strong></div>
+    <div><span>Not Visited:</span><strong>${notVisited}</strong></div>
+    <div><span>Total:</span><strong>${TOTAL_Q}</strong></div>
+  `;
+  document.getElementById('submitModal').classList.add('open');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('open');
+}
+
+function submitTest() {
+  submitted = true;
+  clearInterval(timerInterval);
+  closeSubmitModal();
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0, skipped = 0;
+  allQuestions.forEach(q => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    if (userAns === undefined) {
+      skipped++;
+    } else if (userAns === correctAns) {
+      correct++;
+      score += q.pos_marks;
+    } else {
+      wrong++;
+      score -= q.neg_marks;
+    }
+  });
+  // Show results view
+  document.getElementById('testMode').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('scoreCard').innerHTML = `
+    <div><span class="score">${score.toFixed(2)}</span><span class="total"> / ${TEST_DATA.max_marks || TOTAL_Q * 2}</span></div>
+    <div class="rank">Correct: ${correct} | Wrong: ${wrong} | Skipped: ${skipped}</div>
+    <div class="rank" style="margin-top:8px;">Accuracy: ${(correct + wrong > 0) ? ((correct / (correct + wrong)) * 100).toFixed(1) : 0}%</div>
+  `;
+  // Render all questions with answers + solutions
+  renderAllQuestions();
+}
+
+function renderAllQuestions() {
+  const container = document.getElementById('resultsQuestions');
+  container.innerHTML = '';
+  allQuestions.forEach((q, i) => {
+    const userAns = answers[q.qid];
+    const correctAns = q.correct_option;
+    const isCorrect = userAns === correctAns;
+    const isWrong = userAns !== undefined && userAns !== correctAns;
+    const isSkipped = userAns === undefined;
+    const card = document.createElement('div');
+    card.className = 'result-card ' + (isCorrect ? 'correct' : isWrong ? 'wrong' : 'skipped');
+    const langData = q.langs[currentLang] || q.langs[Object.keys(q.langs)[0]] || {};
+    let optionsHtml = '';
+    (langData.options || []).forEach(opt => {
+      let cls = 'result-option';
+      if (opt.prompt === correctAns) cls += ' correct';
+      if (opt.prompt === userAns) cls += ' selected';
+      optionsHtml += `<li class="${cls}"><span class="result-option-label">${opt.prompt}</span><span>${opt.value}</span></li>`;
+    });
+    const sol = q.solution_html[currentLang] || q.solution_html['en'] || '';
+    const solHtml = sol ? `<div class="result-solution"><div class="result-solution-title">📖 Solution</div>${sol}</div>` : '';
+    let statusBadge = '';
+    if (isCorrect) statusBadge = '<span class="result-status correct">✓ Correct</span>';
+    else if (isWrong) statusBadge = '<span class="result-status wrong">✗ Wrong</span>';
+    else statusBadge = '<span class="result-status skipped">— Skipped</span>';
+    // Concept + confidence + question ID (same as AI JSON)
+    const concept = q.concept || (q.tags && q.tags.length ? q.tags.join(', ') : 'Unidentified');
+    const confidence = q.confidence || (q.tags && q.tags.length ? 'high' : 'unidentified');
+    const confClass = confidence === 'high' ? 'conf-high' : 'conf-unidentified';
+    card.innerHTML = `
+      <div class="result-header">
+        <span class="result-q-num">Q${i + 1}</span>
+        ${statusBadge}
+        <span class="result-concept">🎯 ${concept}</span>
+        <span class="result-confidence ${confClass}">conf: ${confidence}</span>
+        <span class="result-qid">ID: ${q.qid}</span>
+      </div>
+      <div class="result-text">${langData.value || '(no text)'}</div>
+      <ul class="result-options">${optionsHtml}</ul>
+      ${solHtml}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function showAllQuestions() {
+  document.getElementById('resultsView').scrollIntoView({behavior: 'smooth'});
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' || e.key === 'j') nextQuestion();
+  if (e.key === 'ArrowLeft' || e.key === 'k') prevQuestion();
+  if (e.key === '1' || e.key === 'a') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[0]) selectOption(q.qid, opts[0].prompt); }
+  if (e.key === '2' || e.key === 'b') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[1]) selectOption(q.qid, opts[1].prompt); }
+  if (e.key === '3' || e.key === 'c') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[2]) selectOption(q.qid, opts[2].prompt); }
+  if (e.key === '4' || e.key === 'd') { const q = allQuestions[currentQIdx]; const opts = (q.langs[currentLang]||{}).options||[]; if(opts[3]) selectOption(q.qid, opts[3].prompt); }
+});
+
+init();
+</script>
+</body>
+</html>
